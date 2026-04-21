@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { MOCK_PHONES } from '../data';
+import { MOCK_PHONES, MOCK_CATEGORIES } from '../data';
 import { Phone } from '../types';
-import { X, Plus, Search, Scale } from 'lucide-react';
+import { X, Plus, Search, Scale, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function ComparisonTool() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('Phones');
 
   const selectedPhones = selectedIds.map(id => MOCK_PHONES.find(p => p.id === id)).filter(Boolean) as Phone[];
 
@@ -24,6 +25,7 @@ export default function ComparisonTool() {
   };
 
   const filteredPhones = MOCK_PHONES.filter(p => 
+    p.category === activeCategory &&
     p.model.toLowerCase().includes(searchTerm.toLowerCase()) && 
     !selectedIds.includes(p.id)
   );
@@ -43,6 +45,26 @@ export default function ComparisonTool() {
           </p>
         </div>
 
+        {/* Category Filter */}
+        <div className="flex justify-center gap-4 mb-12">
+          {['Phones', 'Computing', 'Accessories'].map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                setSelectedIds([]); // Clear selection when category changes
+              }}
+              className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
+                activeCategory === cat 
+                ? 'bg-slate-900 text-white shadow-lg' 
+                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-slate-200 border border-slate-200 rounded-[32px] overflow-hidden shadow-2xl shadow-slate-200/50">
           {/* Labels Column */}
           <div className="bg-slate-50 p-8 hidden md:block">
@@ -52,11 +74,11 @@ export default function ComparisonTool() {
             <div className="space-y-8">
               <SpecLabel label="Brand" />
               <SpecLabel label="Processor" />
-              <SpecLabel label="AI Readiness" />
               <SpecLabel label="Display" />
               <SpecLabel label="Camera" />
               <SpecLabel label="Battery" />
               <SpecLabel label="RAM" />
+              <SpecLabel label="OS" />
               <SpecLabel label="Price" />
             </div>
           </div>
@@ -88,11 +110,11 @@ export default function ComparisonTool() {
                     <div className="space-y-8 flex-1">
                       <SpecValue value={phone.brand} mobileLabel="Brand" />
                       <SpecValue value={phone.specs.processor || 'N/A'} mobileLabel="Processor" />
-                      <SpecValue value={phone.specs.aiPerformance || 'N/A'} mobileLabel="AI Performance" />
                       <SpecValue value={phone.specs.display || 'N/A'} mobileLabel="Display" />
                       <SpecValue value={phone.specs.camera || 'N/A'} mobileLabel="Camera" />
                       <SpecValue value={phone.specs.battery || 'N/A'} mobileLabel="Battery" />
                       <SpecValue value={phone.specs.ram || 'N/A'} mobileLabel="RAM" />
+                      <SpecValue value={phone.specs.os || 'N/A'} mobileLabel="OS" />
                       <div className="pt-4 border-t border-slate-50">
                         <span className="text-2xl font-black text-slate-900">£{phone.price}</span>
                         <button className="w-full mt-4 bg-slate-900 text-white rounded-xl py-3 text-sm font-bold hover:bg-blue-600 transition-colors">
@@ -110,22 +132,26 @@ export default function ComparisonTool() {
                           <input 
                             autoFocus
                             type="text" 
-                            placeholder="Search model..."
+                            placeholder={`Search ${activeCategory}...`}
                             className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-600/20"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                           />
                         </div>
                         <div className="max-h-60 overflow-y-auto space-y-1">
-                          {filteredPhones.map(p => (
-                            <button
-                              key={p.id}
-                              onClick={() => addPhone(p.id)}
-                              className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-colors"
-                            >
-                              {p.model}
-                            </button>
-                          ))}
+                          {filteredPhones.length > 0 ? (
+                            filteredPhones.map(p => (
+                              <button
+                                key={p.id}
+                                onClick={() => addPhone(p.id)}
+                                className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-colors"
+                              >
+                                {p.model}
+                              </button>
+                            ))
+                          ) : (
+                            <p className="text-[10px] text-center py-4">No {activeCategory} found</p>
+                          )}
                         </div>
                         <button 
                           onClick={() => setIsAdding(false)}
@@ -142,7 +168,7 @@ export default function ComparisonTool() {
                         <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
                           <Plus className="h-6 w-6" />
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest">Add Device</span>
+                        <span className="text-xs font-black uppercase tracking-widest">Add {activeCategory.slice(0, -1)}</span>
                       </button>
                     )}
                   </div>
@@ -168,7 +194,7 @@ function SpecValue({ value, mobileLabel }: { value: string, mobileLabel: string 
   return (
     <div className="min-h-12 flex flex-col justify-center">
       <span className="md:hidden text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">{mobileLabel}</span>
-      <span className="text-sm text-slate-500 font-medium leading-snug">{value}</span>
+      <span className="text-sm text-slate-500 font-medium leading-snug line-clamp-2">{value}</span>
     </div>
   );
 }
