@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-brand-primary: #0f172a; /* slate-900 */
+  --color-brand-secondary: #2563eb; /* blue-600 */
+  --color-brand-muted: #94a3b8; /* slate-400 */
+  --color-brand-border: #e2e8f0; /* slate-200 */
+  --color-brand-bg: #f8fafc; /* slate-50 */
+  --color-neon-blue: #0ea5e9;
+  --color-neon-purple: #a855f7;
+}
+
+@layer base {
+  body {
+    @apply font-sans antialiased bg-brand-bg text-brand-primary selection:bg-brand-secondary/20;
+  }
+}
+
+.glass-card {
+  @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-2xl;
+}
+
+.neon-glow {
+  @apply shadow-[0_0_20px_rgba(37,99,235,0.15)] hover:shadow-[0_0_30px_rgba(37,99,235,0.3)];
+}
+
+.product-card {
+  @apply bg-white border border-brand-border rounded-[40px] p-6 transition-all duration-500 hover:border-brand-secondary/50 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] hover:-translate-y-1;
+}
+
+.btn-primary {
+  @apply bg-slate-900 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-900/10;
+}
+
+.btn-icon {
+  @apply h-10 w-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all text-slate-600 active:scale-90;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
