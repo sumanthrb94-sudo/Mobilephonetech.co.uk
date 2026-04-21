@@ -51,7 +51,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-slate-900">Shopping Cart</h2>
-                  <p className="text-xs text-slate-400 font-bold">{items.length} items</p>
+                  <p className="text-xs text-slate-400 font-bold">{items.reduce((acc, item) => acc + item.quantity, 0)} items</p>
                 </div>
               </div>
               <button
