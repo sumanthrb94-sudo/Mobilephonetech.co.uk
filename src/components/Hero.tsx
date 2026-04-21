@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { ArrowRight, ShieldCheck, Zap, Globe, Sparkles } from 'lucide-react';
+import { ArrowRight, Globe } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Hero() {
   return (
@@ -30,10 +31,13 @@ export default function Hero() {
                 From the latest iPhones and MagSafe accessories to high-performance Mac Minis and expert-certified tech. A dedicated destination for the mobile ecosystem.
               </p>
               <div className="mt-14 flex flex-col sm:flex-row sm:justify-center gap-6">
-                <button className="btn-primary flex items-center justify-center gap-3 px-10 py-5 text-xl tracking-tight shadow-2xl shadow-blue-600/20 active:scale-95 group">
+                <a 
+                  href="#products"
+                  className="bg-blue-600 text-white rounded-full flex items-center justify-center gap-3 px-10 py-5 text-xl font-bold tracking-tight shadow-2xl shadow-blue-600/20 active:scale-95 group transition-all hover:bg-blue-500"
+                >
                   Explore Collection
                   <ArrowRight className="h-6 w-6 transition-transform group-hover:translate-x-1" />
-                </button>
+                </a>
                 <button className="rounded-full border border-slate-200 bg-white/50 backdrop-blur-md px-10 py-5 text-xl font-bold text-slate-900 hover:bg-slate-50 transition-all active:scale-95">
                   Sell Your Tech
                 </button>
@@ -64,7 +68,12 @@ export default function Hero() {
                     <span className="text-slate-400 line-through text-2xl font-bold italic">£999</span>
                   </div>
                   <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                    <button className="bg-slate-900 text-white rounded-2xl px-8 py-5 font-black uppercase tracking-widest text-xs hover:bg-blue-600 transition-all hover:scale-105 active:scale-95">Add to Bag</button>
+                    <Link 
+                      to="/product/1"
+                      className="bg-slate-900 text-white rounded-2xl px-8 py-5 font-black uppercase tracking-widest text-xs hover:bg-blue-600 transition-all hover:scale-105 active:scale-95 text-center"
+                    >
+                      View Details
+                    </Link>
                     <button 
                       onClick={() => document.getElementById('compare')?.scrollIntoView({ behavior: 'smooth' })}
                       className="bg-slate-50 text-slate-900 rounded-2xl px-8 py-5 font-black uppercase tracking-widest text-xs hover:bg-slate-100 transition-all"

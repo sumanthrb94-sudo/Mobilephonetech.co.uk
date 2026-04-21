@@ -1,4 +1,5 @@
 import { Facebook, Twitter, Instagram, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
@@ -7,21 +8,23 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16 px-4">
           <div>
             <div className="flex items-center gap-2 mb-6">
-              <span className="text-2xl font-black tracking-tighter text-blue-600">
-                MOBILEWORLD<span className="text-slate-400">.com</span>
-              </span>
+              <Link to="/" className="flex items-center gap-2">
+                <span className="text-2xl font-black tracking-tighter text-blue-600">
+                  MOBILEWORLD<span className="text-slate-400">.com</span>
+                </span>
+              </Link>
             </div>
             <p className="text-slate-500 text-sm leading-relaxed mb-6">
               A global store for certified technology and accessories. Trusted by over 1.2M customers.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="btn-icon bg-slate-100 hover:bg-blue-600 hover:text-white">
+              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-blue-600 hover:text-white transition-all">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="btn-icon bg-slate-100 hover:bg-blue-600 hover:text-white">
+              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-blue-600 hover:text-white transition-all">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="btn-icon bg-slate-100 hover:bg-blue-600 hover:text-white">
+              <a href="#" className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-100 hover:bg-blue-600 hover:text-white transition-all">
                 <Facebook className="h-5 w-5" />
               </a>
             </div>
@@ -30,10 +33,10 @@ export default function Footer() {
           <div>
             <h4 className="font-bold text-slate-900 text-lg mb-6">Categories</h4>
             <ul className="space-y-4 text-slate-500 text-sm font-medium">
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Refurbished iPhones</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Samsung Galaxy</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Google Pixel</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition-colors">Sell Your Phone</a></li>
+              <li><Link to="/#products" className="hover:text-blue-600 transition-colors">Refurbished iPhones</Link></li>
+              <li><Link to="/#products" className="hover:text-blue-600 transition-colors">Samsung Galaxy</Link></li>
+              <li><Link to="/#products" className="hover:text-blue-600 transition-colors">Google Pixel</Link></li>
+              <li><Link to="/#products" className="hover:text-blue-600 transition-colors">Sell Your Phone</Link></li>
             </ul>
           </div>
 

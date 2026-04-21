@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { MOCK_PHONES, MOCK_CATEGORIES } from '../data';
+import { MOCK_PHONES } from '../data';
 import { Phone } from '../types';
-import { X, Plus, Search, Scale, Filter } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { X, Plus, Search, Scale } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function ComparisonTool() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -117,9 +117,12 @@ export default function ComparisonTool() {
                       <SpecValue value={phone.specs.os || 'N/A'} mobileLabel="OS" />
                       <div className="pt-4 border-t border-slate-50">
                         <span className="text-2xl font-black text-slate-900">£{phone.price}</span>
-                        <button className="w-full mt-4 bg-slate-900 text-white rounded-xl py-3 text-sm font-bold hover:bg-blue-600 transition-colors">
+                        <Link 
+                          to={`/product/${phone.id}`}
+                          className="block w-full text-center mt-4 bg-slate-900 text-white rounded-xl py-3 text-sm font-bold hover:bg-blue-600 transition-colors"
+                        >
                           View Details
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </>

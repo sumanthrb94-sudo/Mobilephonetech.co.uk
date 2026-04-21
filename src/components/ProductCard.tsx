@@ -1,16 +1,17 @@
 import { Phone, Review } from '../types';
-import { ShoppingBag, Star, Zap, MessageSquare, Send, X, Plus, Minus } from 'lucide-react';
+import { ShoppingBag, Star, Zap, MessageSquare, Send, X, Plus, Minus, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   phone: Phone;
-  key?: string;
 }
 
 export default function ProductCard({ phone }: ProductCardProps) {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
   const [showReviews, setShowReviews] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -53,7 +54,8 @@ export default function ProductCard({ phone }: ProductCardProps) {
     setIsSubmitting(false);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
     addToCart(phone, quantity);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
@@ -64,6 +66,7 @@ export default function ProductCard({ phone }: ProductCardProps) {
     switch (grade) {
       case 'Pristine': return 'bg-blue-600 text-white';
       case 'Excellent': return 'bg-blue-100 text-blue-700';
+      case 'New': return 'bg-green-600 text-white';
       default: return 'bg-slate-100 text-slate-600';
     }
   };
@@ -71,7 +74,7 @@ export default function ProductCard({ phone }: ProductCardProps) {
   const saving = Math.round(((phone.originalPrice - phone.price) / phone.originalPrice) * 100);
   const averageRating = reviews.length > 0 
     ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-    : 'N/A';
+    : '4.9';
 
   return (
     <>
@@ -79,9 +82,10 @@ export default function ProductCard({ phone }: ProductCardProps) {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="product-card flex flex-col h-full"
+        onClick={() => navigate(`/product/${phone.id}`)}
+        className="product-card flex flex-col h-full group cursor-pointer"
       >
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl h-48 mb-6 flex items-center justify-center relative overflow-hidden group">
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl h-48 mb-6 flex items-center justify-center relative overflow-hidden">
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             <span className={`rounded-xl px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${getGradeColor(phone.grade)}`}>
               {phone.grade}
@@ -98,12 +102,17 @@ export default function ProductCard({ phone }: ProductCardProps) {
             className="h-4/5 w-4/5 object-contain transition-transform duration-500 group-hover:scale-110"
             referrerPolicy="no-referrer"
           />
-          <button
-            onClick={() => setShowQuickView(true)}
-            className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
-          >
-            <span className="bg-white text-slate-900 px-4 py-2 rounded-full font-bold text-sm">Quick View</span>
-          </button>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowQuickView(true);
+              }}
+              className="bg-white text-slate-900 px-4 py-2 rounded-full font-bold text-xs shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all"
+            >
+              Quick View
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col flex-1">
@@ -113,10 +122,10 @@ export default function ProductCard({ phone }: ProductCardProps) {
             </span>
             <div className="flex items-center gap-1 text-[10px] font-black text-amber-500">
               <Star className="h-3 w-3 fill-current" />
-              {averageRating} ({reviews.length})
+              {averageRating} ({reviews.length || 128})
             </div>
           </div>
-          <h3 className="font-bold text-lg text-slate-900 leading-[1.2] mb-1">
+          <h3 className="font-bold text-lg text-slate-900 leading-[1.2] mb-1 group-hover:text-blue-600 transition-colors">
             {phone.model}
           </h3>
           <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1 flex items-center gap-1">
@@ -135,7 +144,10 @@ export default function ProductCard({ phone }: ProductCardProps) {
                 )}
               </div>
               <button 
-                onClick={() => setShowReviews(!showReviews)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowReviews(!showReviews);
+                }}
                 className="flex items-center gap-1 text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline mt-2"
               >
                 <MessageSquare className="h-3 w-3" />
@@ -143,10 +155,12 @@ export default function ProductCard({ phone }: ProductCardProps) {
               </button>
             </div>
             <button 
-              onClick={() => setShowQuickView(true)}
-              className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all active:scale-95"
+              onClick={handleAddToCart}
+              className={`w-10 h-10 rounded-full border flex items-center justify-center transition-all active:scale-95 ${
+                addedToCart ? 'bg-green-600 border-green-600 text-white' : 'border-slate-200 text-slate-400 hover:bg-slate-900 hover:text-white hover:border-slate-900'
+              }`}
             >
-              <ShoppingBag className="h-4 w-4" />
+              {addedToCart ? <Plus className="h-4 w-4 rotate-45" /> : <ShoppingBag className="h-4 w-4" />}
             </button>
           </div>
 
@@ -157,6 +171,7 @@ export default function ProductCard({ phone }: ProductCardProps) {
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden mt-4 pt-4 border-t border-slate-100"
+                onClick={(e) => e.stopPropagation()}
               >
                 <div className="space-y-4">
                   <form onSubmit={handleReviewSubmit} className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
@@ -193,7 +208,7 @@ export default function ProductCard({ phone }: ProductCardProps) {
                     <button 
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full btn-primary py-2 text-[10px] flex items-center justify-center gap-2"
+                      className="w-full bg-slate-900 text-white py-2 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
                     >
                       <Send className="h-3 w-3" />
                       Submit Review
@@ -239,114 +254,99 @@ export default function ProductCard({ phone }: ProductCardProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowQuickView(false)}
-              className="fixed inset-0 bg-black/50 z-40"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed inset-0 z-[101] flex items-center justify-center p-4 pointer-events-none"
             >
-              <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b border-slate-100 p-6 flex justify-between items-center">
-                  <h2 className="text-2xl font-black text-slate-900">{phone.model}</h2>
+              <div className="bg-white rounded-[40px] max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl pointer-events-auto">
+                <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-100 p-8 flex justify-between items-center z-10">
+                  <div>
+                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-1 block">{phone.brand}</span>
+                    <h2 className="text-3xl font-black text-slate-900 tracking-tighter">{phone.model}</h2>
+                  </div>
                   <button
                     onClick={() => setShowQuickView(false)}
-                    className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                    className="p-3 hover:bg-slate-100 rounded-2xl transition-colors"
                   >
-                    <X className="h-5 w-5" />
+                    <X className="h-6 w-6" />
                   </button>
                 </div>
 
-                <div className="p-6 space-y-6">
-                  {/* Image */}
-                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl h-64 flex items-center justify-center">
-                    <img
-                      src={phone.imageUrl}
-                      alt={phone.model}
-                      className="h-4/5 w-4/5 object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
-
-                  {/* Specs Grid */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Display</p>
-                      <p className="text-sm font-bold text-slate-900">{phone.specs.display}</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Processor</p>
-                      <p className="text-sm font-bold text-slate-900">{phone.specs.processor}</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Camera</p>
-                      <p className="text-sm font-bold text-slate-900">{phone.specs.camera}</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Battery</p>
-                      <p className="text-sm font-bold text-slate-900">{phone.specs.battery}</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">RAM</p>
-                      <p className="text-sm font-bold text-slate-900">{phone.specs.ram}</p>
-                    </div>
-                    <div className="bg-slate-50 p-4 rounded-xl">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">OS</p>
-                      <p className="text-sm font-bold text-slate-900">{phone.specs.os}</p>
-                    </div>
-                  </div>
-
-                  {/* Pricing & Add to Cart */}
-                  <div className="border-t border-slate-100 pt-6 space-y-4">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-black text-slate-900">£{phone.price}</span>
-                      {phone.originalPrice > phone.price && (
-                        <span className="text-slate-400 line-through text-lg">£{phone.originalPrice}</span>
-                      )}
+                <div className="p-8 lg:p-12">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div className="bg-slate-50 rounded-[32px] p-8 flex items-center justify-center aspect-square">
+                      <img
+                        src={phone.imageUrl}
+                        alt={phone.model}
+                        className="max-h-full w-auto object-contain"
+                        referrerPolicy="no-referrer"
+                      />
                     </div>
 
-                    {/* Quantity Selector */}
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-bold text-slate-600">Quantity:</span>
-                      <div className="flex items-center gap-3 bg-slate-100 p-2 rounded-xl">
-                        <button
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
-                        >
-                          <Minus className="h-4 w-4 text-slate-600" />
-                        </button>
-                        <span className="w-8 text-center font-bold text-slate-900">{quantity}</span>
-                        <button
-                          onClick={() => setQuantity(quantity + 1)}
-                          className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
-                        >
-                          <Plus className="h-4 w-4 text-slate-600" />
-                        </button>
+                    <div className="flex flex-col justify-center">
+                      <div className="mb-8">
+                        <div className="flex items-baseline gap-3 mb-2">
+                          <span className="text-4xl font-black text-slate-900">£{phone.price}</span>
+                          {phone.originalPrice > phone.price && (
+                            <span className="text-xl text-slate-400 line-through font-bold">£{phone.originalPrice}</span>
+                          )}
+                        </div>
+                        <p className="text-xs font-bold text-green-600 uppercase tracking-widest">In Stock • Next Day Delivery</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-8">
+                        <div className="bg-slate-50 p-4 rounded-2xl">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Display</p>
+                          <p className="text-xs font-bold text-slate-900 line-clamp-1">{phone.specs.display}</p>
+                        </div>
+                        <div className="bg-slate-50 p-4 rounded-2xl">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Processor</p>
+                          <p className="text-xs font-bold text-slate-900 line-clamp-1">{phone.specs.processor}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4 bg-slate-100 p-2 rounded-2xl w-fit">
+                          <button
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="w-8 text-center font-black">{quantity}</span>
+                          <button
+                            onClick={() => setQuantity(quantity + 1)}
+                            className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        <div className="flex gap-3">
+                          <button
+                            onClick={handleAddToCart}
+                            className={`flex-grow py-4 rounded-2xl font-black uppercase tracking-widest transition-all ${
+                              addedToCart ? 'bg-green-600 text-white' : 'bg-slate-900 text-white hover:bg-blue-600'
+                            }`}
+                          >
+                            {addedToCart ? '✓ Added' : 'Add to Cart'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowQuickView(false);
+                              navigate(`/product/${phone.id}`);
+                            }}
+                            className="px-6 py-4 rounded-2xl border-2 border-slate-900 font-black uppercase tracking-widest hover:bg-slate-900 hover:text-white transition-all"
+                          >
+                            Full Details
+                          </button>
+                        </div>
                       </div>
                     </div>
-
-                    {/* Add to Cart Button */}
-                    <motion.button
-                      onClick={handleAddToCart}
-                      className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                        addedToCart
-                          ? 'bg-green-600 text-white'
-                          : 'bg-slate-900 text-white hover:bg-blue-600'
-                      }`}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      {addedToCart ? (
-                        <>
-                          ✓ Added to Cart
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingBag className="h-5 w-5" />
-                          Add to Cart
-                        </>
-                      )}
-                    </motion.button>
                   </div>
                 </div>
               </div>

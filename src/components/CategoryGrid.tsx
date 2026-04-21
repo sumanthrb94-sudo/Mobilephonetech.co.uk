@@ -1,5 +1,4 @@
 import { motion } from 'motion/react';
-import { MOCK_CATEGORIES } from '../data';
 
 const CATEGORIES = [
   { id: 'phones', name: 'Smartphones', count: '10+ Models', image: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=800&auto=format&fit=crop' },
@@ -9,6 +8,15 @@ const CATEGORIES = [
 ];
 
 export default function CategoryGrid() {
+  const handleCategoryClick = (id: string) => {
+    if (id === 'phones') {
+      const productsSection = document.getElementById('products');
+      if (productsSection) {
+        productsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <section className="py-24 bg-white border-b border-slate-100" id="categories">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -17,7 +25,12 @@ export default function CategoryGrid() {
             <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 mb-2">Our Catalog</h2>
             <h3 className="text-4xl font-black tracking-tighter text-slate-900 leading-none">Departments.</h3>
           </div>
-          <button className="text-sm font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors">View All Departments →</button>
+          <button 
+            onClick={() => handleCategoryClick('phones')}
+            className="text-sm font-black uppercase tracking-widest text-slate-400 hover:text-blue-600 transition-colors"
+          >
+            View All Departments →
+          </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {CATEGORIES.map((cat, i) => (
@@ -27,6 +40,7 @@ export default function CategoryGrid() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
+              onClick={() => handleCategoryClick(cat.id)}
               className="group relative h-64 overflow-hidden rounded-[32px] bg-slate-50 border border-slate-100 cursor-pointer shadow-sm hover:border-blue-600/30 transition-all hover:shadow-xl hover:-translate-y-1"
             >
               <img
