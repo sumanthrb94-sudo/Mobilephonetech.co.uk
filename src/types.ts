@@ -11,6 +11,7 @@ export interface ProductSpecs {
   compatibilty?: string;
   type?: string;
   ports?: string;
+  storage?: string;
 }
 
 export interface Review {
