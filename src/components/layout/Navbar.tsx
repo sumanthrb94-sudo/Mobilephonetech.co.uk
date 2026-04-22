@@ -124,7 +124,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
           >
             {/* ── Mobile hamburger ── */}
             <button
-              onClick={onMenuClick}
+              onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden flex items-center justify-center rounded-lg"
               style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }}
               aria-label="Open menu"

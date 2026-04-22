@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Star, ThumbsUp, MessageCircle } from 'lucide-react';
 import { Review } from '../types';
 import { motion } from 'motion/react';
+import { sanitizeUserInput } from '../utils/sanitize';
+import { useUI } from '../context/UIContext';
 
 interface ReviewsSectionProps {
   productId: string;
@@ -10,6 +12,7 @@ interface ReviewsSectionProps {
 }
 
 export default function ReviewsSection({ productId, reviews = [], onAddReview }: ReviewsSectionProps) {
+  const { showToast } = useUI();
   const [isWritingReview, setIsWritingReview] = useState(false);
   const [formData, setFormData] = useState({
     rating: 5,
@@ -28,15 +31,21 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
 
   const handleSubmitReview = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.comment.trim() && formData.userName.trim()) {
+    const sanitizedName = sanitizeUserInput(formData.userName);
+    const sanitizedComment = sanitizeUserInput(formData.comment);
+
+    if (sanitizedComment.trim() && sanitizedName.trim()) {
       onAddReview?.({
         productId,
         rating: formData.rating,
-        comment: formData.comment,
-        userName: formData.userName,
+        comment: sanitizedComment,
+        userName: sanitizedName,
       });
       setFormData({ rating: 5, comment: '', userName: '' });
       setIsWritingReview(false);
+      showToast('Thank you for your review!', 'success');
+    } else {
+      showToast('Please fill in all fields', 'warning');
     }
   };
 

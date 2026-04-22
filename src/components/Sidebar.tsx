@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { X, BarChart3, ShoppingBag, Home, Zap, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_CATEGORIES } from '../data';
+import { useUI } from '../context/UIContext';
 
-interface SidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function Sidebar() {
+  const { isSidebarOpen, setIsSidebarOpen } = useUI();
+  const isOpen = isSidebarOpen;
+  const onClose = () => setIsSidebarOpen(false);
   const [expandedCategory, setExpandedCategory] = React.useState<string | null>(null);
 
   return (
@@ -37,7 +36,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="sticky top-0 bg-white border-b border-slate-100 p-6 flex justify-between items-center">
               <h2 className="text-lg font-black uppercase tracking-widest text-slate-900">Menu</h2>
               <button
-                onClick={onClose}
+                onClick={() => setIsSidebarOpen(false)}
                 className="p-2 hover:bg-slate-100 rounded-full transition-colors"
               >
                 <X size={24} />

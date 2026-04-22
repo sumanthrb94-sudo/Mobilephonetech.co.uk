@@ -18,6 +18,8 @@ import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
+import { UIProvider } from './context/UIContext';
+import Toast from './components/Toast';
 
 // Lazy load pages for performance
 const ProductDetail = lazy(() => import('./components/ProductDetail'));
@@ -83,7 +85,6 @@ function HomePage() {
 
 function AppContent() {
   const { isCartOpen, setIsCartOpen } = useCart();
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
     <div
@@ -98,11 +99,10 @@ function AppContent() {
       {/* Fixed header (64px) + Category nav (48px) = 112px */}
       <Navbar
         onCartClick={() => setIsCartOpen(true)}
-        onMenuClick={() => setIsSidebarOpen(true)}
       />
 
       {/* Sidebar (mobile alternative to category nav) */}
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar />
 
       {/*
         Main content — offset by nav height.
@@ -161,6 +161,7 @@ function AppContent() {
       <Suspense fallback={null}>
         <AIAssistant />
       </Suspense>
+      <Toast />
       <CookieBanner />
       <Footer />
     </div>
@@ -170,17 +171,19 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <AuthProvider>
-        <CartProvider>
-          <SearchProvider>
-            <CheckoutProvider>
-              <WishlistProvider>
-                <AppContent />
-              </WishlistProvider>
-            </CheckoutProvider>
-          </SearchProvider>
-        </CartProvider>
-      </AuthProvider>
+      <UIProvider>
+        <AuthProvider>
+          <CartProvider>
+            <SearchProvider>
+              <CheckoutProvider>
+                <WishlistProvider>
+                  <AppContent />
+                </WishlistProvider>
+              </CheckoutProvider>
+            </SearchProvider>
+          </CartProvider>
+        </AuthProvider>
+      </UIProvider>
     </Router>
   );
 }

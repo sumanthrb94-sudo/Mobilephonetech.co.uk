@@ -4,6 +4,7 @@ import { ShoppingBag, Battery, ShieldCheck, Heart, Star } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useUI } from '../context/UIContext';
 import { motion } from 'motion/react';
 
 /**
@@ -30,6 +31,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { showToast } = useUI();
   const [added, setAdded] = React.useState(false);
   const inWishlist = isInWishlist(phone.id);
 
@@ -38,13 +40,20 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
   const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
-    inWishlist ? removeFromWishlist(phone.id) : addToWishlist(phone);
+    if (inWishlist) {
+      removeFromWishlist(phone.id);
+      showToast('Removed from wishlist', 'info');
+    } else {
+      addToWishlist(phone);
+      showToast('Added to wishlist', 'success');
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     addToCart(phone, 1);
     setAdded(true);
+    showToast(`${phone.model} added to cart`, 'success');
     setTimeout(() => setAdded(false), 1200);
   };
 
