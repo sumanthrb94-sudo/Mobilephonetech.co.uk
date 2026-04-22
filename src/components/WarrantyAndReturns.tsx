@@ -17,7 +17,7 @@ export default function WarrantyAndReturns() {
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: 'var(--black)', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '20px' }}>
             Warranty & Returns
           </h2>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '17px', color: 'var(--grey-50)', maxW: '640px', margin: '0 auto', lineHeight: 1.6 }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '17px', color: 'var(--grey-50)', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6 }}>
             Shop with total confidence. Our comprehensive protection and returns policy ensure your satisfaction is guaranteed.
           </p>
         </div>
