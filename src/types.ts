@@ -1,5 +1,18 @@
 export type ProductGrade = 'Pristine' | 'Excellent' | 'Good' | 'Fair' | 'New';
 
+export interface ProductVariant {
+  id: string;
+  color?: string;
+  storage?: string;
+  condition?: ProductGrade;
+  price: number;
+  originalPrice: number;
+  stock: number;
+  batteryHealth?: number;
+  imageUrl?: string;
+  galleryImages?: string[];
+}
+
 export interface ProductSpecs {
   display?: string;
   processor?: string;
@@ -43,6 +56,10 @@ export interface Product {
   description?: string;
   reviews?: Review[];
   conditionDescription?: string; // Added for clarity
+  variants?: ProductVariant[]; // Product variant support
+  colorOptions?: string[];
+  storageOptions?: string[];
+  conditionOptions?: ProductGrade[];
 }
 
 export type Phone = Product; 
@@ -51,6 +68,17 @@ export interface Category {
   id: string;
   name: string;
   imageUrl: string;
+  parent?: string; // Parent category ID for nested structure
+  children?: Category[]; // Subcategories
+  description?: string;
+  productCount?: number;
+}
+
+export interface DeliveryPromise {
+  date: string; // ISO date string
+  time?: string; // e.g., "by 9pm"
+  label: string; // e.g., "Get it by Tomorrow"
+  confidence: 'high' | 'medium' | 'low';
 }
 
 export interface FilterState {

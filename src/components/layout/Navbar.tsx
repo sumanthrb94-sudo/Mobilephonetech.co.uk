@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthModal from '../AuthModal';
+import MegaMenu from '../MegaMenu';
 
 interface NavbarProps {
   onCartClick?: () => void;
@@ -17,6 +18,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const { user, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,7 +32,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
   const navLinks = [
     { name: 'Phones', href: isHome ? '#products' : '/#products' },
-    { name: 'Categories', href: isHome ? '#categories' : '/#categories' },
+    { name: 'Categories', href: '#', onClick: () => setIsMegaMenuOpen(!isMegaMenuOpen) },
     { name: 'Compare', href: isHome ? '#compare' : '/#compare' },
   ];
 
@@ -50,14 +52,23 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 MOBILEWORLD<span className="text-slate-400">.com</span>
               </span>
             </Link>
-            <div className="hidden lg:flex gap-6 text-[10px] font-black uppercase tracking-widest text-slate-500">
+            <div className="hidden lg:flex gap-6 text-[10px] font-black uppercase tracking-widest text-slate-500 relative">
               {navLinks.map((link) => (
-                link.href.startsWith('#') ? (
+                link.name === 'Categories' ? (
+                  <button
+                    key={link.name}
+                    onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
+                    className="hover:text-blue-600 transition-colors"
+                  >
+                    {link.name}
+                  </button>
+                ) : link.href.startsWith('#') ? (
                   <a key={link.name} href={link.href} className="hover:text-blue-600 transition-colors">{link.name}</a>
                 ) : (
                   <Link key={link.name} to={link.href} className="hover:text-blue-600 transition-colors">{link.name}</Link>
                 )
               ))}
+              <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
             </div>
           </div>
 
@@ -147,7 +158,18 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             >
               <div className="space-y-1">
                 {navLinks.map((link) => (
-                  link.href.startsWith('#') ? (
+                  link.name === 'Categories' ? (
+                    <button
+                      key={link.name}
+                      onClick={() => {
+                        setIsMegaMenuOpen(!isMegaMenuOpen);
+                        setIsMenuOpen(false);
+                      }}
+                      className="block w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-sm font-bold text-slate-900 transition-colors"
+                    >
+                      {link.name}
+                    </button>
+                  ) : link.href.startsWith('#') ? (
                     <a 
                       key={link.name} 
                       href={link.href} 

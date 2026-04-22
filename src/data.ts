@@ -28,7 +28,52 @@ export const MOCK_PHONES: Product[] = [
       ram: '8GB',
       os: 'iOS 17',
       storage: '256GB'
-    }
+    },
+    colorOptions: ['Space Black', 'Gold', 'Silver', 'Deep Purple'],
+    storageOptions: ['256GB', '512GB', '1TB'],
+    conditionOptions: ['Pristine', 'Excellent'],
+    variants: [
+      {
+        id: '1-sb-256-pristine',
+        color: 'Space Black',
+        storage: '256GB',
+        condition: 'Pristine',
+        price: 849,
+        originalPrice: 1199,
+        stock: 5,
+        batteryHealth: 98,
+      },
+      {
+        id: '1-sb-512-pristine',
+        color: 'Space Black',
+        storage: '512GB',
+        condition: 'Pristine',
+        price: 949,
+        originalPrice: 1299,
+        stock: 3,
+        batteryHealth: 98,
+      },
+      {
+        id: '1-gold-256-pristine',
+        color: 'Gold',
+        storage: '256GB',
+        condition: 'Pristine',
+        price: 849,
+        originalPrice: 1199,
+        stock: 2,
+        batteryHealth: 98,
+      },
+      {
+        id: '1-sb-256-excellent',
+        color: 'Space Black',
+        storage: '256GB',
+        condition: 'Excellent',
+        price: 749,
+        originalPrice: 1099,
+        stock: 4,
+        batteryHealth: 95,
+      },
+    ]
   },
   {
     id: '2',
@@ -53,7 +98,42 @@ export const MOCK_PHONES: Product[] = [
       ram: '6GB',
       os: 'iOS 16',
       storage: '128GB'
-    }
+    },
+    colorOptions: ['Space Black', 'Silver', 'Gold'],
+    storageOptions: ['128GB', '256GB'],
+    conditionOptions: ['Excellent', 'Good'],
+    variants: [
+      {
+        id: '2-sb-128-excellent',
+        color: 'Space Black',
+        storage: '128GB',
+        condition: 'Excellent',
+        price: 629,
+        originalPrice: 999,
+        stock: 8,
+        batteryHealth: 92,
+      },
+      {
+        id: '2-sb-256-excellent',
+        color: 'Space Black',
+        storage: '256GB',
+        condition: 'Excellent',
+        price: 699,
+        originalPrice: 1099,
+        stock: 4,
+        batteryHealth: 92,
+      },
+      {
+        id: '2-silver-128-good',
+        color: 'Silver',
+        storage: '128GB',
+        condition: 'Good',
+        price: 549,
+        originalPrice: 899,
+        stock: 6,
+        batteryHealth: 88,
+      },
+    ]
   },
   {
     id: '3',
@@ -78,7 +158,22 @@ export const MOCK_PHONES: Product[] = [
       ram: '4GB',
       os: 'iOS 15',
       storage: '128GB'
-    }
+    },
+    colorOptions: ['Midnight', 'Starlight', 'Blue'],
+    storageOptions: ['128GB'],
+    conditionOptions: ['Good'],
+    variants: [
+      {
+        id: '3-midnight-128-good',
+        color: 'Midnight',
+        storage: '128GB',
+        condition: 'Good',
+        price: 399,
+        originalPrice: 749,
+        stock: 20,
+        batteryHealth: 88,
+      },
+    ]
   },
   {
     id: '4',
@@ -103,14 +198,136 @@ export const MOCK_PHONES: Product[] = [
       ram: '6GB',
       os: 'iOS 14',
       storage: '128GB'
-    }
+    },
+    colorOptions: ['Pacific Blue', 'Gold', 'Silver'],
+    storageOptions: ['128GB', '256GB'],
+    conditionOptions: ['Excellent'],
+    variants: [
+      {
+        id: '4-pb-128-excellent',
+        color: 'Pacific Blue',
+        storage: '128GB',
+        condition: 'Excellent',
+        price: 349,
+        originalPrice: 899,
+        stock: 8,
+        batteryHealth: 90,
+      },
+    ]
   }
 ];
 
+/**
+ * Enhanced category structure with nested hierarchy
+ * Supports mega-menu navigation and product discovery
+ */
 export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'phones',
-    name: 'Refurbished iPhones',
-    imageUrl: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=800&auto=format&fit=crop'
-  }
+    name: 'Smartphones',
+    imageUrl: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=800&auto=format&fit=crop',
+    description: 'Refurbished and certified smartphones from top brands',
+    productCount: 10,
+    children: [
+      {
+        id: 'phones-apple',
+        name: 'Apple iPhones',
+        imageUrl: 'https://images.unsplash.com/photo-1592286927505-1fed6c3d8b26?q=80&w=800&auto=format&fit=crop',
+        parent: 'phones',
+        description: 'Latest and classic iPhone models',
+        productCount: 4,
+      },
+      {
+        id: 'phones-samsung',
+        name: 'Samsung Galaxy',
+        imageUrl: 'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
+        parent: 'phones',
+        description: 'Premium Samsung smartphones',
+        productCount: 0,
+      },
+      {
+        id: 'phones-google',
+        name: 'Google Pixel',
+        imageUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=800&auto=format&fit=crop',
+        parent: 'phones',
+        description: 'Google Pixel devices',
+        productCount: 0,
+      },
+    ]
+  },
+  {
+    id: 'computing',
+    name: 'Mac & Computing',
+    imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=800&auto=format&fit=crop',
+    description: 'Refurbished MacBooks and computing devices',
+    productCount: 0,
+    children: [
+      {
+        id: 'computing-macbooks',
+        name: 'MacBooks',
+        imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop',
+        parent: 'computing',
+        description: 'MacBook Pro, Air, and more',
+        productCount: 0,
+      },
+      {
+        id: 'computing-imac',
+        name: 'iMac & Mac Mini',
+        imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=800&auto=format&fit=crop',
+        parent: 'computing',
+        description: 'Desktop Mac computers',
+        productCount: 0,
+      },
+    ]
+  },
+  {
+    id: 'accessories',
+    name: 'Accessories',
+    imageUrl: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=800&auto=format&fit=crop',
+    description: 'Phone cases, chargers, and accessories',
+    productCount: 0,
+    children: [
+      {
+        id: 'accessories-cases',
+        name: 'Cases & Covers',
+        imageUrl: 'https://images.unsplash.com/photo-1592286927505-1fed6c3d8b26?q=80&w=800&auto=format&fit=crop',
+        parent: 'accessories',
+        description: 'Protective cases for all devices',
+        productCount: 0,
+      },
+      {
+        id: 'accessories-chargers',
+        name: 'Chargers & Cables',
+        imageUrl: 'https://images.unsplash.com/photo-1625948515291-69613efd103f?q=80&w=800&auto=format&fit=crop',
+        parent: 'accessories',
+        description: 'Charging solutions',
+        productCount: 0,
+      },
+    ]
+  },
+  {
+    id: 'audio',
+    name: 'Audio & Sound',
+    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop',
+    description: 'Headphones, speakers, and audio devices',
+    productCount: 0,
+    children: [
+      {
+        id: 'audio-headphones',
+        name: 'Headphones',
+        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop',
+        parent: 'audio',
+        description: 'Premium audio headphones',
+        productCount: 0,
+      },
+      {
+        id: 'audio-speakers',
+        name: 'Speakers',
+        imageUrl: 'https://images.unsplash.com/photo-1589003077984-894e133814c9?q=80&w=800&auto=format&fit=crop',
+        parent: 'audio',
+        description: 'Bluetooth and wireless speakers',
+        productCount: 0,
+      },
+    ]
+  },
 ];

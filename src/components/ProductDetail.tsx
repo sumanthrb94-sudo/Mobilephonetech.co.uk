@@ -18,18 +18,27 @@ import { useCart } from '../context/CartContext';
 import { motion } from 'motion/react';
 import ReviewsSection from './ReviewsSection';
 import RelatedProductsSection from './RelatedProductsSection';
+import VariantSelector from './VariantSelector';
+import DeliveryPromiseComponent from './DeliveryPromise';
+import { ProductVariant } from '../types';
 
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const [quantity, setQuantity] = React.useState(1);
+  const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
+  const [postalCode, setPostalCode] = React.useState('SW1A 1AA');
 
   const phone = MOCK_PHONES.find(p => p.id === id);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    // Initialize with first variant if available
+    if (phone?.variants && phone.variants.length > 0) {
+      setSelectedVariant(phone.variants[0]);
+    }
+  }, [phone?.id]);
 
   if (!phone) {
     return (
@@ -47,7 +56,29 @@ export default function ProductDetail() {
     );
   }
 
-  const savings = phone.originalPrice - phone.price;
+  // Use variant price if available, otherwise use product price
+  const displayPrice = selectedVariant?.price ?? phone.price;
+  const displayOriginalPrice = selectedVariant?.originalPrice ?? phone.originalPrice;
+  const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone.batteryHealth;
+  const displayStock = selectedVariant?.stock ?? phone.stock;
+  const savings = displayOriginalPrice - displayPrice;
+
+  const handleAddToCart = () => {
+    if (selectedVariant) {
+      // Create a variant-aware product for cart
+      const cartProduct = {
+        ...phone,
+        ...selectedVariant,
+        price: selectedVariant.price,
+        originalPrice: selectedVariant.originalPrice,
+        stock: selectedVariant.stock,
+        batteryHealth: selectedVariant.batteryHealth ?? phone.batteryHealth,
+      };
+      addToCart(cartProduct, quantity);
+    } else {
+      addToCart(phone, quantity);
+    }
+  };
 
   return (
     <div className="pt-24 pb-20 bg-white">
@@ -68,17 +99,17 @@ export default function ProductDetail() {
               className="bg-slate-50 rounded-[3rem] p-12 aspect-square flex items-center justify-center relative overflow-hidden"
             >
               <img 
-                src={phone.imageUrl} 
+                src={selectedVariant?.imageUrl || phone.imageUrl} 
                 alt={phone.model} 
                 className="max-h-full object-contain mix-blend-multiply"
               />
               <div className="absolute top-8 left-8 bg-white px-4 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-sm border border-slate-100">
-                {phone.grade} Condition
+                {selectedVariant?.condition || phone.grade} Condition
               </div>
             </motion.div>
             
             <div className="grid grid-cols-4 gap-4">
-              {(phone.galleryImages || [phone.imageUrl]).map((img, i) => (
+              {(selectedVariant?.galleryImages || phone.galleryImages || [phone.imageUrl]).map((img, i) => (
                 <div key={i} className="bg-slate-50 rounded-2xl p-4 aspect-square flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-600 transition-all">
                   <img src={img} alt={`${phone.model} view ${i+1}`} className="max-h-full object-contain mix-blend-multiply" />
                 </div>
@@ -101,8 +132,8 @@ export default function ProductDetail() {
 
             <div className="bg-slate-50 rounded-3xl p-8 mb-8">
               <div className="flex items-baseline gap-4 mb-2">
-                <span className="text-5xl font-black text-slate-900">£{phone.price}</span>
-                <span className="text-2xl text-slate-400 line-through font-bold">£{phone.originalPrice}</span>
+                <span className="text-5xl font-black text-slate-900">£{displayPrice}</span>
+                <span className="text-2xl text-slate-400 line-through font-bold">£{displayOriginalPrice}</span>
               </div>
               <p className="text-emerald-600 font-black text-sm uppercase tracking-widest">
                 You save £{savings} vs buying new
@@ -117,7 +148,7 @@ export default function ProductDetail() {
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Battery Health</p>
-                  <p className="text-sm font-bold text-slate-900">{phone.batteryHealth}% Guaranteed</p>
+                  <p className="text-sm font-bold text-slate-900">{displayBatteryHealth}% Guaranteed</p>
                 </div>
               </div>
               <div className="border border-slate-100 rounded-2xl p-4 flex items-center gap-4">
@@ -131,11 +162,25 @@ export default function ProductDetail() {
               </div>
             </div>
 
+            {/* Variant Selector */}
+            {phone.variants && phone.variants.length > 0 && (
+              <VariantSelector
+                product={phone}
+                onVariantSelect={setSelectedVariant}
+                selectedVariant={selectedVariant}
+              />
+            )}
+
+            {/* Delivery Promises */}
+            <div className="mb-10">
+              <DeliveryPromiseComponent
+                postalCode={postalCode}
+                orderTime={new Date()}
+                showAllOptions={true}
+              />
+            </div>
+
             <div className="space-y-4 mb-10">
-              <div className="flex items-center gap-3 text-slate-600">
-                <Truck size={20} className="text-slate-400" />
-                <span className="font-medium">Free Next-Day UK Delivery</span>
-              </div>
               <div className="flex items-center gap-3 text-slate-600">
                 <RotateCcw size={20} className="text-slate-400" />
                 <span className="font-medium">{phone.returnDays}-Day No-Quibble Returns</span>
@@ -146,6 +191,15 @@ export default function ProductDetail() {
               </div>
             </div>
 
+            {/* Stock Status */}
+            <div className={`mb-6 p-4 rounded-xl font-bold text-sm ${
+              displayStock > 0
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {displayStock > 0 ? `${displayStock} units in stock` : 'Out of Stock'}
+            </div>
+
             <div className="flex flex-col gap-4 mb-12">
               <div className="flex gap-4">
                 <div className="flex items-center bg-slate-100 rounded-2xl px-4">
@@ -154,10 +208,15 @@ export default function ProductDetail() {
                   <button onClick={() => setQuantity(quantity + 1)} className="p-2 font-black text-xl">+</button>
                 </div>
                 <button 
-                  onClick={() => addToCart(phone, quantity)}
-                  className="flex-grow bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
+                  onClick={handleAddToCart}
+                  disabled={displayStock === 0}
+                  className={`flex-grow py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${
+                    displayStock > 0
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20'
+                      : 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  }`}
                 >
-                  Add to Cart
+                  {displayStock > 0 ? 'Add to Cart' : 'Out of Stock'}
                 </button>
               </div>
               <button 
