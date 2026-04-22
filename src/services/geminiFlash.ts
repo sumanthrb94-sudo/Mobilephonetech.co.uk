@@ -11,6 +11,9 @@ export interface GeminiPayload {
 
 //TOKEN is provided via VITE_GEMINI_API_KEY
 export async function fetchGeminiImage(payload: GeminiPayload): Promise<string | null> {
+  // Optional global toggle to disable Gemini during QA or in environments without access
+  const disable = (typeof window !== 'undefined' && (window as any).ENV?.VITE_GEMINI_DISABLE) || (typeof import.meta !== 'undefined' && (import.meta.env && (import.meta.env as any).VITE_GEMINI_DISABLE) === 'true');
+  if (disable) return null;
   try {
     const key = (import.meta && (import.meta as any).env && (import.meta as any).env.VITE_GEMINI_API_KEY) || '';
     if (!key) return null;
