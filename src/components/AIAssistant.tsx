@@ -5,7 +5,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
 import gsmarenaData from '../gsmarena_data.json';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const ai = process.env.GEMINI_API_KEY
+  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+  : null;
 
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +26,11 @@ export default function AIAssistant() {
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+
+    if (!ai) {
+      setMessages(prev => [...prev, { role: 'assistant', content: 'AI Assistant is not configured. Please set the GEMINI_API_KEY environment variable.' }]);
+      return;
+    }
 
     const userMessage = input.trim();
     setInput('');
