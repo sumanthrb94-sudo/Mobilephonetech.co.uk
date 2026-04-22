@@ -12,10 +12,11 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 98,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-15-pro-max-1.jpg',
+    imageUrl: '/assets/YUYFZeFzWLMA.png',
     galleryImages: [
-      'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-15-pro-max-1.jpg',
-      'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-15-pro-max-2.jpg'
+      '/assets/YUYFZeFzWLMA.png',
+      '/assets/xKrBA0WkKCOR.jpg',
+      '/assets/y0wXjoNpojxp.png'
     ],
     isCertified: true,
     stock: 5,
@@ -29,50 +30,20 @@ export const MOCK_PHONES: Product[] = [
       os: 'iOS 17',
       storage: '256GB'
     },
-    colorOptions: ['Space Black', 'Gold', 'Silver', 'Deep Purple'],
+    colorOptions: ['Natural Titanium', 'Blue Titanium', 'White Titanium', 'Black Titanium'],
     storageOptions: ['256GB', '512GB', '1TB'],
     conditionOptions: ['Pristine', 'Excellent'],
     variants: [
       {
-        id: '1-sb-256-pristine',
-        color: 'Space Black',
+        id: '1-nt-256-pristine',
+        color: 'Natural Titanium',
         storage: '256GB',
         condition: 'Pristine',
         price: 849,
         originalPrice: 1199,
         stock: 5,
         batteryHealth: 98,
-      },
-      {
-        id: '1-sb-512-pristine',
-        color: 'Space Black',
-        storage: '512GB',
-        condition: 'Pristine',
-        price: 949,
-        originalPrice: 1299,
-        stock: 3,
-        batteryHealth: 98,
-      },
-      {
-        id: '1-gold-256-pristine',
-        color: 'Gold',
-        storage: '256GB',
-        condition: 'Pristine',
-        price: 849,
-        originalPrice: 1199,
-        stock: 2,
-        batteryHealth: 98,
-      },
-      {
-        id: '1-sb-256-excellent',
-        color: 'Space Black',
-        storage: '256GB',
-        condition: 'Excellent',
-        price: 749,
-        originalPrice: 1099,
-        stock: 4,
-        batteryHealth: 95,
-      },
+      }
     ]
   },
   {
@@ -86,7 +57,12 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 92,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-14-pro-1.jpg',
+    imageUrl: '/assets/nnCyJ3CuEgYe.jpg',
+    galleryImages: [
+      '/assets/nnCyJ3CuEgYe.jpg',
+      '/assets/ybNb5k0B7nvc.png',
+      '/assets/TYsh56U5ZjIX.png'
+    ],
     isCertified: true,
     stock: 12,
     conditionDescription: 'Excellent condition. May have micro-scratches invisible from 20cm away.',
@@ -112,27 +88,7 @@ export const MOCK_PHONES: Product[] = [
         originalPrice: 999,
         stock: 8,
         batteryHealth: 92,
-      },
-      {
-        id: '2-sb-256-excellent',
-        color: 'Space Black',
-        storage: '256GB',
-        condition: 'Excellent',
-        price: 699,
-        originalPrice: 1099,
-        stock: 4,
-        batteryHealth: 92,
-      },
-      {
-        id: '2-silver-128-good',
-        color: 'Silver',
-        storage: '128GB',
-        condition: 'Good',
-        price: 549,
-        originalPrice: 899,
-        stock: 6,
-        batteryHealth: 88,
-      },
+      }
     ]
   },
   {
@@ -217,10 +173,6 @@ export const MOCK_PHONES: Product[] = [
   }
 ];
 
-/**
- * Enhanced category structure with nested hierarchy
- * Supports mega-menu navigation and product discovery
- */
 export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'phones',
@@ -232,7 +184,7 @@ export const MOCK_CATEGORIES: Category[] = [
       {
         id: 'phones-apple',
         name: 'Apple iPhones',
-        imageUrl: 'https://images.unsplash.com/photo-1592286927505-1fed6c3d8b26?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/YUYFZeFzWLMA.png',
         parent: 'phones',
         description: 'Latest and classic iPhone models',
         productCount: 4,
@@ -244,15 +196,7 @@ export const MOCK_CATEGORIES: Category[] = [
         parent: 'phones',
         description: 'Premium Samsung smartphones',
         productCount: 0,
-      },
-      {
-        id: 'phones-google',
-        name: 'Google Pixel',
-        imageUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=800&auto=format&fit=crop',
-        parent: 'phones',
-        description: 'Google Pixel devices',
-        productCount: 0,
-      },
+      }
     ]
   },
   {
@@ -260,74 +204,6 @@ export const MOCK_CATEGORIES: Category[] = [
     name: 'Mac & Computing',
     imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=800&auto=format&fit=crop',
     description: 'Refurbished MacBooks and computing devices',
-    productCount: 0,
-    children: [
-      {
-        id: 'computing-macbooks',
-        name: 'MacBooks',
-        imageUrl: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop',
-        parent: 'computing',
-        description: 'MacBook Pro, Air, and more',
-        productCount: 0,
-      },
-      {
-        id: 'computing-imac',
-        name: 'iMac & Mac Mini',
-        imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?q=80&w=800&auto=format&fit=crop',
-        parent: 'computing',
-        description: 'Desktop Mac computers',
-        productCount: 0,
-      },
-    ]
-  },
-  {
-    id: 'accessories',
-    name: 'Accessories',
-    imageUrl: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?q=80&w=800&auto=format&fit=crop',
-    description: 'Phone cases, chargers, and accessories',
-    productCount: 0,
-    children: [
-      {
-        id: 'accessories-cases',
-        name: 'Cases & Covers',
-        imageUrl: 'https://images.unsplash.com/photo-1592286927505-1fed6c3d8b26?q=80&w=800&auto=format&fit=crop',
-        parent: 'accessories',
-        description: 'Protective cases for all devices',
-        productCount: 0,
-      },
-      {
-        id: 'accessories-chargers',
-        name: 'Chargers & Cables',
-        imageUrl: 'https://images.unsplash.com/photo-1625948515291-69613efd103f?q=80&w=800&auto=format&fit=crop',
-        parent: 'accessories',
-        description: 'Charging solutions',
-        productCount: 0,
-      },
-    ]
-  },
-  {
-    id: 'audio',
-    name: 'Audio & Sound',
-    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop',
-    description: 'Headphones, speakers, and audio devices',
-    productCount: 0,
-    children: [
-      {
-        id: 'audio-headphones',
-        name: 'Headphones',
-        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop',
-        parent: 'audio',
-        description: 'Premium audio headphones',
-        productCount: 0,
-      },
-      {
-        id: 'audio-speakers',
-        name: 'Speakers',
-        imageUrl: 'https://images.unsplash.com/photo-1589003077984-894e133814c9?q=80&w=800&auto=format&fit=crop',
-        parent: 'audio',
-        description: 'Bluetooth and wireless speakers',
-        productCount: 0,
-      },
-    ]
-  },
+    productCount: 0
+  }
 ];

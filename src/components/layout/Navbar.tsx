@@ -1,221 +1,249 @@
-import { Search, ShoppingBag, User, Menu, CheckCircle2, ShieldCheck, Globe, Star, X, Heart, Package, LogOut } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { 
+  ShoppingBag, 
+  Search, 
+  Menu, 
+  X, 
+  Heart, 
+  User, 
+  ChevronDown,
+  ShieldCheck,
+  Truck,
+  RefreshCw,
+  LogOut,
+  Package
+} from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
-import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthModal from '../AuthModal';
 import MegaMenu from '../MegaMenu';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
-  onCartClick?: () => void;
+  onCartClick: () => void;
 }
 
 export default function Navbar({ onCartClick }: NavbarProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
+  
   const { cartCount } = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
   const { user, logout, isAuthenticated } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-  const [localSearch, setLocalSearch] = useState(searchQuery);
   const location = useLocation();
   const navigate = useNavigate();
-  const isHome = location.pathname === '/';
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearchQuery(localSearch);
-    navigate('/products');
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   const navLinks = [
-    { name: 'Phones', href: isHome ? '#products' : '/#products' },
-    { name: 'Categories', href: '#', onClick: () => setIsMegaMenuOpen(!isMegaMenuOpen) },
-    { name: 'Compare', href: isHome ? '#compare' : '/#compare' },
+    { name: 'Phones', href: '/products' },
+    { name: 'Categories', href: '#categories', isMega: true },
+    { name: 'Compare', href: '#compare' },
+    { name: 'Trade-In', href: '#trade-in' },
   ];
 
   return (
     <>
-      <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md shadow-sm">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-8">
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 hover:bg-slate-100 rounded-xl transition-colors"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-            <Link to="/" className="flex items-center gap-2">
-              <span className="text-2xl font-black tracking-tighter text-blue-600">
-                MOBILEWORLD<span className="text-slate-400">.com</span>
-              </span>
-            </Link>
-            <div className="hidden lg:flex gap-6 text-[10px] font-black uppercase tracking-widest text-slate-500 relative">
-              {navLinks.map((link) => (
-                link.name === 'Categories' ? (
-                  <button
-                    key={link.name}
-                    onClick={() => setIsMegaMenuOpen(!isMegaMenuOpen)}
-                    className="hover:text-blue-600 transition-colors"
-                  >
-                    {link.name}
-                  </button>
-                ) : link.href.startsWith('#') ? (
-                  <a key={link.name} href={link.href} className="hover:text-blue-600 transition-colors">{link.name}</a>
-                ) : (
-                  <Link key={link.name} to={link.href} className="hover:text-blue-600 transition-colors">{link.name}</Link>
-                )
-              ))}
-              <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
+      <div className="fixed top-0 left-0 right-0 z-[60] transition-all duration-300">
+        {/* Trust Bar */}
+        <div className="bg-slate-900 text-white py-2 px-4 overflow-hidden">
+          <div className="max-w-7xl mx-auto flex justify-center md:justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
+            <div className="hidden md:flex items-center gap-6">
+              <span className="flex items-center gap-2"><ShieldCheck size={12} className="text-blue-400" /> 12-Month Warranty</span>
+              <span className="flex items-center gap-2"><Truck size={12} className="text-blue-400" /> Free Next-Day Delivery</span>
             </div>
-          </div>
-
-          <div className="hidden flex-1 px-12 lg:block max-w-xl">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search across departments..."
-                value={localSearch}
-                onChange={(e) => setLocalSearch(e.target.value)}
-                className="w-full rounded-[14px] bg-slate-100 py-3 pl-10 pr-4 text-sm font-bold outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
-              />
-            </form>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-4">
-            <Link to="/wishlist" className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
-              <Heart className="h-5 w-5 text-slate-600" />
-            </Link>
-            <Link to="/orders" className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
-              <Package className="h-5 w-5 text-slate-600" />
-            </Link>
-            <div className="relative group hidden sm:block">
-              <button 
-                onClick={() => !isAuthenticated && setIsAuthModalOpen(true)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors flex items-center gap-2"
-              >
-                <User className={`h-5 w-5 ${isAuthenticated ? 'text-blue-600' : 'text-slate-600'}`} />
-                {isAuthenticated && (
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 truncate max-w-[80px]">
-                    {user?.fullName.split(' ')[0]}
-                  </span>
-                )}
-              </button>
-              
-              {isAuthenticated && (
-                <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 min-w-[160px]">
-                    <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account</p>
-                      <p className="text-xs font-bold text-slate-900 truncate">{user?.email}</p>
-                    </div>
-                    <button 
-                      onClick={logout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Logout
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="flex items-center gap-6">
+              <span className="flex items-center gap-2"><RefreshCw size={12} className="text-blue-400" /> 30-Day Returns</span>
+              <span className="hidden sm:inline">Rated 4.9/5 on Trustpilot</span>
             </div>
-            <motion.button 
-              onClick={onCartClick}
-              className="relative p-2 hover:bg-slate-100 rounded-full transition-colors"
-              whileTap={{ scale: 0.95 }}
-            >
-              <ShoppingBag className="h-5 w-5 text-slate-600" />
-              {cartCount > 0 && (
-                <motion.span 
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-0.5 -right-0.5 bg-blue-600 text-white text-[9px] rounded-full w-5 h-5 flex items-center justify-center font-black border-2 border-white"
-                >
-                  {cartCount > 99 ? '99+' : cartCount}
-                </motion.span>
-              )}
-            </motion.button>
           </div>
         </div>
-        
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)} 
-        />
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden border-t border-slate-100 bg-white px-4 py-4 overflow-hidden"
-            >
-              <div className="space-y-1">
+        {/* Main Navbar */}
+        <nav className={`transition-all duration-300 ${
+          isScrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-3' : 'bg-white py-5'
+        }`}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center gap-8">
+              {/* Logo */}
+              <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
+                  <RefreshCw size={24} className="font-black" />
+                </div>
+                <span className="text-2xl font-black tracking-tighter text-slate-900 uppercase">
+                  Mobile<span className="text-blue-600">Tech</span>
+                </span>
+              </Link>
+
+              {/* Desktop Navigation */}
+              <div className="hidden lg:flex items-center gap-8">
                 {navLinks.map((link) => (
-                  link.name === 'Categories' ? (
-                    <button
-                      key={link.name}
-                      onClick={() => {
-                        setIsMegaMenuOpen(!isMegaMenuOpen);
-                        setIsMenuOpen(false);
-                      }}
-                      className="block w-full text-left px-4 py-3 rounded-xl hover:bg-slate-50 text-sm font-bold text-slate-900 transition-colors"
-                    >
-                      {link.name}
-                    </button>
-                  ) : link.href.startsWith('#') ? (
-                    <a 
-                      key={link.name} 
-                      href={link.href} 
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-4 py-3 rounded-xl hover:bg-slate-50 text-sm font-bold text-slate-900 transition-colors"
-                    >
-                      {link.name}
-                    </a>
-                  ) : (
-                    <Link 
-                      key={link.name} 
-                      to={link.href} 
-                      onClick={() => setIsMenuOpen(false)}
-                      className="block px-4 py-3 rounded-xl hover:bg-slate-50 text-sm font-bold text-slate-900 transition-colors"
-                    >
-                      {link.name}
-                    </Link>
-                  )
+                  <div 
+                    key={link.name}
+                    onMouseEnter={() => link.isMega && setIsMegaMenuOpen(true)}
+                    onMouseLeave={() => link.isMega && setIsMegaMenuOpen(false)}
+                    className="relative"
+                  >
+                    {link.href.startsWith('#') ? (
+                      <a
+                        href={link.href}
+                        className="text-sm font-black uppercase tracking-widest text-slate-600 hover:text-blue-600 transition-colors flex items-center gap-1"
+                      >
+                        {link.name}
+                        {link.isMega && <ChevronDown size={14} />}
+                      </a>
+                    ) : (
+                      <Link
+                        to={link.href}
+                        className="text-sm font-black uppercase tracking-widest text-slate-600 hover:text-blue-600 transition-colors flex items-center gap-1"
+                      >
+                        {link.name}
+                        {link.isMega && <ChevronDown size={14} />}
+                      </Link>
+                    )}
+                  </div>
                 ))}
               </div>
-              <div className="mt-4 px-4">
-                <form onSubmit={handleSearchSubmit} className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={localSearch}
-                    onChange={(e) => setLocalSearch(e.target.value)}
-                    className="w-full rounded-xl bg-slate-100 py-3 pl-10 pr-4 text-sm font-bold outline-none"
-                  />
-                </form>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
 
-      {/* Trust Bar */}
-      <div className="bg-slate-900 text-white py-3 px-4 sm:px-8 border-b border-white/5 overflow-hidden">
-        <div className="mx-auto max-w-7xl flex flex-nowrap md:flex-wrap justify-start md:justify-between gap-6 md:gap-4 text-[9px] font-black uppercase tracking-[0.2em] leading-none text-slate-400 whitespace-nowrap overflow-x-auto no-scrollbar">
-          <span className="flex items-center gap-1.5 shrink-0"><Globe className="h-3 w-3 text-blue-500" /> Global Logistics Network</span>
-          <span className="flex items-center gap-1.5 shrink-0"><ShieldCheck className="h-3 w-3 text-blue-500" /> Manufacturer-Backed Warranties</span>
-          <span className="flex items-center gap-1.5 shrink-0"><CheckCircle2 className="h-3 w-3 text-blue-500" /> Next-Day Delivery</span>
-          <span className="flex items-center gap-1.5 shrink-0"><Star className="h-3 w-3 text-blue-500" /> Dedicated Support</span>
-        </div>
+              {/* Search Bar */}
+              <form onSubmit={handleSearch} className="hidden md:flex flex-grow max-w-md relative group">
+                <input
+                  type="text"
+                  placeholder="Search iPhones, Samsung..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-blue-600/20 focus:bg-white rounded-full py-2.5 pl-12 pr-4 text-sm font-medium transition-all outline-none"
+                />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-600 transition-colors" size={18} />
+              </form>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 sm:gap-4">
+                <Link to="/wishlist" className="p-2 text-slate-600 hover:text-blue-600 transition-colors relative">
+                  <Heart size={22} />
+                </Link>
+
+                <div className="relative">
+                  <button 
+                    onClick={() => isAuthenticated ? setIsAccountDropdownOpen(!isAccountDropdownOpen) : setIsAuthModalOpen(true)}
+                    className="p-2 text-slate-600 hover:text-blue-600 transition-colors flex items-center gap-1"
+                  >
+                    <User size={22} />
+                    {isAuthenticated && <ChevronDown size={14} />}
+                  </button>
+
+                  <AnimatePresence>
+                    {isAccountDropdownOpen && isAuthenticated && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute right-0 mt-4 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-[70]"
+                      >
+                        <div className="px-4 py-3 border-b border-slate-50">
+                          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Logged in as</p>
+                          <p className="text-sm font-bold text-slate-900 truncate">{user?.email}</p>
+                        </div>
+                        <Link to="/orders" className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                          <Package size={18} /> My Orders
+                        </Link>
+                        <button 
+                          onClick={() => {
+                            logout();
+                            setIsAccountDropdownOpen(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut size={18} /> Logout
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <button 
+                  onClick={onCartClick}
+                  className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-full hover:bg-blue-600 transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+                >
+                  <ShoppingBag size={20} />
+                  <span className="text-sm font-black">{cartCount}</span>
+                </button>
+
+                <button 
+                  className="lg:hidden p-2 text-slate-900"
+                  onClick={() => setIsMobileMenuOpen(true)}
+                >
+                  <Menu size={24} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mega Menu */}
+          <MegaMenu isOpen={isMegaMenuOpen} onClose={() => setIsMegaMenuOpen(false)} />
+        </nav>
       </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[100] bg-white flex flex-col"
+          >
+            <div className="p-6 flex justify-between items-center border-b border-slate-100">
+              <span className="text-xl font-black tracking-tighter uppercase">Menu</span>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 bg-slate-100 rounded-full">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="flex-grow overflow-y-auto p-6 space-y-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block text-3xl font-black uppercase tracking-tighter text-slate-900 hover:text-blue-600 transition-colors"
+                >
+                  {link.name}
+                </Link>
+              ))}
+            </div>
+            <div className="p-6 bg-slate-50">
+              <button 
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsAuthModalOpen(true);
+                }}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm"
+              >
+                {isAuthenticated ? 'My Account' : 'Login / Register'}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
     </>
   );
 }

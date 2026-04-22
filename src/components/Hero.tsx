@@ -1,6 +1,5 @@
 import { motion } from 'motion/react';
 import { ArrowRight, ShieldCheck, Battery, RefreshCw } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 export default function Hero() {
   return (
@@ -23,12 +22,12 @@ export default function Hero() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
               </span>
-              PREMIUM REFURBISHED IPHONES
+              PREMIUM UK REFURBISHED
             </div>
             
             <h1 className="text-6xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[0.9] mb-8">
               LIKE NEW. <br />
-              <span className="text-blue-600">GUARANTEED.</span>
+              <span className="text-blue-600 text-shadow-sm">GUARANTEED.</span>
             </h1>
             
             <p className="text-xl text-slate-600 mb-10 max-w-lg leading-relaxed font-medium">
@@ -75,21 +74,21 @@ export default function Hero() {
             <div className="relative z-10 bg-white p-4 rounded-[2.5rem] shadow-2xl border border-slate-100">
               <div className="overflow-hidden rounded-[2rem] bg-slate-50 aspect-[4/5] relative">
                 <img 
-                  src="https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-15-pro-max-1.jpg" 
+                  src="/assets/YUYFZeFzWLMA.png" 
                   alt="iPhone 15 Pro Max"
-                  className="w-full h-full object-contain p-8"
+                  className="w-full h-full object-contain p-8 drop-shadow-2xl"
                 />
-                <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full font-bold text-slate-900 shadow-sm">
+                <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full font-bold text-slate-900 shadow-sm border border-slate-100">
                   Pristine Condition
                 </div>
-                <div className="absolute bottom-8 left-8 right-8 bg-slate-900/90 backdrop-blur p-6 rounded-2xl text-white">
+                <div className="absolute bottom-8 left-8 right-8 bg-slate-900/90 backdrop-blur p-6 rounded-2xl text-white border border-white/10">
                   <div className="flex justify-between items-end">
                     <div>
-                      <div className="text-slate-400 text-sm font-bold mb-1 uppercase tracking-wider">Featured Deal</div>
-                      <div className="text-2xl font-black">iPhone 15 Pro Max</div>
+                      <div className="text-blue-400 text-xs font-black mb-1 uppercase tracking-widest">Featured Deal</div>
+                      <div className="text-2xl font-black tracking-tight">iPhone 15 Pro Max</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-slate-400 text-sm line-through">£1,199</div>
+                      <div className="text-slate-400 text-sm line-through font-bold">£1,199</div>
                       <div className="text-3xl font-black text-blue-400">£849</div>
                     </div>
                   </div>
