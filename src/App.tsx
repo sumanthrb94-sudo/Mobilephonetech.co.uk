@@ -19,6 +19,7 @@ import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
 import { WishlistProvider } from './context/WishlistContext';
+import { AuthProvider } from './context/AuthContext';
 
 function HomePage() {
   return (
@@ -67,15 +68,17 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <CartProvider>
-        <SearchProvider>
-          <CheckoutProvider>
-            <WishlistProvider>
-              <AppContent />
-            </WishlistProvider>
-          </CheckoutProvider>
-        </SearchProvider>
-      </CartProvider>
+      <AuthProvider>
+        <CartProvider>
+          <SearchProvider>
+            <CheckoutProvider>
+              <WishlistProvider>
+                <AppContent />
+              </WishlistProvider>
+            </CheckoutProvider>
+          </SearchProvider>
+        </CartProvider>
+      </AuthProvider>
     </Router>
   );
 }

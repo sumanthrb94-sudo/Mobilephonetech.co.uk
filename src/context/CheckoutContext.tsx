@@ -26,6 +26,12 @@ export interface PaymentMethod {
   brand?: string;
 }
 
+export interface Coupon {
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  value: number;
+}
+
 export interface Order {
   id: string;
   items: any[];
@@ -49,6 +55,9 @@ interface CheckoutContextType {
   setShippingOption: (option: ShippingOption) => void;
   paymentMethod: PaymentMethod | null;
   setPaymentMethod: (method: PaymentMethod) => void;
+  appliedCoupon: Coupon | null;
+  applyCoupon: (code: string) => boolean;
+  removeCoupon: () => void;
   orders: Order[];
   createOrder: (order: Order) => void;
   lastOrder: Order | null;
@@ -85,10 +94,31 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
   const [shippingOption, setShippingOption] = useState<ShippingOption | null>(SHIPPING_OPTIONS[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+
+  const MOCK_COUPONS: Coupon[] = [
+    { code: 'SAVE10', discountType: 'percentage', value: 10 },
+    { code: 'WELCOME20', discountType: 'fixed', value: 20 },
+    { code: 'FREESHIP', discountType: 'fixed', value: 9.99 },
+  ];
+
+  const applyCoupon = (code: string) => {
+    const coupon = MOCK_COUPONS.find(c => c.code.toUpperCase() === code.toUpperCase());
+    if (coupon) {
+      setAppliedCoupon(coupon);
+      return true;
+    }
+    return false;
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+  };
 
   const createOrder = (order: Order) => {
     setOrders((prev) => [...prev, order]);
+    setAppliedCoupon(null); // Reset coupon after order
   };
 
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;
@@ -103,6 +133,9 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       setShippingOption,
       paymentMethod,
       setPaymentMethod,
+      appliedCoupon,
+      applyCoupon,
+      removeCoupon,
       orders,
       createOrder,
       lastOrder,

@@ -1,9 +1,11 @@
-import { Search, ShoppingBag, User, Menu, CheckCircle2, ShieldCheck, Globe, Star, X, Heart, Package } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, CheckCircle2, ShieldCheck, Globe, Star, X, Heart, Package, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
+import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import AuthModal from '../AuthModal';
 
 interface NavbarProps {
   onCartClick?: () => void;
@@ -12,7 +14,9 @@ interface NavbarProps {
 export default function Navbar({ onCartClick }: NavbarProps) {
   const { cartCount } = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
+  const { user, logout, isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const location = useLocation();
   const navigate = useNavigate();
@@ -77,9 +81,37 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             <Link to="/orders" className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
               <Package className="h-5 w-5 text-slate-600" />
             </Link>
-            <button className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
-              <User className="h-5 w-5 text-slate-600" />
-            </button>
+            <div className="relative group hidden sm:block">
+              <button 
+                onClick={() => !isAuthenticated && setIsAuthModalOpen(true)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors flex items-center gap-2"
+              >
+                <User className={`h-5 w-5 ${isAuthenticated ? 'text-blue-600' : 'text-slate-600'}`} />
+                {isAuthenticated && (
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 truncate max-w-[80px]">
+                    {user?.fullName.split(' ')[0]}
+                  </span>
+                )}
+              </button>
+              
+              {isAuthenticated && (
+                <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 min-w-[160px]">
+                    <div className="px-4 py-2 border-b border-slate-50 mb-1">
+                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account</p>
+                      <p className="text-xs font-bold text-slate-900 truncate">{user?.email}</p>
+                    </div>
+                    <button 
+                      onClick={logout}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <motion.button 
               onClick={onCartClick}
               className="relative p-2 hover:bg-slate-100 rounded-full transition-colors"
@@ -99,6 +131,11 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           </div>
         </div>
         
+        <AuthModal 
+          isOpen={isAuthModalOpen} 
+          onClose={() => setIsAuthModalOpen(false)} 
+        />
+
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMenuOpen && (

@@ -10,7 +10,8 @@ import {
   Camera,
   Cpu,
   Smartphone,
-  Info
+  Info,
+  Sparkles
  } from 'lucide-react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
@@ -145,17 +146,29 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            <div className="flex gap-4 mb-12">
-              <div className="flex items-center bg-slate-100 rounded-2xl px-4">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 font-black text-xl">-</button>
-                <span className="w-12 text-center font-black">{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)} className="p-2 font-black text-xl">+</button>
+            <div className="flex flex-col gap-4 mb-12">
+              <div className="flex gap-4">
+                <div className="flex items-center bg-slate-100 rounded-2xl px-4">
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 font-black text-xl">-</button>
+                  <span className="w-12 text-center font-black">{quantity}</span>
+                  <button onClick={() => setQuantity(quantity + 1)} className="p-2 font-black text-xl">+</button>
+                </div>
+                <button 
+                  onClick={() => addToCart(phone, quantity)}
+                  className="flex-grow bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
+                >
+                  Add to Cart
+                </button>
               </div>
               <button 
-                onClick={() => addToCart(phone, quantity)}
-                className="flex-grow bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
+                onClick={() => {
+                  const aiButton = document.querySelector('button.fixed.bottom-8.right-8') as HTMLButtonElement;
+                  if (aiButton) aiButton.click();
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-colors border border-white/10"
               >
-                Add to Cart
+                <Sparkles className="h-4 w-4 text-blue-400" />
+                Ask AI about this {phone.model}
               </button>
             </div>
 
