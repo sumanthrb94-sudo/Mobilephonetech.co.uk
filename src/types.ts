@@ -28,16 +28,21 @@ export interface Product {
   model: string;
   brand: string;
   category: 'Phones' | 'Computing' | 'Components' | 'Accessories';
-  storage?: string; // Restore for mobile devices
+  storage?: string;
   price: number;
   originalPrice: number;
   grade: ProductGrade;
+  batteryHealth: number; // Added for transparency
+  warrantyMonths: number; // Added for trust
+  returnDays: number; // Added for trust
   imageUrl: string;
+  galleryImages?: string[]; // Added for real photos
   isCertified: boolean;
   stock: number;
   specs: ProductSpecs;
   description?: string;
   reviews?: Review[];
+  conditionDescription?: string; // Added for clarity
 }
 
 export type Phone = Product; 
