@@ -1,8 +1,9 @@
 import { Search, ShoppingBag, User, Menu, CheckCircle2, ShieldCheck, Globe, Star, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../../context/CartContext';
+import { useSearch } from '../../context/SearchContext';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface NavbarProps {
   onCartClick?: () => void;
@@ -10,9 +11,18 @@ interface NavbarProps {
 
 export default function Navbar({ onCartClick }: NavbarProps) {
   const { cartCount } = useCart();
+  const { searchQuery, setSearchQuery } = useSearch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState(searchQuery);
   const location = useLocation();
+  const navigate = useNavigate();
   const isHome = location.pathname === '/';
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(localSearch);
+    navigate('/products');
+  };
 
   const navLinks = [
     { name: 'Phones', href: isHome ? '#products' : '/#products' },
@@ -48,14 +58,16 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           </div>
 
           <div className="hidden flex-1 px-12 lg:block max-w-xl">
-            <div className="relative">
+            <form onSubmit={handleSearchSubmit} className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 placeholder="Search across departments..."
+                value={localSearch}
+                onChange={(e) => setLocalSearch(e.target.value)}
                 className="w-full rounded-[14px] bg-slate-100 py-3 pl-10 pr-4 text-sm font-bold outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
               />
-            </div>
+            </form>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
@@ -114,14 +126,16 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 ))}
               </div>
               <div className="mt-4 px-4">
-                <div className="relative">
+                <form onSubmit={handleSearchSubmit} className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search products..."
+                    value={localSearch}
+                    onChange={(e) => setLocalSearch(e.target.value)}
                     className="w-full rounded-xl bg-slate-100 py-3 pl-10 pr-4 text-sm font-bold outline-none"
                   />
-                </div>
+                </form>
               </div>
             </motion.div>
           )}

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useCheckout } from '../context/CheckoutContext';
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -9,17 +11,14 @@ interface CartDrawerProps {
 }
 
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const { items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const { setCurrentStep } = useCheckout();
+  const navigate = useNavigate();
 
   const handleCheckout = () => {
-    setIsCheckingOut(true);
-    setTimeout(() => {
-      alert('Thank you for your order! Checkout functionality coming soon.');
-      clearCart();
-      onClose();
-      setIsCheckingOut(false);
-    }, 1500);
+    setCurrentStep('shipping');
+    onClose();
+    navigate('/checkout');
   };
 
   return (
@@ -152,20 +151,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {/* Checkout Button */}
                 <button
                   onClick={handleCheckout}
-                  disabled={isCheckingOut}
-                  className="w-full bg-slate-900 text-white rounded-xl py-4 font-bold flex items-center justify-center gap-2 hover:bg-blue-600 transition-colors disabled:opacity-50"
+                  className="w-full bg-blue-600 text-white rounded-xl py-4 font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
                 >
-                  {isCheckingOut ? (
-                    <>
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      Proceed to Checkout
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
+                  Proceed to Checkout
+                  <ArrowRight className="h-4 w-4" />
                 </button>
 
                 {/* Continue Shopping */}

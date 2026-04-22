@@ -11,7 +11,11 @@ import CartDrawer from './components/CartDrawer';
 import ProductDetail from './components/ProductDetail';
 import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
+import ProductsPage from './components/ProductsPage';
+import CheckoutFlow from './components/CheckoutFlow';
 import { CartProvider, useCart } from './context/CartContext';
+import { SearchProvider } from './context/SearchContext';
+import { CheckoutProvider } from './context/CheckoutContext';
 
 function HomePage() {
   return (
@@ -43,6 +47,8 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/checkout" element={<CheckoutFlow />} />
         </Routes>
       </main>
 
@@ -57,7 +63,11 @@ export default function App() {
   return (
     <Router>
       <CartProvider>
-        <AppContent />
+        <SearchProvider>
+          <CheckoutProvider>
+            <AppContent />
+          </CheckoutProvider>
+        </SearchProvider>
       </CartProvider>
     </Router>
   );

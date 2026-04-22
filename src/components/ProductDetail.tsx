@@ -11,10 +11,11 @@ import {
   Cpu,
   Smartphone,
   Info
-} from 'lucide-react';
+ } from 'lucide-react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
 import { motion } from 'motion/react';
+import ReviewsSection from './ReviewsSection';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -191,6 +192,9 @@ export default function ProductDetail() {
                 </div>
               </div>
             </div>
+
+            {/* Reviews Section */}
+            <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
           </div>
         </div>
       </div>
