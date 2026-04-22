@@ -21,7 +21,8 @@ export default function FeaturedProducts() {
 
   return (
     <section
-      style={{ background: 'var(--grey-5)', padding: 'var(--spacing-80) 0' }}
+      className="py-12 md:py-20"
+      style={{ background: 'var(--grey-5)' }}
       id="products"
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>

@@ -38,7 +38,7 @@ export default function CookieBanner() {
             boxShadow: '0 -10px 40px rgba(0,0,0,0.2)'
           }}
         >
-          <div className="container-bm" style={{ maxWidth: 'var(--container-max)', display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }} className="md:flex-row md:items-center md:justify-between">
+          <div className="container-bm flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div style={{ flex: 1, paddingRight: 'var(--spacing-32)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                 <ShieldCheck size={18} style={{ color: 'var(--blue-40)' }} />
@@ -48,7 +48,7 @@ export default function CookieBanner() {
                 We use cookies to ensure our website functions securely, to personalize your experience, and to analyze our traffic. By clicking "Accept All", you consent to our use of cookies as described in our <Link to="/privacy" style={{ color: 'white', textDecoration: 'underline' }}>Privacy Policy</Link>.
               </p>
             </div>
-            <div style={{ display: 'flex', gap: '12px', flexShrink: 0, marginTop: '16px' }} className="md:mt-0 flex-col sm:flex-row">
+            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0 mt-4 md:mt-0">
               <button
                 onClick={handleDecline}
                 style={{

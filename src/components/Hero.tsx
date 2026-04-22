@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ArrowLeft, ShieldCheck, Battery, RefreshCw, Star } from 'lucide-react';
+import { ArrowRight, ArrowLeft, ShieldCheck, Battery, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
  * Hero — BM spec Section 3
- * - Full-width gradient background (diagonal warm tint)
- * - Left: Playfair Display serif headline + body + CTA
- * - Right: Product card (white bg, condition badge, price)
- * - Carousel dots + left/right arrows
- * - ~450px desktop, stacks on mobile
+ * Optimized for performance: Lazy loading for non-primary slide images.
+ * Mobile-First: Fluid typography and responsive layout stacking.
  */
 
 const SLIDES = [
@@ -82,7 +79,6 @@ export default function Hero() {
     setCurrent((idx + total) % total);
   };
 
-  // Auto-advance
   useEffect(() => {
     const t = setTimeout(() => goTo((current + 1) % total, 1), 6000);
     return () => clearTimeout(t);
@@ -94,17 +90,15 @@ export default function Hero() {
     <section
       aria-label="Hero carousel"
       style={{
-        /* BM spec: gradient bg, full-width, ~450px desktop */
         width: '100%',
-        minHeight: 'clamp(380px, 50vw, 460px)',
+        minHeight: 'clamp(420px, 60vw, 480px)',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 55%)`,
         transition: `background var(--duration-slow) var(--ease-default)`,
-        paddingTop: 'var(--nav-total)', /* 112px offset for fixed header + catnav */
+        paddingTop: 'var(--nav-total)',
       }}
     >
-      {/* Subtle diagonal shape */}
       <div
         style={{
           position: 'absolute',
@@ -133,18 +127,16 @@ export default function Hero() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -direction * 40 }}
             transition={{ duration: 0.45, ease: [0.2, 0, 0, 1] }}
-            className="grid lg:grid-cols-2 gap-8 items-center py-12 lg:py-16 h-full"
+            className="grid lg:grid-cols-2 gap-8 items-center py-12 lg:py-20 h-full"
           >
             {/* ── Left: Text block ──────────────── */}
-            <div>
-              {/* Overline */}
-              <div className="overline mb-4">{slide.overline}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div className="overline mb-4" style={{ fontSize: 'clamp(10px, 1.5vw, 11px)' }}>{slide.overline}</div>
 
-              {/* Headline — Playfair Display serif, BM spec "punchline" */}
               <h1
                 style={{
                   fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(38px, 5.5vw, 68px)',
+                  fontSize: 'clamp(34px, 5vw, 68px)',
                   fontWeight: 700,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.05,
@@ -156,40 +148,38 @@ export default function Hero() {
                 {slide.headline}
               </h1>
 
-              {/* Body — BM spec body-1 */}
               <p
                 className="type-body-1"
                 style={{
                   color: 'var(--grey-50)',
                   marginBottom: '32px',
-                  maxWidth: '400px',
+                  maxWidth: '440px',
+                  fontSize: 'clamp(14px, 2vw, 16px)',
                 }}
               >
                 {slide.body}
               </p>
 
-              {/* CTA — Primary black button (BM spec) */}
-              <div className="flex flex-wrap gap-3 mb-10">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '40px' }}>
                 <Link
                   to={slide.ctaHref}
                   className="btn btn-primary btn-lg"
                   id={`hero-cta-${current}`}
-                  style={{ textDecoration: 'none' }}
+                  style={{ textDecoration: 'none', height: 'clamp(48px, 5vw, 56px)', padding: '0 32px' }}
                 >
                   {slide.ctaLabel}
-                  <ArrowRight size={18} />
+                  <ArrowRight size={18} style={{ marginLeft: '8px' }} />
                 </Link>
-                <a href="#trade-in" className="btn btn-secondary btn-lg">
+                <a href="#trade-in" className="btn btn-secondary btn-lg" style={{ height: 'clamp(48px, 5vw, 56px)', padding: '0 24px' }}>
                   Sell your phone
                 </a>
               </div>
 
-              {/* Trust micro-row */}
-              <div className="flex flex-wrap gap-6">
+              <div className="flex flex-wrap gap-x-8 gap-y-3">
                 {TRUST_ITEMS.map((t) => (
                   <div key={t.text} className="flex items-center gap-2">
                     <t.icon size={15} style={{ color: 'var(--blue-60)', flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 500, color: 'var(--grey-50)' }}>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--grey-50)' }}>
                       {t.text}
                     </span>
                   </div>
@@ -198,40 +188,40 @@ export default function Hero() {
             </div>
 
             {/* ── Right: Product card ───────────── */}
-            <div className="relative flex justify-center lg:justify-end">
+            <div className="relative hidden lg:flex justify-end">
               <div
                 className="card card-xl"
                 style={{
-                  maxWidth: '340px',
+                  maxWidth: '360px',
                   width: '100%',
                   padding: 0,
                   overflow: 'hidden',
+                  position: 'relative'
                 }}
               >
-                {/* Badges */}
-                <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 2 }}>
+                <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 2 }}>
                   <span className={slide.gradeClass}>{slide.grade}</span>
                 </div>
-                <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2 }}>
+                <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 2 }}>
                   <span className="badge badge-savings">Save £{parseInt(slide.rrp.replace('£','')) - parseInt(slide.price.replace('£',''))}</span>
                 </div>
 
-                {/* Product image */}
                 <div
                   style={{
                     background: 'var(--grey-5)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    aspectRatio: '1 / 1',
+                    aspectRatio: '1.1 / 1',
                     position: 'relative',
                   }}
                 >
                   <img
                     src={slide.image}
                     alt={slide.imageAlt}
+                    loading={current === 0 ? "eager" : "lazy"}
                     style={{
-                      maxHeight: '220px',
+                      maxHeight: '240px',
                       objectFit: 'contain',
                       filter: 'drop-shadow(0 12px 32px rgba(0,0,0,0.10))',
                       padding: '24px',
@@ -239,8 +229,7 @@ export default function Hero() {
                   />
                 </div>
 
-                {/* Info */}
-                <div style={{ padding: '20px 20px 16px' }}>
+                <div style={{ padding: '24px' }}>
                   <p style={{ fontSize: '11px', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-40)', marginBottom: '4px' }}>
                     Apple
                   </p>
@@ -248,43 +237,37 @@ export default function Hero() {
                     style={{
                       fontFamily: 'var(--font-sans)',
                       fontWeight: 800,
-                      fontSize: '18px',
+                      fontSize: '20px',
                       letterSpacing: '-0.025em',
                       color: 'var(--black)',
-                      marginBottom: '2px',
+                      marginBottom: '4px',
                     }}
                   >
                     {slide.model}
                   </h3>
-                  <p style={{ fontSize: '13px', color: 'var(--grey-40)', fontFamily: 'var(--font-body)', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--grey-40)', fontFamily: 'var(--font-body)', marginBottom: '16px' }}>
                     {slide.storage}
                   </p>
 
-                  {/* Price */}
-                  <div className="flex items-baseline gap-3 mb-3">
+                  <div className="flex items-baseline gap-3 mb-4">
                     <span
                       className="type-price"
-                      style={{ fontSize: '28px', color: 'var(--black)' }}
+                      style={{ fontSize: '32px', color: 'var(--black)' }}
                     >
                       {slide.price}
                     </span>
-                    <span style={{ fontSize: '15px', color: 'var(--grey-40)', textDecoration: 'line-through', fontFamily: 'var(--font-body)' }}>
+                    <span style={{ fontSize: '16px', color: 'var(--grey-40)', textDecoration: 'line-through', fontFamily: 'var(--font-body)' }}>
                       {slide.rrp}
                     </span>
                   </div>
 
-                  {/* Trust row */}
                   <div
-                    className="flex gap-4 pt-3"
+                    className="flex gap-4 pt-4"
                     style={{ borderTop: '1px solid var(--grey-10)' }}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <ShieldCheck size={13} style={{ color: 'var(--blue-60)' }} />
-                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)' }}>12m warranty</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Battery size={13} style={{ color: '#10b981' }} />
-                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)' }}>94% battery</span>
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck size={14} style={{ color: 'var(--blue-60)' }} />
+                      <span style={{ fontSize: '13px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)', fontWeight: 500 }}>12m warranty</span>
                     </div>
                   </div>
                 </div>
@@ -294,13 +277,12 @@ export default function Hero() {
         </AnimatePresence>
       </div>
 
-      {/* ── Carousel Controls ───────────────────── */}
       <div
         className="container-bm"
         style={{
           maxWidth: 'var(--container-max)',
           position: 'absolute',
-          bottom: '24px',
+          bottom: '32px',
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
@@ -309,44 +291,42 @@ export default function Hero() {
           zIndex: 10,
         }}
       >
-        {/* Dot indicators */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {SLIDES.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i, i > current ? 1 : -1)}
               aria-label={`Go to slide ${i + 1}`}
               style={{
-                width: i === current ? '24px' : '8px',
-                height: '8px',
+                width: i === current ? '32px' : '10px',
+                height: '10px',
                 borderRadius: 'var(--radius-full)',
                 background: i === current ? 'var(--black)' : 'var(--grey-30)',
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
-                transition: 'all var(--duration-normal) var(--ease-bounce)',
+                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             />
           ))}
         </div>
 
-        {/* Arrow buttons */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => goTo(current - 1, -1)}
             aria-label="Previous slide"
-            className="btn btn-secondary btn-sm"
-            style={{ width: '40px', height: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            className="btn btn-secondary"
+            style={{ width: '44px', height: '44px', padding: 0, borderRadius: 'var(--radius-full)' }}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={20} />
           </button>
           <button
             onClick={() => goTo(current + 1, 1)}
             aria-label="Next slide"
-            className="btn btn-primary btn-sm"
-            style={{ width: '40px', height: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            className="btn btn-primary"
+            style={{ width: '44px', height: '44px', padding: 0, borderRadius: 'var(--radius-full)' }}
           >
-            <ArrowRight size={18} />
+            <ArrowRight size={20} />
           </button>
         </div>
       </div>

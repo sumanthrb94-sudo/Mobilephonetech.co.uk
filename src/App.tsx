@@ -8,24 +8,35 @@ import FeaturedProducts from './components/FeaturedProducts';
 import CategoryGrid from './components/CategoryGrid';
 import TrustSection from './components/TrustSection';
 import ComparisonTool from './components/ComparisonTool';
-import AIAssistant from './components/AIAssistant';
 import CartDrawer from './components/CartDrawer';
-import ProductDetail from './components/ProductDetail';
 import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
-import ProductsPage from './components/ProductsPage';
-import CheckoutFlow from './components/CheckoutFlow';
-import WishlistPage from './components/WishlistPage';
-import OrderHistoryPage from './components/OrderHistoryPage';
-import PrivacyPolicy from './components/legal/PrivacyPolicy';
-import TermsOfService from './components/legal/TermsOfService';
 import CookieBanner from './components/layout/CookieBanner';
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
+
+// Lazy load pages for performance
+const ProductDetail = lazy(() => import('./components/ProductDetail'));
+const ProductsPage = lazy(() => import('./components/ProductsPage'));
+const CheckoutFlow = lazy(() => import('./components/CheckoutFlow'));
+const WishlistPage = lazy(() => import('./components/WishlistPage'));
+const OrderHistoryPage = lazy(() => import('./components/OrderHistoryPage'));
+const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
+const AIAssistant = lazy(() => import('./components/AIAssistant'));
+
+// Loading state component
+const PageLoader = () => (
+  <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--grey-0)' }}>
+    <div style={{ width: '40px', height: '40px', border: '2px solid var(--grey-10)', borderTopColor: 'var(--black)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </div>
+);
+
 
 /**
  * Homepage — BM spec section order:
@@ -103,54 +114,57 @@ function AppContent() {
         Non-hero pages (products, checkout etc.) need top padding.
       */}
       <main style={{ flexGrow: 1 }}>
-        <Routes>
-          <Route path="/"         element={<HomePage />} />
-          <Route path="/product/:id" element={
-            /* Product detail pages need top padding for fixed nav */
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <ProductDetail />
-            </div>
-          } />
-          <Route path="/products" element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <ProductsPage />
-            </div>
-          } />
-          <Route path="/compare"  element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <ComparisonTool />
-            </div>
-          } />
-          <Route path="/checkout" element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <CheckoutFlow />
-            </div>
-          } />
-          <Route path="/wishlist" element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <WishlistPage />
-            </div>
-          } />
-          <Route path="/orders"   element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <OrderHistoryPage />
-            </div>
-          } />
-          <Route path="/privacy"  element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <PrivacyPolicy />
-            </div>
-          } />
-          <Route path="/terms"    element={
-            <div style={{ paddingTop: 'var(--nav-total)' }}>
-              <TermsOfService />
-            </div>
-          } />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/"         element={<HomePage />} />
+            <Route path="/product/:id" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <ProductDetail />
+              </div>
+            } />
+            <Route path="/products" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <ProductsPage />
+              </div>
+            } />
+            <Route path="/compare"  element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <ComparisonTool />
+              </div>
+            } />
+            <Route path="/checkout" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <CheckoutFlow />
+              </div>
+            } />
+            <Route path="/wishlist" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <WishlistPage />
+              </div>
+            } />
+            <Route path="/orders"   element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <OrderHistoryPage />
+              </div>
+            } />
+            <Route path="/privacy"  element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <PrivacyPolicy />
+              </div>
+            } />
+            <Route path="/terms"    element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <TermsOfService />
+              </div>
+            } />
+          </Routes>
+        </Suspense>
       </main>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      <AIAssistant />
+      <Suspense fallback={null}>
+        <AIAssistant />
+      </Suspense>
       <CookieBanner />
       <Footer />
     </div>

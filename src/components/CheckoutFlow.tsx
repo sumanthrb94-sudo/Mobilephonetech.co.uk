@@ -207,7 +207,7 @@ export default function CheckoutFlow() {
               {checkoutMode === 'selection' && !isAuthenticated && !user?.isGuest && (
                 <motion.div key="selection" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
                   <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Checkout</h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-24)' }} className="md:grid-cols-2 grid-cols-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <div style={{ padding: 'var(--spacing-24)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
                       <LogIn size={24} style={{ color: 'var(--black)', marginBottom: '16px' }} />
@@ -240,7 +240,7 @@ export default function CheckoutFlow() {
                     )}
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-24)' }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Full Name</label><input type="text" name="fullName" defaultValue={shippingAddress?.fullName || user?.fullName || ''} style={inputStyle} />{formErrors.fullName && <p style={errorStyle}>{formErrors.fullName}</p>}</div>
                     <div><label style={labelStyle}>Email</label><input type="email" name="email" defaultValue={shippingAddress?.email || user?.email || ''} style={inputStyle} />{formErrors.email && <p style={errorStyle}>{formErrors.email}</p>}</div>
                     <div><label style={labelStyle}>Phone</label><input type="tel" name="phone" defaultValue={shippingAddress?.phone} style={inputStyle} />{formErrors.phone && <p style={errorStyle}>{formErrors.phone}</p>}</div>
@@ -292,7 +292,7 @@ export default function CheckoutFlow() {
                     </label>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-24)' }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Card Number</label><input type="text" placeholder="0000 0000 0000 0000" style={inputStyle} /></div>
                     <div><label style={labelStyle}>Expiry Date</label><input type="text" placeholder="MM/YY" style={inputStyle} /></div>
                     <div><label style={labelStyle}>CVV</label><input type="text" placeholder="123" style={inputStyle} /></div>

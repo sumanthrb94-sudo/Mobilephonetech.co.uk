@@ -164,7 +164,8 @@ export default function CategoryGrid() {
 
   return (
     <section
-      style={{ background: 'var(--grey-0)', padding: 'var(--spacing-80) 0' }}
+      className="py-12 md:py-20"
+      style={{ background: 'var(--grey-0)' }}
       id="categories"
     >
       <div

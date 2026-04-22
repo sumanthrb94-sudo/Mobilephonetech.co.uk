@@ -33,7 +33,8 @@ const VALUATIONS = [
 export default function TradeInProgram() {
   return (
     <section
-      style={{ background: 'var(--grey-95)', padding: 'var(--spacing-96) 0' }}
+      className="py-12 md:py-20"
+      style={{ background: 'var(--grey-95)' }}
       id="trade-in"
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>

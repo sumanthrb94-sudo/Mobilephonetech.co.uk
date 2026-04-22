@@ -1,9 +1,8 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, ShieldCheck, Truck, RotateCcw, Battery, CheckCircle2,
-  Cpu, Smartphone, Info, Sparkles, Heart, Share2, ChevronLeft, ChevronRight,
-  Zap, Award, Clock
+  ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
+  Award, Zap, Heart, Share2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
@@ -16,10 +15,8 @@ import { ProductVariant } from '../types';
 
 /**
  * ProductDetail — Verified Form design philosophy
- * Space: 12-col grid, immense negative space around the product image to suggest a pedestal.
- * Colour: Pure white background. Grey-5 for secondary regions. Blue accent for active elements.
- * Typography: Playfair Display for product name (weight, trust). Inter for spec data. DM Sans for buttons.
- * Motion: 250ms ease-out transitions. Staggered reveals for specs.
+ * Optimized for Mobile-First: Stacks on small screens, grid on desktop.
+ * Performance: Lazy loading images and optimized render cycles.
  */
 
 export default function ProductDetail() {
@@ -28,7 +25,6 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = React.useState(1);
   const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
-  const [postalCode, setPostalCode] = React.useState('SW1A 1AA');
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
   const [isWishlisted, setIsWishlisted] = React.useState(false);
 
@@ -94,9 +90,17 @@ export default function ProductDetail() {
           <ArrowLeft size={16} /> Back to Collection
         </button>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-48)' }} className="lg:grid-cols-2 lg:gap-16 items-start mb-16">
+        {/* Main Grid: Mobile-First Stacking */}
+        <div 
+          style={{ 
+            display: 'grid', 
+            gridTemplateColumns: '1fr', 
+            gap: 'var(--spacing-32)' 
+          }} 
+          className="lg:grid-cols-2 lg:gap-16 items-start mb-16"
+        >
           
-          {/* ── Left Column: Imagery as Museum Artifact ────────────────── */}
+          {/* ── Left Column: Imagery ────────────────── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}>
             
             <motion.div 
@@ -107,7 +111,7 @@ export default function ProductDetail() {
                 borderRadius: 'var(--radius-xl)',
                 aspectRatio: '1/1',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: 'var(--spacing-48)',
+                padding: 'clamp(16px, 5vw, 48px)',
                 overflow: 'hidden'
               }}
             >
@@ -119,6 +123,8 @@ export default function ProductDetail() {
                   transition={{ duration: 0.3 }}
                   src={galleryImages[selectedImageIndex]} 
                   alt={phone.model} 
+                  loading="lazy"
+                  decoding="async"
                   style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }}
                 />
               </AnimatePresence>
@@ -126,7 +132,7 @@ export default function ProductDetail() {
               {/* Condition Badge */}
               <div 
                 className="badge-pristine"
-                style={{ position: 'absolute', top: '24px', left: '24px', display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid var(--grey-10)', color: 'var(--black)' }}
+                style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid var(--grey-10)', color: 'var(--black)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontSize: '11px', fontWeight: 700 }}
               >
                 <Award size={12} style={{ color: 'var(--trust-green)' }} />
                 {selectedVariant?.condition || phone.grade}
@@ -134,16 +140,16 @@ export default function ProductDetail() {
 
               {/* Savings Badge */}
               {savings > 0 && (
-                <div style={{ position: 'absolute', top: '24px', right: '24px', background: 'var(--black)', color: 'white', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--black)', color: 'white', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                   Save {savingsPercent}%
                 </div>
               )}
 
-              {/* Navigation */}
+              {/* Navigation Controls (Hidden on very small screens if not needed) */}
               {galleryImages.length > 1 && (
                 <>
-                  <button onClick={prevImage} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', background: 'white', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)' }}><ChevronLeft size={20} /></button>
-                  <button onClick={nextImage} style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', background: 'white', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)' }}><ChevronRight size={20} /></button>
+                  <button onClick={prevImage} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'white', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)' }}><ChevronLeft size={18} /></button>
+                  <button onClick={nextImage} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'white', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)' }}><ChevronRight size={18} /></button>
                 </>
               )}
             </motion.div>
@@ -156,29 +162,29 @@ export default function ProductDetail() {
                     key={i}
                     onClick={() => setSelectedImageIndex(i)}
                     style={{
-                      aspectRatio: '1/1', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '8px', cursor: 'pointer',
+                      aspectRatio: '1/1', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '6px', cursor: 'pointer',
                       border: selectedImageIndex === i ? '1.5px solid var(--black)' : '1px solid transparent',
                       opacity: selectedImageIndex === i ? 1 : 0.6,
                       transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}
                   >
-                    <img src={img} alt={`View ${i+1}`} style={{ maxHeight: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                    <img src={img} alt={`View ${i+1}`} style={{ maxHeight: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} loading="lazy" />
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* ── Right Column: Information Architecture ────────────────── */}
+          {/* ── Right Column: Info IA ────────────────── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
             
             <div>
               <p className="overline" style={{ marginBottom: '8px' }}>{phone.brand}</p>
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 700, color: 'var(--black)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
+              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 4.5vw, 56px)', fontWeight: 700, color: 'var(--black)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
                 {phone.model}
               </h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '2px', color: 'var(--black)' }}>
+                <div style={{ display: 'flex', gap: '2px', color: '#f59e0b' }}>
                   {[...Array(5)].map((_, i) => <CheckCircle2 key={i} size={16} fill="currentColor" />)}
                 </div>
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
@@ -190,8 +196,8 @@ export default function ProductDetail() {
             {/* Price Block */}
             <div style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-xl)' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '48px', fontWeight: 900, color: 'var(--black)', letterSpacing: '-0.04em' }}>£{displayPrice}</span>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '20px', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 4vw, 48px)', fontWeight: 900, color: 'var(--black)', letterSpacing: '-0.04em' }}>£{displayPrice}</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
               </div>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--trust-green)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Zap size={14} /> You save £{savings} vs buying new
@@ -202,16 +208,16 @@ export default function ProductDetail() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div style={{ padding: '16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)', display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <Battery size={20} style={{ color: 'var(--black)' }} />
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <p className="overline" style={{ fontSize: '9px', marginBottom: '2px' }}>Battery Health</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)' }}>{displayBatteryHealth}%</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayBatteryHealth}%</p>
                 </div>
               </div>
               <div style={{ padding: '16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)', display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <ShieldCheck size={20} style={{ color: 'var(--black)' }} />
-                <div>
+                <div style={{ minWidth: 0 }}>
                   <p className="overline" style={{ fontSize: '9px', marginBottom: '2px' }}>Warranty</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)' }}>{phone.warrantyMonths} Months</p>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{phone.warrantyMonths}m</p>
                 </div>
               </div>
             </div>
@@ -222,24 +228,24 @@ export default function ProductDetail() {
             )}
 
             {/* Delivery */}
-            <DeliveryPromiseComponent postalCode={postalCode} orderTime={new Date()} showAllOptions={false} />
+            <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
 
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '8px' }}>
               
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px' }} className="flex-col sm:flex-row">
                 {/* Quantity */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-md)', padding: '4px' }}>
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ width: '36px', height: '36px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--black)' }}>−</button>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-md)', padding: '4px', alignSelf: 'flex-start' }}>
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ width: '40px', height: '40px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--black)' }}>−</button>
                   <span style={{ width: '32px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, color: 'var(--black)' }}>{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} style={{ width: '36px', height: '36px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--black)' }}>+</button>
+                  <button onClick={() => setQuantity(quantity + 1)} style={{ width: '40px', height: '40px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--black)' }}>+</button>
                 </div>
 
                 <button 
                   onClick={handleAddToCart}
                   disabled={displayStock === 0}
                   className="btn btn-primary"
-                  style={{ flex: 1, padding: '0 32px', height: '52px', fontSize: '14px', borderRadius: 'var(--radius-md)' }}
+                  style={{ flex: 1, padding: '0 32px', height: '52px', fontSize: '15px', borderRadius: 'var(--radius-md)' }}
                 >
                   {displayStock > 0 ? 'Add to cart' : 'Out of Stock'}
                 </button>
@@ -270,21 +276,21 @@ export default function ProductDetail() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <RotateCcw size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)' }}>{phone.returnDays}-day hassle-free returns</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)' }}>{phone.returnDays}-day returns</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Specs Section ────────────────────────────────── */}
+        {/* ── Specs Section ────────────────── */}
         <div style={{ paddingTop: 'var(--spacing-48)', borderTop: '1px solid var(--grey-10)', marginBottom: 'var(--spacing-64)' }}>
           <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: 'var(--spacing-32)' }}>
             Technical specifications
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 'var(--spacing-20)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--spacing-20)' }}>
             {Object.entries(phone.specs).map(([key, value]) => (
               <div key={key} style={{ paddingBottom: '16px', borderBottom: '1px solid var(--grey-10)' }}>
-                <p className="overline" style={{ marginBottom: '4px', fontSize: '10px' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                <p className="overline" style={{ marginBottom: '4px', fontSize: '9px' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</p>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 500, color: 'var(--black)', lineHeight: 1.4 }}>{value}</p>
               </div>
             ))}

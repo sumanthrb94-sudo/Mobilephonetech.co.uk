@@ -145,6 +145,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: hidden;
   }
 
   body {
@@ -153,6 +154,12 @@
     line-height: 1.6;
     color: var(--color-text-default);
     background-color: var(--grey-0);
+    overflow-x: hidden;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
   }
 
   /* Heading hierarchy — DM Sans for UI headings */

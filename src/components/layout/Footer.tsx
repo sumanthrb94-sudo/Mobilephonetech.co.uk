@@ -64,8 +64,8 @@ export default function Footer() {
       {/* ── Newsletter strip ─────────────────── */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
         <div
-          className="container-bm"
-          style={{ maxWidth: 'var(--container-max)', padding: 'var(--spacing-48) var(--spacing-64)' }}
+          className="container-bm py-12 md:py-16"
+          style={{ maxWidth: 'var(--container-max)' }}
         >
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
@@ -124,8 +124,8 @@ export default function Footer() {
 
       {/* ── Main link columns ────────────────── */}
       <div
-        className="container-bm"
-        style={{ maxWidth: 'var(--container-max)', padding: 'var(--spacing-64) var(--spacing-64)' }}
+        className="container-bm py-12 md:py-16"
+        style={{ maxWidth: 'var(--container-max)' }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
@@ -281,16 +281,15 @@ export default function Footer() {
 
       {/* ── Legal strip ──────────────────────── */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-        <div
-          className="container-bm"
-          style={{
-            maxWidth: 'var(--container-max)',
-            padding: 'var(--spacing-20) var(--spacing-64)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-          }}
-        >
+          <div
+            className="container-bm py-6"
+            style={{
+              maxWidth: 'var(--container-max)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}
+          >
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <p
               style={{

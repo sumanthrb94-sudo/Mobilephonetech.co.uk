@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingBag, Battery, ShieldCheck, Heart, Star } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { motion } from 'motion/react';
+
+/**
+ * ProductCard — Verified Form design philosophy
+ * Optimized for performance using React.memo and lazy image loading.
+ */
 
 interface ProductCardProps {
   phone: Product;
@@ -21,7 +26,7 @@ function getBadgeClass(grade: string): string {
   }
 }
 
-export default function ProductCard({ phone }: ProductCardProps) {
+const ProductCard = memo(({ phone }: ProductCardProps) => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -43,7 +48,6 @@ export default function ProductCard({ phone }: ProductCardProps) {
     setTimeout(() => setAdded(false), 1200);
   };
 
-  /* Deterministic mock rating 3.8–5.0 */
   const rating = 3.8 + (parseInt(phone.id.slice(-1), 16) % 12) * 0.1;
   const ratingRounded = Math.min(5, Math.round(rating * 10) / 10);
 
@@ -71,6 +75,8 @@ export default function ProductCard({ phone }: ProductCardProps) {
         <img
           src={phone.imageUrl}
           alt={phone.model}
+          loading="lazy"
+          decoding="async"
           style={{
             position: 'absolute',
             inset: 0,
@@ -84,19 +90,16 @@ export default function ProductCard({ phone }: ProductCardProps) {
           className="group-img"
         />
 
-        {/* Condition grade badge */}
         <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
           <span className={getBadgeClass(phone.grade)}>{phone.grade}</span>
         </div>
 
-        {/* Savings badge */}
         {savingsPct > 0 && (
           <div style={{ position: 'absolute', top: '12px', right: '40px' }}>
             <span className="badge badge-savings">-{savingsPct}%</span>
           </div>
         )}
 
-        {/* Wishlist */}
         <button
           onClick={handleWishlist}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
@@ -137,7 +140,6 @@ export default function ProductCard({ phone }: ProductCardProps) {
           flexGrow: 1,
         }}
       >
-        {/* Brand */}
         <p
           style={{
             fontFamily: 'var(--font-sans)',
@@ -152,7 +154,6 @@ export default function ProductCard({ phone }: ProductCardProps) {
           {phone.brand}
         </p>
 
-        {/* Model — heading-3 */}
         <h3
           style={{
             fontFamily: 'var(--font-sans)',
@@ -167,14 +168,12 @@ export default function ProductCard({ phone }: ProductCardProps) {
           {phone.model}
         </h3>
 
-        {/* Storage */}
         {phone.storage && (
           <p style={{ fontSize: '13px', color: 'var(--grey-40)', fontFamily: 'var(--font-body)', marginBottom: '8px' }}>
             {phone.storage}
           </p>
         )}
 
-        {/* Rating */}
         <div className="flex items-center gap-1.5 mb-10">
           <div className="stars flex gap-0.5">
             {[1,2,3,4,5].map((s) => (
@@ -190,10 +189,8 @@ export default function ProductCard({ phone }: ProductCardProps) {
           </span>
         </div>
 
-        {/* Spacer */}
         <div style={{ flexGrow: 1 }} />
 
-        {/* Price row */}
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '12px' }}>
           <span
             className="type-price"
@@ -208,7 +205,6 @@ export default function ProductCard({ phone }: ProductCardProps) {
           )}
         </div>
 
-        {/* Trust row — body-2 */}
         <div
           className="flex items-center gap-4 pb-4 mb-4"
           style={{ borderBottom: '1px solid var(--grey-10)' }}
@@ -227,7 +223,6 @@ export default function ProductCard({ phone }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Add to cart — Primary BLACK button, 8px radius (BM spec) */}
         <button
           onClick={handleAddToCart}
           className="btn btn-primary btn-md btn-full"
@@ -243,4 +238,6 @@ export default function ProductCard({ phone }: ProductCardProps) {
       </div>
     </motion.div>
   );
-}
+});
+
+export default ProductCard;
