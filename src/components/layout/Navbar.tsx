@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
-  LogOut, Package, HelpCircle, ShieldCheck, Menu, X, Laptop,
+  HelpCircle, ShieldCheck, Menu, X, Laptop,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw, BarChart3, Moon, Sun
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -42,7 +42,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
   const { cartCount }                 = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { darkMode, toggleDarkMode } = useUI();
   const navigate = useNavigate();
 
@@ -247,85 +247,129 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
-              {/* Quality/Trust */}
-              <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" />
-
-              {/* Theme Toggle */}
-              <button
-                id="navbar-theme-toggle"
-                onClick={toggleDarkMode}
-                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center', 
-                  gap: '2px',
-                  padding: '4px 8px',
-                  borderRadius: '8px',
-                  cursor: 'pointer', 
-                  border: 'none', 
-                  backgroundColor: 'transparent' 
-                }}
-              >
-                <div>
-                  {darkMode ? (
-                    <Sun size={20} style={{ color: 'var(--grey-70)' }} />
-                  ) : (
-                    <Moon size={20} style={{ color: 'var(--grey-70)' }} />
-                  )}
-                </div>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--grey-50)', lineHeight: 1 }}>
-                  {darkMode ? 'Light' : 'Dark'}
-                </span>
-              </button>
-
-              {/* Help */}
-              <IconBtn icon={HelpCircle} label="Help" id="navbar-help-btn" />
-
-              {/* Account */}
+              {/* Profile Menu Dropdown */}
               <div style={{ position: 'relative' }} ref={dropdownRef}>
-                <IconBtn
-                  icon={User}
-                  label={isAuthenticated ? 'Account' : 'Sign in'}
-                  id="navbar-account-btn"
-                  onClick={() => isAuthenticated ? setIsAccountOpen(!isAccountOpen) : setIsAuthModalOpen(true)}
-                />
+                <button
+                  id="navbar-menu-btn"
+                  onClick={() => setIsAccountOpen(!isAccountOpen)}
+                  aria-label="Menu"
+                  style={{ 
+                    display: 'flex', 
+                    flexDirection: 'column', 
+                    alignItems: 'center', 
+                    gap: '2px',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    cursor: 'pointer', 
+                    border: 'none', 
+                    backgroundColor: 'transparent' 
+                  }}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <User size={20} style={{ color: 'var(--grey-70)' }} />
+                    <span
+                      style={{ 
+                        position: 'absolute', 
+                        top: '-2px', 
+                        right: '-4px', 
+                        width: '6px', 
+                        height: '6px', 
+                        borderRadius: '50%', 
+                        background: 'var(--blue-60)',
+                      }}
+                    />
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--grey-50)', lineHeight: 1 }}>
+                    Menu
+                  </span>
+                </button>
 
                 <AnimatePresence>
-                  {isAccountOpen && isAuthenticated && (
+                  {isAccountOpen && (
                     <motion.div
                       initial={{ opacity: 0, y: 6, scale: 0.97 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.97 }}
                       transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
-                      className="absolute right-0 mt-2 w-60 bg-white rounded-xl overflow-hidden z-[70]"
-                      style={{ border: '1px solid var(--grey-20)', boxShadow: 'var(--shadow-lg)', top: '100%' }}
+                      style={{ 
+                        position: 'absolute', 
+                        right: 0, 
+                        top: '100%',
+                        marginTop: '8px',
+                        width: '220px',
+                        background: 'var(--grey-0)', 
+                        borderRadius: '12px',
+                        border: '1px solid var(--grey-20)', 
+                        boxShadow: 'var(--shadow-lg)',
+                        overflow: 'hidden',
+                        zIndex: 70 
+                      }}
                     >
-                      <div
-                        className="px-4 py-3"
-                        style={{ borderBottom: '1px solid var(--grey-10)' }}
-                      >
-                        <p style={{ fontSize: '10px', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-50)', marginBottom: '2px' }}>
-                          Signed in as
-                        </p>
-                        <p style={{ fontSize: '14px', fontFamily: 'var(--font-sans)', fontWeight: 600, color: 'var(--black)' }} className="truncate">
-                          {user?.email}
-                        </p>
-                      </div>
-                      <Link
-                        to="/orders"
-                        onClick={() => setIsAccountOpen(false)}
-                        className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[var(--grey-5)]"
-                        style={{ fontSize: '14px', fontFamily: 'var(--font-body)', color: 'var(--grey-70)', textDecoration: 'none' }}
-                      >
-                        <Package size={16} /> My orders
-                      </Link>
                       <button
-                        onClick={() => { logout(); setIsAccountOpen(false); }}
-                        className="w-full flex items-center gap-3 px-4 py-3 transition-colors hover:bg-red-50"
-                        style={{ fontSize: '14px', fontFamily: 'var(--font-body)', color: '#dc2626', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' }}
+                        onClick={() => setIsAccountOpen(false)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '12px',
+                          width: '100%', padding: '12px 16px',
+                          background: 'transparent', border: 'none',
+                          cursor: 'pointer', textAlign: 'left'
+                        }}
                       >
-                        <LogOut size={16} /> Sign out
+                        <ShieldCheck size={18} style={{ color: 'var(--blue-60)' }} />
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                          Quality Guarantee
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => setIsAccountOpen(false)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '12px',
+                          width: '100%', padding: '12px 16px',
+                          background: 'transparent', border: 'none',
+                          cursor: 'pointer', textAlign: 'left',
+                          borderTop: '1px solid var(--grey-10)'
+                        }}
+                      >
+                        <HelpCircle size={18} style={{ color: 'var(--grey-50)' }} />
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                          Help & Support
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => { toggleDarkMode(); setIsAccountOpen(false); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '12px',
+                          width: '100%', padding: '12px 16px',
+                          background: 'transparent', border: 'none',
+                          cursor: 'pointer', textAlign: 'left',
+                          borderTop: '1px solid var(--grey-10)'
+                        }}
+                      >
+                        {darkMode ? (
+                          <Sun size={18} style={{ color: 'var(--grey-50)' }} />
+                        ) : (
+                          <Moon size={18} style={{ color: 'var(--grey-50)' }} />
+                        )}
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                          {darkMode ? 'Light Mode' : 'Dark Mode'}
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => setIsAuthModalOpen(true)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '12px',
+                          width: '100%', padding: '12px 16px',
+                          background: 'transparent', border: 'none',
+                          cursor: 'pointer', textAlign: 'left',
+                          borderTop: '1px solid var(--grey-10)'
+                        }}
+                      >
+                        <User size={18} style={{ color: 'var(--grey-50)' }} />
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                          {isAuthenticated ? 'My Account' : 'Sign In'}
+                        </span>
                       </button>
                     </motion.div>
                   )}
@@ -341,9 +385,21 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               <button
                 id="navbar-cart-btn"
                 onClick={onCartClick}
-                className="flex items-center gap-1 sm:gap-2 btn btn-primary btn-sm sm:btn-md ml-0.5 sm:ml-1 flex-shrink-0"
+                style={{
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '4px',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer', 
+                  border: 'none', 
+                  backgroundColor: 'var(--black)',
+                  color: 'white',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                }}
                 aria-label={`Cart (${cartCount} items)`}
-                style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, minWidth: 'fit-content' }}
               >
                 <ShoppingBag size={18} />
                 <span>{cartCount}</span>
