@@ -163,10 +163,9 @@ html.dark .glass-card {
 
 .container-bm {
   width: 100%;
+  max-width: var(--container-max);
   margin-left: auto;
   margin-right: auto;
-  padding-left: var(--spacing-16);
-  padding-right: var(--spacing-16);
 }
 
 @media (min-width: 640px) {

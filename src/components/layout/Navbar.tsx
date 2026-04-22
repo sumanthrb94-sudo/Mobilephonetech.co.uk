@@ -76,12 +76,20 @@ export default function Navbar({ onCartClick }: NavbarProps) {
       id={id}
       onClick={onClick}
       aria-label={label}
-      className={`flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors hover:bg-[var(--grey-5)] ${className}`}
-      style={{ minWidth: '40px', minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
+      className={`flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors ${className}`}
+      style={{ 
+        minWidth: '40px', 
+        minHeight: '44px', 
+        cursor: 'pointer', 
+        border: 'none', 
+        backgroundColor: 'transparent',
+        transition: 'background-color var(--duration-fast)' 
+      }}
+      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-5)'}
+      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
     >
       <div className="relative">
-        <Icon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }}
-          className="group-hover:text-[var(--black)]" />
+        <Icon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} />
         {badge !== undefined && badge > 0 && (
           <span
             className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 rounded-full text-white font-bold"
@@ -98,7 +106,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           color: 'var(--grey-50)',
           lineHeight: 1,
         }}
-        className="hidden lg:block group-hover:text-[var(--black)] transition-colors"
+        className="hidden lg:block"
       >
         {label}
       </span>
@@ -113,10 +121,10 @@ export default function Navbar({ onCartClick }: NavbarProps) {
       <div
         className="fixed top-0 left-0 right-0 z-[60]"
         style={{
-          background: 'var(--color-bg-default)',
+          backgroundColor: 'var(--grey-0)',
           borderBottom: '1px solid var(--grey-20)',
           boxShadow: isScrolled ? 'var(--shadow-sm)' : 'none',
-          transition: 'box-shadow var(--duration-normal), background-color 0.3s ease',
+          transition: 'box-shadow var(--duration-normal)',
         }}
       >
         {/* Main header row — 64px */}
@@ -216,14 +224,16 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 id="navbar-theme-toggle"
                 onClick={toggleDarkMode}
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors hover:bg-[var(--grey-5)]"
-                style={{ minWidth: '40px', minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
+                className="flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg"
+                style={{ minWidth: '40px', minHeight: '44px', cursor: 'pointer', border: 'none', backgroundColor: 'transparent' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-5)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div className="relative">
                   {darkMode ? (
-                    <Sun size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} className="group-hover:text-[var(--black)]" />
+                    <Sun size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} />
                   ) : (
-                    <Moon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} className="group-hover:text-[var(--black)]" />
+                    <Moon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} />
                   )}
                 </div>
                 <span
@@ -233,7 +243,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                     color: 'var(--grey-50)',
                     lineHeight: 1,
                   }}
-                  className="hidden lg:block group-hover:text-[var(--black)] transition-colors"
+                  className="hidden lg:block"
                 >
                   {darkMode ? 'Light' : 'Dark'}
                 </span>
