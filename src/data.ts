@@ -347,6 +347,256 @@ export const MOCK_PHONES: Product[] = [
     isCertified: true,
     stock: 30,
     specs: { features: 'Active Noise Cancellation, Silent Seal, Hey Google' }
+  },
+
+  // --- TABLETS ---
+  {
+    id: 'apple-ipad-pro-12-9-m2',
+    model: 'iPad Pro 12.9" M2',
+    brand: 'Apple',
+    category: 'Tablets',
+    price: 749,
+    originalPrice: 1249,
+    grade: 'Excellent',
+    batteryHealth: 94,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-tablets.png',
+    isCertified: true,
+    stock: 9,
+    specs: { display: '12.9" Liquid Retina XDR', processor: 'Apple M2', storage: '256GB', features: 'Wi-Fi + Cellular, Apple Pencil support' }
+  },
+  {
+    id: 'samsung-galaxy-tab-s9',
+    model: 'Galaxy Tab S9',
+    brand: 'Samsung',
+    category: 'Tablets',
+    price: 469,
+    originalPrice: 799,
+    grade: 'Pristine',
+    batteryHealth: 98,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-tablets.png',
+    isCertified: true,
+    stock: 13,
+    specs: { display: '11" Dynamic AMOLED 2X', processor: 'Snapdragon 8 Gen 2', storage: '128GB', features: 'S Pen included, IP68' }
+  },
+  {
+    id: 'microsoft-surface-go-3',
+    model: 'Surface Go 3',
+    brand: 'Microsoft',
+    category: 'Tablets',
+    price: 249,
+    originalPrice: 529,
+    grade: 'Good',
+    batteryHealth: 88,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-tablets.png',
+    isCertified: true,
+    stock: 16,
+    specs: { display: '10.5" PixelSense touchscreen', processor: 'Intel Pentium Gold', ram: '8GB', storage: '128GB SSD' }
+  },
+
+  // --- COMPUTING ---
+  {
+    id: 'apple-macbook-air-m2-13',
+    model: 'MacBook Air 13" M2',
+    brand: 'Apple',
+    category: 'Computing',
+    price: 799,
+    originalPrice: 1249,
+    grade: 'Excellent',
+    batteryHealth: 92,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-tablets.png',
+    isCertified: true,
+    stock: 7,
+    specs: { display: '13.6" Liquid Retina', processor: 'Apple M2', ram: '8GB', storage: '256GB SSD', features: 'MagSafe, Touch ID' }
+  },
+  {
+    id: 'dell-xps-13-9315',
+    model: 'XPS 13 9315',
+    brand: 'Dell',
+    category: 'Computing',
+    price: 529,
+    originalPrice: 999,
+    grade: 'Excellent',
+    batteryHealth: 90,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-tablets.png',
+    isCertified: true,
+    stock: 11,
+    specs: { display: '13.4" InfinityEdge FHD+', processor: 'Intel Core i7', ram: '16GB', storage: '512GB SSD' }
+  },
+  {
+    id: 'lenovo-thinkpad-x1-carbon-g9',
+    model: 'ThinkPad X1 Carbon Gen 9',
+    brand: 'Lenovo',
+    category: 'Computing',
+    price: 599,
+    originalPrice: 1399,
+    grade: 'Good',
+    batteryHealth: 86,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-tablets.png',
+    isCertified: true,
+    stock: 10,
+    specs: { display: '14" FHD IPS', processor: 'Intel Core i5', ram: '16GB', storage: '512GB SSD', features: 'Business grade, backlit keyboard' }
+  },
+
+  // --- GAMING ---
+  {
+    id: 'sony-playstation-5-disc',
+    model: 'PlayStation 5 Disc Edition',
+    brand: 'Sony',
+    category: 'Gaming',
+    price: 359,
+    originalPrice: 479,
+    grade: 'Excellent',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-accessories.png',
+    isCertified: true,
+    stock: 14,
+    specs: { processor: 'AMD Zen 2 CPU', storage: '825GB SSD', features: '4K gaming, DualSense controller included' }
+  },
+  {
+    id: 'microsoft-xbox-series-x',
+    model: 'Xbox Series X',
+    brand: 'Microsoft',
+    category: 'Gaming',
+    price: 329,
+    originalPrice: 449,
+    grade: 'Excellent',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-accessories.png',
+    isCertified: true,
+    stock: 12,
+    specs: { processor: 'Custom AMD Zen 2', storage: '1TB SSD', features: '4K 120fps, Game Pass ready' }
+  },
+  {
+    id: 'nintendo-switch-oled',
+    model: 'Switch OLED',
+    brand: 'Nintendo',
+    category: 'Gaming',
+    price: 219,
+    originalPrice: 309,
+    grade: 'Good',
+    batteryHealth: 89,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-accessories.png',
+    isCertified: true,
+    stock: 20,
+    specs: { display: '7" OLED touchscreen', storage: '64GB', features: 'Dock included, detachable Joy-Con controllers' }
+  },
+
+  // --- SMARTWATCHES ---
+  {
+    id: 'apple-watch-series-9',
+    model: 'Watch Series 9',
+    brand: 'Apple',
+    category: 'Smartwatches',
+    price: 269,
+    originalPrice: 429,
+    grade: 'Pristine',
+    batteryHealth: 97,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-smartwatches.png',
+    isCertified: true,
+    stock: 22,
+    specs: { display: 'Always-On Retina LTPO OLED', processor: 'S9 SiP', features: 'GPS, health sensors, watchOS' }
+  },
+  {
+    id: 'samsung-galaxy-watch-6',
+    model: 'Galaxy Watch6',
+    brand: 'Samsung',
+    category: 'Smartwatches',
+    price: 149,
+    originalPrice: 289,
+    grade: 'Excellent',
+    batteryHealth: 93,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-smartwatches.png',
+    isCertified: true,
+    stock: 24,
+    specs: { display: 'Super AMOLED sapphire crystal', processor: 'Exynos W930', features: 'Wear OS, body composition tracking' }
+  },
+  {
+    id: 'google-pixel-watch-2',
+    model: 'Pixel Watch 2',
+    brand: 'Google',
+    category: 'Smartwatches',
+    price: 179,
+    originalPrice: 349,
+    grade: 'Excellent',
+    batteryHealth: 94,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-smartwatches.png',
+    isCertified: true,
+    stock: 17,
+    specs: { display: 'AMOLED Gorilla Glass 5', processor: 'Qualcomm 5100', features: 'Fitbit health tracking, Wear OS' }
+  },
+
+  // --- SMART TVS ---
+  {
+    id: 'samsung-frame-55-qled',
+    model: 'The Frame 55" QLED',
+    brand: 'Samsung',
+    category: 'TV',
+    price: 649,
+    originalPrice: 1199,
+    grade: 'Excellent',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-accessories.png',
+    isCertified: true,
+    stock: 5,
+    specs: { display: '55" 4K QLED', processor: 'Quantum Processor 4K', features: 'Art Mode, HDR10+, smart TV apps' }
+  },
+  {
+    id: 'lg-c2-48-oled',
+    model: 'C2 48" OLED',
+    brand: 'LG',
+    category: 'TV',
+    price: 699,
+    originalPrice: 1299,
+    grade: 'Good',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-accessories.png',
+    isCertified: true,
+    stock: 4,
+    specs: { display: '48" 4K OLED evo', processor: 'α9 Gen5 AI Processor', features: 'HDMI 2.1, 120Hz, webOS' }
+  },
+  {
+    id: 'sony-bravia-xr-55',
+    model: 'Bravia XR 55" 4K',
+    brand: 'Sony',
+    category: 'TV',
+    price: 579,
+    originalPrice: 1099,
+    grade: 'Excellent',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/cat-accessories.png',
+    isCertified: true,
+    stock: 6,
+    specs: { display: '55" 4K LED', processor: 'Cognitive Processor XR', features: 'Google TV, Dolby Vision, Acoustic Multi-Audio' }
   }
 ];
 
@@ -356,7 +606,7 @@ export const MOCK_CATEGORIES: Category[] = [
     name: 'Smartphones',
     imageUrl: '/assets/cat-smartphones.png',
     description: 'UK\'s top 5 brands: Apple, Samsung, Google, OnePlus & Motorola',
-    productCount: 150,
+    productCount: 17,
     children: [
       {
         id: 'phones-apple',
@@ -389,6 +639,41 @@ export const MOCK_CATEGORIES: Category[] = [
     name: 'Accessories',
     imageUrl: '/assets/cat-accessories.png',
     description: 'Genuine chargers, cases, and audio for your mobile',
-    productCount: 85
+    productCount: 3
+  },
+  {
+    id: 'tablets',
+    name: 'Tablets',
+    imageUrl: '/assets/cat-tablets.png',
+    description: 'iPad, Galaxy Tab, and Windows tablets ready for work or streaming',
+    productCount: 3
+  },
+  {
+    id: 'computing',
+    name: 'Laptops',
+    imageUrl: '/assets/cat-tablets.png',
+    description: 'Certified MacBook, Dell, and Lenovo laptops for everyday work',
+    productCount: 3
+  },
+  {
+    id: 'gaming',
+    name: 'Gaming consoles',
+    imageUrl: '/assets/cat-accessories.png',
+    description: 'PlayStation, Xbox, and Nintendo hardware with warranty cover',
+    productCount: 3
+  },
+  {
+    id: 'watches',
+    name: 'Smartwatches',
+    imageUrl: '/assets/cat-smartwatches.png',
+    description: 'Apple Watch, Galaxy Watch, and Pixel Watch models',
+    productCount: 3
+  },
+  {
+    id: 'tv',
+    name: 'Smart TVs',
+    imageUrl: '/assets/cat-accessories.png',
+    description: 'Refurbished 4K OLED, QLED, and smart TVs for home cinema',
+    productCount: 3
   }
 ];

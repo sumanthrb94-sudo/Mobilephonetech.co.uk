@@ -18,12 +18,12 @@ interface NavbarProps {
 
 const CATEGORIES = [
   { label: 'Good deals',        href: '/products?deal=true',           icon: null },
-  { label: 'Smartphones',       href: '/products?category=Phones',     icon: Smartphone },
-  { label: 'Laptops',           href: '/products?category=Computing',  icon: Laptop },
+  { label: 'Smartphones',       href: '/products?category=phones',     icon: Smartphone },
+  { label: 'Laptops',           href: '/products?category=computing',  icon: Laptop },
   { label: 'Tablets',           href: '/products?category=tablets',    icon: Tablet },
   { label: 'Gaming consoles',   href: '/products?category=gaming',     icon: Gamepad2 },
   { label: 'Smartwatches',      href: '/products?category=watches',    icon: Watch },
-  { label: 'Headphones',        href: '/products?category=Accessories',icon: Headphones },
+  { label: 'Headphones',        href: '/products?category=accessories',icon: Headphones },
   { label: 'Smart TVs',         href: '/products?category=tv',         icon: Tv },
   { label: 'Trade-In',          href: '#trade-in',                     icon: RefreshCw },
   { label: 'Compare Devices',   href: '/compare',                      icon: BarChart3 },

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
@@ -20,23 +21,122 @@ const GRADE_COLOURS: Record<string, { bg: string; text: string; border: string }
   Fair:      { bg: 'var(--grey-5)',   text: 'var(--grey-60)',  border: 'var(--grey-20)'  },
 };
 
+const CATEGORY_DEPARTMENTS = [
+  {
+    id: 'phones',
+    label: 'Smartphones',
+    intro: 'Certified iPhone, Samsung Galaxy, Google Pixel, OnePlus, and Motorola handsets.',
+    matches: ['phones', 'phone', 'smartphones'],
+    category: 'Phones',
+  },
+  {
+    id: 'accessories',
+    label: 'Accessories',
+    intro: 'Audio, earbuds, chargers, and mobile essentials checked for everyday use.',
+    matches: ['accessories', 'headphones', 'audio'],
+    category: 'Accessories',
+  },
+  {
+    id: 'tablets',
+    label: 'Tablets',
+    intro: 'iPad, Galaxy Tab, and Windows tablets for work, streaming, and study.',
+    matches: ['tablets', 'tablet'],
+    category: 'Tablets',
+  },
+  {
+    id: 'computing',
+    label: 'Laptops',
+    intro: 'MacBook, Dell, and Lenovo laptops ready for productivity demos and everyday work.',
+    matches: ['computing', 'laptops', 'laptop'],
+    category: 'Computing',
+  },
+  {
+    id: 'gaming',
+    label: 'Gaming consoles',
+    intro: 'PlayStation, Xbox, and Nintendo consoles with warranty-backed refurbished pricing.',
+    matches: ['gaming', 'consoles', 'console'],
+    category: 'Gaming',
+  },
+  {
+    id: 'watches',
+    label: 'Smartwatches',
+    intro: 'Apple Watch, Galaxy Watch, and Pixel Watch models with tested battery health.',
+    matches: ['watches', 'smartwatches', 'watch'],
+    category: 'Smartwatches',
+  },
+  {
+    id: 'tv',
+    label: 'Smart TVs',
+    intro: 'Refurbished 4K OLED, QLED, and smart TVs for home cinema demos.',
+    matches: ['tv', 'tvs', 'smart-tv', 'smart-tvs'],
+    category: 'TV',
+  },
+];
+
+const BRAND_CATEGORY_MATCHES: Record<string, { label: string; brand: string; category: string; intro: string }> = {
+  'phones-apple': {
+    label: 'Apple iPhone',
+    brand: 'Apple',
+    category: 'Phones',
+    intro: 'Refurbished iPhone models with battery health, warranty, and transparent grading.',
+  },
+  'phones-samsung': {
+    label: 'Samsung Galaxy',
+    brand: 'Samsung',
+    category: 'Phones',
+    intro: 'Samsung Galaxy phones across flagship and value ranges.',
+  },
+  'phones-google': {
+    label: 'Google Pixel',
+    brand: 'Google',
+    category: 'Phones',
+    intro: 'Pixel devices with strong cameras, clean Android, and certified condition checks.',
+  },
+};
+
 export default function ProductsPage() {
   const { searchQuery, setSearchQuery, filters, setFilters, resetFilters } = useSearch();
+  const location = useLocation();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const searchParams = new URLSearchParams(location.search);
+  const categoryParam = searchParams.get('category')?.toLowerCase() || '';
+  const dealOnly = searchParams.get('deal') === 'true';
+  const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
+  const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
-  const brands  = Array.from(new Set(MOCK_PHONES.map(p => p.brand)));
-  const grades  = Array.from(new Set(MOCK_PHONES.map(p => p.grade)));
-  const maxPrice = Math.max(...MOCK_PHONES.map(p => p.price));
+  const scopedProducts = useMemo(() => {
+    return MOCK_PHONES.filter(product => {
+      if (brandCategory) {
+        return product.category === brandCategory.category && product.brand === brandCategory.brand;
+      }
+
+      if (selectedDepartment) {
+        return product.category === selectedDepartment.category;
+      }
+
+      if (dealOnly) {
+        return product.originalPrice > product.price && ((product.originalPrice - product.price) / product.originalPrice) >= 0.35;
+      }
+
+      return true;
+    });
+  }, [brandCategory, selectedDepartment, dealOnly]);
+
+  const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
+  const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
+  const maxPrice = Math.max(1000, ...scopedProducts.map(p => p.price));
 
   const filteredProducts = useMemo(() => {
-    return MOCK_PHONES.filter(phone => {
+    return scopedProducts.filter(phone => {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matches =
           phone.model.toLowerCase().includes(q) ||
           phone.brand.toLowerCase().includes(q) ||
+          phone.category.toLowerCase().includes(q) ||
           phone.specs.processor?.toLowerCase().includes(q) ||
-          phone.specs.display?.toLowerCase().includes(q);
+          phone.specs.display?.toLowerCase().includes(q) ||
+          phone.specs.features?.toLowerCase().includes(q);
         if (!matches) return false;
       }
       if (filters.brand.length > 0 && !filters.brand.includes(phone.brand)) return false;
@@ -45,7 +145,7 @@ export default function ProductsPage() {
       if (filters.storage.length > 0 && phone.specs.storage && !filters.storage.includes(phone.specs.storage)) return false;
       return true;
     });
-  }, [searchQuery, filters]);
+  }, [scopedProducts, searchQuery, filters]);
 
   const handleBrandToggle = (brand: string) =>
     setFilters({ ...filters, brand: filters.brand.includes(brand) ? filters.brand.filter(b => b !== brand) : [...filters.brand, brand] });
@@ -60,6 +160,13 @@ export default function ProductsPage() {
     filters.brand.length > 0 || filters.grade.length > 0 ||
     filters.priceRange[0] !== 0 || filters.priceRange[1] !== maxPrice ||
     filters.storage.length > 0;
+
+  const pageTitle = brandCategory?.label || selectedDepartment?.label || (dealOnly ? 'Good deals' : 'Certified refurbished devices');
+  const pageIntro = brandCategory?.intro || selectedDepartment?.intro || (dealOnly
+    ? 'The strongest savings across every department, still tested and warranty-backed.'
+    : 'Phones, tablets, laptops, watches, consoles, TVs, and accessories tested for demo-ready browsing.');
+  const pageLabel = brandCategory || selectedDepartment || dealOnly ? 'Department' : 'All devices';
+  const activeDepartmentId = selectedDepartment?.id || (brandCategory ? 'phones' : dealOnly ? 'deals' : 'all');
 
   // ── Filter panel (shared between desktop sticky + mobile drawer) ──────────
   const FilterPanel = () => (
@@ -191,7 +298,7 @@ export default function ProductsPage() {
       >
         {/* ── Page header ──────────────────────────────── */}
         <div style={{ marginBottom: 'var(--spacing-32)' }}>
-          <div className="overline mb-3">All devices</div>
+          <div className="overline mb-3">{pageLabel}</div>
           <h1
             style={{
               fontFamily: 'var(--font-sans)',
@@ -203,12 +310,71 @@ export default function ProductsPage() {
               marginBottom: '8px',
             }}
           >
-            Certified refurbished devices
+            {pageTitle}
           </h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', maxWidth: '440px' }}>
-            {MOCK_PHONES.length} devices — tested, certified, and backed by a 12-month warranty.
+            {pageIntro} {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''} available.
           </p>
         </div>
+
+        {/* Department shortcuts */}
+        <nav
+          aria-label="Product departments"
+          style={{
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: 'var(--spacing-16)',
+            marginBottom: 'var(--spacing-24)',
+            scrollbarWidth: 'thin',
+          }}
+        >
+          {[
+            { id: 'all', label: 'All', href: '/products', count: MOCK_PHONES.length },
+            { id: 'deals', label: 'Deals', href: '/products?deal=true', count: MOCK_PHONES.filter(product => product.originalPrice > product.price && ((product.originalPrice - product.price) / product.originalPrice) >= 0.35).length },
+            ...CATEGORY_DEPARTMENTS.map(department => ({
+              id: department.id,
+              label: department.label,
+              href: `/products?category=${department.id}`,
+              count: MOCK_PHONES.filter(product => product.category === department.category).length,
+            })),
+          ].map(department => {
+            const isActive = activeDepartmentId === department.id;
+            return (
+              <Link
+                key={department.id}
+                to={department.href}
+                style={{
+                  flexShrink: 0,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  height: '38px',
+                  padding: '0 14px',
+                  borderRadius: 'var(--radius-full)',
+                  border: isActive ? '1.5px solid var(--black)' : '1px solid var(--grey-20)',
+                  background: isActive ? 'var(--black)' : 'var(--grey-0)',
+                  color: isActive ? 'white' : 'var(--grey-60)',
+                  textDecoration: 'none',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {department.label}
+                <span
+                  style={{
+                    fontSize: '11px',
+                    color: isActive ? 'rgba(255,255,255,0.72)' : 'var(--grey-40)',
+                  }}
+                >
+                  {department.count}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
 
         {/* ── Search bar ─────────────────────────────────── */}
         <div
@@ -330,7 +496,7 @@ export default function ProductsPage() {
                 }}
               >
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-                  Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{filteredProducts.length}</strong> of {MOCK_PHONES.length} devices
+                  Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{filteredProducts.length}</strong> of {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''}
                 </p>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {['Price ↑', 'Price ↓', 'Condition'].map(sort => (

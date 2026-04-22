@@ -9,7 +9,7 @@ import { MOCK_CATEGORIES } from '../data';
  */
 export default function CategoryGrid() {
   const topTwo   = MOCK_CATEGORIES.slice(0, 2);
-  const bottomThree = MOCK_CATEGORIES.slice(2, 5);
+  const remainingCategories = MOCK_CATEGORIES.slice(2);
 
   const LargeCard = ({ category, index }: { category: typeof MOCK_CATEGORIES[0]; index: number }) => (
     <motion.a
@@ -217,9 +217,9 @@ export default function CategoryGrid() {
           ))}
         </div>
 
-        {/* ── Row 2: 3 smaller cards ───────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {bottomThree.map((cat, i) => (
+        {/* ── Row 2: supporting departments ───────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+          {remainingCategories.map((cat, i) => (
             <SmallCard key={cat.id} category={cat} index={i} />
           ))}
         </div>

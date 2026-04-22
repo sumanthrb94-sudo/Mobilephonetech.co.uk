@@ -42,11 +42,13 @@ export interface Review {
   date: string;
 }
 
+export type ProductCategory = 'Phones' | 'Tablets' | 'Computing' | 'Gaming' | 'Smartwatches' | 'TV' | 'Accessories';
+
 export interface Product {
   id: string;
   model: string;
   brand: string;
-  category: 'Phones' | 'Computing' | 'Components' | 'Accessories';
+  category: ProductCategory;
   storage?: string;
   price: number;
   originalPrice: number;
