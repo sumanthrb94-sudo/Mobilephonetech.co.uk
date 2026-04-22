@@ -179,31 +179,97 @@ export const MOCK_CATEGORIES: Category[] = [
     name: 'Smartphones',
     imageUrl: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=800&auto=format&fit=crop',
     description: 'Refurbished and certified smartphones from top brands',
-    productCount: 10,
+    productCount: 150,
     children: [
       {
         id: 'phones-apple',
-        name: 'Apple iPhones',
+        name: 'Apple iPhone',
         imageUrl: '/assets/YUYFZeFzWLMA.png',
         parent: 'phones',
-        description: 'Latest and classic iPhone models',
-        productCount: 4,
+        description: 'iPhone 15, 14, 13, 12, SE Series',
+        productCount: 45,
       },
       {
         id: 'phones-samsung',
         name: 'Samsung Galaxy',
-        imageUrl: 'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
+        imageUrl: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=800&auto=format&fit=crop',
         parent: 'phones',
-        description: 'Premium Samsung smartphones',
-        productCount: 0,
+        description: 'S24, S23, Z Fold, A Series',
+        productCount: 38,
+      },
+      {
+        id: 'phones-google',
+        name: 'Google Pixel',
+        imageUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=800&auto=format&fit=crop',
+        parent: 'phones',
+        description: 'Pixel 8, 7, 6, Pro & A Series',
+        productCount: 22,
+      },
+      {
+        id: 'phones-other',
+        name: 'Other Brands',
+        imageUrl: 'https://images.unsplash.com/photo-1556656793-062ff98782ee?q=80&w=800&auto=format&fit=crop',
+        parent: 'phones',
+        description: 'Sony, Motorola, Nothing, Xiaomi',
+        productCount: 45,
       }
     ]
   },
   {
-    id: 'computing',
-    name: 'Mac & Computing',
+    id: 'tablets',
+    name: 'Tablets & iPads',
     imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=800&auto=format&fit=crop',
-    description: 'Refurbished MacBooks and computing devices',
-    productCount: 0
+    description: 'Refurbished iPads and Android Tablets',
+    productCount: 42,
+    children: [
+      {
+        id: 'tablets-ipad',
+        name: 'Apple iPad',
+        imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=800&auto=format&fit=crop',
+        parent: 'tablets',
+        description: 'iPad Pro, Air, Mini & Standard',
+        productCount: 28,
+      },
+      {
+        id: 'tablets-samsung',
+        name: 'Samsung Tab',
+        imageUrl: 'https://images.unsplash.com/photo-1589739900243-4b52cd9b104e?q=80&w=800&auto=format&fit=crop',
+        parent: 'tablets',
+        description: 'Galaxy Tab S & A Series',
+        productCount: 14,
+      }
+    ]
+  },
+  {
+    id: 'wearables',
+    name: 'Smartwatches',
+    imageUrl: 'https://images.unsplash.com/photo-1544117518-30df578096a4?q=80&w=800&auto=format&fit=crop',
+    description: 'Refurbished Apple Watch and Galaxy Watch',
+    productCount: 25,
+    children: [
+      {
+        id: 'wearables-apple',
+        name: 'Apple Watch',
+        imageUrl: 'https://images.unsplash.com/photo-1544117518-30df578096a4?q=80&w=800&auto=format&fit=crop',
+        parent: 'wearables',
+        description: 'Series 9, 8, Ultra & SE',
+        productCount: 18,
+      },
+      {
+        id: 'wearables-samsung',
+        name: 'Galaxy Watch',
+        imageUrl: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?q=80&w=800&auto=format&fit=crop',
+        parent: 'wearables',
+        description: 'Watch 6, 5, 4 & Classic',
+        productCount: 7,
+      }
+    ]
+  },
+  {
+    id: 'accessories',
+    name: 'Accessories',
+    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop',
+    description: 'Chargers, Cases, and Headphones',
+    productCount: 85
   }
 ];
