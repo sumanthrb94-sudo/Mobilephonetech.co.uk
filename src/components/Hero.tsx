@@ -123,13 +123,19 @@ export default function Hero() {
       />
 
       <div
-        className="container-bm"
         style={{
-          maxWidth: 'var(--container-max)',
+          width: '100%',
+          maxWidth: '1280px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '16px',
+          paddingRight: '16px',
           height: '100%',
           position: 'relative',
           zIndex: 2,
+          boxSizing: 'border-box',
         }}
+        className="hero-container"
       >
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
@@ -304,9 +310,13 @@ export default function Hero() {
       </div>
 
       <div
-        className="container-bm"
         style={{
-          maxWidth: 'var(--container-max)',
+          width: '100%',
+          maxWidth: '1280px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          paddingLeft: '16px',
+          paddingRight: '16px',
           position: 'absolute',
           bottom: '24px',
           left: '0',
@@ -315,6 +325,7 @@ export default function Hero() {
           alignItems: 'center',
           justifyContent: 'space-between',
           zIndex: 10,
+          boxSizing: 'border-box',
         }}
       >
         <div className="flex items-center gap-2.5">

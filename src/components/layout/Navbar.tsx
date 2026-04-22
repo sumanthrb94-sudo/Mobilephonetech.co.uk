@@ -130,22 +130,24 @@ export default function Navbar({ onCartClick }: NavbarProps) {
         {/* Main header row — 64px */}
         <header style={{ height: 'var(--header-h)', display: 'flex', alignItems: 'center' }}>
           <div
-            className="container-bm"
             style={{
-              maxWidth: 'var(--container-max)',
               width: '100%',
+              maxWidth: '1280px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              paddingLeft: '16px',
+              paddingRight: '16px',
               display: 'flex',
               alignItems: 'center',
               gap: '16px',
-              marginLeft: 'auto',
-              marginRight: 'auto',
+              boxSizing: 'border-box',
             }}
+            className="navbar-header"
           >
             {/* ── Mobile hamburger ── */}
             <button
               onClick={() => setIsMobileOpen(true)}
-              className="lg:hidden flex items-center justify-center rounded-lg flex-shrink-0"
-              style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }}
+              style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               aria-label="Open menu"
               id="navbar-hamburger"
             >

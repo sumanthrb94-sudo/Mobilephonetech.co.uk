@@ -182,6 +182,41 @@ html.dark .glass-card {
   }
 }
 
+@media (min-width: 640px) {
+  .navbar-header {
+    padding-left: 24px;
+    padding-right: 24px;
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .navbar-header {
+    padding-left: 32px;
+    padding-right: 32px;
+    gap: 32px;
+  }
+}
+
+.hero-container {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 640px) {
+  .hero-container {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 /* ───────────────────────────────────────────────────────────────
    2. TAILWIND @THEME BRIDGE
 ─────────────────────────────────────────────────────────────── */
