@@ -3,6 +3,7 @@ import { GoogleGenAI } from "@google/genai";
 import { MessageSquare, Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
+import gsmarenaData from '../gsmarena_data.json';
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -30,25 +31,33 @@ export default function AIAssistant() {
     setIsLoading(true);
 
     try {
+      // Find relevant data from GSMArena
+      const relevantData = gsmarenaData.filter(d => 
+        userMessage.toLowerCase().includes(d.model.toLowerCase()) || 
+        d.model.toLowerCase().includes(userMessage.toLowerCase())
+      );
+
       const prompt = `
         You are the Shopping Assistant for "Mobile World", a global retail store for mobile technology.
         Your goal is to help users navigate our catalog of smartphones, chargers, and accessories.
         
-        CATALOG HIGHLIGHTS:
-        ${MOCK_PHONES.map(p => `${p.model} (${p.brand}): £${p.price}, Specs: ${JSON.stringify(p.specs)}`).join('\n')}
+        CATALOG HIGHLIGHTS (OUR INVENTORY):
+        ${MOCK_PHONES.map(p => `${p.model} (${p.brand}): £${p.price}, Grade: ${p.grade}`).join('\n')}
         
-        DEPARTMENTS:
-        - Smartphones (New & Certified Pre-Owned)
-        - Computing (Mac Minis focus, Workstations)
-        - Accessories (Privacy Glass, Cases, Power)
-        
+        DEEP TECHNICAL KNOWLEDGE (FROM GSMARENA):
+        ${relevantData.length > 0 
+          ? relevantData.map(d => `MODEL: ${d.model}\nSPECS: ${JSON.stringify(d.specs)}`).join('\n---\n')
+          : "Use your general knowledge for technical specs if not listed above."
+        }
+
         USER QUESTION: ${userMessage}
         
         INSTRUCTIONS:
-        1. Act like an assistant from a leading retail brand.
-        2. Help them choose across different categories.
-        3. Mention specific specs like AI TOPS if they care about performance.
-        4. Keep responses concise and professional.
+        1. Act like an expert tech advisor from a leading retail brand.
+        2. Use the GSMArena data to provide highly accurate technical details (e.g., sensor sizes, battery chemistry, precise weights).
+        3. Cross-reference with OUR INVENTORY to mention current pricing and condition (Grades).
+        4. If the user asks about a phone we have in stock, prioritize those details.
+        5. Keep responses concise, professional, and helpful.
       `;
 
       const response = await ai.models.generateContent({
@@ -60,7 +69,7 @@ export default function AIAssistant() {
       setMessages(prev => [...prev, { role: 'assistant', content: assistantContent }]);
     } catch (error) {
       console.error("AI Error:", error);
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered a technical glitch in my neural network. Please try again!" }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I encountered a technical glitch. Please try again!" }]);
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +107,7 @@ export default function AIAssistant() {
                   <h3 className="font-black text-sm uppercase tracking-widest">Tech Advisor</h3>
                   <div className="flex items-center gap-1">
                     <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-bold text-slate-400">AI POWERED</span>
+                    <span className="text-[10px] font-bold text-slate-400">GSMARENA TRAINED</span>
                   </div>
                 </div>
               </div>
@@ -165,7 +174,7 @@ export default function AIAssistant() {
                 </button>
               </div>
               <p className="text-[10px] text-center text-slate-400 mt-4 font-bold uppercase tracking-widest">
-                AI Support
+                AI Support • Powered by GSMArena Data
               </p>
             </div>
           </motion.div>
