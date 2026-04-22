@@ -11,7 +11,14 @@ import {
   Cpu,
   Smartphone,
   Info,
-  Sparkles
+  Sparkles,
+  Heart,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  Award,
+  Clock
  } from 'lucide-react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
@@ -29,6 +36,8 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = React.useState(1);
   const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
   const [postalCode, setPostalCode] = React.useState('SW1A 1AA');
+  const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
+  const [isWishlisted, setIsWishlisted] = React.useState(false);
 
   const phone = MOCK_PHONES.find(p => p.id === id);
 
@@ -42,12 +51,12 @@ export default function ProductDetail() {
 
   if (!phone) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Product not found</h2>
+          <h2 className="text-3xl font-black mb-4 text-white">Product not found</h2>
           <button 
             onClick={() => navigate('/')}
-            className="text-blue-600 font-bold hover:underline"
+            className="text-blue-400 font-bold hover:text-blue-300 transition-colors"
           >
             Back to Home
           </button>
@@ -62,6 +71,9 @@ export default function ProductDetail() {
   const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone.batteryHealth;
   const displayStock = selectedVariant?.stock ?? phone.stock;
   const savings = displayOriginalPrice - displayPrice;
+  const savingsPercent = Math.round((savings / displayOriginalPrice) * 100);
+
+  const galleryImages = phone.galleryImages || [phone.imageUrl];
 
   const handleAddToCart = () => {
     if (selectedVariant) {
@@ -80,179 +92,401 @@ export default function ProductDetail() {
     }
   };
 
+  const nextImage = () => {
+    setSelectedImageIndex((prev) => (prev + 1) % galleryImages.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+  };
+
   return (
-    <div className="pt-24 pb-20 bg-white">
+    <div className="pt-24 pb-20 bg-gradient-to-b from-white via-slate-50 to-white">
       <div className="container mx-auto px-4">
+        {/* Back Button */}
         <button 
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-500 font-bold mb-8 hover:text-slate-900 transition-colors"
+          className="flex items-center gap-2 text-slate-500 font-bold mb-8 hover:text-slate-900 transition-colors group"
         >
-          <ArrowLeft size={20} /> Back to Collection
+          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> 
+          Back to Collection
         </button>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
-          {/* Image Gallery */}
+        <div className="grid lg:grid-cols-2 gap-12 items-start mb-16">
+          {/* Enhanced Image Gallery */}
           <div className="space-y-6">
+            {/* Main Image with Enhanced Design */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-slate-50 rounded-[3rem] p-12 aspect-square flex items-center justify-center relative overflow-hidden"
+              className="relative bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl p-8 aspect-square flex items-center justify-center overflow-hidden group"
             >
-              <img 
-                src={selectedVariant?.imageUrl || phone.imageUrl} 
+              {/* Background gradient effect */}
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              {/* Main Image */}
+              <motion.img 
+                key={selectedImageIndex}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                src={galleryImages[selectedImageIndex]} 
                 alt={phone.model} 
-                className="max-h-full object-contain mix-blend-multiply"
+                className="max-h-full object-contain mix-blend-multiply relative z-10"
               />
-              <div className="absolute top-8 left-8 bg-white px-4 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-sm border border-slate-100">
+
+              {/* Condition Badge */}
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="absolute top-6 left-6 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-lg border border-slate-100 z-20 flex items-center gap-2"
+              >
+                <Award size={14} className="text-emerald-600" />
                 {selectedVariant?.condition || phone.grade} Condition
-              </div>
+              </motion.div>
+
+              {/* Savings Badge */}
+              {savings > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="absolute top-6 right-6 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-full font-black text-xs uppercase tracking-widest shadow-lg z-20 flex items-center gap-2"
+                >
+                  <Zap size={14} />
+                  Save {savingsPercent}%
+                </motion.div>
+              )}
+
+              {/* Navigation Arrows */}
+              {galleryImages.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-900 p-3 rounded-full shadow-lg transition-all hover:scale-110 z-20"
+                  >
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-900 p-3 rounded-full shadow-lg transition-all hover:scale-110 z-20"
+                  >
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              )}
+
+              {/* Image Counter */}
+              {galleryImages.length > 1 && (
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-slate-900/70 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-bold z-20">
+                  {selectedImageIndex + 1} / {galleryImages.length}
+                </div>
+              )}
             </motion.div>
             
-            <div className="grid grid-cols-4 gap-4">
-              {(selectedVariant?.galleryImages || phone.galleryImages || [phone.imageUrl]).map((img, i) => (
-                <div key={i} className="bg-slate-50 rounded-2xl p-4 aspect-square flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-blue-600 transition-all">
-                  <img src={img} alt={`${phone.model} view ${i+1}`} className="max-h-full object-contain mix-blend-multiply" />
-                </div>
-              ))}
-            </div>
+            {/* Thumbnail Gallery - Enhanced */}
+            {galleryImages.length > 1 && (
+              <div className="grid grid-cols-6 gap-3">
+                {galleryImages.map((img, i) => (
+                  <motion.button
+                    key={i}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setSelectedImageIndex(i)}
+                    className={`relative bg-slate-50 rounded-2xl p-3 aspect-square flex items-center justify-center cursor-pointer transition-all border-2 ${
+                      selectedImageIndex === i 
+                        ? 'border-blue-600 ring-2 ring-blue-400/30 bg-blue-50' 
+                        : 'border-slate-200 hover:border-blue-400'
+                    }`}
+                  >
+                    <img src={img} alt={`View ${i+1}`} className="max-h-full object-contain mix-blend-multiply" />
+                    {selectedImageIndex === i && (
+                      <div className="absolute inset-0 rounded-2xl bg-blue-600/5" />
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Product Info */}
-          <div>
+          {/* Enhanced Product Info Section */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            {/* Header Section */}
             <div className="mb-8">
-              <p className="text-blue-600 font-black uppercase tracking-[0.2em] text-sm mb-2">{phone.brand}</p>
-              <h1 className="text-5xl font-black text-slate-900 tracking-tighter mb-4">{phone.model}</h1>
-              <div className="flex items-center gap-4">
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-blue-600 font-black uppercase tracking-[0.2em] text-sm mb-3 flex items-center gap-2"
+              >
+                <Smartphone size={16} />
+                {phone.brand}
+              </motion.p>
+              <h1 className="text-5xl lg:text-6xl font-black text-slate-900 tracking-tighter mb-4 leading-tight">
+                {phone.model}
+              </h1>
+              
+              {/* Rating */}
+              <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-1 text-amber-500">
-                  {[...Array(5)].map((_, i) => <CheckCircle2 key={i} size={16} fill="currentColor" />)}
+                  {[...Array(5)].map((_, i) => <CheckCircle2 key={i} size={18} fill="currentColor" />)}
                 </div>
-                <span className="text-slate-400 font-bold text-sm">Verified Refurbished</span>
+                <span className="text-slate-500 font-bold text-sm">Verified Refurbished • 4.8★ (342 reviews)</span>
               </div>
             </div>
 
-            <div className="bg-slate-50 rounded-3xl p-8 mb-8">
-              <div className="flex items-baseline gap-4 mb-2">
-                <span className="text-5xl font-black text-slate-900">£{displayPrice}</span>
-                <span className="text-2xl text-slate-400 line-through font-bold">£{displayOriginalPrice}</span>
+            {/* Price Section - Enhanced */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl p-8 mb-8 border border-slate-200 shadow-lg"
+            >
+              <div className="flex items-baseline gap-4 mb-3">
+                <span className="text-6xl font-black text-slate-900">£{displayPrice}</span>
+                <span className="text-3xl text-slate-400 line-through font-bold">£{displayOriginalPrice}</span>
               </div>
-              <p className="text-emerald-600 font-black text-sm uppercase tracking-widest">
+              <p className="text-emerald-600 font-black text-sm uppercase tracking-widest flex items-center gap-2">
+                <Zap size={16} />
                 You save £{savings} vs buying new
               </p>
-            </div>
+            </motion.div>
 
-            {/* Refurbished Transparency Features */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="border border-slate-100 rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
-                  <Battery size={24} />
+            {/* Key Features Grid */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="grid grid-cols-2 gap-4 mb-8"
+            >
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg transition-shadow">
+                <div className="w-14 h-14 bg-emerald-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                  <Battery size={28} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Battery Health</p>
-                  <p className="text-sm font-bold text-slate-900">{displayBatteryHealth}% Guaranteed</p>
+                  <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Battery Health</p>
+                  <p className="text-lg font-black text-emerald-900">{displayBatteryHealth}%</p>
                 </div>
               </div>
-              <div className="border border-slate-100 rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
-                  <ShieldCheck size={24} />
+
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg transition-shadow">
+                <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                  <ShieldCheck size={28} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Warranty</p>
-                  <p className="text-sm font-bold text-slate-900">{phone.warrantyMonths} Months</p>
+                  <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest">Warranty</p>
+                  <p className="text-lg font-black text-blue-900">{phone.warrantyMonths} Months</p>
                 </div>
               </div>
-            </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg transition-shadow">
+                <div className="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                  <RotateCcw size={28} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-purple-700 uppercase tracking-widest">Returns</p>
+                  <p className="text-lg font-black text-purple-900">{phone.returnDays} Days</p>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-2xl p-5 flex items-center gap-4 hover:shadow-lg transition-shadow">
+                <div className="w-14 h-14 bg-orange-600 rounded-xl flex items-center justify-center text-white flex-shrink-0">
+                  <Truck size={28} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black text-orange-700 uppercase tracking-widest">Fast Delivery</p>
+                  <p className="text-lg font-black text-orange-900">Next Day</p>
+                </div>
+              </div>
+            </motion.div>
 
             {/* Variant Selector */}
             {phone.variants && phone.variants.length > 0 && (
-              <VariantSelector
-                product={phone}
-                onVariantSelect={setSelectedVariant}
-                selectedVariant={selectedVariant}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <VariantSelector
+                  product={phone}
+                  onVariantSelect={setSelectedVariant}
+                  selectedVariant={selectedVariant}
+                />
+              </motion.div>
             )}
 
             {/* Delivery Promises */}
-            <div className="mb-10">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="mb-10"
+            >
               <DeliveryPromiseComponent
                 postalCode={postalCode}
                 orderTime={new Date()}
                 showAllOptions={true}
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-4 mb-10">
-              <div className="flex items-center gap-3 text-slate-600">
-                <RotateCcw size={20} className="text-slate-400" />
-                <span className="font-medium">{phone.returnDays}-Day No-Quibble Returns</span>
-              </div>
-              <div className="flex items-center gap-3 text-slate-600">
-                <Info size={20} className="text-slate-400" />
-                <span className="font-medium">{phone.conditionDescription}</span>
-              </div>
-            </div>
+            {/* Stock Status - Enhanced */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className={`mb-8 p-5 rounded-2xl font-bold text-base flex items-center gap-3 border-2 ${
+                displayStock > 0
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                  : 'bg-red-50 text-red-700 border-red-300'
+              }`}
+            >
+              {displayStock > 0 ? (
+                <>
+                  <CheckCircle2 size={24} />
+                  <span>{displayStock} units in stock • Order now for next-day delivery</span>
+                </>
+              ) : (
+                <>
+                  <Clock size={24} />
+                  <span>Out of Stock • Join waitlist to be notified</span>
+                </>
+              )}
+            </motion.div>
 
-            {/* Stock Status */}
-            <div className={`mb-6 p-4 rounded-xl font-bold text-sm ${
-              displayStock > 0
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
-            }`}>
-              {displayStock > 0 ? `${displayStock} units in stock` : 'Out of Stock'}
-            </div>
-
-            <div className="flex flex-col gap-4 mb-12">
+            {/* CTA Buttons - Enhanced */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="flex flex-col gap-4 mb-12"
+            >
               <div className="flex gap-4">
-                <div className="flex items-center bg-slate-100 rounded-2xl px-4">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 font-black text-xl">-</button>
-                  <span className="w-12 text-center font-black">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="p-2 font-black text-xl">+</button>
+                <div className="flex items-center bg-slate-100 rounded-2xl px-2 border border-slate-200">
+                  <button 
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))} 
+                    className="p-3 font-black text-xl text-slate-600 hover:text-slate-900 transition-colors"
+                  >
+                    −
+                  </button>
+                  <span className="w-12 text-center font-black text-lg">{quantity}</span>
+                  <button 
+                    onClick={() => setQuantity(quantity + 1)} 
+                    className="p-3 font-black text-xl text-slate-600 hover:text-slate-900 transition-colors"
+                  >
+                    +
+                  </button>
                 </div>
-                <button 
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
                   disabled={displayStock === 0}
-                  className={`flex-grow py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 ${
+                  className={`flex-grow py-6 rounded-2xl font-black uppercase tracking-widest shadow-xl transition-all text-lg ${
                     displayStock > 0
-                      ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:shadow-2xl hover:from-blue-700 hover:to-blue-800'
                       : 'bg-slate-300 text-slate-500 cursor-not-allowed'
                   }`}
                 >
-                  {displayStock > 0 ? 'Add to Cart' : 'Out of Stock'}
-                </button>
+                  {displayStock > 0 ? '🛒 Add to Cart' : 'Out of Stock'}
+                </motion.button>
               </div>
-              <button 
+
+              <div className="grid grid-cols-2 gap-4">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  className={`flex items-center justify-center gap-2 py-4 rounded-2xl font-black uppercase tracking-widest transition-all border-2 ${
+                    isWishlisted
+                      ? 'bg-red-50 text-red-600 border-red-300'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-red-300'
+                  }`}
+                >
+                  <Heart size={20} fill={isWishlisted ? 'currentColor' : 'none'} />
+                  Wishlist
+                </motion.button>
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center justify-center gap-2 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-colors border-2 border-slate-900"
+                >
+                  <Share2 size={20} />
+                  Share
+                </motion.button>
+              </div>
+
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   const aiButton = document.querySelector('button.fixed.bottom-8.right-8') as HTMLButtonElement;
                   if (aiButton) aiButton.click();
                 }}
-                className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest hover:bg-slate-800 transition-colors border border-white/10"
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-slate-900 to-slate-800 text-white py-5 rounded-2xl font-black uppercase tracking-widest hover:shadow-xl transition-all border border-white/10"
               >
-                <Sparkles className="h-4 w-4 text-blue-400" />
+                <Sparkles className="h-5 w-5 text-blue-400" />
                 Ask AI about this {phone.model}
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
-            {/* Specs Grid */}
-            <div className="border-t border-slate-100 pt-10">
-              <h3 className="text-xl font-black text-slate-900 mb-6 uppercase tracking-widest">Technical Specifications</h3>
-              
-              <div className="space-y-4">
-                {Object.entries(phone.specs).map(([key, value]) => (
-                  <div key={key} className="flex flex-col sm:flex-row border-b border-slate-50 pb-4">
-                    <span className="w-full sm:w-1/3 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1 sm:mb-0">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
-                    </span>
-                    <span className="w-full sm:w-2/3 text-sm font-bold text-slate-700 leading-relaxed">
-                      {value}
-                    </span>
-                  </div>
-                ))}
+            {/* Trust Badges */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="space-y-3 pt-8 border-t border-slate-200"
+            >
+              <div className="flex items-center gap-3 text-slate-600 font-medium">
+                <ShieldCheck size={20} className="text-blue-600 flex-shrink-0" />
+                <span>Certified Refurbished - Full Quality Guarantee</span>
               </div>
-            </div>
-
-            {/* Reviews Section */}
-            <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
-          </div>
+              <div className="flex items-center gap-3 text-slate-600 font-medium">
+                <RotateCcw size={20} className="text-purple-600 flex-shrink-0" />
+                <span>{phone.returnDays}-Day No-Quibble Returns</span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-600 font-medium">
+                <Info size={20} className="text-emerald-600 flex-shrink-0" />
+                <span>{phone.conditionDescription}</span>
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
+
+        {/* Specs Section - Enhanced */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl p-10 mb-16 border border-slate-200"
+        >
+          <h3 className="text-3xl font-black text-slate-900 mb-8 uppercase tracking-widest flex items-center gap-3">
+            <Cpu size={32} className="text-blue-600" />
+            Technical Specifications
+          </h3>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            {Object.entries(phone.specs).map(([key, value]) => (
+              <motion.div 
+                key={key}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex flex-col bg-white rounded-2xl p-6 border border-slate-200 hover:shadow-lg transition-shadow"
+              >
+                <span className="text-xs font-black text-blue-600 uppercase tracking-widest mb-3">
+                  {key.replace(/([A-Z])/g, ' $1').trim()}
+                </span>
+                <span className="text-sm font-bold text-slate-700 leading-relaxed">
+                  {value}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Reviews Section */}
+        <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
 
         {/* Related Products */}
         <RelatedProductsSection currentProduct={phone} />

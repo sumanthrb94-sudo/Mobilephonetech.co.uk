@@ -16,11 +16,14 @@ export const MOCK_PHONES: Product[] = [
     galleryImages: [
       '/assets/YUYFZeFzWLMA.png',
       '/assets/xKrBA0WkKCOR.jpg',
-      '/assets/y0wXjoNpojxp.png'
+      '/assets/y0wXjoNpojxp.png',
+      'https://images.unsplash.com/photo-1592286927505-1def25115558?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop'
     ],
     isCertified: true,
     stock: 5,
-    conditionDescription: 'Like new condition with no visible scratches. Battery health guaranteed above 95%.',
+    conditionDescription: 'Like new condition with no visible scratches or blemishes. Battery health guaranteed above 95%. Complete with original box, charger, and all accessories. Professional refurbishment with 12-month warranty included.',
     specs: {
       network: 'GSM / CDMA / HSPA / EVDO / LTE / 5G',
       body: '159.9 x 76.7 x 8.3 mm, 221g; Glass front/back (Corning-made), titanium frame (grade 5)',
@@ -64,11 +67,15 @@ export const MOCK_PHONES: Product[] = [
     imageUrl: 'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-5g-sm-s928-0.jpg',
     galleryImages: [
       'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-5g-sm-s928-0.jpg',
-      'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-1.jpg'
+      'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-1.jpg',
+      'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop'
     ],
     isCertified: true,
     stock: 8,
-    conditionDescription: 'Pristine condition, basically brand new. S-Pen included.',
+    conditionDescription: 'Pristine condition, basically brand new. S-Pen included with full functionality. Gorilla Glass Armor display in perfect condition. All features tested and working flawlessly. Includes original Samsung charger and complete packaging.',
     specs: {
       network: 'GSM / CDMA / HSPA / EVDO / LTE / 5G',
       body: '162.3 x 79 x 8.6 mm, 232g; Glass front (Gorilla Armor), glass back (Gorilla Glass), titanium frame',
@@ -112,11 +119,15 @@ export const MOCK_PHONES: Product[] = [
     imageUrl: 'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-1.jpg',
     galleryImages: [
       'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-1.jpg',
-      'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-2.jpg'
+      'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-2.jpg',
+      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop'
     ],
     isCertified: true,
     stock: 15,
-    conditionDescription: 'Excellent condition. Experience Google AI at its best.',
+    conditionDescription: 'Excellent condition with minimal wear. Google Tensor G3 AI features fully operational. Gorilla Glass Victus 2 display pristine and responsive. All cameras functioning perfectly with exceptional image quality. Includes USB-C charger and complete documentation.',
     specs: {
       network: 'GSM / HSPA / LTE / 5G',
       body: '162.6 x 76.5 x 8.8 mm, 213g; Glass front (Gorilla Glass Victus 2), glass back (Gorilla Glass Victus 2), aluminum frame',
@@ -158,9 +169,17 @@ export const MOCK_PHONES: Product[] = [
     warrantyMonths: 12,
     returnDays: 30,
     imageUrl: 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-12-pro-1.jpg',
+    galleryImages: [
+      'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-12-pro-1.jpg',
+      'https://images.unsplash.com/photo-1592286927505-1def25115558?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=800&auto=format&fit=crop'
+    ],
     isCertified: true,
     stock: 8,
-    conditionDescription: 'Excellent condition. Professional refurbishing process completed.',
+    conditionDescription: 'Excellent condition with minimal signs of use. Professional refurbishing process completed with full diagnostics. All cameras and sensors working perfectly. Includes original charger and complete documentation. Ready to use immediately.',
     specs: {
       display: '6.1" Super Retina XDR OLED',
       processor: 'Apple A14 Bionic',
