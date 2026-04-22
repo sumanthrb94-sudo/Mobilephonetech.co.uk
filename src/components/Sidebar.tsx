@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-[80] lg:hidden"
+            className="fixed inset-0 bg-black/50 z-[80]"
           />
 
           {/* Sidebar */}

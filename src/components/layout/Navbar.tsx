@@ -84,7 +84,15 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center gap-8">
               {/* Logo */}
-              <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => onMenuClick?.()}
+                  className="p-2 text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                  aria-label="Toggle Menu"
+                >
+                  <Menu size={22} />
+                </button>
+                <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
                 <div className="w-8 sm:w-9 h-8 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
                   <RefreshCw size={18} className="font-black" />
                 </div>
@@ -92,6 +100,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
                   Mobile<span className="text-blue-600">Tech</span>
                 </span>
               </Link>
+              </div>
 
               {/* Desktop Navigation */}
               <div className="hidden lg:flex items-center gap-8">
@@ -189,13 +198,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
                   <span className="text-sm font-black">{cartCount}</span>
                 </button>
 
-                <button 
-                  className="lg:hidden p-2 text-slate-900"
-                  onClick={() => onMenuClick?.()}
-                  data-testid="mobile-menu-button"
-                >
-                  <Menu size={22} />
-                </button>
+
               </div>
             </div>
           </div>
