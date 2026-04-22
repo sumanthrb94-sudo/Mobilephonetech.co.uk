@@ -128,10 +128,18 @@ export default function Navbar({ onCartClick }: NavbarProps) {
         }}
       >
         {/* Main header row — 64px */}
-        <header style={{ height: 'var(--header-h)' }}>
+        <header style={{ height: 'var(--header-h)', display: 'flex', alignItems: 'center' }}>
           <div
-            className="container-bm h-full flex items-center gap-2 sm:gap-4 lg:gap-6"
-            style={{ maxWidth: 'var(--container-max)' }}
+            className="container-bm"
+            style={{
+              maxWidth: 'var(--container-max)',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+            }}
           >
             {/* ── Mobile hamburger ── */}
             <button
@@ -215,7 +223,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             </form>
 
             {/* ── Icon actions — right side ── */}
-            <div className="flex items-center gap-0.5 sm:gap-1 ml-auto flex-shrink-0">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto', flexShrink: 0 }}>
               {/* Quality/Trust */}
               <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" className="hidden xs:flex" />
 
@@ -224,27 +232,28 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 id="navbar-theme-toggle"
                 onClick={toggleDarkMode}
                 aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                className="flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg"
-                style={{ minWidth: '40px', minHeight: '44px', cursor: 'pointer', border: 'none', backgroundColor: 'transparent' }}
+                style={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  gap: '2px',
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  cursor: 'pointer', 
+                  border: 'none', 
+                  backgroundColor: 'transparent' 
+                }}
                 onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-5)'}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <div className="relative">
+                <div>
                   {darkMode ? (
-                    <Sun size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} />
+                    <Sun size={20} style={{ color: 'var(--grey-70)' }} />
                   ) : (
-                    <Moon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} />
+                    <Moon size={20} style={{ color: 'var(--grey-70)' }} />
                   )}
                 </div>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '10px',
-                    color: 'var(--grey-50)',
-                    lineHeight: 1,
-                  }}
-                  className="hidden lg:block"
-                >
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--grey-50)', lineHeight: 1 }} className="hidden lg:block">
                   {darkMode ? 'Light' : 'Dark'}
                 </span>
               </button>
