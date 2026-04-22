@@ -1,9 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
-import { MessageSquare, Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
+import { Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
 import gsmarenaData from '../gsmarena_data.json';
+
+/**
+ * AIAssistant — Verified Form design philosophy
+ * Space: Sharp corners, clinical framing.
+ * Colour: Pure white container, strict grey lines. Primary actions are solid black. Blue used only as the trust/tech indicator.
+ * Typography: DM Sans for conversational text, Playfair Display for headers, Inter for small technical details.
+ */
 
 const ai = process.env.GEMINI_API_KEY
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
@@ -38,14 +45,13 @@ export default function AIAssistant() {
     setIsLoading(true);
 
     try {
-      // Find relevant data from GSMArena
       const relevantData = gsmarenaData.filter(d => 
         userMessage.toLowerCase().includes(d.model.toLowerCase()) || 
         d.model.toLowerCase().includes(userMessage.toLowerCase())
       );
 
       const prompt = `
-        You are the Shopping Assistant for "Mobile World", a global retail store for mobile technology.
+        You are the Shopping Assistant for "MobileTech", a global retail store for refurbished mobile technology.
         Your goal is to help users navigate our catalog of smartphones, chargers, and accessories.
         
         CATALOG HIGHLIGHTS (OUR INVENTORY):
@@ -64,7 +70,7 @@ export default function AIAssistant() {
         2. Use the GSMArena data to provide highly accurate technical details (e.g., sensor sizes, battery chemistry, precise weights).
         3. Cross-reference with OUR INVENTORY to mention current pricing and condition (Grades).
         4. If the user asks about a phone we have in stock, prioritize those details.
-        5. Keep responses concise, professional, and helpful.
+        5. Keep responses concise, professional, and helpful. Do not use markdown styling unless necessary.
       `;
 
       const response = await ai.models.generateContent({
@@ -87,11 +93,20 @@ export default function AIAssistant() {
       {/* Floating Toggle */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-8 right-8 h-16 w-16 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-all z-50 neon-glow"
+        style={{
+          position: 'fixed', bottom: '32px', right: '32px', width: '64px', height: '64px',
+          background: 'var(--black)', color: 'white', borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: 'var(--shadow-lg)', cursor: 'pointer', zIndex: 50, border: 'none',
+          transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+        }}
+        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        className={isOpen ? 'hidden' : ''}
       >
-        <Bot className="h-8 w-8" />
-        <div className="absolute -top-1 -right-1 h-5 w-5 bg-blue-600 rounded-full border-2 border-white flex items-center justify-center">
-          <Sparkles className="h-3 w-3" />
+        <Bot size={28} />
+        <div style={{ position: 'absolute', top: 0, right: 0, width: '18px', height: '18px', background: 'var(--blue-60)', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Sparkles size={10} color="white" />
         </div>
       </button>
 
@@ -99,90 +114,101 @@ export default function AIAssistant() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 100, scale: 0.9 }}
+            initial={{ opacity: 0, y: 40, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-28 right-8 w-[400px] max-h-[600px] glass-card rounded-[32px] overflow-hidden flex flex-col z-50 border-slate-200"
+            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            style={{
+              position: 'fixed', bottom: '32px', right: '32px', width: '400px', height: '600px', maxHeight: 'calc(100vh - 64px)',
+              background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', overflow: 'hidden',
+              display: 'flex', flexDirection: 'column', zIndex: 50,
+              border: '1px solid var(--grey-10)', boxShadow: '0 24px 48px rgba(0,0,0,0.12)'
+            }}
           >
-            {/* Header */}
-            <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <Bot className="h-6 w-6" />
+            {/* ── Header ────────────────────────────────────────────── */}
+            <div style={{ padding: 'var(--spacing-20) var(--spacing-24)', borderBottom: '1px solid var(--grey-10)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--grey-0)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', background: 'var(--grey-5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Bot size={20} style={{ color: 'var(--black)' }} />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm uppercase tracking-widest">Tech Advisor</h3>
-                  <div className="flex items-center gap-1">
-                    <div className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[10px] font-bold text-slate-400">GSMARENA TRAINED</span>
+                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 700, color: 'var(--black)', margin: '0 0 4px 0', lineHeight: 1.1 }}>Tech Advisor</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '6px', height: '6px', background: 'var(--trust-green)', borderRadius: '50%' }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', fontWeight: 700, color: 'var(--grey-40)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>GSMARENA TRAINED</span>
                   </div>
                 </div>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                style={{ background: 'var(--grey-5)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)' }}
               >
-                <X className="h-4 w-4" />
+                <X size={16} />
               </button>
             </div>
 
-            {/* Messages */}
-            <div 
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[300px] scroll-smooth"
-            >
+            {/* ── Messages ──────────────────────────────────────────── */}
+            <div ref={scrollRef} style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-24)', display: 'flex', flexDirection: 'column', gap: '24px', scrollBehavior: 'smooth' }}>
               {messages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-slate-100 text-slate-600' : 'bg-blue-100 text-blue-600'}`}>
-                      {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
+                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  <div style={{ maxWidth: '85%', display: 'flex', gap: '12px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
+                    
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: msg.role === 'user' ? 'var(--grey-10)' : 'var(--blue-10)', color: msg.role === 'user' ? 'var(--grey-60)' : 'var(--blue-60)' }}>
+                      {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                     </div>
-                    <div className={`p-4 rounded-2xl text-sm font-medium leading-relaxed ${
-                      msg.role === 'user' 
-                        ? 'bg-slate-900 text-white rounded-tr-none' 
-                        : 'bg-slate-50 text-slate-700 rounded-tl-none border border-slate-100'
-                    }`}>
+                    
+                    <div style={{
+                      padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '13px', lineHeight: 1.6,
+                      background: msg.role === 'user' ? 'var(--black)' : 'var(--grey-5)',
+                      color: msg.role === 'user' ? 'white' : 'var(--black)',
+                      borderRadius: 'var(--radius-lg)',
+                      borderTopRightRadius: msg.role === 'user' ? 0 : 'var(--radius-lg)',
+                      borderTopLeftRadius: msg.role === 'assistant' ? 0 : 'var(--radius-lg)',
+                    }}>
                       {msg.content}
                     </div>
                   </div>
                 </div>
               ))}
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="flex gap-3">
-                    <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                      <Bot className="h-4 w-4" />
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--blue-10)', color: 'var(--blue-60)' }}>
+                      <Bot size={14} />
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-2xl rounded-tl-none border border-slate-100">
-                      <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                    <div style={{ padding: '12px 16px', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)', borderTopLeftRadius: 0 }}>
+                      <Loader2 size={16} className="animate-spin" style={{ color: 'var(--blue-60)' }} />
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Input */}
-            <div className="p-6 pt-0">
-              <div className="relative">
+            {/* ── Input ─────────────────────────────────────────────── */}
+            <div style={{ padding: 'var(--spacing-20) var(--spacing-24)', borderTop: '1px solid var(--grey-10)', background: 'var(--grey-0)' }}>
+              <div style={{ position: 'relative' }}>
                 <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ask about a phone..."
-                  className="w-full bg-slate-100 border-none rounded-2xl py-4 pl-6 pr-14 text-sm font-bold placeholder:text-slate-400 focus:ring-2 focus:ring-blue-600/20"
+                  style={{
+                    width: '100%', padding: '14px 48px 14px 16px', background: 'var(--grey-5)', border: '1px solid var(--grey-10)',
+                    borderRadius: 'var(--radius-lg)', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)',
+                    outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--blue-60)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-10)'}
                 />
                 <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-10 w-10 bg-slate-900 text-white rounded-xl flex items-center justify-center hover:bg-blue-600 transition-colors disabled:opacity-50"
+                  onClick={handleSend} disabled={!input.trim() || isLoading}
+                  style={{
+                    position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)',
+                    width: '36px', height: '36px', background: 'var(--black)', color: 'white', border: 'none',
+                    borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    cursor: (!input.trim() || isLoading) ? 'not-allowed' : 'pointer', opacity: (!input.trim() || isLoading) ? 0.5 : 1
+                  }}
                 >
-                  <Send className="h-4 w-4" />
+                  <Send size={16} />
                 </button>
               </div>
-              <p className="text-[10px] text-center text-slate-400 mt-4 font-bold uppercase tracking-widest">
-                AI Support • Powered by GSMArena Data
-              </p>
             </div>
           </motion.div>
         )}

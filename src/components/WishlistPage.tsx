@@ -5,24 +5,39 @@ import { Heart, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 
+/**
+ * WishlistPage — Verified Form design philosophy
+ * Space: 12-col grid, massive negative space for empty state.
+ * Colour: Pure white page `var(--grey-0)`.
+ * Typography: Playfair Display for title, DM Sans for functional.
+ */
+
 export default function WishlistPage() {
   const { items, clearWishlist } = useWishlist();
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-80)', paddingBottom: 'var(--spacing-80)' }}>
+      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
+        
         {/* Header */}
-        <div className="mb-12">
+        <div style={{ marginBottom: 'var(--spacing-48)' }}>
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-slate-500 font-bold mb-6 hover:text-slate-900 transition-colors"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
+              color: 'var(--grey-50)', background: 'none', border: 'none',
+              cursor: 'pointer', padding: '0', marginBottom: 'var(--spacing-32)'
+            }}
           >
-            <ArrowLeft size={20} /> Back
+            <ArrowLeft size={16} /> Back
           </button>
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter mb-4">Your Wishlist</h1>
-          <p className="text-lg text-slate-500 font-medium">
-            {items.length === 0 ? 'Your wishlist is empty' : `${items.length} item${items.length !== 1 ? 's' : ''} saved`}
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 700, color: 'var(--black)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
+            Your Wishlist
+          </h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', maxWidth: '440px' }}>
+            {items.length === 0 ? 'Your wishlist is currently empty.' : `${items.length} item${items.length !== 1 ? 's' : ''} saved for later.`}
           </p>
         </div>
 
@@ -30,34 +45,43 @@ export default function WishlistPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center py-20 text-center"
+            style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              justifyContent: 'center', padding: 'var(--spacing-80) 0', textAlign: 'center'
+            }}
           >
-            <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-              <Heart className="h-8 w-8 text-slate-300" />
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--grey-5)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 'var(--spacing-24)' }}>
+              <Heart size={32} style={{ color: 'var(--grey-30)' }} />
             </div>
-            <h3 className="text-xl font-black text-slate-900 mb-2">No items in your wishlist</h3>
-            <p className="text-slate-500 font-medium mb-6">Start adding products to save them for later</p>
-            <button
-              onClick={() => navigate('/products')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
-            >
+            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>
+              No items in your wishlist
+            </h3>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-32)' }}>
+              Start adding products to save them for later.
+            </p>
+            <button onClick={() => navigate('/products')} className="btn btn-primary btn-lg">
               Browse Products
             </button>
           </motion.div>
         ) : (
           <>
-            <div className="mb-8 flex items-center justify-between">
-              <p className="text-sm font-bold text-slate-600">
-                Showing <span className="text-slate-900">{items.length}</span> saved item{items.length !== 1 ? 's' : ''}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--spacing-32)', paddingBottom: 'var(--spacing-16)', borderBottom: '1px solid var(--grey-10)' }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
+                Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{items.length}</strong> saved item{items.length !== 1 ? 's' : ''}
               </p>
               <button
                 onClick={clearWishlist}
-                className="text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700,
+                  color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.05em'
+                }}
               >
                 Clear Wishlist
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--spacing-32)' }}>
               {items.map((product) => (
                 <ProductCard key={product.id} phone={product} />
               ))}

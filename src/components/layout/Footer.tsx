@@ -49,7 +49,13 @@ const SOCIALS = [
   { icon: Youtube,   label: 'YouTube' },
 ];
 
-const LEGAL = ['Privacy policy', 'Terms of use', 'Cookie settings', 'Grading guide', 'Accessibility'];
+const LEGAL = [
+  { label: 'Privacy policy', href: '/privacy' },
+  { label: 'Terms of service', href: '/terms' },
+  { label: 'Cookie settings', href: '#' },
+  { label: 'Grading guide', href: '#' },
+  { label: 'Accessibility', href: '#' }
+];
 
 export default function Footer() {
   return (
@@ -297,9 +303,9 @@ export default function Footer() {
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
               {LEGAL.map((item) => (
-                <a
-                  key={item}
-                  href="#"
+                <Link
+                  key={item.label}
+                  to={item.href}
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: '12px',
@@ -310,8 +316,8 @@ export default function Footer() {
                   onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.6)'; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.25)'; }}
                 >
-                  {item}
-                </a>
+                  {item.label}
+                </Link>
               ))}
             </div>
           </div>

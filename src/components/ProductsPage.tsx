@@ -2,242 +2,453 @@ import React, { useMemo } from 'react';
 import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+/**
+ * ProductsPage — Verified Form design philosophy
+ * Space: 12-col grid, sticky sidebar, 24px gaps
+ * Colour: white page, grey-5 filter panel, black active states, blue sole accent
+ * Typography: DM Sans headers, Inter filter labels, tabular price numerals
+ * Motion: 250ms ease-out filter transitions, 70ms stagger on product grid
+ */
+
+const GRADE_COLOURS: Record<string, { bg: string; text: string; border: string }> = {
+  Pristine:  { bg: 'var(--blue-10)',  text: 'var(--blue-70)',  border: 'var(--blue-20)'  },
+  Excellent: { bg: '#ecfdf5',         text: '#065f46',         border: '#a7f3d0'          },
+  Good:      { bg: '#fff7ed',         text: '#9a3412',         border: '#fed7aa'          },
+  Fair:      { bg: 'var(--grey-5)',   text: 'var(--grey-60)',  border: 'var(--grey-20)'  },
+};
 
 export default function ProductsPage() {
   const { searchQuery, setSearchQuery, filters, setFilters, resetFilters } = useSearch();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
 
-  const brands = Array.from(new Set(MOCK_PHONES.map(p => p.brand)));
-  const grades = Array.from(new Set(MOCK_PHONES.map(p => p.grade)));
+  const brands  = Array.from(new Set(MOCK_PHONES.map(p => p.brand)));
+  const grades  = Array.from(new Set(MOCK_PHONES.map(p => p.grade)));
   const maxPrice = Math.max(...MOCK_PHONES.map(p => p.price));
 
   const filteredProducts = useMemo(() => {
     return MOCK_PHONES.filter(phone => {
-      // Search query filter
       if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch = 
-          phone.model.toLowerCase().includes(query) ||
-          phone.brand.toLowerCase().includes(query) ||
-          phone.specs.processor?.toLowerCase().includes(query) ||
-          phone.specs.display?.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
+        const q = searchQuery.toLowerCase();
+        const matches =
+          phone.model.toLowerCase().includes(q) ||
+          phone.brand.toLowerCase().includes(q) ||
+          phone.specs.processor?.toLowerCase().includes(q) ||
+          phone.specs.display?.toLowerCase().includes(q);
+        if (!matches) return false;
       }
-
-      // Brand filter
-      if (filters.brand.length > 0 && !filters.brand.includes(phone.brand)) {
-        return false;
-      }
-
-      // Grade filter
-      if (filters.grade.length > 0 && !filters.grade.includes(phone.grade)) {
-        return false;
-      }
-
-      // Price range filter
-      if (phone.price < filters.priceRange[0] || phone.price > filters.priceRange[1]) {
-        return false;
-      }
-
-      // Storage filter
-      if (filters.storage.length > 0 && phone.specs.storage && !filters.storage.includes(phone.specs.storage)) {
-        return false;
-      }
-
+      if (filters.brand.length > 0 && !filters.brand.includes(phone.brand)) return false;
+      if (filters.grade.length > 0 && !filters.grade.includes(phone.grade)) return false;
+      if (phone.price < filters.priceRange[0] || phone.price > filters.priceRange[1]) return false;
+      if (filters.storage.length > 0 && phone.specs.storage && !filters.storage.includes(phone.specs.storage)) return false;
       return true;
     });
   }, [searchQuery, filters]);
 
-  const handleBrandToggle = (brand: string) => {
-    setFilters({
-      ...filters,
-      brand: filters.brand.includes(brand)
-        ? filters.brand.filter(b => b !== brand)
-        : [...filters.brand, brand],
-    });
-  };
+  const handleBrandToggle = (brand: string) =>
+    setFilters({ ...filters, brand: filters.brand.includes(brand) ? filters.brand.filter(b => b !== brand) : [...filters.brand, brand] });
 
-  const handleGradeToggle = (grade: any) => {
-    setFilters({
-      ...filters,
-      grade: filters.grade.includes(grade)
-        ? filters.grade.filter(g => g !== grade)
-        : [...filters.grade, grade],
-    });
-  };
+  const handleGradeToggle = (grade: any) =>
+    setFilters({ ...filters, grade: filters.grade.includes(grade) ? filters.grade.filter(g => g !== grade) : [...filters.grade, grade] });
 
-  const handlePriceChange = (min: number, max: number) => {
-    setFilters({
-      ...filters,
-      priceRange: [min, max],
-    });
-  };
+  const handlePriceChange = (min: number, max: number) =>
+    setFilters({ ...filters, priceRange: [min, max] });
 
-  const hasActiveFilters = filters.brand.length > 0 || filters.grade.length > 0 || 
-                           filters.priceRange[0] !== 0 || filters.priceRange[1] !== maxPrice ||
-                           filters.storage.length > 0;
+  const hasActiveFilters =
+    filters.brand.length > 0 || filters.grade.length > 0 ||
+    filters.priceRange[0] !== 0 || filters.priceRange[1] !== maxPrice ||
+    filters.storage.length > 0;
+
+  // ── Filter panel (shared between desktop sticky + mobile drawer) ──────────
+  const FilterPanel = () => (
+    <div
+      style={{
+        background: 'var(--grey-0)',
+        borderRadius: 'var(--radius-xl)',
+        border: '1px solid var(--grey-10)',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: 'var(--spacing-16) var(--spacing-20)',
+          borderBottom: '1px solid var(--grey-10)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: 'var(--grey-50)',
+          }}
+        >
+          Filters
+        </span>
+        {hasActiveFilters && (
+          <button
+            onClick={resetFilters}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontFamily: 'var(--font-body)',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: 'var(--blue-60)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px 0',
+            }}
+          >
+            <X size={12} /> Clear all
+          </button>
+        )}
+      </div>
+
+      {/* Brand */}
+      <FilterGroup title="Brand">
+        {brands.map(brand => (
+          <FilterCheckbox
+            key={brand}
+            label={brand}
+            checked={filters.brand.includes(brand)}
+            onChange={() => handleBrandToggle(brand)}
+          />
+        ))}
+      </FilterGroup>
+
+      {/* Condition / Grade */}
+      <FilterGroup title="Condition">
+        {grades.map(grade => {
+          const colours = GRADE_COLOURS[grade] || GRADE_COLOURS.Fair;
+          return (
+            <label
+              key={grade}
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '3px 0' }}
+            >
+              <input
+                type="checkbox"
+                checked={filters.grade.includes(grade)}
+                onChange={() => handleGradeToggle(grade)}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--blue-60)', flexShrink: 0, cursor: 'pointer' }}
+              />
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '2px 10px',
+                  borderRadius: 'var(--radius-full)',
+                  background: colours.bg,
+                  border: `1px solid ${colours.border}`,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: colours.text,
+                }}
+              >
+                {grade}
+              </span>
+            </label>
+          );
+        })}
+      </FilterGroup>
+
+      {/* Price Range */}
+      <FilterGroup title="Price Range">
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>£{filters.priceRange[0]}</span>
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>£{filters.priceRange[1]}</span>
+        </div>
+        <input
+          type="range" min="0" max={maxPrice} value={filters.priceRange[0]}
+          onChange={e => handlePriceChange(Number(e.target.value), filters.priceRange[1])}
+          style={{ width: '100%', accentColor: 'var(--blue-60)', marginBottom: '8px' }}
+        />
+        <input
+          type="range" min="0" max={maxPrice} value={filters.priceRange[1]}
+          onChange={e => handlePriceChange(filters.priceRange[0], Number(e.target.value))}
+          style={{ width: '100%', accentColor: 'var(--blue-60)' }}
+        />
+      </FilterGroup>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-20">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-5xl font-black text-slate-900 tracking-tighter mb-4">Browse Products</h1>
-          <p className="text-lg text-slate-500 font-medium">Find the perfect refurbished device for you</p>
+    <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingBottom: 'var(--spacing-80)' }}>
+      <div
+        className="container-bm"
+        style={{ maxWidth: 'var(--container-max)', paddingTop: 'var(--spacing-48)' }}
+      >
+        {/* ── Page header ──────────────────────────────── */}
+        <div style={{ marginBottom: 'var(--spacing-32)' }}>
+          <div className="overline mb-3">All devices</div>
+          <h1
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'clamp(28px, 4vw, 44px)',
+              fontWeight: 900,
+              letterSpacing: '-0.03em',
+              color: 'var(--black)',
+              lineHeight: 1.1,
+              marginBottom: '8px',
+            }}
+          >
+            Certified refurbished devices
+          </h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', maxWidth: '440px' }}>
+            {MOCK_PHONES.length} devices — tested, certified, and backed by a 12-month warranty.
+          </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search by model, brand, processor..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl bg-slate-100 py-4 pl-12 pr-4 text-sm font-bold outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
-            />
-          </div>
+        {/* ── Search bar ─────────────────────────────────── */}
+        <div
+          style={{
+            position: 'relative',
+            marginBottom: 'var(--spacing-32)',
+            maxWidth: '640px',
+          }}
+        >
+          <Search
+            size={18}
+            style={{
+              position: 'absolute',
+              left: '16px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: 'var(--grey-40)',
+              pointerEvents: 'none',
+            }}
+          />
+          <input
+            id="products-search"
+            type="text"
+            placeholder="Search model, brand, spec..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              height: '48px',
+              paddingLeft: '48px',
+              paddingRight: searchQuery ? '44px' : '16px',
+              background: 'var(--grey-5)',
+              border: '1.5px solid var(--grey-10)',
+              borderRadius: 'var(--radius-md)',
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: 'var(--black)',
+              outline: 'none',
+              transition: 'border-color var(--duration-fast)',
+              boxSizing: 'border-box',
+            }}
+            onFocus={e => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--blue-60)'; }}
+            onBlur={e => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--grey-10)'; }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              style={{
+                position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--grey-40)', display: 'flex',
+              }}
+            >
+              <X size={16} />
+            </button>
+          )}
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Sidebar Filters */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 space-y-6">
-              <div className="flex items-center justify-between lg:hidden">
-                <h3 className="font-black text-slate-900">Filters</h3>
-                <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                >
-                  <Filter className="h-5 w-5" />
-                </button>
-              </div>
+        {/* Mobile filter toggle */}
+        <div
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-20)' }}
+          className="lg:hidden"
+        >
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
+            {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
+          </span>
+          <button
+            id="products-filter-toggle"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              height: '36px', padding: '0 14px',
+              background: 'var(--grey-0)', border: '1.5px solid var(--grey-20)',
+              borderRadius: 'var(--radius-md)',
+              fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
+              color: 'var(--black)', cursor: 'pointer',
+            }}
+          >
+            <SlidersHorizontal size={14} /> Filters {hasActiveFilters && `(${filters.brand.length + filters.grade.length})`}
+            <ChevronDown size={12} style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+          </button>
+        </div>
 
-              <AnimatePresence>
-                {(isFilterOpen || window.innerWidth >= 1024) && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-6"
-                  >
-                    {/* Clear Filters */}
-                    {hasActiveFilters && (
-                      <button
-                        onClick={resetFilters}
-                        className="w-full px-4 py-2 bg-slate-100 text-slate-900 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <X className="h-4 w-4" />
-                        Clear All Filters
-                      </button>
-                    )}
+        {/* Mobile filter drawer */}
+        <AnimatePresence>
+          {isFilterOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              style={{ overflow: 'hidden', marginBottom: 'var(--spacing-20)' }}
+              className="lg:hidden"
+            >
+              <FilterPanel />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                    {/* Brand Filter */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <h4 className="font-black text-slate-900 mb-4 text-sm uppercase tracking-widest">Brand</h4>
-                      <div className="space-y-2">
-                        {brands.map(brand => (
-                          <label key={brand} className="flex items-center gap-3 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={filters.brand.includes(brand)}
-                              onChange={() => handleBrandToggle(brand)}
-                              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm font-medium text-slate-600">{brand}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+        {/* ── Main grid (sidebar + products) ─────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-32)' }} className="lg:products-grid">
+          <div style={{ display: 'contents' }} className="lg:grid lg:grid-cols-4 lg:gap-8">
 
-                    {/* Grade Filter */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <h4 className="font-black text-slate-900 mb-4 text-sm uppercase tracking-widest">Condition</h4>
-                      <div className="space-y-2">
-                        {grades.map(grade => (
-                          <label key={grade} className="flex items-center gap-3 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={filters.grade.includes(grade)}
-                              onChange={() => handleGradeToggle(grade)}
-                              className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm font-medium text-slate-600">{grade}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Price Range Filter */}
-                    <div className="border-t border-slate-100 pt-6">
-                      <h4 className="font-black text-slate-900 mb-4 text-sm uppercase tracking-widest">Price Range</h4>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Min: £{filters.priceRange[0]}</label>
-                          <input
-                            type="range"
-                            min="0"
-                            max={maxPrice}
-                            value={filters.priceRange[0]}
-                            onChange={(e) => handlePriceChange(Number(e.target.value), filters.priceRange[1])}
-                            className="w-full"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-xs font-bold text-slate-500 uppercase tracking-widest">Max: £{filters.priceRange[1]}</label>
-                          <input
-                            type="range"
-                            min="0"
-                            max={maxPrice}
-                            value={filters.priceRange[1]}
-                            onChange={(e) => handlePriceChange(filters.priceRange[0], Number(e.target.value))}
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+            {/* Desktop sticky sidebar */}
+            <div style={{ position: 'sticky', top: '120px', alignSelf: 'start' }} className="hidden lg:block">
+              <FilterPanel />
             </div>
-          </div>
 
-          {/* Products Grid */}
-          <div className="lg:col-span-3">
-            {filteredProducts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="h-16 w-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-                  <Search className="h-8 w-8 text-slate-300" />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 mb-2">No products found</h3>
-                <p className="text-slate-500 font-medium mb-6">Try adjusting your search or filters</p>
-                <button
-                  onClick={resetFilters}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="mb-6 flex items-center justify-between">
-                  <p className="text-sm font-bold text-slate-600">
-                    Showing <span className="text-slate-900">{filteredProducts.length}</span> of <span className="text-slate-900">{MOCK_PHONES.length}</span> products
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredProducts.map((phone) => (
-                    <ProductCard key={phone.id} phone={phone} />
+            {/* Product Grid */}
+            <div className="lg:col-span-3">
+              {/* Results count + sort */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 'var(--spacing-20)',
+                  paddingBottom: 'var(--spacing-16)',
+                  borderBottom: '1px solid var(--grey-10)',
+                }}
+              >
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
+                  Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{filteredProducts.length}</strong> of {MOCK_PHONES.length} devices
+                </p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {['Price ↑', 'Price ↓', 'Condition'].map(sort => (
+                    <button
+                      key={sort}
+                      style={{
+                        height: '30px', padding: '0 10px',
+                        fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 500,
+                        color: 'var(--grey-60)', background: 'none',
+                        border: '1.5px solid var(--grey-10)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+                      }}
+                    >
+                      {sort}
+                    </button>
                   ))}
                 </div>
-              </>
-            )}
+              </div>
+
+              {filteredProducts.length === 0 ? (
+                <div
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    justifyContent: 'center', padding: 'var(--spacing-80) 0', textAlign: 'center',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: '64px', height: '64px',
+                      borderRadius: '50%', background: 'var(--grey-5)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      marginBottom: 'var(--spacing-20)',
+                    }}
+                  >
+                    <Search size={28} style={{ color: 'var(--grey-30)' }} />
+                  </div>
+                  <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>
+                    No results
+                  </h3>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-24)' }}>
+                    Try adjusting your search or clearing the filters
+                  </p>
+                  <button
+                    onClick={resetFilters}
+                    className="btn btn-primary btn-md"
+                    id="products-clear-filters"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                    gap: 'var(--spacing-20)',
+                  }}
+                >
+                  {filteredProducts.map((phone, index) => (
+                    <motion.div
+                      key={phone.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(index, 7) * 0.07, duration: 0.35, ease: [0.2, 0, 0, 1] }}
+                    >
+                      <ProductCard phone={phone} />
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Sub-components ───────────────────────────────────────── */
+function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        padding: 'var(--spacing-16) var(--spacing-20)',
+        borderBottom: '1px solid var(--grey-10)',
+      }}
+    >
+      <p
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: '10px',
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          color: 'var(--grey-40)',
+          marginBottom: '12px',
+        }}
+      >
+        {title}
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function FilterCheckbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        style={{ width: '16px', height: '16px', accentColor: 'var(--blue-60)', cursor: 'pointer' }}
+      />
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: checked ? 600 : 400, color: checked ? 'var(--black)' : 'var(--grey-60)' }}>
+        {label}
+      </span>
+    </label>
   );
 }

@@ -3,6 +3,13 @@ import { X, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * AuthModal — Verified Form design philosophy
+ * Space: Floating modal, sharp boundaries.
+ * Colour: Pure white container `var(--grey-0)`. Black typography.
+ * Typography: Playfair Display for title.
+ */
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -39,113 +46,88 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     }
   };
 
+  const inputStyle = {
+    width: '100%', padding: '14px 16px 14px 44px', background: 'var(--grey-5)',
+    border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-md)',
+    fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)',
+    outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' as const
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
           />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-md overflow-hidden rounded-[32px] bg-white shadow-2xl"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            style={{
+              position: 'relative', width: '100%', maxWidth: '400px',
+              background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)',
+              overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.1)'
+            }}
           >
-            <div className="bg-slate-900 p-8 text-white">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-black tracking-tighter uppercase">
-                  {mode === 'login' ? 'Welcome Back' : 'Create Account'}
-                </h2>
-                <button 
-                  onClick={onClose}
-                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
+            {/* Header */}
+            <div style={{ padding: 'var(--spacing-32) var(--spacing-32) var(--spacing-24)', borderBottom: '1px solid var(--grey-10)', position: 'relative' }}>
+              <button 
+                onClick={onClose}
+                style={{ position: 'absolute', top: '24px', right: '24px', background: 'var(--grey-5)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)' }}
+              >
+                <X size={16} />
+              </button>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: 'var(--black)', margin: '0 0 8px 0', paddingRight: '32px' }}>
+                {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+              </h2>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
                 {mode === 'login' 
-                  ? 'Sign in to access your orders and wishlist' 
-                  : 'Join MobileWorld for a personalized experience'}
+                  ? 'Sign in to access your orders and wishlist.' 
+                  : 'Join MobileTech for a certified experience.'}
               </p>
             </div>
 
-            <div className="p-8">
-              <form onSubmit={handleSubmit} className="space-y-4">
+            <div style={{ padding: 'var(--spacing-32)' }}>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {mode === 'signup' && (
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      required
-                      placeholder="Full Name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      className="w-full rounded-2xl bg-slate-100 py-4 pl-12 pr-4 text-sm font-bold outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
-                    />
+                  <div style={{ position: 'relative' }}>
+                    <User size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                    <input type="text" required placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--blue-60)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="email"
-                    required
-                    placeholder="Email Address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-2xl bg-slate-100 py-4 pl-12 pr-4 text-sm font-bold outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
-                  />
+                <div style={{ position: 'relative' }}>
+                  <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                  <input type="email" required placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--blue-60)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="password"
-                    required
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-2xl bg-slate-100 py-4 pl-12 pr-4 text-sm font-bold outline-none transition-all focus:bg-white focus:ring-2 focus:ring-blue-500/20"
-                  />
+                <div style={{ position: 'relative' }}>
+                  <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                  <input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--blue-60)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                 </div>
 
                 {error && (
-                  <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center">
-                    {error}
-                  </p>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--red)', textAlign: 'center', margin: '4px 0 0 0' }}>{error}</p>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="group relative w-full overflow-hidden rounded-2xl bg-slate-900 py-4 text-sm font-black uppercase tracking-widest text-white transition-all hover:bg-blue-600 disabled:opacity-50"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {isLoading ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <>
-                        {mode === 'login' ? 'Sign In' : 'Create Account'}
-                        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </>
-                    )}
-                  </span>
+                <button type="submit" disabled={isLoading} className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : (
+                    <>{mode === 'login' ? 'Sign In' : 'Create Account'} <ArrowRight size={16} /></>
+                  )}
                 </button>
               </form>
 
-              <div className="mt-8 text-center">
+              <div style={{ marginTop: 'var(--spacing-32)', textAlign: 'center' }}>
                 <button
                   onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-                  className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-blue-600 transition-colors"
+                  style={{ background: 'none', border: 'none', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--grey-50)', cursor: 'pointer', transition: 'color 0.2s' }}
+                  onMouseOver={(e) => e.currentTarget.style.color = 'var(--blue-60)'}
+                  onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-50)'}
                 >
-                  {mode === 'login' 
-                    ? "Don't have an account? Sign up" 
-                    : "Already have an account? Sign in"}
+                  {mode === 'login' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
                 </button>
               </div>
             </div>

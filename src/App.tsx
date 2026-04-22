@@ -17,6 +17,9 @@ import ProductsPage from './components/ProductsPage';
 import CheckoutFlow from './components/CheckoutFlow';
 import WishlistPage from './components/WishlistPage';
 import OrderHistoryPage from './components/OrderHistoryPage';
+import PrivacyPolicy from './components/legal/PrivacyPolicy';
+import TermsOfService from './components/legal/TermsOfService';
+import CookieBanner from './components/layout/CookieBanner';
 import React from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
@@ -133,11 +136,22 @@ function AppContent() {
               <OrderHistoryPage />
             </div>
           } />
+          <Route path="/privacy"  element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <PrivacyPolicy />
+            </div>
+          } />
+          <Route path="/terms"    element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <TermsOfService />
+            </div>
+          } />
         </Routes>
       </main>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <AIAssistant />
+      <CookieBanner />
       <Footer />
     </div>
   );
