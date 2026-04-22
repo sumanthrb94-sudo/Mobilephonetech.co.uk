@@ -1,4 +1,3 @@
-import React from 'react';
 import { Product, ProductVariant } from '../types';
 import { motion } from 'motion/react';
 import { Check, Zap } from 'lucide-react';
@@ -36,9 +35,9 @@ export default function VariantSelector({
   }
 
   // Group variants by attribute
-  const colorOptions = [...new Set(variants.map((v) => v.color).filter(Boolean))];
-  const storageOptions = [...new Set(variants.map((v) => v.storage).filter(Boolean))];
-  const conditionOptions = [...new Set(variants.map((v) => v.condition).filter(Boolean))];
+  const colorOptions = [...new Set(variants.map((v) => v.color).filter((color): color is string => Boolean(color)))];
+  const storageOptions = [...new Set(variants.map((v) => v.storage).filter((storage): storage is string => Boolean(storage)))];
+  const conditionOptions = [...new Set(variants.map((v) => v.condition).filter((condition): condition is NonNullable<ProductVariant['condition']> => Boolean(condition)))];
 
   // Find available variants based on current selections
   const getAvailableVariants = (color?: string, storage?: string, condition?: string) => {

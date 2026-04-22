@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI } from "@google/genai";
 import { Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

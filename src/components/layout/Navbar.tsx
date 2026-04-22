@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Search, ShoppingBag, Heart, User, ChevronDown,
+  Search, ShoppingBag, Heart, User,
   LogOut, Package, HelpCircle, ShieldCheck, Menu, X, Laptop,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw, BarChart3
 } from 'lucide-react';
@@ -29,7 +29,7 @@ const CATEGORIES = [
   { label: 'Compare Devices',   href: '/compare',                      icon: BarChart3 },
 ];
 
-export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
+export default function Navbar({ onCartClick }: NavbarProps) {
   const [isScrolled, setIsScrolled]               = useState(false);
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
@@ -75,7 +75,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
       onClick={onClick}
       aria-label={label}
       className={`flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors hover:bg-[var(--grey-5)] ${className}`}
-      style={{ minWidth: '40px', sm: { minWidth: '48px' }, minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
+      style={{ minWidth: '40px', minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
     >
       <div className="relative">
         <Icon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }}

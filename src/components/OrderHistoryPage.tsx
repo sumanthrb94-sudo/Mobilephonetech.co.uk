@@ -1,4 +1,3 @@
-import React from 'react';
 import { useCheckout } from '../context/CheckoutContext';
 import { ArrowLeft, Package, Truck, CheckCircle2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';

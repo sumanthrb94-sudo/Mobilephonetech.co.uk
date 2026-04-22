@@ -12,7 +12,7 @@ import CartDrawer from './components/CartDrawer';
 import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';

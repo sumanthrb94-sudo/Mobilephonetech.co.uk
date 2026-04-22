@@ -1,7 +1,5 @@
-import React from 'react';
 import { Truck, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
-import { DeliveryPromise } from '../types';
 import { calculateDeliveryPromises, isNextDayDeliveryAvailable } from '../utils/deliveryCalculator';
 
 interface DeliveryPromiseProps {

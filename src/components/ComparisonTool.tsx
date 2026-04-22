@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useUI } from '../context/UIContext';
+import { useState } from 'react';
 import { MOCK_PHONES } from '../data';
 import { Phone } from '../types';
 import { X, Plus, Search, Scale } from 'lucide-react';

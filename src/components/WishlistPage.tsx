@@ -1,4 +1,3 @@
-import React from 'react';
 import { useWishlist } from '../context/WishlistContext';
 import ProductCard from './ProductCard';
 import { Heart, ArrowLeft } from 'lucide-react';

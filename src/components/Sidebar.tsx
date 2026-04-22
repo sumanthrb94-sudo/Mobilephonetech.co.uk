@@ -1,6 +1,6 @@
-import React from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X, BarChart3, ShoppingBag, Home, Zap, Heart } from 'lucide-react';
+import { X, BarChart3, ShoppingBag, Home, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_CATEGORIES } from '../data';
 import { useUI } from '../context/UIContext';
@@ -9,7 +9,7 @@ export default function Sidebar() {
   const { isSidebarOpen, setIsSidebarOpen } = useUI();
   const isOpen = isSidebarOpen;
   const onClose = () => setIsSidebarOpen(false);
-  const [expandedCategory, setExpandedCategory] = React.useState<string | null>(null);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   return (
     <AnimatePresence>

@@ -18,7 +18,7 @@ export default function CheckoutFlow() {
   const { items, cartTotal, clearCart } = useCart();
   const { 
     currentStep, setCurrentStep, shippingAddress, setShippingAddress,
-    shippingOption, setShippingOption, paymentMethod, setPaymentMethod,
+    shippingOption, paymentMethod, setPaymentMethod,
     appliedCoupon, applyCoupon, removeCoupon, createOrder, lastOrder,
   } = useCheckout();
   const { user, isAuthenticated, continueAsGuest } = useAuth();

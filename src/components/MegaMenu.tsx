@@ -1,7 +1,5 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight } from 'lucide-react';
-import { Category } from '../types';
 import { MOCK_CATEGORIES } from '../data';
 import { Link } from 'react-router-dom';
 
@@ -11,8 +9,6 @@ interface MegaMenuProps {
 }
 
 export default function MegaMenu({ isOpen, onClose }: MegaMenuProps) {
-  const [selectedCategory, setSelectedCategory] = React.useState<Category | null>(null);
-
   const mainCategories = MOCK_CATEGORIES;
 
   return (
