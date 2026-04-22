@@ -11,6 +11,7 @@ import ReviewsSection from './ReviewsSection';
 import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
+import ProductImage from './ProductImage';
 import { ProductVariant } from '../types';
 
 /**
@@ -115,19 +116,8 @@ export default function ProductDetail() {
                 overflow: 'hidden'
               }}
             >
-              {/* Product Image */}
-              <AnimatePresence mode="wait">
-                <motion.img 
-                  key={selectedImageIndex}
-                  initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                  src={galleryImages[selectedImageIndex]} 
-                  alt={phone.model} 
-                  loading="lazy"
-                  decoding="async"
-                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }}
-                />
-              </AnimatePresence>
+              {/* Product Image (shared component) */}
+              <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} galleryImages={phone.galleryImages} />
 
               {/* Condition Badge */}
               <div 
