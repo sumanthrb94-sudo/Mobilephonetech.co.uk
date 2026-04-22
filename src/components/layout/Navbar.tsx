@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
   LogOut, Package, HelpCircle, ShieldCheck, Menu, X, Laptop,
-  Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw, BarChart3
+  Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw, BarChart3, Moon, Sun
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
+import { useUI } from '../../context/UIContext';
 import AuthModal from '../AuthModal';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -42,6 +43,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const { cartCount }                 = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
   const { user, logout, isAuthenticated } = useAuth();
+  const { darkMode, toggleDarkMode } = useUI();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -109,11 +111,12 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           FIXED HEADER — 64px — white, logo/search/icons
       ═══════════════════════════════════════════════════ */}
       <div
-        className="fixed top-0 left-0 right-0 z-[60] bg-white"
+        className="fixed top-0 left-0 right-0 z-[60]"
         style={{
+          background: 'var(--color-bg-default)',
           borderBottom: '1px solid var(--grey-20)',
           boxShadow: isScrolled ? 'var(--shadow-sm)' : 'none',
-          transition: 'box-shadow var(--duration-normal)',
+          transition: 'box-shadow var(--duration-normal), background-color 0.3s ease',
         }}
       >
         {/* Main header row — 64px */}
@@ -207,6 +210,34 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             <div className="flex items-center gap-0.5 sm:gap-1 ml-auto flex-shrink-0">
               {/* Quality/Trust */}
               <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" className="hidden xs:flex" />
+
+              {/* Theme Toggle */}
+              <button
+                id="navbar-theme-toggle"
+                onClick={toggleDarkMode}
+                aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                className="flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors hover:bg-[var(--grey-5)]"
+                style={{ minWidth: '40px', minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
+              >
+                <div className="relative">
+                  {darkMode ? (
+                    <Sun size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} className="group-hover:text-[var(--black)]" />
+                  ) : (
+                    <Moon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} className="group-hover:text-[var(--black)]" />
+                  )}
+                </div>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '10px',
+                    color: 'var(--grey-50)',
+                    lineHeight: 1,
+                  }}
+                  className="hidden lg:block group-hover:text-[var(--black)] transition-colors"
+                >
+                  {darkMode ? 'Light' : 'Dark'}
+                </span>
+              </button>
 
               {/* Help */}
               <IconBtn icon={HelpCircle} label="Help" id="navbar-help-btn" className="hidden xs:flex" />
