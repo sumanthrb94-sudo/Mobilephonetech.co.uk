@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f8fafc" offset="0"/>
+      <stop stop-color="#e2e8f0" offset="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="140" y="70" width="120" height="260" rx="8" fill="#1a1a1a"/>
+  <rect x="150" y="80" width="100" height="240" rx="4" fill="#0f0f0f"/>
+  <circle cx="200" cy="130" r="30" fill="#1a1a1a"/>
+  <circle cx="200" cy="130" r="25" fill="#0a0a0a"/>
+  <circle cx="200" cy="130" r="10" fill="#107c10"/>
+  <circle cx="200" cy="195" r="15" fill="#107c10"/>
+  <circle cx="200" cy="195" r="8" fill="#0a0a0a"/>
+  <circle cx="200" cy="260" r="15" fill="#107c10"/>
+  <circle cx="200" cy="260" r="8" fill="#0a0a0a"/>
+  <rect x="155" y="295" width="90" height="8" rx="4" fill="#333"/>
+  <rect x="175" y="310" width="50" height="2" fill="#222"/>
+  <text x="200" y="380" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="600" fill="#1e293b">Xbox Series X</text>
+</svg>

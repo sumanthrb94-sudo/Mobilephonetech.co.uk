@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f8fafc" offset="0"/>
+      <stop stop-color="#e2e8f0" offset="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="100" y="100" width="200" height="160" rx="40" fill="#fafafa"/>
+  <rect x="115" y="115" width="170" height="130" rx="30" fill="#1a1a1a"/>
+  <ellipse cx="200" cy="180" rx="60" ry="35" fill="#e2e8f0"/>
+  <rect x="115" y="280" width="45" height="80" rx="22" fill="#fafafa"/>
+  <rect x="240" y="280" width="45" height="80" rx="22" fill="#fafafa"/>
+  <circle cx="115" cy="310" r="8" fill="#94a3b8"/>
+  <circle cx="285" cy="310" r="8" fill="#94a3b8"/>
+  <text x="200" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#1e293b">AirPods Pro</text>
+  <text x="200" y="360" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748b">2nd Generation</text>
+</svg>

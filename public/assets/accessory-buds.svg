@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f8fafc" offset="0"/>
+      <stop stop-color="#e2e8f0" offset="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="100" y="120" width="200" height="140" rx="30" fill="#fafafa"/>
+  <rect x="115" y="135" width="170" height="110" rx="20" fill="#1a1a1a"/>
+  <circle cx="170" cy="190" r="25" fill="#1a1a1a"/>
+  <circle cx="170" cy="190" r="18" fill="#0a0a0a"/>
+  <circle cx="230" cy="190" r="25" fill="#1a1a1a"/>
+  <circle cx="230" cy="190" r="18" fill="#0a0a0a"/>
+  <text x="200" y="310" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="600" fill="#1e293b">Galaxy Buds2 Pro</text>
+  <text x="200" y="330" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748b">Samsung Earphones</text>
+</svg>

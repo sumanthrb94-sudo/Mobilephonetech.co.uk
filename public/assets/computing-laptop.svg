@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#f8fafc" offset="0"/>
+      <stop stop-color="#e2e8f0" offset="1"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" x2="0" y1="0" y2="1">
+      <stop stop-color="#1e293b" offset="0"/>
+      <stop stop-color="#0f172a" offset="1"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <rect x="60" y="50" width="280" height="200" rx="12" fill="#334155"/>
+  <rect x="70" y="60" width="260" height="180" rx="8" fill="url(#screen)"/>
+  <rect x="155" y="250" width="90" height="8" rx="4" fill="#94a3b8"/>
+  <rect x="175" y="265" width="50" height="3" rx="1.5" fill="#64748b"/>
+  <text x="200" y="340" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="600" fill="#1e293b">MacBook Air</text>
+  <text x="200" y="360" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#64748b">Apple M2 Chip</text>
+</svg>

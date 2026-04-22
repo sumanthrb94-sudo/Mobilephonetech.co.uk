@@ -311,7 +311,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/accessory-airpods.svg',
     isCertified: true,
     stock: 50,
     specs: { features: 'Active Noise Cancellation, Transparency Mode, H2 Chip' }
@@ -327,7 +327,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/accessory-buds.svg',
     isCertified: true,
     stock: 45,
     specs: { features: '24-bit Hi-Fi Audio, Intelligent ANC, IPX7' }
@@ -343,7 +343,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/accessory-pixel-buds.svg',
     isCertified: true,
     stock: 30,
     specs: { features: 'Active Noise Cancellation, Silent Seal, Hey Google' }
@@ -361,7 +361,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 94,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     isCertified: true,
     stock: 9,
     specs: { display: '12.9" Liquid Retina XDR', processor: 'Apple M2', storage: '256GB', features: 'Wi-Fi + Cellular, Apple Pencil support' }
@@ -377,7 +377,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 98,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     isCertified: true,
     stock: 13,
     specs: { display: '11" Dynamic AMOLED 2X', processor: 'Snapdragon 8 Gen 2', storage: '128GB', features: 'S Pen included, IP68' }
@@ -393,7 +393,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 88,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     isCertified: true,
     stock: 16,
     specs: { display: '10.5" PixelSense touchscreen', processor: 'Intel Pentium Gold', ram: '8GB', storage: '128GB SSD' }
@@ -411,7 +411,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 92,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     isCertified: true,
     stock: 7,
     specs: { display: '13.6" Liquid Retina', processor: 'Apple M2', ram: '8GB', storage: '256GB SSD', features: 'MagSafe, Touch ID' }
@@ -427,7 +427,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     isCertified: true,
     stock: 11,
     specs: { display: '13.4" InfinityEdge FHD+', processor: 'Intel Core i7', ram: '16GB', storage: '512GB SSD' }
@@ -443,7 +443,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 86,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     isCertified: true,
     stock: 10,
     specs: { display: '14" FHD IPS', processor: 'Intel Core i5', ram: '16GB', storage: '512GB SSD', features: 'Business grade, backlit keyboard' }
@@ -461,7 +461,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/gaming-ps5.svg',
     isCertified: true,
     stock: 14,
     specs: { processor: 'AMD Zen 2 CPU', storage: '825GB SSD', features: '4K gaming, DualSense controller included' }
@@ -477,7 +477,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/gaming-xbox.svg',
     isCertified: true,
     stock: 12,
     specs: { processor: 'Custom AMD Zen 2', storage: '1TB SSD', features: '4K 120fps, Game Pass ready' }
@@ -493,7 +493,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 89,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/gaming-switch.svg',
     isCertified: true,
     stock: 20,
     specs: { display: '7" OLED touchscreen', storage: '64GB', features: 'Dock included, detachable Joy-Con controllers' }
@@ -634,10 +634,10 @@ export const MOCK_CATEGORIES: Category[] = [
       }
     ]
   },
-  {
+{
     id: 'accessories',
     name: 'Accessories',
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/accessory-airpods.svg',
     description: 'Genuine chargers, cases, and audio for your mobile',
     productCount: 3
   },
@@ -651,28 +651,28 @@ export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'computing',
     name: 'Laptops',
-    imageUrl: '/assets/cat-tablets.png',
+    imageUrl: '/assets/computing-laptop.svg',
     description: 'Certified MacBook, Dell, and Lenovo laptops for everyday work',
     productCount: 3
   },
   {
     id: 'gaming',
     name: 'Gaming consoles',
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/gaming-ps5.svg',
     description: 'PlayStation, Xbox, and Nintendo hardware with warranty cover',
     productCount: 3
   },
   {
     id: 'watches',
     name: 'Smartwatches',
-    imageUrl: '/assets/cat-smartwatches.png',
+    imageUrl: '/assets/smartwatch-apple-watch.svg',
     description: 'Apple Watch, Galaxy Watch, and Pixel Watch models',
     productCount: 3
   },
   {
     id: 'tv',
     name: 'Smart TVs',
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/tv-frame-gen.svg',
     description: 'Refurbished 4K OLED, QLED, and smart TVs for home cinema',
     productCount: 3
   }
