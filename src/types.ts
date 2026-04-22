@@ -20,11 +20,17 @@ export interface ProductSpecs {
   battery?: string;
   ram?: string;
   os?: string;
-  aiPerformance?: string;
-  compatibilty?: string;
-  type?: string;
-  ports?: string;
   storage?: string;
+  body?: string;
+  network?: string;
+  platform?: string;
+  mainCamera?: string;
+  selfieCamera?: string;
+  sound?: string;
+  comms?: string;
+  features?: string;
+  misc?: string;
+  tests?: string;
 }
 
 export interface Review {

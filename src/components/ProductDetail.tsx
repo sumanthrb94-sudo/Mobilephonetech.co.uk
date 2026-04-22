@@ -233,36 +233,19 @@ export default function ProductDetail() {
 
             {/* Specs Grid */}
             <div className="border-t border-slate-100 pt-10">
-              <h3 className="text-xl font-black text-slate-900 mb-6">Technical Specifications</h3>
-              <div className="grid grid-cols-2 gap-8">
-                <div className="flex gap-4">
-                  <Smartphone className="text-slate-400" size={20} />
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Display</p>
-                    <p className="text-sm font-bold text-slate-900">{phone.specs.display}</p>
+              <h3 className="text-xl font-black text-slate-900 mb-6 uppercase tracking-widest">Technical Specifications</h3>
+              
+              <div className="space-y-4">
+                {Object.entries(phone.specs).map(([key, value]) => (
+                  <div key={key} className="flex flex-col sm:flex-row border-b border-slate-50 pb-4">
+                    <span className="w-full sm:w-1/3 text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1 sm:mb-0">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </span>
+                    <span className="w-full sm:w-2/3 text-sm font-bold text-slate-700 leading-relaxed">
+                      {value}
+                    </span>
                   </div>
-                </div>
-                <div className="flex gap-4">
-                  <Cpu className="text-slate-400" size={20} />
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Processor</p>
-                    <p className="text-sm font-bold text-slate-900">{phone.specs.processor}</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <Camera className="text-slate-400" size={20} />
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Camera</p>
-                    <p className="text-sm font-bold text-slate-900">{phone.specs.camera}</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <Battery className="text-slate-400" size={20} />
-                  <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Battery</p>
-                    <p className="text-sm font-bold text-slate-900">{phone.specs.battery}</p>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
