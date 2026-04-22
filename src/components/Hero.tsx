@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ArrowLeft, ShieldCheck, Battery, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -75,7 +75,16 @@ const TRUST_ITEMS = [
 export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [isDesktop, setIsDesktop] = useState(false);
   const total = SLIDES.length;
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   const goTo = (idx: number, dir = 1) => {
     setDirection(dir);
@@ -130,7 +139,14 @@ export default function Hero() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -direction * 40 }}
             transition={{ duration: 0.45, ease: [0.2, 0, 0, 1] }}
-            className="grid lg:grid-cols-2 gap-8 items-center py-12 lg:py-20 h-full"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '32px',
+              alignItems: 'center',
+              padding: '48px 0',
+              height: '100%',
+            }}
           >
             {/* ── Left: Text block ──────────────── */}
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -191,7 +207,14 @@ export default function Hero() {
             </div>
 
             {/* ── Right: Product card ───────────── */}
-            <div className="relative hidden lg:flex justify-end">
+            <div 
+              ref={cardRef}
+              className="relative" 
+              style={{ 
+                display: isDesktop ? 'flex' : 'none', 
+                justifyContent: 'flex-end' 
+              }}
+            >
               <div
                 className="card card-xl"
                 style={{
