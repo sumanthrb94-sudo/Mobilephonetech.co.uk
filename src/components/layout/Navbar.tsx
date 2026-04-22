@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User, ChevronDown,
   LogOut, Package, HelpCircle, ShieldCheck, Menu, X, Laptop,
-  Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw
+  Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw, BarChart3
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
@@ -26,6 +26,7 @@ const CATEGORIES = [
   { label: 'Headphones',        href: '/products?category=Accessories',icon: Headphones },
   { label: 'Smart TVs',         href: '/products?category=tv',         icon: Tv },
   { label: 'Trade-In',          href: '#trade-in',                     icon: RefreshCw },
+  { label: 'Compare Devices',   href: '/compare',                      icon: BarChart3 },
 ];
 
 export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
@@ -123,7 +124,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
           >
             {/* ── Mobile hamburger ── */}
             <button
-              onClick={() => setIsMobileOpen(true)}
+              onClick={onMenuClick}
               className="lg:hidden flex items-center justify-center rounded-lg"
               style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }}
               aria-label="Open menu"

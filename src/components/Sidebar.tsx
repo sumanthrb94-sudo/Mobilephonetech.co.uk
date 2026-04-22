@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { X, BarChart3, ShoppingBag, Home, Zap } from 'lucide-react';
+import { X, BarChart3, ShoppingBag, Home, Zap, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_CATEGORIES } from '../data';
 
@@ -55,14 +55,26 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <Home size={20} /> Home
               </Link>
 
-              {/* Compare */}
-              <Link
-                to="/compare"
-                onClick={onClose}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors font-bold"
-              >
-                <BarChart3 size={20} /> Compare
-              </Link>
+              {/* Tools Section */}
+              <div className="pt-2">
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 px-4 mb-3">
+                  Shopping Tools
+                </p>
+                <Link
+                  to="/compare"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors font-bold"
+                >
+                  <BarChart3 size={20} /> Compare Devices
+                </Link>
+                <Link
+                  to="/wishlist"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-blue-600 transition-colors font-bold"
+                >
+                  <Heart size={20} /> My Wishlist
+                </Link>
+              </div>
 
               {/* Categories */}
               <div className="pt-4 border-t border-slate-100">

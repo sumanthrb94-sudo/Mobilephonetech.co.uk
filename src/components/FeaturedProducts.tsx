@@ -5,11 +5,12 @@ import { motion } from 'motion/react';
 import React from 'react';
 
 const BRAND_TABS = [
-  { id: 'all',     label: 'All devices' },
-  { id: 'Apple',   label: 'Apple' },
-  { id: 'Samsung', label: 'Samsung' },
-  { id: 'Google',  label: 'Google' },
-  { id: 'OnePlus', label: 'OnePlus' },
+  { id: 'all',      label: 'All devices' },
+  { id: 'Apple',    label: 'Apple' },
+  { id: 'Samsung',  label: 'Samsung' },
+  { id: 'Google',   label: 'Google' },
+  { id: 'OnePlus',  label: 'OnePlus' },
+  { id: 'Motorola', label: 'Motorola' },
 ];
 
 export default function FeaturedProducts() {

@@ -68,10 +68,6 @@ function HomePage() {
         <FeaturedProducts />
       </div>
 
-      {/* Comparison Tool */}
-      <div id="compare">
-        <ComparisonTool />
-      </div>
 
       {/* Section 5: Value Proposition / Trust */}
       <TrustSection />

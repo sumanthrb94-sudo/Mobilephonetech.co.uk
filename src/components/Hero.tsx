@@ -18,6 +18,7 @@ const SLIDES = [
     ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-15-pro-max.png',
     imageAlt: 'iPhone 15 Pro Max',
+    brand: 'Apple',
     model: 'iPhone 15 Pro Max',
     storage: '256 GB · Titanium',
     grade: 'Pristine',
@@ -35,6 +36,7 @@ const SLIDES = [
     ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy S24 Ultra',
+    brand: 'Samsung',
     model: 'Galaxy S24 Ultra',
     storage: '256 GB · Titanium Grey',
     grade: 'Excellent',
@@ -52,6 +54,7 @@ const SLIDES = [
     ctaHref: '/products?brand=Google',
     image: '/assets/pixel-8-pro.png',
     imageAlt: 'Google Pixel 8 Pro',
+    brand: 'Google',
     model: 'Google Pixel 8 Pro',
     storage: '128 GB · Obsidian',
     grade: 'Excellent',
@@ -231,7 +234,7 @@ export default function Hero() {
 
                 <div style={{ padding: '24px' }}>
                   <p style={{ fontSize: '11px', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-40)', marginBottom: '4px' }}>
-                    Apple
+                    {slide.brand}
                   </p>
                   <h3
                     style={{

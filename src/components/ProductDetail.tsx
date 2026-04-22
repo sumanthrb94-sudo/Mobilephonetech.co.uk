@@ -179,9 +179,9 @@ export default function ProductDetail() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
             
             <div>
-              <p className="overline" style={{ marginBottom: '8px' }}>{phone.brand}</p>
+              <p className="overline" style={{ marginBottom: '8px' }}>{phone.brand || 'Premium Device'}</p>
               <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 4.5vw, 56px)', fontWeight: 700, color: 'var(--black)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
-                {phone.model}
+                {phone.model || 'Product Details'}
               </h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '2px', color: '#f59e0b' }}>

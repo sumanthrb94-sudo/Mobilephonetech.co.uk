@@ -83,7 +83,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             width: '100%',
             height: '100%',
             objectFit: 'contain',
-            padding: '24px',
+            padding: '16px',
             mixBlendMode: 'multiply',
             transition: 'transform var(--duration-slow) var(--ease-default)',
           }}
