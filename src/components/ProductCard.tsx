@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { motion } from 'motion/react';
+import { fetchGeminiImage } from '../services/geminiFlash';
 
 /**
  * ProductCard — Verified Form design philosophy
@@ -34,6 +35,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   const { showToast } = useUI();
   const [added, setAdded] = React.useState(false);
   const inWishlist = isInWishlist(phone.id);
+  const [geminiUrl, setGeminiUrl] = React.useState<string | null>(null);
 
   const savings = phone.originalPrice - phone.price;
   const savingsPct = Math.round((savings / phone.originalPrice) * 100);
@@ -60,6 +62,22 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   const rating = 3.8 + (parseInt(phone.id.slice(-1), 16) % 12) * 0.1;
   const ratingRounded = Math.min(5, Math.round(rating * 10) / 10);
 
+  // Try to fetch Gemini-generated image for this product if available
+  React.useEffect(() => {
+    let mounted = true;
+    const tryGemini = async () => {
+      try {
+        const url = await fetchGeminiImage({ brand: phone.brand, model: phone.model, storage: phone.storage, } as any);
+        if (url && mounted) setGeminiUrl(url);
+      } catch {
+        // ignore and fall back to existing imageUrl
+      }
+    };
+    // Attempt once on mount
+    tryGemini();
+    return () => { mounted = false; };
+  }, [phone.brand, phone.model, phone.storage]);
+
   return (
     <motion.div
       whileHover={{ y: -2 }}
@@ -82,7 +100,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
         }}
       >
         <img
-          src={phone.imageUrl}
+          src={geminiUrl ?? phone.imageUrl}
           alt={phone.model}
           loading="lazy"
           decoding="async"
