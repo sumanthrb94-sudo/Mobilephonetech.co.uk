@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { generateProductImageUrl } from './productImage'
+import { generateProductImageUrl } from '../utils'
 import { fetchGeminiImage } from '../services/geminiFlash'
 
 export interface ProductImageProps {
@@ -8,11 +8,10 @@ export interface ProductImageProps {
   storage?: string
   imageUrl: string
   alt?: string
-  galleryImages?: string[]
 }
 
 // Simple, consistent product image component with Gemini fallback
-export function ProductImage({ brand, model, storage, imageUrl, alt, galleryImages }: ProductImageProps) {
+export function ProductImage({ brand, model, storage, imageUrl, alt }: ProductImageProps) {
   const [geminiUrl, setGeminiUrl] = useState<string | null>(null)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
 
