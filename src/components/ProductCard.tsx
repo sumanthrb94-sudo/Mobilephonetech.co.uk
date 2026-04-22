@@ -1,8 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Battery, ShieldCheck, Eye } from 'lucide-react';
+import { ShoppingCart, Battery, ShieldCheck, Eye, Heart } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface ProductCardProps {
@@ -12,7 +13,18 @@ interface ProductCardProps {
 export default function ProductCard({ phone }: ProductCardProps) {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const [isQuickViewOpen, setIsQuickViewOpen] = React.useState(false);
+  const inWishlist = isInWishlist(phone.id);
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (inWishlist) {
+      removeFromWishlist(phone.id);
+    } else {
+      addToWishlist(phone);
+    }
+  };
 
   const savings = phone.originalPrice - phone.price;
   const savingsPercentage = Math.round((savings / phone.originalPrice) * 100);
@@ -49,6 +61,17 @@ export default function ProductCard({ phone }: ProductCardProps) {
             </span>
           </div>
 
+          {/* Wishlist Button */}
+          <button
+            onClick={handleWishlistToggle}
+            className="absolute top-4 right-4 p-2 bg-white rounded-full hover:bg-slate-100 transition-colors shadow-sm"
+          >
+            <Heart
+              size={20}
+              className={inWishlist ? 'fill-red-500 text-red-500' : 'text-slate-400'}
+            />
+          </button>
+
           {/* Quick View Overlay */}
           <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
             <button 
@@ -68,6 +91,12 @@ export default function ProductCard({ phone }: ProductCardProps) {
               className="p-3 bg-white rounded-full text-slate-900 hover:bg-blue-600 hover:text-white transition-colors shadow-lg"
             >
               <ShoppingCart size={20} />
+            </button>
+            <button 
+              onClick={handleWishlistToggle}
+              className="p-3 bg-white rounded-full text-slate-900 hover:bg-red-600 hover:text-white transition-colors shadow-lg"
+            >
+              <Heart size={20} className={inWishlist ? 'fill-current' : ''} />
             </button>
           </div>
         </div>

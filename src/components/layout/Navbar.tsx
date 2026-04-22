@@ -1,4 +1,4 @@
-import { Search, ShoppingBag, User, Menu, CheckCircle2, ShieldCheck, Globe, Star, X } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, CheckCircle2, ShieldCheck, Globe, Star, X, Heart, Package } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
@@ -71,6 +71,12 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            <Link to="/wishlist" className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
+              <Heart className="h-5 w-5 text-slate-600" />
+            </Link>
+            <Link to="/orders" className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
+              <Package className="h-5 w-5 text-slate-600" />
+            </Link>
             <button className="p-2 hover:bg-slate-100 rounded-full transition-colors hidden sm:block">
               <User className="h-5 w-5 text-slate-600" />
             </button>

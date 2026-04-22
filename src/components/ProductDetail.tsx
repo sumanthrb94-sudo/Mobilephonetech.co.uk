@@ -16,6 +16,7 @@ import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
 import { motion } from 'motion/react';
 import ReviewsSection from './ReviewsSection';
+import RelatedProductsSection from './RelatedProductsSection';
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -197,6 +198,9 @@ export default function ProductDetail() {
             <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
           </div>
         </div>
+
+        {/* Related Products */}
+        <RelatedProductsSection currentProduct={phone} />
       </div>
     </div>
   );

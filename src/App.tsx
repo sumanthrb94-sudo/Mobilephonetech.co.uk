@@ -13,9 +13,12 @@ import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
 import ProductsPage from './components/ProductsPage';
 import CheckoutFlow from './components/CheckoutFlow';
+import WishlistPage from './components/WishlistPage';
+import OrderHistoryPage from './components/OrderHistoryPage';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 function HomePage() {
   return (
@@ -49,6 +52,8 @@ function AppContent() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/checkout" element={<CheckoutFlow />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/orders" element={<OrderHistoryPage />} />
         </Routes>
       </main>
 
@@ -65,7 +70,9 @@ export default function App() {
       <CartProvider>
         <SearchProvider>
           <CheckoutProvider>
-            <AppContent />
+            <WishlistProvider>
+              <AppContent />
+            </WishlistProvider>
           </CheckoutProvider>
         </SearchProvider>
       </CartProvider>
