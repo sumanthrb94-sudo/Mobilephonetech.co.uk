@@ -23,9 +23,10 @@ import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
   onCartClick: () => void;
+  onMenuClick?: () => void;
 }
 
-export default function Navbar({ onCartClick }: NavbarProps) {
+export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
@@ -54,7 +55,6 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const navLinks = [
     { name: 'Phones', href: '/products' },
     { name: 'Categories', href: '#categories', isMega: true },
-    { name: 'Compare', href: '#compare' },
     { name: 'Trade-In', href: '#trade-in' },
   ];
 
@@ -191,7 +191,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
                 <button 
                   className="lg:hidden p-2 text-slate-900"
-                  onClick={() => setIsMobileMenuOpen(true)}
+                  onClick={() => onMenuClick?.()}
                   data-testid="mobile-menu-button"
                 >
                   <Menu size={22} />
