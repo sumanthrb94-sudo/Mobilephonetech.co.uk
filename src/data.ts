@@ -561,7 +561,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/xKrBA0WkKCOR.jpg',
     isCertified: true,
     stock: 5,
     specs: { display: '55" 4K QLED', processor: 'Quantum Processor 4K', features: 'Art Mode, HDR10+, smart TV apps' }
@@ -577,7 +577,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/xKrBA0WkKCOR.jpg',
     isCertified: true,
     stock: 4,
     specs: { display: '48" 4K OLED evo', processor: 'α9 Gen5 AI Processor', features: 'HDMI 2.1, 120Hz, webOS' }
@@ -593,7 +593,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-accessories.png',
+    imageUrl: '/assets/xKrBA0WkKCOR.jpg',
     isCertified: true,
     stock: 6,
     specs: { display: '55" 4K LED', processor: 'Cognitive Processor XR', features: 'Google TV, Dolby Vision, Acoustic Multi-Audio' }
