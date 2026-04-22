@@ -17,7 +17,7 @@ export default function WishlistPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-80)', paddingBottom: 'var(--spacing-80)' }}>
-      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
+      <div style={{ width: '100%', maxWidth: '1280px', marginLeft: 'auto', marginRight: 'auto', paddingLeft: '16px', paddingRight: '16px' }}>
         
         {/* Header */}
         <div style={{ marginBottom: 'var(--spacing-48)' }}>

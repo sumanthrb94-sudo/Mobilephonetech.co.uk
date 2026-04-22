@@ -68,32 +68,53 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   };
 
   const IconBtn = ({
-    icon: Icon, label, onClick, badge, id, className = ""
+    icon: Icon, label, onClick, badge, id
   }: {
-    icon: React.ElementType; label: string; onClick?: () => void; badge?: number; id?: string; className?: string;
-  }) => (
+    icon: React.ElementType; label: string; onClick?: () => void; badge?: number; id?: string;
+  }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    return (
     <button
       id={id}
       onClick={onClick}
       aria-label={label}
-      className={`flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors ${className}`}
       style={{ 
-        minWidth: '40px', 
-        minHeight: '44px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        gap: '2px',
+        padding: '4px 4px',
+        borderRadius: '8px',
         cursor: 'pointer', 
         border: 'none', 
-        backgroundColor: 'transparent',
-        transition: 'background-color var(--duration-fast)' 
+        backgroundColor: isHovered ? 'var(--grey-5)' : 'transparent',
+        transition: 'background-color 0.2s',
+        minWidth: '40px', 
+        minHeight: '44px',
       }}
-      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-5)'}
-      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative">
-        <Icon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }} />
+      <div style={{ position: 'relative' }}>
+        <Icon size={20} style={{ color: 'var(--grey-70)' }} />
         {badge !== undefined && badge > 0 && (
           <span
-            className="absolute -top-1.5 -right-1.5 flex items-center justify-center w-4 h-4 rounded-full text-white font-bold"
-            style={{ background: 'var(--blue-60)', fontSize: '9px', fontFamily: 'var(--font-sans)' }}
+            style={{ 
+              position: 'absolute', 
+              top: '-6px', 
+              right: '-6px', 
+              width: '16px', 
+              height: '16px', 
+              borderRadius: '50%', 
+              background: 'var(--blue-60)', 
+              color: 'white',
+              fontSize: '9px', 
+              fontFamily: 'var(--font-sans)',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
             {badge > 9 ? '9+' : badge}
           </span>
@@ -106,12 +127,12 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           color: 'var(--grey-50)',
           lineHeight: 1,
         }}
-        className="hidden lg:block"
       >
         {label}
       </span>
     </button>
   );
+};
 
   return (
     <>
@@ -225,9 +246,9 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             </form>
 
             {/* ── Icon actions — right side ── */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
               {/* Quality/Trust */}
-              <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" className="hidden xs:flex" />
+              <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" />
 
               {/* Theme Toggle */}
               <button
@@ -245,8 +266,6 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   border: 'none', 
                   backgroundColor: 'transparent' 
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--grey-5)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               >
                 <div>
                   {darkMode ? (
@@ -255,16 +274,16 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                     <Moon size={20} style={{ color: 'var(--grey-70)' }} />
                   )}
                 </div>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--grey-50)', lineHeight: 1 }} className="hidden lg:block">
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--grey-50)', lineHeight: 1 }}>
                   {darkMode ? 'Light' : 'Dark'}
                 </span>
               </button>
 
               {/* Help */}
-              <IconBtn icon={HelpCircle} label="Help" id="navbar-help-btn" className="hidden xs:flex" />
+              <IconBtn icon={HelpCircle} label="Help" id="navbar-help-btn" />
 
               {/* Account */}
-              <div className="relative" ref={dropdownRef}>
+              <div style={{ position: 'relative' }} ref={dropdownRef}>
                 <IconBtn
                   icon={User}
                   label={isAuthenticated ? 'Account' : 'Sign in'}
