@@ -66,16 +66,16 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
   };
 
   const IconBtn = ({
-    icon: Icon, label, onClick, badge, id
+    icon: Icon, label, onClick, badge, id, className = ""
   }: {
-    icon: React.ElementType; label: string; onClick?: () => void; badge?: number; id?: string;
+    icon: React.ElementType; label: string; onClick?: () => void; badge?: number; id?: string; className?: string;
   }) => (
     <button
       id={id}
       onClick={onClick}
       aria-label={label}
-      className="flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg group transition-colors hover:bg-[var(--grey-5)]"
-      style={{ minWidth: '48px', minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
+      className={`flex flex-col items-center gap-0.5 px-1 sm:px-2 py-1 rounded-lg group transition-colors hover:bg-[var(--grey-5)] ${className}`}
+      style={{ minWidth: '40px', sm: { minWidth: '48px' }, minHeight: '44px', cursor: 'pointer', border: 'none', background: 'transparent' }}
     >
       <div className="relative">
         <Icon size={20} style={{ color: 'var(--grey-70)', transition: 'color var(--duration-fast)' }}
@@ -119,13 +119,13 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
         {/* Main header row — 64px */}
         <header style={{ height: 'var(--header-h)' }}>
           <div
-            className="container-bm h-full flex items-center gap-4 lg:gap-6"
+            className="container-bm h-full flex items-center gap-2 sm:gap-4 lg:gap-6"
             style={{ maxWidth: 'var(--container-max)' }}
           >
             {/* ── Mobile hamburger ── */}
             <button
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden flex items-center justify-center rounded-lg"
+              onClick={() => setIsMobileOpen(true)}
+              className="lg:hidden flex items-center justify-center rounded-lg flex-shrink-0"
               style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }}
               aria-label="Open menu"
               id="navbar-hamburger"
@@ -137,10 +137,11 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
             <Link
               to="/"
               id="navbar-logo"
-              className="flex-shrink-0 flex items-center gap-2"
+              className="flex-shrink-0 flex items-center gap-2 min-w-0"
               style={{ textDecoration: 'none' }}
             >
               <div
+                className="flex-shrink-0"
                 style={{
                   width: '32px',
                   height: '32px',
@@ -154,6 +155,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
                 <RefreshCw size={16} color="white" strokeWidth={2.5} />
               </div>
               <span
+                className="truncate"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
@@ -164,7 +166,7 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
                 }}
               >
                 mobile<span style={{ color: 'var(--blue-60)' }}>tech</span>
-                <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
+                <span className="hidden sm:inline" style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
               </span>
             </Link>
 
@@ -202,12 +204,12 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
             </form>
 
             {/* ── Icon actions — right side ── */}
-            <div className="flex items-center gap-1 ml-auto">
+            <div className="flex items-center gap-0.5 sm:gap-1 ml-auto flex-shrink-0">
               {/* Quality/Trust */}
-              <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" />
+              <IconBtn icon={ShieldCheck} label="Quality" id="navbar-quality-btn" className="hidden xs:flex" />
 
               {/* Help */}
-              <IconBtn icon={HelpCircle} label="Help" id="navbar-help-btn" />
+              <IconBtn icon={HelpCircle} label="Help" id="navbar-help-btn" className="hidden xs:flex" />
 
               {/* Account */}
               <div className="relative" ref={dropdownRef}>
@@ -268,9 +270,9 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
               <button
                 id="navbar-cart-btn"
                 onClick={onCartClick}
-                className="flex items-center gap-2 btn btn-primary btn-md ml-1"
+                className="flex items-center gap-1 sm:gap-2 btn btn-primary btn-sm sm:btn-md ml-0.5 sm:ml-1 flex-shrink-0"
                 aria-label={`Cart (${cartCount} items)`}
-                style={{ fontFamily: 'var(--font-sans)', fontWeight: 700 }}
+                style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, minWidth: 'fit-content' }}
               >
                 <ShoppingBag size={18} />
                 <span>{cartCount}</span>
@@ -292,9 +294,10 @@ export default function Navbar({ onCartClick, onMenuClick }: NavbarProps) {
             scrollbarWidth: 'none',
           }}
           ref={catNavRef}
+          className="no-scrollbar"
         >
           <div
-            className="container-bm h-full flex items-center gap-1"
+            className="container-bm h-full flex items-center gap-1 px-4"
             style={{ maxWidth: 'var(--container-max)', minWidth: 'max-content' }}
           >
             {CATEGORIES.map((cat) => {
