@@ -285,9 +285,9 @@ export default function Hero() {
         style={{
           maxWidth: 'var(--container-max)',
           position: 'absolute',
-          bottom: '32px',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          bottom: '24px',
+          left: '0',
+          right: '0',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',

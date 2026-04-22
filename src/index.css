@@ -118,6 +118,28 @@
   --nav-total:     112px;  /* header + category nav */
 }
 
+.container-bm {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-16);
+  padding-right: var(--spacing-16);
+}
+
+@media (min-width: 640px) {
+  .container-bm {
+    padding-left: var(--spacing-24);
+    padding-right: var(--spacing-24);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-bm {
+    padding-left: var(--spacing-32);
+    padding-right: var(--spacing-32);
+  }
+}
+
 /* ───────────────────────────────────────────────────────────────
    2. TAILWIND @THEME BRIDGE
 ─────────────────────────────────────────────────────────────── */
@@ -155,6 +177,8 @@
     color: var(--color-text-default);
     background-color: var(--grey-0);
     overflow-x: hidden;
+    width: 100%;
+    position: relative;
   }
 
   img {
