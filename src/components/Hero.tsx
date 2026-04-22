@@ -3,7 +3,7 @@ import { ArrowRight, ShieldCheck, Battery, RefreshCw } from 'lucide-react';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden bg-slate-50 w-full">
+    <section className="relative min-h-[90vh] flex items-center pt-32 sm:pt-36 pb-16 overflow-hidden bg-slate-50 w-full">
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-[10%] -right-[5%] w-[50%] h-[60%] bg-blue-100/50 rounded-full blur-3xl" />

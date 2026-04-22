@@ -62,7 +62,9 @@ export default function Navbar({ onCartClick }: NavbarProps) {
     <>
       <div className="fixed top-0 left-0 right-0 z-[60] transition-all duration-300">
         {/* Trust Bar */}
-        <div className="bg-slate-900 text-white py-2 px-4 overflow-hidden">
+        <div className={`bg-slate-900 text-white transition-all duration-300 overflow-hidden ${
+          isScrolled ? 'max-h-0 py-0 opacity-0' : 'py-1.5'
+        }`}>
           <div className="max-w-7xl mx-auto flex justify-center md:justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
             <div className="hidden md:flex items-center gap-6">
               <span className="flex items-center gap-2"><ShieldCheck size={12} className="text-blue-400" /> 12-Month Warranty</span>
@@ -77,16 +79,16 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
         {/* Main Navbar */}
         <nav className={`transition-all duration-300 ${
-          isScrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-3' : 'bg-white py-5'
+          isScrolled ? 'bg-white/90 backdrop-blur-md shadow-lg py-2' : 'bg-white py-2.5'
         }`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center gap-8">
               {/* Logo */}
               <Link to="/" className="flex-shrink-0 flex items-center gap-2 group">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
-                  <RefreshCw size={24} className="font-black" />
+                <div className="w-8 sm:w-9 h-8 sm:h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20 group-hover:scale-110 transition-transform">
+                  <RefreshCw size={18} className="font-black" />
                 </div>
-                <span className="text-2xl font-black tracking-tighter text-slate-900 uppercase">
+                <span className="text-lg sm:text-xl font-black tracking-tighter text-slate-900 uppercase">
                   Mobile<span className="text-blue-600">Tech</span>
                 </span>
               </Link>
@@ -134,17 +136,18 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               </form>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 sm:gap-4">
-                <Link to="/wishlist" className="p-2 text-slate-600 hover:text-blue-600 transition-colors relative">
-                  <Heart size={22} />
+              <div className="flex items-center gap-1 sm:gap-3">
+                <Link to="/wishlist" className="p-2 text-slate-600 hover:text-blue-600 transition-colors relative" data-testid="wishlist-link">
+                  <Heart size={20} />
                 </Link>
 
                 <div className="relative">
                   <button 
                     onClick={() => isAuthenticated ? setIsAccountDropdownOpen(!isAccountDropdownOpen) : setIsAuthModalOpen(true)}
                     className="p-2 text-slate-600 hover:text-blue-600 transition-colors flex items-center gap-1"
+                    data-testid="account-button"
                   >
-                    <User size={22} />
+                    <User size={20} />
                     {isAuthenticated && <ChevronDown size={14} />}
                   </button>
 
@@ -179,17 +182,19 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
                 <button 
                   onClick={onCartClick}
-                  className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2.5 rounded-full hover:bg-blue-600 transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+                  className="flex items-center gap-2 bg-slate-900 text-white px-3 sm:px-4 py-2 rounded-full hover:bg-blue-600 transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+                  data-testid="cart-button"
                 >
-                  <ShoppingBag size={20} />
+                  <ShoppingBag size={18} />
                   <span className="text-sm font-black">{cartCount}</span>
                 </button>
 
                 <button 
                   className="lg:hidden p-2 text-slate-900"
                   onClick={() => setIsMobileMenuOpen(true)}
+                  data-testid="mobile-menu-button"
                 >
-                  <Menu size={24} />
+                  <Menu size={22} />
                 </button>
               </div>
             </div>
