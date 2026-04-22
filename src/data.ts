@@ -12,14 +12,14 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 98,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/YUYFZeFzWLMA.png',
+    imageUrl: '/assets/iphone-15-pro-max.png',
     galleryImages: [
+      '/assets/iphone-15-pro-max.png',
       '/assets/YUYFZeFzWLMA.png',
       '/assets/xKrBA0WkKCOR.jpg',
       '/assets/y0wXjoNpojxp.png',
-      'https://images.unsplash.com/photo-1592286927505-1def25115558?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop'
+      '/assets/ybNb5k0B7nvc.png',
+      '/assets/NGZkbbow4CIm.jpg',
     ],
     isCertified: true,
     stock: 5,
@@ -174,14 +174,13 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: 'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-5g-sm-s928-0.jpg',
+    imageUrl: '/assets/samsung-s24-ultra.png',
     galleryImages: [
-      'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-5g-sm-s928-0.jpg',
-      'https://fdn2.gsmarena.com/vv/pics/samsung/samsung-galaxy-s24-ultra-1.jpg',
-      'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop'
+      '/assets/samsung-s24-ultra.png',
+      '/assets/DRdEaOalbpKP.jpg',
+      '/assets/NGZkbbow4CIm.jpg',
+      '/assets/nnCyJ3CuEgYe.jpg',
+      '/assets/xKrBA0WkKCOR.jpg',
     ],
     isCertified: true,
     stock: 8,
@@ -316,14 +315,13 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 95,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: 'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-1.jpg',
+    imageUrl: '/assets/pixel-8-pro.png',
     galleryImages: [
-      'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-1.jpg',
-      'https://fdn2.gsmarena.com/vv/pics/google/google-pixel-8-pro-2.jpg',
-      'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop'
+      '/assets/pixel-8-pro.png',
+      '/assets/nnCyJ3CuEgYe.jpg',
+      '/assets/DRdEaOalbpKP.jpg',
+      '/assets/NGZkbbow4CIm.jpg',
+      '/assets/xKrBA0WkKCOR.jpg',
     ],
     isCertified: true,
     stock: 15,
@@ -458,14 +456,13 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: 'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-12-pro-1.jpg',
+    imageUrl: '/assets/iphone-12-pro.png',
     galleryImages: [
-      'https://fdn2.gsmarena.com/vv/pics/apple/apple-iphone-12-pro-1.jpg',
-      'https://images.unsplash.com/photo-1592286927505-1def25115558?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1511707267537-b85faf00021e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=800&auto=format&fit=crop'
+      '/assets/iphone-12-pro.png',
+      '/assets/YUYFZeFzWLMA.png',
+      '/assets/y0wXjoNpojxp.png',
+      '/assets/ybNb5k0B7nvc.png',
+      '/assets/xKrBA0WkKCOR.jpg',
     ],
     isCertified: true,
     stock: 8,
@@ -551,14 +548,14 @@ export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'phones',
     name: 'Smartphones',
-    imageUrl: 'https://images.unsplash.com/photo-1616348436168-de43ad0db179?q=80&w=800&auto=format&fit=crop',
+    imageUrl: '/assets/cat-smartphones.png',
     description: 'Refurbished and certified smartphones from top brands',
     productCount: 150,
     children: [
       {
         id: 'phones-apple',
         name: 'Apple iPhone',
-        imageUrl: '/assets/YUYFZeFzWLMA.png',
+        imageUrl: '/assets/iphone-15-pro-max.png',
         parent: 'phones',
         description: 'iPhone 15, 14, 13, 12, SE Series',
         productCount: 45,
@@ -566,7 +563,7 @@ export const MOCK_CATEGORIES: Category[] = [
       {
         id: 'phones-samsung',
         name: 'Samsung Galaxy',
-        imageUrl: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/samsung-s24-ultra.png',
         parent: 'phones',
         description: 'S24, S23, Z Fold, A Series',
         productCount: 38,
@@ -574,7 +571,7 @@ export const MOCK_CATEGORIES: Category[] = [
       {
         id: 'phones-google',
         name: 'Google Pixel',
-        imageUrl: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/pixel-8-pro.png',
         parent: 'phones',
         description: 'Pixel 8, 7, 6, Pro & A Series',
         productCount: 22,
@@ -582,7 +579,7 @@ export const MOCK_CATEGORIES: Category[] = [
       {
         id: 'phones-other',
         name: 'Other Brands',
-        imageUrl: 'https://images.unsplash.com/photo-1556656793-062ff98782ee?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/cat-accessories.png',
         parent: 'phones',
         description: 'Sony, Motorola, Nothing, Xiaomi',
         productCount: 45,
@@ -592,14 +589,14 @@ export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'tablets',
     name: 'Tablets & iPads',
-    imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=800&auto=format&fit=crop',
+    imageUrl: '/assets/cat-tablets.png',
     description: 'Refurbished iPads and Android Tablets',
     productCount: 42,
     children: [
       {
         id: 'tablets-ipad',
         name: 'Apple iPad',
-        imageUrl: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/cat-tablets.png',
         parent: 'tablets',
         description: 'iPad Pro, Air, Mini & Standard',
         productCount: 28,
@@ -607,7 +604,7 @@ export const MOCK_CATEGORIES: Category[] = [
       {
         id: 'tablets-samsung',
         name: 'Samsung Tab',
-        imageUrl: 'https://images.unsplash.com/photo-1589739900243-4b52cd9b104e?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/samsung-s24-ultra.png',
         parent: 'tablets',
         description: 'Galaxy Tab S & A Series',
         productCount: 14,
@@ -617,14 +614,14 @@ export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'wearables',
     name: 'Smartwatches',
-    imageUrl: 'https://images.unsplash.com/photo-1544117518-30df578096a4?q=80&w=800&auto=format&fit=crop',
+    imageUrl: '/assets/cat-smartwatches.png',
     description: 'Refurbished Apple Watch and Galaxy Watch',
     productCount: 25,
     children: [
       {
         id: 'wearables-apple',
         name: 'Apple Watch',
-        imageUrl: 'https://images.unsplash.com/photo-1544117518-30df578096a4?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/cat-smartwatches.png',
         parent: 'wearables',
         description: 'Series 9, 8, Ultra & SE',
         productCount: 18,
@@ -632,7 +629,7 @@ export const MOCK_CATEGORIES: Category[] = [
       {
         id: 'wearables-samsung',
         name: 'Galaxy Watch',
-        imageUrl: 'https://images.unsplash.com/photo-1579586337278-3befd40fd17a?q=80&w=800&auto=format&fit=crop',
+        imageUrl: '/assets/cat-smartwatches.png',
         parent: 'wearables',
         description: 'Watch 6, 5, 4 & Classic',
         productCount: 7,
@@ -642,7 +639,7 @@ export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'accessories',
     name: 'Accessories',
-    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop',
+    imageUrl: '/assets/cat-accessories.png',
     description: 'Chargers, Cases, and Headphones',
     productCount: 85
   }

@@ -1,105 +1,353 @@
-import { motion } from 'motion/react';
-import { ArrowRight, ShieldCheck, Battery, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ArrowRight, ArrowLeft, ShieldCheck, Battery, RefreshCw, Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+/**
+ * Hero — BM spec Section 3
+ * - Full-width gradient background (diagonal warm tint)
+ * - Left: Playfair Display serif headline + body + CTA
+ * - Right: Product card (white bg, condition badge, price)
+ * - Carousel dots + left/right arrows
+ * - ~450px desktop, stacks on mobile
+ */
+
+const SLIDES = [
+  {
+    overline: 'Flash Sale — Up to 40% off',
+    headline: 'Like new.\nAt half\nthe price.',
+    body: 'Certified refurbished iPhones, inspected to a 90-point standard. 12-month warranty included — always.',
+    ctaLabel: 'Shop iPhones',
+    ctaHref: '/products?brand=Apple',
+    image: '/assets/iphone-15-pro-max.png',
+    imageAlt: 'iPhone 15 Pro Max',
+    model: 'iPhone 15 Pro Max',
+    storage: '256 GB · Titanium',
+    grade: 'Pristine',
+    gradeClass: 'badge badge-pristine',
+    price: '£849',
+    rrp: '£1,199',
+    bgFrom: '#fafafa',
+    bgAccent: '#eff6ff',
+  },
+  {
+    overline: 'New arrivals — Samsung Galaxy',
+    headline: 'Premium\nAndroid.\nBig savings.',
+    body: 'Galaxy S24 Ultra in Excellent condition. Save over £300 compared to new. Free next-day delivery.',
+    ctaLabel: 'Shop Samsung',
+    ctaHref: '/products?brand=Samsung',
+    image: '/assets/samsung-s24-ultra.png',
+    imageAlt: 'Samsung Galaxy S24 Ultra',
+    model: 'Galaxy S24 Ultra',
+    storage: '256 GB · Titanium Grey',
+    grade: 'Excellent',
+    gradeClass: 'badge badge-excellent',
+    price: '£749',
+    rrp: '£1,099',
+    bgFrom: '#fafafa',
+    bgAccent: '#f0fdf4',
+  },
+  {
+    overline: 'Best sellers — Google Pixel',
+    headline: 'The camera\nphone you\nactually want.',
+    body: 'Google Pixel 8 Pro. AI-powered photography in Good+ condition. 7-year OS updates guaranteed.',
+    ctaLabel: 'Shop Pixel',
+    ctaHref: '/products?brand=Google',
+    image: '/assets/pixel-8-pro.png',
+    imageAlt: 'Google Pixel 8 Pro',
+    model: 'Google Pixel 8 Pro',
+    storage: '128 GB · Obsidian',
+    grade: 'Excellent',
+    gradeClass: 'badge badge-excellent',
+    price: '£469',
+    rrp: '£749',
+    bgFrom: '#fafafa',
+    bgAccent: '#fef3c7',
+  },
+];
+
+const TRUST_ITEMS = [
+  { icon: ShieldCheck, text: '12-month warranty' },
+  { icon: Battery,     text: '90%+ battery health' },
+  { icon: RefreshCw,   text: '30-day free returns' },
+];
 
 export default function Hero() {
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(1);
+  const total = SLIDES.length;
+
+  const goTo = (idx: number, dir = 1) => {
+    setDirection(dir);
+    setCurrent((idx + total) % total);
+  };
+
+  // Auto-advance
+  useEffect(() => {
+    const t = setTimeout(() => goTo((current + 1) % total, 1), 6000);
+    return () => clearTimeout(t);
+  }, [current]);
+
+  const slide = SLIDES[current];
+
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-32 sm:pt-36 pb-16 overflow-hidden bg-slate-50 w-full">
-      {/* Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute -top-[10%] -right-[5%] w-[50%] h-[60%] bg-blue-100/50 rounded-full blur-3xl" />
-        <div className="absolute bottom-[10%] -left-[5%] w-[40%] h-[50%] bg-indigo-50 rounded-full blur-3xl" />
-      </div>
+    <section
+      aria-label="Hero carousel"
+      style={{
+        /* BM spec: gradient bg, full-width, ~450px desktop */
+        width: '100%',
+        minHeight: 'clamp(380px, 50vw, 460px)',
+        position: 'relative',
+        overflow: 'hidden',
+        background: `linear-gradient(135deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 55%)`,
+        transition: `background var(--duration-slow) var(--ease-default)`,
+        paddingTop: 'var(--nav-total)', /* 112px offset for fixed header + catnav */
+      }}
+    >
+      {/* Subtle diagonal shape */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0, right: 0,
+          width: '50%',
+          height: '100%',
+          background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.6) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
 
-      <div className="w-full max-w-7xl mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <div
+        className="container-bm"
+        style={{
+          maxWidth: 'var(--container-max)',
+          height: '100%',
+          position: 'relative',
+          zIndex: 2,
+        }}
+      >
+        <AnimatePresence mode="wait" custom={direction}>
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
+            key={current}
+            custom={direction}
+            initial={{ opacity: 0, x: direction * 40 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
+            exit={{ opacity: 0, x: -direction * 40 }}
+            transition={{ duration: 0.45, ease: [0.2, 0, 0, 1] }}
+            className="grid lg:grid-cols-2 gap-8 items-center py-12 lg:py-16 h-full"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600 text-white text-sm font-bold mb-6 shadow-lg shadow-blue-600/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-              </span>
-              PREMIUM UK REFURBISHED
-            </div>
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight text-slate-900 leading-[0.9] mb-8 break-words">
-              LIKE NEW. <br />
-              <span className="text-blue-600 text-shadow-sm block">GUARANTEED.</span>
-            </h1>
-            
-            <p className="text-base sm:text-lg lg:text-xl text-slate-600 mb-10 max-w-lg leading-relaxed font-medium">
-              Save up to £400 vs buying new. Every device is hand-tested, certified, and comes with a 12-month warranty. No surprises, just quality.
-            </p>
+            {/* ── Left: Text block ──────────────── */}
+            <div>
+              {/* Overline */}
+              <div className="overline mb-4">{slide.overline}</div>
 
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4 mb-12">
-              <a 
-                href="#products"
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-slate-900 text-white rounded-full font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shadow-xl text-sm sm:text-base"
+              {/* Headline — Playfair Display serif, BM spec "punchline" */}
+              <h1
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 'clamp(38px, 5.5vw, 68px)',
+                  fontWeight: 700,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.05,
+                  color: 'var(--black)',
+                  marginBottom: '20px',
+                  whiteSpace: 'pre-line',
+                }}
               >
-                Shop iPhones <ArrowRight size={18} />
-              </a>
-              <a 
-                href="#trade-in"
-                className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-slate-900 border-2 border-slate-200 rounded-full font-bold hover:bg-slate-50 transition-all active:scale-95 text-sm sm:text-base text-center"
+                {slide.headline}
+              </h1>
+
+              {/* Body — BM spec body-1 */}
+              <p
+                className="type-body-1"
+                style={{
+                  color: 'var(--grey-50)',
+                  marginBottom: '32px',
+                  maxWidth: '400px',
+                }}
               >
-                Sell Your Phone
-              </a>
+                {slide.body}
+              </p>
+
+              {/* CTA — Primary black button (BM spec) */}
+              <div className="flex flex-wrap gap-3 mb-10">
+                <Link
+                  to={slide.ctaHref}
+                  className="btn btn-primary btn-lg"
+                  id={`hero-cta-${current}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  {slide.ctaLabel}
+                  <ArrowRight size={18} />
+                </Link>
+                <a href="#trade-in" className="btn btn-secondary btn-lg">
+                  Sell your phone
+                </a>
+              </div>
+
+              {/* Trust micro-row */}
+              <div className="flex flex-wrap gap-6">
+                {TRUST_ITEMS.map((t) => (
+                  <div key={t.text} className="flex items-center gap-2">
+                    <t.icon size={15} style={{ color: 'var(--blue-60)', flexShrink: 0 }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 500, color: 'var(--grey-50)' }}>
+                      {t.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 sm:gap-6 pt-6 sm:pt-8 border-t border-slate-200">
-              <div className="flex flex-col gap-2">
-                <div className="text-blue-600"><ShieldCheck size={20} /></div>
-                <div className="text-xs sm:text-sm font-bold text-slate-900">12-Month Warranty</div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="text-blue-600"><Battery size={20} /></div>
-                <div className="text-xs sm:text-sm font-bold text-slate-900">90%+ Battery Health</div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <div className="text-blue-600"><RefreshCw size={20} /></div>
-                <div className="text-xs sm:text-sm font-bold text-slate-900">30-Day Returns</div>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative"
-          >
-            <div className="relative z-10 bg-white p-2 sm:p-4 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl border border-slate-100">
-              <div className="overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] bg-slate-50 aspect-[4/5] relative">
-                <img 
-                  src="/assets/YUYFZeFzWLMA.png" 
-                  alt="iPhone 15 Pro Max"
-                  className="w-full h-full object-contain p-8 drop-shadow-2xl"
-                />
-                <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full font-bold text-slate-900 shadow-sm border border-slate-100">
-                  Pristine Condition
+            {/* ── Right: Product card ───────────── */}
+            <div className="relative flex justify-center lg:justify-end">
+              <div
+                className="card card-xl"
+                style={{
+                  maxWidth: '340px',
+                  width: '100%',
+                  padding: 0,
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Badges */}
+                <div style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 2 }}>
+                  <span className={slide.gradeClass}>{slide.grade}</span>
                 </div>
-                <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 right-4 sm:right-8 bg-slate-900/90 backdrop-blur p-4 sm:p-6 rounded-xl sm:rounded-2xl text-white border border-white/10">
-                  <div className="flex justify-between items-end gap-2">
-                    <div>
-                      <div className="text-blue-400 text-[10px] sm:text-xs font-black mb-1 uppercase tracking-widest">Featured Deal</div>
-                      <div className="text-lg sm:text-2xl font-black tracking-tight">iPhone 15 Pro Max</div>
+                <div style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2 }}>
+                  <span className="badge badge-savings">Save £{parseInt(slide.rrp.replace('£','')) - parseInt(slide.price.replace('£',''))}</span>
+                </div>
+
+                {/* Product image */}
+                <div
+                  style={{
+                    background: 'var(--grey-5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    aspectRatio: '1 / 1',
+                    position: 'relative',
+                  }}
+                >
+                  <img
+                    src={slide.image}
+                    alt={slide.imageAlt}
+                    style={{
+                      maxHeight: '220px',
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 12px 32px rgba(0,0,0,0.10))',
+                      padding: '24px',
+                    }}
+                  />
+                </div>
+
+                {/* Info */}
+                <div style={{ padding: '20px 20px 16px' }}>
+                  <p style={{ fontSize: '11px', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-40)', marginBottom: '4px' }}>
+                    Apple
+                  </p>
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontWeight: 800,
+                      fontSize: '18px',
+                      letterSpacing: '-0.025em',
+                      color: 'var(--black)',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    {slide.model}
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--grey-40)', fontFamily: 'var(--font-body)', marginBottom: '12px' }}>
+                    {slide.storage}
+                  </p>
+
+                  {/* Price */}
+                  <div className="flex items-baseline gap-3 mb-3">
+                    <span
+                      className="type-price"
+                      style={{ fontSize: '28px', color: 'var(--black)' }}
+                    >
+                      {slide.price}
+                    </span>
+                    <span style={{ fontSize: '15px', color: 'var(--grey-40)', textDecoration: 'line-through', fontFamily: 'var(--font-body)' }}>
+                      {slide.rrp}
+                    </span>
+                  </div>
+
+                  {/* Trust row */}
+                  <div
+                    className="flex gap-4 pt-3"
+                    style={{ borderTop: '1px solid var(--grey-10)' }}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <ShieldCheck size={13} style={{ color: 'var(--blue-60)' }} />
+                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)' }}>12m warranty</span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-slate-400 text-xs sm:text-sm line-through font-bold">£1,199</div>
-                      <div className="text-2xl sm:text-3xl font-black text-blue-400">£849</div>
+                    <div className="flex items-center gap-1.5">
+                      <Battery size={13} style={{ color: '#10b981' }} />
+                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)' }}>94% battery</span>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            {/* Decorative circles */}
-            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] border border-slate-200 rounded-full opacity-50" />
-            <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] border border-slate-200 rounded-full opacity-30" />
           </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* ── Carousel Controls ───────────────────── */}
+      <div
+        className="container-bm"
+        style={{
+          maxWidth: 'var(--container-max)',
+          position: 'absolute',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          zIndex: 10,
+        }}
+      >
+        {/* Dot indicators */}
+        <div className="flex items-center gap-2">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i, i > current ? 1 : -1)}
+              aria-label={`Go to slide ${i + 1}`}
+              style={{
+                width: i === current ? '24px' : '8px',
+                height: '8px',
+                borderRadius: 'var(--radius-full)',
+                background: i === current ? 'var(--black)' : 'var(--grey-30)',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'all var(--duration-normal) var(--ease-bounce)',
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Arrow buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => goTo(current - 1, -1)}
+            aria-label="Previous slide"
+            className="btn btn-secondary btn-sm"
+            style={{ width: '40px', height: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <button
+            onClick={() => goTo(current + 1, 1)}
+            aria-label="Next slide"
+            className="btn btn-primary btn-sm"
+            style={{ width: '40px', height: '40px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <ArrowRight size={18} />
+          </button>
         </div>
       </div>
     </section>

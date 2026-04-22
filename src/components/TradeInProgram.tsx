@@ -1,107 +1,291 @@
 import { motion } from 'motion/react';
-import { ArrowRight, Smartphone, DollarSign, Zap } from 'lucide-react';
+import { ArrowRight, Smartphone, Banknote, PackageCheck } from 'lucide-react';
+
+const STEPS = [
+  {
+    num: '01',
+    icon: Smartphone,
+    title: 'Tell us about your device',
+    body: 'Choose your phone model and condition. Get an instant estimate — no forms, no waiting.',
+  },
+  {
+    num: '02',
+    icon: Banknote,
+    title: 'Accept our offer',
+    body: "Happy with the price? Lock it in. We'll email a free prepaid return label immediately.",
+  },
+  {
+    num: '03',
+    icon: PackageCheck,
+    title: 'Get paid within 24 hours',
+    body: 'We inspect your device and transfer the full agreed amount to your bank. No surprises.',
+  },
+];
+
+const VALUATIONS = [
+  { model: 'iPhone 15 Pro Max', storage: '256 GB',  price: '£650' },
+  { model: 'iPhone 14 Pro',     storage: '128 GB',  price: '£450' },
+  { model: 'Galaxy S24 Ultra',  storage: '256 GB',  price: '£520' },
+  { model: 'iPhone 13',         storage: '128 GB',  price: '£280' },
+  { model: 'Pixel 8 Pro',       storage: '128 GB',  price: '£310' },
+];
 
 export default function TradeInProgram() {
   return (
-    <section className="py-24 bg-slate-900 text-white" id="trade-in">
-      <div className="container mx-auto px-4">
+    <section
+      style={{ background: 'var(--grey-95)', padding: 'var(--spacing-96) 0' }}
+      id="trade-in"
+    >
+      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         <div className="grid lg:grid-cols-2 gap-16 items-center">
+
+          {/* ── Left: Copy + Steps ──────────────── */}
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ duration: 0.55, ease: [0.2, 0, 0, 1] }}
           >
-            <span className="inline-block px-4 py-2 rounded-full bg-blue-600/20 text-blue-400 text-sm font-bold mb-6 uppercase tracking-widest border border-blue-500/30">
-              Trade-In Program
-            </span>
-            <h2 className="text-5xl lg:text-6xl font-black tracking-tighter mb-8 leading-[0.9]">
-              Turn Your Old Device Into <span className="text-blue-400">Instant Cash</span>
+            {/* Overline */}
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '4px 12px',
+                borderRadius: 'var(--radius-full)',
+                background: 'rgba(37,99,235,0.18)',
+                border: '1px solid rgba(59,130,246,0.3)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'var(--blue-30)',
+                marginBottom: 'var(--spacing-20)',
+              }}
+            >
+              Trade-In Programme
+            </div>
+
+            {/* Headline — Playfair serif (your brand's display voice) */}
+            <h2
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 'clamp(34px, 4.5vw, 56px)',
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                color: 'white',
+                marginBottom: 'var(--spacing-16)',
+              }}
+            >
+              Turn your old phone<br />
+              into <span style={{ color: 'var(--blue-40)' }}>cash today.</span>
             </h2>
-            <p className="text-xl text-slate-300 mb-10 leading-relaxed font-medium">
-              Ready for an upgrade? Get an expert valuation for your pre-owned device and receive same-day payment. It's the easiest way to offset your next purchase.
+
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '17px',
+                color: 'rgba(255,255,255,0.5)',
+                lineHeight: 1.65,
+                maxWidth: '420px',
+                marginBottom: 'var(--spacing-40)',
+              }}
+            >
+              Ready for an upgrade? We give you a fair, instant valuation and
+              fast bank transfer. No haggling, no hidden deductions.
             </p>
 
-            <div className="space-y-6 mb-12">
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Smartphone className="text-blue-400" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-black text-lg mb-2">Free Valuation</h3>
-                  <p className="text-slate-400">Get an instant quote for your device in seconds. No hidden fees.</p>
-                </div>
-              </div>
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="text-blue-400" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-black text-lg mb-2">Same-Day Payment</h3>
-                  <p className="text-slate-400">Accept our offer and get paid within 24 hours via bank transfer.</p>
-                </div>
-              </div>
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 bg-blue-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Zap className="text-blue-400" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-black text-lg mb-2">Hassle-Free Process</h3>
-                  <p className="text-slate-400">Free prepaid shipping label. We handle everything else.</p>
-                </div>
-              </div>
+            {/* Numbered steps */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)', marginBottom: 'var(--spacing-40)' }}>
+              {STEPS.map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -16 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.4 }}
+                  style={{ display: 'flex', gap: 'var(--spacing-16)', alignItems: 'flex-start' }}
+                >
+                  {/* Step number */}
+                  <div
+                    style={{
+                      width: '44px',
+                      height: '44px',
+                      borderRadius: 'var(--radius-md)',
+                      background: 'rgba(37,99,235,0.2)',
+                      border: '1px solid rgba(59,130,246,0.25)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <step.icon size={18} style={{ color: 'var(--blue-40)' }} />
+                  </div>
+                  <div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'var(--blue-40)',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      Step {step.num}
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        color: 'white',
+                        marginBottom: '4px',
+                        letterSpacing: '-0.015em',
+                      }}
+                    >
+                      {step.title}
+                    </h3>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>
+                      {step.body}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              <button className="px-8 py-4 bg-blue-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2 shadow-lg shadow-blue-600/30">
-                Get Free Quote <ArrowRight size={20} />
+            {/* CTAs — black primary per spec + ghost */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-12)' }}>
+              <button
+                className="btn btn-md"
+                id="tradein-quote-btn"
+                style={{
+                  background: 'white',
+                  color: 'var(--black)',
+                  border: '1px solid white',
+                  borderRadius: 'var(--radius-md)',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                Get a free quote <ArrowRight size={16} />
               </button>
-              <button className="px-8 py-4 bg-white/10 text-white border border-white/20 rounded-full font-black uppercase tracking-widest hover:bg-white/20 transition-all active:scale-95">
-                Learn More
+              <button
+                className="btn btn-md"
+                style={{
+                  background: 'transparent',
+                  color: 'rgba(255,255,255,0.7)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 'var(--radius-md)',
+                  fontFamily: 'var(--font-sans)',
+                  fontWeight: 600,
+                }}
+              >
+                How it works
               </button>
             </div>
           </motion.div>
 
+          {/* ── Right: Valuation card ───────────── */}
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="relative"
+            transition={{ duration: 0.55, delay: 0.15 }}
           >
-            <div className="bg-gradient-to-br from-blue-600/20 to-slate-900 rounded-[3rem] p-12 border border-blue-500/20">
-              <div className="space-y-8">
-                <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Example Valuations</span>
-                    <span className="text-xs font-bold text-blue-400 uppercase">2024 Prices</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold">iPhone 15 Pro Max</span>
-                      <span className="text-blue-400 font-black text-lg">£650</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold">iPhone 14 Pro</span>
-                      <span className="text-blue-400 font-black text-lg">£450</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold">iPhone 13</span>
-                      <span className="text-blue-400 font-black text-lg">£280</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold">iPhone 12</span>
-                      <span className="text-blue-400 font-black text-lg">£180</span>
-                    </div>
-                  </div>
-                </div>
+            <div
+              style={{
+                borderRadius: 'var(--radius-xl)',
+                overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              {/* Card header */}
+              <div
+                style={{
+                  padding: 'var(--spacing-16) var(--spacing-24)',
+                  background: 'rgba(37,99,235,0.15)',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '14px', color: 'white' }}>
+                  Example valuations
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    color: 'var(--blue-40)',
+                  }}
+                >
+                  Live prices
+                </span>
+              </div>
 
-                <div className="bg-blue-600/10 rounded-2xl p-6 border border-blue-500/30">
-                  <p className="text-sm text-slate-300 font-medium">
-                    <span className="text-blue-400 font-bold">💡 Pro Tip:</span> Trade in your old device when buying a new one and save even more. Combine trade-in credit with our already-low refurbished prices.
-                  </p>
-                </div>
+              {/* Price rows */}
+              <div style={{ background: 'rgba(255,255,255,0.03)' }}>
+                {VALUATIONS.map((v, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: 'var(--spacing-16) var(--spacing-24)',
+                      borderBottom: i < VALUATIONS.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '14px', color: 'white' }}>
+                        {v.model}
+                      </div>
+                      <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>
+                        {v.storage}
+                      </div>
+                    </div>
+                    <div
+                      className="type-price"
+                      style={{ fontSize: '18px', color: 'var(--blue-40)' }}
+                    >
+                      {v.price}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Tip footer */}
+              <div
+                style={{
+                  padding: 'var(--spacing-16) var(--spacing-24)',
+                  background: 'rgba(37,99,235,0.08)',
+                  borderTop: '1px solid rgba(37,99,235,0.2)',
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'flex-start',
+                }}
+              >
+                <span style={{ fontSize: '16px', flexShrink: 0 }}>💡</span>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, margin: 0 }}>
+                  <span style={{ fontWeight: 700, color: 'var(--blue-30)' }}>Tip: </span>
+                  Trade in when buying refurbished and combine the savings. Your upgrade can cost surprisingly little.
+                </p>
               </div>
             </div>
           </motion.div>
+
         </div>
       </div>
     </section>

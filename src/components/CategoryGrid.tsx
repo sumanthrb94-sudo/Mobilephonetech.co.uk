@@ -2,88 +2,287 @@ import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { MOCK_CATEGORIES } from '../data';
 
+/**
+ * CategoryGrid — BM spec Section 4
+ * Layout: 2 large cards top row, 3 smaller cards bottom row
+ * White bg, subtle border, product image (contained), heading-3, body-2, hover lift
+ */
 export default function CategoryGrid() {
-  return (
-    <section className="py-24 bg-slate-50" id="categories">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+  const topTwo   = MOCK_CATEGORIES.slice(0, 2);
+  const bottomThree = MOCK_CATEGORIES.slice(2, 5);
+
+  const LargeCard = ({ category, index }: { category: typeof MOCK_CATEGORIES[0]; index: number }) => (
+    <motion.a
+      href={`/products?category=${category.id}`}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+      className="card card-xl"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        textDecoration: 'none',
+        overflow: 'hidden',
+        cursor: 'pointer',
+      }}
+      id={`category-large-${category.id}`}
+    >
+      {/* Image — top half, contained (BM spec: "product image centred") */}
+      <div
+        style={{
+          background: 'var(--grey-5)',
+          height: '220px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
+        <img
+          src={category.imageUrl}
+          alt={category.name}
+          style={{
+            maxHeight: '160px',
+            maxWidth: '80%',
+            objectFit: 'contain',
+            transition: 'transform var(--duration-slow) var(--ease-default)',
+          }}
+          className="category-img"
+        />
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: 'var(--spacing-24)' }}>
+        <div className="flex items-center justify-between">
           <div>
-            <div className="inline-block px-4 py-1.5 rounded-full bg-blue-100 text-blue-600 text-xs font-black uppercase tracking-widest mb-4">
-              Departments
-            </div>
-            <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">
-              Shop by <span className="text-blue-600">Category.</span>
-            </h2>
+            <h3
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '20px',
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                color: 'var(--black)',
+                marginBottom: '4px',
+              }}
+            >
+              {category.name}
+            </h3>
+            <p
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '14px',
+                color: 'var(--grey-50)',
+              }}
+            >
+              {category.productCount}+ models available
+            </p>
           </div>
-          <a 
-            href="/products" 
-            className="group flex items-center gap-2 text-slate-900 font-black uppercase tracking-widest text-sm hover:text-blue-600 transition-colors"
+          <div
+            style={{
+              width: '40px',
+              height: '40px',
+              background: 'var(--grey-5)',
+              border: '1px solid var(--grey-20)',
+              borderRadius: 'var(--radius-full)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all var(--duration-fast)',
+              flexShrink: 0,
+            }}
+            className="card-arrow"
           >
-            View All Departments <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight size={18} style={{ color: 'var(--black)' }} />
+          </div>
+        </div>
+      </div>
+    </motion.a>
+  );
+
+  const SmallCard = ({ category, index }: { category: typeof MOCK_CATEGORIES[0]; index: number }) => (
+    <motion.a
+      href={`/products?category=${category.id}`}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.2 + index * 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+      className="card"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        textDecoration: 'none',
+        overflow: 'hidden',
+        cursor: 'pointer',
+      }}
+      id={`category-small-${category.id}`}
+    >
+      {/* Image */}
+      <div
+        style={{
+          background: 'var(--grey-5)',
+          height: '160px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
+        <img
+          src={category.imageUrl}
+          alt={category.name}
+          style={{
+            maxHeight: '110px',
+            maxWidth: '75%',
+            objectFit: 'contain',
+            transition: 'transform var(--duration-slow) var(--ease-default)',
+          }}
+        />
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: 'var(--spacing-16) var(--spacing-20)' }}>
+        <h3
+          style={{
+            fontFamily: 'var(--font-sans)',
+            fontSize: '16px',
+            fontWeight: 700,
+            letterSpacing: '-0.015em',
+            color: 'var(--black)',
+            marginBottom: '2px',
+          }}
+        >
+          {category.name}
+        </h3>
+        <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
+          {category.productCount}+ devices
+        </p>
+      </div>
+    </motion.a>
+  );
+
+  return (
+    <section
+      style={{ background: 'var(--grey-0)', padding: 'var(--spacing-80) 0' }}
+      id="categories"
+    >
+      <div
+        className="container-bm"
+        style={{ maxWidth: 'var(--container-max)' }}
+      >
+        {/* ── Section Header ──────────────────── */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+          <div>
+            <div className="overline mb-3">Shop by department</div>
+            <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--black)' }}>
+              What are you looking for?
+            </h2>
+            <p
+              style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', marginTop: '6px', maxWidth: '480px' }}
+            >
+              Every device certified and priced below retail — discover your category.
+            </p>
+          </div>
+          <a
+            href="/products"
+            id="category-view-all"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: 'var(--grey-60)',
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              transition: 'color var(--duration-fast)',
+            }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--black)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--grey-60)'; }}
+          >
+            View all <ArrowRight size={15} />
           </a>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {MOCK_CATEGORIES.map((category, index) => (
-            <motion.a
-              key={category.id}
-              href={`/products?category=${category.id}`}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="group relative h-[400px] rounded-[2.5rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
-            >
-              <img
-                src={category.imageUrl}
-                alt={category.name}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
-              
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-blue-400 text-xs font-black uppercase tracking-widest mb-2">
-                      {category.productCount}+ Models Available
-                    </p>
-                    <h3 className="text-3xl font-black text-white tracking-tight uppercase">
-                      {category.name}
-                    </h3>
-                  </div>
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-lg">
-                    <ArrowRight size={24} />
-                  </div>
-                </div>
-              </div>
-            </motion.a>
+        {/* ── Row 1: 2 large cards ─────────────── */}
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5"
+          style={{ marginBottom: '20px' }}
+        >
+          {topTwo.map((cat, i) => (
+            <LargeCard key={cat.id} category={cat} index={i} />
           ))}
-          
-          {/* Trade-in Card */}
-          <motion.a
-            href="#trade-in"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="group relative h-[400px] rounded-[2.5rem] overflow-hidden shadow-lg bg-blue-600 flex flex-col justify-center p-12 text-white"
-          >
-            <div className="relative z-10">
-              <h3 className="text-4xl font-black tracking-tighter uppercase mb-4 leading-none">
-                Sell Your <br />Old Phone.
-              </h3>
-              <p className="text-blue-100 font-medium mb-8 max-w-[200px]">
-                Get an instant valuation and cash in your pocket today.
-              </p>
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-full font-black uppercase tracking-widest text-xs group-hover:scale-105 transition-transform">
-                Get Started <ArrowRight size={16} />
-              </div>
-            </div>
-            {/* Decorative element */}
-            <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-blue-500 rounded-full opacity-50 blur-3xl group-hover:scale-125 transition-transform duration-700" />
-          </motion.a>
         </div>
+
+        {/* ── Row 2: 3 smaller cards ───────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          {bottomThree.map((cat, i) => (
+            <SmallCard key={cat.id} category={cat} index={i} />
+          ))}
+        </div>
+
+        {/* ── Trade-in banner ──────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-5 rounded-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 p-8 md:p-10"
+          style={{
+            background: 'linear-gradient(120deg, #0f172a 0%, #1e3a8a 100%)',
+            border: '1px solid rgba(255,255,255,0.06)',
+          }}
+          id="categories-tradein"
+        >
+          <div>
+            <div
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'rgba(147,197,253,0.9)',
+                marginBottom: '8px',
+              }}
+            >
+              Trade-In Programme
+            </div>
+            <h3
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 'clamp(22px, 2.5vw, 30px)',
+                fontWeight: 700,
+                color: 'white',
+                letterSpacing: '-0.02em',
+                lineHeight: 1.2,
+              }}
+            >
+              Sell your old phone.<br />Get cash today.
+            </h3>
+          </div>
+          <div className="flex-shrink-0">
+            <a
+              href="#trade-in"
+              className="btn btn-secondary btn-md"
+              style={{ textDecoration: 'none', background: 'white', color: 'var(--black)' }}
+              id="categories-tradein-cta"
+            >
+              Get a free quote <ArrowRight size={16} />
+            </a>
+          </div>
+        </motion.div>
       </div>
+
+      {/* Hover style via global */}
+      <style>{`
+        .category-img { transition: transform var(--duration-slow) var(--ease-default); }
+        a:hover .category-img { transform: scale(1.05); }
+        a:hover .card-arrow { background: var(--black) !important; border-color: var(--black) !important; }
+        a:hover .card-arrow svg { color: white !important; }
+      `}</style>
     </section>
   );
 }

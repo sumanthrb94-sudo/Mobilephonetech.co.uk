@@ -1,50 +1,531 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* ═══════════════════════════════════════════════════════════════
+   BACK MARKET DNA DESIGN SYSTEM — mobilephonetech.co.uk
+   Blue Brand Identity × Back Market Layout Discipline
+   ═══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700;1,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  
-  --color-brand-primary: #0f172a; /* slate-900 */
-  --color-brand-secondary: #2563eb; /* blue-600 */
-  --color-brand-muted: #94a3b8; /* slate-400 */
-  --color-brand-border: #e2e8f0; /* slate-200 */
-  --color-brand-bg: #f8fafc; /* slate-50 */
-  --color-neon-blue: #0ea5e9;
-  --color-neon-purple: #a855f7;
+/* ───────────────────────────────────────────────────────────────
+   1. COLOUR TOKENS
+─────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Raw Colour Scale ── */
+  --grey-0:   #ffffff;
+  --grey-5:   #f5f5f5;
+  --grey-10:  #ebebeb;
+  --grey-20:  #d9d9d9;
+  --grey-30:  #b8b8b8;
+  --grey-40:  #8f8f8f;
+  --grey-50:  #666666;
+  --grey-60:  #4d4d4d;
+  --grey-70:  #333333;
+  --grey-80:  #1f1f1f;
+  --grey-90:  #141414;
+  --grey-95:  #0d0d0d;
+  --black:    #0d0d0d;
+
+  /* ── Brand Blue (identity accent — NOT primary CTA) ── */
+  --blue-10:  #eff6ff;
+  --blue-20:  #dbeafe;
+  --blue-30:  #93c5fd;
+  --blue-40:  #60a5fa;
+  --blue-50:  #3b82f6;
+  --blue-60:  #2563eb;   /* brand-blue */
+  --blue-70:  #1d4ed8;
+  --blue-80:  #1e40af;
+  --blue-90:  #1e3a8a;
+
+  /* ── Green (BM trust colour) ── */
+  --green-5:  #f0fdf4;
+  --green-10: #dcfce7;
+  --green-20: #bbf7d0;
+  --green-50: #22c55e;
+  --green-60: #16a34a;
+
+  /* ── Semantic Tokens ── */
+  --color-bg-default:    var(--grey-0);
+  --color-bg-subtle:     var(--grey-5);
+  --color-bg-emphasis:   var(--black);
+  --color-text-default:  var(--black);
+  --color-text-subtle:   var(--grey-50);
+  --color-text-disabled: var(--grey-30);
+  --color-border:        var(--grey-20);
+  --color-border-subtle: var(--grey-10);
+  --color-brand:         var(--blue-60);
+  --color-brand-subtle:  var(--blue-10);
+  --color-trust:         var(--green-5);
+  --color-trust-text:    var(--green-60);
+
+  /* Condition grades */
+  --color-grade-pristine-bg:   var(--blue-20);
+  --color-grade-pristine-text: var(--blue-80);
+  --color-grade-excellent-bg:  #d1fae5;
+  --color-grade-excellent-text:#065f46;
+  --color-grade-good-bg:       #fef3c7;
+  --color-grade-good-text:     #92400e;
+  --color-grade-fair-bg:       #fee2e2;
+  --color-grade-fair-text:     #991b1b;
+  --color-grade-new-bg:        var(--blue-10);
+  --color-grade-new-text:      var(--blue-70);
+
+  /* ── Shadows (BM spec) ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.08);
+  --shadow-xl: 0 20px 25px rgba(0,0,0,0.10);
+
+  /* ── Border Radius ── */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* ── Spacing scale (8px base) ── */
+  --spacing-4:  4px;
+  --spacing-8:  8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-48: 48px;
+  --spacing-64: 64px;
+  --spacing-80: 80px;
+  --spacing-96: 96px;
+
+  /* ── Motion ── */
+  --duration-fast:   120ms;
+  --duration-normal: 220ms;
+  --duration-slow:   350ms;
+  --duration-slower: 550ms;
+  --ease-default:    cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter:      cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit:       cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce:     cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Typography ── */
+  --font-serif:   'Playfair Display', 'Georgia', serif;
+  --font-sans:    'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  /* ── Layout ── */
+  --container-max: 1280px;
+  --header-h:      64px;
+  --catnav-h:      48px;
+  --nav-total:     112px;  /* header + category nav */
 }
 
+/* ───────────────────────────────────────────────────────────────
+   2. TAILWIND @THEME BRIDGE
+─────────────────────────────────────────────────────────────── */
+@theme {
+  --font-serif: 'Playfair Display', 'Georgia', serif;
+  --font-sans:  'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body:  'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-primary:   #0d0d0d;
+  --color-brand-blue:      #2563eb;
+  --color-brand-bg:        #f5f5f5;
+  --color-brand-border:    #d9d9d9;
+  --color-brand-muted:     #666666;
+}
+
+/* ───────────────────────────────────────────────────────────────
+   3. BASE RESET & TYPOGRAPHY
+─────────────────────────────────────────────────────────────── */
 @layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
   body {
-    @apply font-sans antialiased bg-brand-bg text-brand-primary selection:bg-brand-secondary/20;
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--color-text-default);
+    background-color: var(--grey-0);
+  }
+
+  /* Heading hierarchy — DM Sans for UI headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    color: var(--black);
+  }
+
+  ::selection { background: var(--blue-20); color: var(--blue-90); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--grey-20); border-radius: var(--radius-full); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--blue-60); }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-.glass-card {
-  @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-2xl;
+/* ───────────────────────────────────────────────────────────────
+   4. TYPOGRAPHY UTILITY CLASSES
+─────────────────────────────────────────────────────────────── */
+
+/* Display — Playfair serif for hero headlines */
+.type-display-xl {
+  font-family: var(--font-serif);
+  font-size: clamp(40px, 5.5vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.type-display-lg {
+  font-family: var(--font-serif);
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
-.neon-glow {
-  @apply shadow-[0_0_20px_rgba(37,99,235,0.15)] hover:shadow-[0_0_30px_rgba(37,99,235,0.3)];
+/* UI headings — DM Sans */
+.type-h1 { font-family: var(--font-sans); font-size: clamp(28px, 3.5vw, 44px); font-weight: 800; letter-spacing: -0.03em; }
+.type-h2 { font-family: var(--font-sans); font-size: clamp(22px, 2.5vw, 34px); font-weight: 800; letter-spacing: -0.025em; }
+.type-h3 { font-family: var(--font-sans); font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.type-h4 { font-family: var(--font-sans); font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+
+/* Body — Inter */
+.type-body-1 { font-family: var(--font-body); font-size: 16px; font-weight: 400; line-height: 1.625; }
+.type-body-2 { font-family: var(--font-body); font-size: 14px; font-weight: 400; line-height: 1.571; }
+.type-caption { font-family: var(--font-body); font-size: 12px; font-weight: 400; line-height: 1.5; }
+.type-label  { font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Tabular numerals for prices */
+.type-price {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-.product-card {
-  @apply bg-white border border-brand-border rounded-[40px] p-6 transition-all duration-500 hover:border-brand-secondary/50 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)] hover:-translate-y-1;
+/* ───────────────────────────────────────────────────────────────
+   5. BUTTON SYSTEM (BM Spec)
+   Primary = BLACK, Secondary = white/border, Tertiary = ghost
+─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-8);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md); /* 8px — BM spec */
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-default),
+    opacity var(--duration-fast) var(--ease-default),
+    transform var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+  white-space: nowrap;
+  position: relative;
+  user-select: none;
 }
+.btn:focus-visible {
+  outline: 2px solid var(--blue-60);
+  outline-offset: 2px;
+}
+.btn:disabled, .btn[aria-disabled="true"] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.btn:active:not(:disabled) { transform: scale(0.98); }
 
+/* Primary — Black */
 .btn-primary {
-  @apply bg-slate-900 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600 transition-all active:scale-95 shadow-lg shadow-slate-900/10;
+  background: var(--black);
+  color: var(--grey-0);
+  border-color: var(--black);
+}
+.btn-primary:hover { opacity: 0.88; }
+
+/* Secondary — White with border */
+.btn-secondary {
+  background: var(--grey-0);
+  color: var(--black);
+  border-color: var(--grey-20);
+}
+.btn-secondary:hover { background: var(--grey-5); }
+
+/* Tertiary — Ghost */
+.btn-tertiary {
+  background: transparent;
+  color: var(--black);
+  border-color: transparent;
+}
+.btn-tertiary:hover { background: var(--grey-5); }
+
+/* Destructive */
+.btn-destructive {
+  background: var(--grey-0);
+  color: #dc2626;
+  border-color: #dc2626;
+}
+.btn-destructive:hover { background: #fef2f2; }
+
+/* Brand accent button — blue (sparingly) */
+.btn-brand {
+  background: var(--blue-60);
+  color: var(--grey-0);
+  border-color: var(--blue-60);
+}
+.btn-brand:hover { background: var(--blue-70); }
+
+/* Sizes — BM spec */
+.btn-sm { height: 32px;  padding: 0 var(--spacing-12); font-size: 14px; }
+.btn-md { height: 44px;  padding: 0 var(--spacing-20); font-size: 16px; }
+.btn-lg { height: 56px;  padding: 0 var(--spacing-24); font-size: 18px; }
+.btn-full { width: 100%; }
+
+/* ───────────────────────────────────────────────────────────────
+   6. CARD SYSTEM (BM spec)
+─────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--grey-0);
+  border: 1px solid var(--grey-20);
+  border-radius: var(--radius-lg); /* 12px */
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition:
+    box-shadow var(--duration-normal) var(--ease-default),
+    transform var(--duration-normal) var(--ease-default),
+    border-color var(--duration-normal) var(--ease-default);
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.card-xl { border-radius: var(--radius-xl); } /* 16px for large cards/modals */
+
+/* ───────────────────────────────────────────────────────────────
+   7. BADGE / PILL (BM spec — fully rounded)
+─────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid transparent;
+  line-height: 1;
+}
+.badge-pristine  { background: var(--color-grade-pristine-bg);   color: var(--color-grade-pristine-text);   border-color: var(--blue-30); }
+.badge-excellent { background: var(--color-grade-excellent-bg);  color: var(--color-grade-excellent-text);  border-color: #a7f3d0; }
+.badge-good      { background: var(--color-grade-good-bg);       color: var(--color-grade-good-text);       border-color: #fde68a; }
+.badge-fair      { background: var(--color-grade-fair-bg);       color: var(--color-grade-fair-text);       border-color: #fecaca; }
+.badge-new       { background: var(--color-grade-new-bg);        color: var(--color-grade-new-text);        border-color: var(--blue-20); }
+.badge-tag       { background: var(--grey-5); color: var(--grey-70); border-color: var(--grey-10); }
+.badge-savings   { background: var(--black); color: var(--grey-0); }
+
+/* ───────────────────────────────────────────────────────────────
+   8. INPUT / SEARCH (BM spec)
+─────────────────────────────────────────────────────────────── */
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--spacing-16);
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--black);
+  background: var(--grey-0);
+  border: 1px solid var(--grey-20);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
+}
+.input::placeholder { color: var(--grey-50); }
+.input:focus {
+  border-color: var(--black);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+}
+.input-error { border-color: #dc2626; }
+.input-error:focus { box-shadow: 0 0 0 3px rgba(220,38,38,0.1); }
+
+/* Search bar variant */
+.search-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--spacing-16) 0 44px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--black);
+  background: var(--grey-5);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    background var(--duration-fast) var(--ease-default);
+}
+.search-input::placeholder { color: var(--grey-40); }
+.search-input:focus {
+  background: var(--grey-0);
+  border-color: var(--black);
 }
 
-.btn-icon {
-  @apply h-10 w-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-all text-slate-600 active:scale-90;
+/* ───────────────────────────────────────────────────────────────
+   9. DIVIDER
+─────────────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  width: 100%;
+  background: var(--grey-20);
+  border: none;
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+/* ───────────────────────────────────────────────────────────────
+   10. RATING STARS
+─────────────────────────────────────────────────────────────── */
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  color: #f59e0b; /* amber */
 }
 
-.animate-float {
-  animation: float 4s ease-in-out infinite;
+/* ───────────────────────────────────────────────────────────────
+   11. SECTION OVERLINE
+─────────────────────────────────────────────────────────────── */
+.overline {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--blue-60);
 }
+
+/* ───────────────────────────────────────────────────────────────
+   12. CONTAINER / LAYOUT
+─────────────────────────────────────────────────────────────── */
+.container-bm {
+  width: 100%;
+  max-width: var(--container-max); /* 1280px */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-16);   /* xs: 16px */
+  padding-right: var(--spacing-16);
+}
+@media (min-width: 480px) {
+  .container-bm { padding-left: var(--spacing-16); padding-right: var(--spacing-16); }
+}
+@media (min-width: 768px) {
+  .container-bm { padding-left: var(--spacing-24); padding-right: var(--spacing-24); }
+}
+@media (min-width: 1024px) {
+  .container-bm { padding-left: var(--spacing-48); padding-right: var(--spacing-48); }
+}
+@media (min-width: 1280px) {
+  .container-bm { padding-left: var(--spacing-64); padding-right: var(--spacing-64); }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   13. ANIMATIONS
+─────────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-up   { animation: fadeUp var(--duration-slow) var(--ease-enter) forwards; }
+.animate-fade-in   { animation: fadeIn var(--duration-normal) var(--ease-default) forwards; }
+.animate-scale-in  { animation: scaleIn var(--duration-normal) var(--ease-bounce) forwards; }
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker 32s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+
+/* Stagger children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 160ms; }
+.stagger > *:nth-child(4) { animation-delay: 240ms; }
+.stagger > *:nth-child(5) { animation-delay: 320ms; }
+
+/* ───────────────────────────────────────────────────────────────
+   14. FOCUS RINGS (Accessibility)
+─────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--blue-60);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   15. LEGACY COMPAT (for untouched components)
+─────────────────────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--grey-20);
+}
+.bm-card     { background: var(--grey-0); border: 1px solid var(--grey-20); border-radius: var(--radius-lg); }
+.bm-overline { font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase; color: var(--blue-60); }
+.bm-savings  { display: inline-flex; align-items: center; background: var(--black); color: var(--grey-0); font-family: var(--font-sans); font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: var(--radius-full); }
+
+/* All bm-badge-* → badge-* aliases */
+.bm-badge          { display: inline-flex; align-items: center; font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 4px 10px; border-radius: var(--radius-full); border: 1px solid transparent; }
+.bm-badge-pristine  { background: var(--color-grade-pristine-bg);  color: var(--color-grade-pristine-text);  border-color: var(--blue-30); }
+.bm-badge-excellent { background: var(--color-grade-excellent-bg); color: var(--color-grade-excellent-text); border-color: #a7f3d0; }
+.bm-badge-good      { background: var(--color-grade-good-bg);      color: var(--color-grade-good-text);      border-color: #fde68a; }
+.bm-badge-fair      { background: var(--color-grade-fair-bg);      color: var(--color-grade-fair-text);      border-color: #fecaca; }
+.bm-badge-new       { background: var(--color-grade-new-bg);       color: var(--color-grade-new-text);       border-color: var(--blue-20); }
+
+/* Old btn-primary compatibility */
+.btn-primary-legacy {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--black); color: var(--grey-0);
+  font-family: var(--font-sans); font-weight: 600; font-size: 16px;
+  padding: 0 var(--spacing-20); height: 44px;
+  border-radius: var(--radius-md); border: none; cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+.btn-primary-legacy:hover { opacity: 0.88; }
+.bm-btn-primary  { background: var(--black); color: var(--grey-0); display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-weight: 600; font-size: 15px; padding: 0 var(--spacing-20); height: 44px; border-radius: var(--radius-md); border: none; cursor: pointer; transition: opacity var(--duration-fast); }
+.bm-btn-primary:hover { opacity: 0.88; }
+.bm-btn-ghost    { background: transparent; color: var(--black); display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-sans); font-weight: 600; font-size: 15px; padding: 0 var(--spacing-20); height: 44px; border-radius: var(--radius-md); border: 1px solid var(--grey-20); cursor: pointer; transition: background var(--duration-fast); }
+.bm-btn-ghost:hover { background: var(--grey-5); }

@@ -3,6 +3,7 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
 import Hero from './components/Hero';
+import TrustBanner from './components/TrustBanner';
 import FeaturedProducts from './components/FeaturedProducts';
 import CategoryGrid from './components/CategoryGrid';
 import TrustSection from './components/TrustSection';
@@ -23,21 +24,48 @@ import { CheckoutProvider } from './context/CheckoutContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
 
+/**
+ * Homepage — BM spec section order:
+ * 1. Trust banner (green strip, scrolls with page)
+ * 2. Hero carousel
+ * 3. Category grid
+ * 4. Featured products
+ * 5. Value proposition / Trust section
+ * 6. Trade-in programme
+ * 7. Warranty & Returns (existing)
+ * (Footer is rendered in AppContent below main)
+ */
 function HomePage() {
   return (
     <>
+      {/* Section 2: Trust Banner — scrollable green strip */}
+      <TrustBanner />
+
+      {/* Section 3: Hero Carousel */}
       <Hero />
+
+      {/* Section 4: Category Grid */}
       <div id="categories">
         <CategoryGrid />
       </div>
+
+      {/* Section 5: Featured Products */}
       <div id="products">
         <FeaturedProducts />
       </div>
+
+      {/* Comparison Tool */}
       <div id="compare">
         <ComparisonTool />
       </div>
+
+      {/* Section 5: Value Proposition / Trust */}
       <TrustSection />
+
+      {/* Section 6: Trade-In Programme */}
       <TradeInProgram />
+
+      {/* Warranty & Returns */}
       <WarrantyAndReturns />
     </>
   );
@@ -48,18 +76,63 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-brand-bg relative">
-      <Navbar onCartClick={() => setIsCartOpen(true)} onMenuClick={() => setIsSidebarOpen(true)} />
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'var(--grey-0)',
+        position: 'relative',
+      }}
+    >
+      {/* Fixed header (64px) + Category nav (48px) = 112px */}
+      <Navbar
+        onCartClick={() => setIsCartOpen(true)}
+        onMenuClick={() => setIsSidebarOpen(true)}
+      />
+
+      {/* Sidebar (mobile alternative to category nav) */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      <main className="flex-grow">
+
+      {/*
+        Main content — offset by nav height.
+        Hero already handles its own padding-top via CSS var(--nav-total).
+        Non-hero pages (products, checkout etc.) need top padding.
+      */}
+      <main style={{ flexGrow: 1 }}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/compare" element={<ComparisonTool />} />
-          <Route path="/checkout" element={<CheckoutFlow />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/orders" element={<OrderHistoryPage />} />
+          <Route path="/"         element={<HomePage />} />
+          <Route path="/product/:id" element={
+            /* Product detail pages need top padding for fixed nav */
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <ProductDetail />
+            </div>
+          } />
+          <Route path="/products" element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <ProductsPage />
+            </div>
+          } />
+          <Route path="/compare"  element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <ComparisonTool />
+            </div>
+          } />
+          <Route path="/checkout" element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <CheckoutFlow />
+            </div>
+          } />
+          <Route path="/wishlist" element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <WishlistPage />
+            </div>
+          } />
+          <Route path="/orders"   element={
+            <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <OrderHistoryPage />
+            </div>
+          } />
         </Routes>
       </main>
 
