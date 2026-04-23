@@ -31,38 +31,61 @@ export default function ComparisonTool() {
   );
 
   return (
-    <section className="py-24 bg-white" id="compare">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="section-y" style={{ background: 'var(--grey-0)' }} id="compare">
+      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-            <Scale className="h-3 w-3" /> Comparison Tool
+          <div
+            className="inline-flex items-center gap-2 rounded-full mb-4"
+            style={{
+              padding: '4px 12px',
+              background: 'var(--color-brand-subtle)',
+              color: 'var(--brand-cyan-hover)',
+              fontFamily: 'var(--font-sans)',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            <Scale className="h-3 w-3" /> Comparison tool
           </div>
-          <h2 className="text-4xl font-black tracking-tighter text-slate-900 sm:text-5xl">
-            Side-by-Side Comparison
+          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px, 4.5vw, 52px)', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--black)', lineHeight: 1.1 }}>
+            Side-by-side comparison
           </h2>
-          <p className="mt-4 text-slate-500 font-medium max-w-2xl mx-auto">
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', color: 'var(--grey-50)', maxWidth: '640px', margin: '16px auto 0' }}>
             Compare specs, pricing, and features to find the perfect device for your needs.
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex justify-center gap-4 mb-12">
-          {['Phones', 'Computing', 'Accessories'].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => {
-                setActiveCategory(cat);
-                setSelectedIds([]); // Clear selection when category changes
-              }}
-              className={`px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${
-                activeCategory === cat 
-                ? 'bg-slate-900 text-white shadow-lg' 
-                : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="flex justify-center gap-3 mb-12 flex-wrap">
+          {['Phones', 'Computing', 'Accessories'].map((cat) => {
+            const isActive = activeCategory === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => {
+                  setActiveCategory(cat);
+                  setSelectedIds([]);
+                }}
+                style={{
+                  height: '36px',
+                  padding: '0 18px',
+                  borderRadius: 'var(--radius-full)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? 'var(--grey-0)' : 'var(--grey-60)',
+                  background: isActive ? 'var(--brand-cyan)' : 'var(--grey-0)',
+                  border: `1.5px solid ${isActive ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                  cursor: 'pointer',
+                  transition: 'all var(--duration-fast) var(--ease-default)',
+                }}
+              >
+                {cat}
+              </button>
+            );
+          })}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-px bg-slate-200 border border-slate-200 rounded-[32px] overflow-hidden shadow-2xl shadow-slate-200/50">
@@ -116,12 +139,13 @@ export default function ComparisonTool() {
                       <SpecValue value={phone.specs.ram || 'N/A'} mobileLabel="RAM" />
                       <SpecValue value={phone.specs.os || 'N/A'} mobileLabel="OS" />
                       <div className="pt-4 border-t border-slate-50">
-                        <span className="text-2xl font-black text-slate-900">£{phone.price}</span>
-                        <Link 
+                        <span className="type-price" style={{ fontSize: '24px', color: 'var(--black)' }}>£{phone.price}</span>
+                        <Link
                           to={`/product/${phone.id}`}
-                          className="block w-full text-center mt-4 bg-slate-900 text-white rounded-xl py-3 text-sm font-bold hover:bg-blue-600 transition-colors"
+                          className="btn btn-primary btn-md btn-full"
+                          style={{ marginTop: '16px', textDecoration: 'none' }}
                         >
-                          View Details
+                          View details
                         </Link>
                       </div>
                     </div>
@@ -132,11 +156,12 @@ export default function ComparisonTool() {
                       <div className="w-full p-4">
                         <div className="relative mb-4">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                          <input 
+                          <input
                             autoFocus
-                            type="text" 
+                            type="text"
                             placeholder={`Search ${activeCategory}...`}
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-lg text-sm focus:ring-2 focus:ring-blue-600/20"
+                            className="search-input"
+                            style={{ height: '40px', paddingLeft: '36px' }}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                           />
@@ -147,7 +172,28 @@ export default function ComparisonTool() {
                               <button
                                 key={p.id}
                                 onClick={() => addPhone(p.id)}
-                                className="w-full text-left px-3 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 text-xs font-bold transition-colors"
+                                style={{
+                                  width: '100%',
+                                  textAlign: 'left',
+                                  padding: '8px 12px',
+                                  borderRadius: 'var(--radius-md)',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  fontFamily: 'var(--font-body)',
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: 'var(--grey-70)',
+                                  transition: 'background var(--duration-fast), color var(--duration-fast)',
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.background = 'var(--color-brand-subtle)';
+                                  e.currentTarget.style.color = 'var(--brand-cyan-hover)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.background = 'transparent';
+                                  e.currentTarget.style.color = 'var(--grey-70)';
+                                }}
                               >
                                 {p.model}
                               </button>
@@ -164,14 +210,20 @@ export default function ComparisonTool() {
                         </button>
                       </div>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => setIsAdding(true)}
                         className="group flex flex-col items-center gap-4 transition-all hover:scale-105"
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}
                       >
-                        <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                        <div
+                          className="h-16 w-16 rounded-full flex items-center justify-center transition-colors"
+                          style={{ background: 'var(--grey-5)', color: 'var(--grey-50)' }}
+                        >
                           <Plus className="h-6 w-6" />
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest">Add {activeCategory.slice(0, -1)}</span>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-60)' }}>
+                          Add {activeCategory.slice(0, -1)}
+                        </span>
                       </button>
                     )}
                   </div>
