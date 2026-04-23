@@ -132,15 +132,15 @@ export default function Hero() {
             transition={{ duration: 0.45, ease: [0.2, 0, 0, 1] }}
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '32px',
+              gridTemplateColumns: isDesktop ? 'repeat(2, 1fr)' : '1fr',
+              gap: isDesktop ? '32px' : '20px',
               alignItems: 'center',
-              padding: '48px 0',
+              padding: isDesktop ? '48px 0' : '32px 0',
               height: '100%',
             }}
           >
-            {/* ── Left: Text block ──────────────── */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: isDesktop ? 'flex-start' : 'center', textAlign: isDesktop ? 'left' : 'center', gridColumn: isDesktop ? 'span 1' : 'span 2' }}>
+            {/* ── Left (mobile: bottom): Text block ──────────────── */}
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: isDesktop ? 'flex-start' : 'center', textAlign: isDesktop ? 'left' : 'center' }}>
               <div
                 className="overline"
                 style={{ marginBottom: '12px', color: 'var(--brand-header)' }}
@@ -187,22 +187,23 @@ export default function Hero() {
               </Link>
             </div>
 
-            {/* ── Right: Product Image ───────────── */}
-            <div 
+            {/* ── Right (mobile: top): Product Image ───────────── */}
+            <div
               ref={cardRef}
-              className="relative" 
-              style={{ 
-                display: isDesktop ? 'flex' : 'none', 
+              style={{
+                display: 'flex',
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
+                order: isDesktop ? 0 : -1,
               }}
             >
               <img
                 src={slide.image}
                 alt={slide.imageAlt}
-                loading={current === 0 ? "eager" : "lazy"}
+                loading={current === 0 ? 'eager' : 'lazy'}
                 style={{
-                  maxHeight: '320px',
+                  maxHeight: isDesktop ? '320px' : '180px',
+                  maxWidth: '100%',
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
                 }}
