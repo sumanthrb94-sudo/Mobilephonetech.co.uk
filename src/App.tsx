@@ -7,6 +7,8 @@ import TrustBanner from './components/TrustBanner';
 import FeaturedProducts from './components/FeaturedProducts';
 import CategoryGrid from './components/CategoryGrid';
 import TrustSection from './components/TrustSection';
+import TestimonialsSection from './components/TestimonialsSection';
+import PressLogosStrip from './components/PressLogosStrip';
 import ComparisonTool from './components/ComparisonTool';
 import CartDrawer from './components/CartDrawer';
 import TradeInProgram from './components/TradeInProgram';
@@ -90,6 +92,12 @@ function HomePage() {
 
       {/* Section 5: Value Proposition / Trust */}
       <TrustSection />
+
+      {/* Press coverage strip */}
+      <PressLogosStrip />
+
+      {/* Customer testimonials */}
+      <TestimonialsSection />
 
       {/* Section 6: Trade-In Programme */}
       <TradeInProgram />

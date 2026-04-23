@@ -19,6 +19,9 @@ import Breadcrumbs from './ui/Breadcrumbs';
 import FinanceOptions from './FinanceOptions';
 import GradeExplainer from './GradeExplainer';
 import PriceHistoryChart from './PriceHistoryChart';
+import EcoImpact from './EcoImpact';
+import UrgencyCue from './UrgencyCue';
+import PriceMatchBadge from './PriceMatchBadge';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -246,6 +249,12 @@ export default function ProductDetail() {
               </div>
             </div>
 
+            {/* Urgency + price-match cue row */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '-8px' }}>
+              <UrgencyCue productId={phone.id} stock={displayStock} />
+              <PriceMatchBadge />
+            </div>
+
             {/* Finance split-payment breakdown */}
             <FinanceOptions price={displayPrice} />
 
@@ -348,6 +357,11 @@ export default function ProductDetail() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Environmental impact */}
+        <div style={{ marginTop: 'var(--spacing-32)' }}>
+          <EcoImpact productId={phone.id} />
         </div>
 
         {/* ── Specs Section ────────────────── */}
