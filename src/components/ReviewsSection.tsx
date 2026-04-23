@@ -59,7 +59,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
           <p className="text-slate-600 font-medium mb-6">No reviews yet. Be the first to review this product!</p>
           <button
             onClick={() => setIsWritingReview(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+            className="btn btn-primary btn-md"
           >
             Write a Review
           </button>
@@ -101,7 +101,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
 
               <button
                 onClick={() => setIsWritingReview(true)}
-                className="w-full mt-8 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                className="btn btn-primary btn-md btn-full mt-8"
               >
                 Write a Review
               </button>
@@ -115,7 +115,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 onSubmit={handleSubmitReview}
-                className="bg-slate-50 rounded-3xl p-8 border-2 border-blue-600"
+                className="bg-slate-50 rounded-3xl p-8 border-2 border-[var(--brand-cyan)]"
               >
                 <h4 className="text-lg font-black text-slate-900 mb-6">Write Your Review</h4>
 
@@ -126,7 +126,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                     value={formData.userName}
                     onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
                     placeholder="Enter your name"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,186,219,0.25)]"
                   />
                 </div>
 
@@ -156,21 +156,21 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                     onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                     placeholder="Share your experience with this product..."
                     rows={4}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-blue-500/20 resize-none"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,186,219,0.25)] resize-none"
                   />
                 </div>
 
                 <div className="flex gap-3">
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+                    className="btn btn-primary btn-md" style={{ flex: 1 }}
                   >
                     Submit Review
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsWritingReview(false)}
-                    className="flex-1 px-6 py-3 bg-slate-200 text-slate-900 rounded-xl font-bold hover:bg-slate-300 transition-colors"
+                    className="btn btn-secondary btn-md" style={{ flex: 1 }}
                   >
                     Cancel
                   </button>
@@ -201,15 +201,28 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                       <span className="text-xs text-slate-500 font-medium">{review.date}</span>
                     </div>
                   </div>
-                  <span className="text-xs font-black bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full">
-                    Verified Purchase
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      letterSpacing: '0.04em',
+                      textTransform: 'uppercase',
+                      background: 'var(--green-5)',
+                      color: 'var(--color-trust-text)',
+                      padding: '4px 10px',
+                      borderRadius: 'var(--radius-full)',
+                      border: '1px solid var(--green-20)',
+                    }}
+                  >
+                    Verified purchase
                   </span>
                 </div>
 
                 <p className="text-slate-600 font-medium mb-4">{review.comment}</p>
 
                 <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
-                  <button className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors text-sm font-medium">
+                  <button className="flex items-center gap-2 text-slate-500 hover:text-[var(--brand-cyan-hover)] transition-colors text-sm font-medium">
                     <ThumbsUp size={16} />
                     Helpful
                   </button>
