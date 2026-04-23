@@ -65,6 +65,16 @@
   --color-trust: var(--green-5);
   --color-trust-text: var(--green-60);
 
+  /* ── Functional accents ── */
+  --color-sale: #ef4444;
+  --color-sale-subtle: #fef2f2;
+  --color-warn: #f59e0b;
+  --color-warn-subtle: #fef3c7;
+  --color-star: #f59e0b;
+
+  /* ── Feature gradients (navy, used for trade-in/premium cards) ── */
+  --gradient-navy: linear-gradient(120deg, #0f172a 0%, var(--brand-header) 100%);
+
   /* Condition grades */
   --color-grade-pristine-bg: var(--blue-20);
   --color-grade-pristine-text: var(--blue-80);
@@ -184,27 +194,6 @@ html.dark .card,
 html.dark .glass-card {
   background: #171717;
   border-color: #404040;
-}
-
-.container-bm {
-  width: 100%;
-  max-width: var(--container-max);
-  margin-left: auto;
-  margin-right: auto;
-}
-
-@media (min-width: 640px) {
-  .container-bm {
-    padding-left: var(--spacing-24);
-    padding-right: var(--spacing-24);
-  }
-}
-
-@media (min-width: 1024px) {
-  .container-bm {
-    padding-left: var(--spacing-32);
-    padding-right: var(--spacing-32);
-  }
 }
 
 @media (min-width: 640px) {
@@ -701,8 +690,7 @@ html.dark .glass-card {
 .stars {
   display: inline-flex;
   gap: 2px;
-  color: #f59e0b;
-  /* amber */
+  color: var(--color-star);
 }
 
 /* ───────────────────────────────────────────────────────────────

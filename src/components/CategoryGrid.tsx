@@ -232,7 +232,7 @@ export default function CategoryGrid() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="mt-5 rounded-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 p-8 md:p-10"
           style={{
-            background: 'linear-gradient(120deg, #0f172a 0%, #1e3a8a 100%)',
+            background: 'var(--gradient-navy)',
             border: '1px solid rgba(255,255,255,0.06)',
           }}
           id="categories-tradein"

@@ -279,7 +279,7 @@ export default function TrustSection() {
             >
               <div className="flex items-center gap-1 mb-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} fill="#f59e0b" style={{ color: '#f59e0b' }} />
+                  <Star key={i} size={14} fill="var(--color-star)" style={{ color: 'var(--color-star)' }} />
                 ))}
               </div>
               <div

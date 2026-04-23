@@ -193,7 +193,7 @@ export default function Footer() {
             >
               <div style={{ display: 'flex', gap: '2px' }}>
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={12} fill="#f59e0b" style={{ color: '#f59e0b' }} />
+                  <Star key={i} size={12} fill="var(--color-star)" style={{ color: 'var(--color-star)' }} />
                 ))}
               </div>
               <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: 'white' }}>4.9</span>

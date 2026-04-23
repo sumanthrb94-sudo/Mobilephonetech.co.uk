@@ -122,7 +122,7 @@ export default function ProductDetail() {
 
               {/* Savings Badge */}
               {savings > 0 && (
-                <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '4px', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--color-sale)', color: 'white', padding: '4px 12px', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                   Sale
                 </div>
               )}
@@ -166,7 +166,7 @@ export default function ProductDetail() {
                 {phone.model || 'Product Details'}
               </h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '2px', color: '#f59e0b' }}>
+                <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>

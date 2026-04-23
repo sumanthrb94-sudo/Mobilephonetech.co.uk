@@ -127,8 +127,8 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           <Heart
             size={15}
             style={{
-              color: inWishlist ? '#ef4444' : 'var(--grey-40)',
-              fill: inWishlist ? '#ef4444' : 'transparent',
+              color: inWishlist ? 'var(--color-sale)' : 'var(--grey-40)',
+              fill: inWishlist ? 'var(--color-sale)' : 'transparent',
             }}
           />
         </button>
@@ -183,7 +183,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               <Star
                 key={s}
                 size={12}
-                style={{ fill: s <= Math.round(ratingRounded) ? '#f59e0b' : 'transparent', color: '#f59e0b' }}
+                style={{ fill: s <= Math.round(ratingRounded) ? 'var(--color-star)' : 'transparent', color: 'var(--color-star)' }}
               />
             ))}
           </div>
