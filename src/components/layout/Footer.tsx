@@ -23,21 +23,21 @@ const LINK_COLS = [
   {
     heading: 'Company',
     links: [
-      { label: 'About us',              href: '#' },
-      { label: 'Our grading guide',     href: '#' },
-      { label: 'Sustainability',        href: '#' },
-      { label: 'Press & media',         href: '#' },
-      { label: 'Careers',               href: '#' },
+      { label: 'About us',              href: '/about' },
+      { label: 'Our grading guide',     href: '/guides' },
+      { label: 'Sustainability',        href: '/sustainability' },
+      { label: 'Buying guides',         href: '/guides' },
+      { label: 'Press & media',         href: '/about' },
     ],
   },
   {
     heading: 'Support',
     links: [
-      { label: 'Help & contact',        href: '#' },
+      { label: 'Help & FAQ',            href: '/faq' },
       { label: 'Track my order',        href: '/orders' },
-      { label: 'Returns & warranty',    href: '#' },
-      { label: 'Trade-in programme',    href: '#trade-in' },
-      { label: 'Payment options',       href: '#' },
+      { label: 'Returns & warranty',    href: '/faq' },
+      { label: 'Trade-in programme',    href: '/#trade-in' },
+      { label: 'Payment options',       href: '/faq' },
     ],
   },
 ];
@@ -52,9 +52,8 @@ const SOCIALS = [
 const LEGAL = [
   { label: 'Privacy policy', href: '/privacy' },
   { label: 'Terms of service', href: '/terms' },
-  { label: 'Cookie settings', href: '#' },
-  { label: 'Grading guide', href: '#' },
-  { label: 'Accessibility', href: '#' }
+  { label: 'Grading guide', href: '/guides' },
+  { label: 'Sustainability', href: '/sustainability' },
 ];
 
 export default function Footer() {

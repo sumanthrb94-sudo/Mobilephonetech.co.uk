@@ -33,6 +33,10 @@ const WishlistPage = lazy(() => import('./components/WishlistPage'));
 const OrderHistoryPage = lazy(() => import('./components/OrderHistoryPage'));
 const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
+const AboutPage = lazy(() => import('./components/content/AboutPage'));
+const SustainabilityPage = lazy(() => import('./components/content/SustainabilityPage'));
+const BuyingGuidesPage = lazy(() => import('./components/content/BuyingGuidesPage'));
+const FaqPage = lazy(() => import('./components/content/FaqPage'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
 
 // Loading state component — on-brand skeleton
@@ -185,6 +189,36 @@ function AppContent() {
             <Route path="/terms"    element={
               <div style={{ paddingTop: 'var(--nav-total)' }}>
                 <TermsOfService />
+              </div>
+            } />
+            <Route path="/about" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <AboutPage />
+              </div>
+            } />
+            <Route path="/sustainability" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <SustainabilityPage />
+              </div>
+            } />
+            <Route path="/guides" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <BuyingGuidesPage />
+              </div>
+            } />
+            <Route path="/guides/:slug" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <BuyingGuidesPage />
+              </div>
+            } />
+            <Route path="/faq" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <FaqPage />
+              </div>
+            } />
+            <Route path="/help" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <FaqPage />
               </div>
             } />
           </Routes>
