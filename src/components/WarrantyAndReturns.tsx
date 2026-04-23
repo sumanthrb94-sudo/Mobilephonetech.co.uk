@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { CheckCircle2, Truck, Shield, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Truck, Shield } from 'lucide-react';
+import Accordion from './ui/Accordion';
 
 /**
  * WarrantyAndReturns — Verified Form aesthetic refactor
@@ -91,37 +92,33 @@ export default function WarrantyAndReturns() {
           </motion.div>
         </div>
 
-        {/* FAQ Area */}
-        <div className="card" style={{ padding: 'var(--spacing-32)', background: 'var(--grey-0)' }}>
-          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '24px' }}>Common Questions</h3>
-          <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
-            {[
+        {/* FAQ */}
+        <div>
+          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '20px', letterSpacing: '-0.02em' }}>Common questions</h3>
+          <Accordion
+            items={[
               {
-                q: "What if my device has a defect?",
-                a: "Contact our support team within 12 months. We arrange repair or replacement at zero cost to you, including shipping."
+                id: 'defect',
+                question: 'What if my device has a defect?',
+                answer: 'Contact our support team within 12 months. We arrange repair or replacement at zero cost to you, including shipping.',
               },
               {
-                q: "Does the warranty cover the battery?",
-                a: "Yes. If battery health falls below 80% within the first 12 months, we will replace the battery free of charge."
+                id: 'battery',
+                question: 'Does the warranty cover the battery?',
+                answer: 'Yes. If battery health falls below 80% within the first 12 months, we will replace the battery free of charge.',
               },
               {
-                q: "Can I return a device after 30 days?",
-                a: "After 30 days, your purchase is covered by the 12-month defect warranty, but general returns are no longer possible."
+                id: 'after30',
+                question: 'Can I return a device after 30 days?',
+                answer: 'After 30 days, your purchase is covered by the 12-month defect warranty, but general returns are no longer possible.',
               },
               {
-                q: "Is accidental damage covered?",
-                a: "Our standard warranty covers manufacturing defects. Accidental damage can be covered via our protection plans at checkout."
-              }
-            ].map((faq, i) => (
-              <div key={i}>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-                  <AlertCircle size={16} style={{ color: 'var(--brand-cyan-hover)' }} />
-                  <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700, color: 'var(--black)', margin: 0 }}>{faq.q}</h4>
-                </div>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', lineHeight: 1.5, margin: 0, paddingLeft: '26px' }}>{faq.a}</p>
-              </div>
-            ))}
-          </div>
+                id: 'accidental',
+                question: 'Is accidental damage covered?',
+                answer: 'Our standard warranty covers manufacturing defects. Accidental damage can be covered via our protection plans at checkout.',
+              },
+            ]}
+          />
         </div>
 
       </div>

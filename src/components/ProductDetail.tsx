@@ -15,6 +15,7 @@ import ProductImage from './ProductImage';
 import TechnicalSpecs from './TechnicalSpecs';
 import { ProductVariant, ProductGrade } from '../types';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import Breadcrumbs from './ui/Breadcrumbs';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -106,8 +107,17 @@ export default function ProductDetail() {
     <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         
+        <Breadcrumbs
+          items={[
+            { label: 'Home', to: '/' },
+            { label: 'All devices', to: '/products' },
+            { label: phone.brand, to: `/products?brand=${encodeURIComponent(phone.brand)}` },
+            { label: phone.model },
+          ]}
+        />
+
         {/* Back Navigation */}
-        <button 
+        <button
           onClick={() => navigate(-1)}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px',
@@ -116,7 +126,7 @@ export default function ProductDetail() {
             cursor: 'pointer', padding: '0', marginBottom: 'var(--spacing-32)'
           }}
         >
-          <ArrowLeft size={16} /> Back to Collection
+          <ArrowLeft size={16} /> Back
         </button>
 
         {/* Main Grid: Mobile-First Stacking */}

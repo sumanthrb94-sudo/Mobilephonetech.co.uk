@@ -5,6 +5,7 @@ import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
 import { SlidersHorizontal, ChevronDown, SearchX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Breadcrumbs from './ui/Breadcrumbs';
 
 type SortKey = 'price-asc' | 'price-desc' | 'condition' | null;
 
@@ -304,6 +305,17 @@ export default function ProductsPage() {
         className="container-bm"
         style={{ maxWidth: 'var(--container-max)', paddingTop: 'var(--spacing-48)' }}
       >
+        {/* ── Breadcrumbs ───────────────────────────────── */}
+        <Breadcrumbs
+          items={[
+            { label: 'Home', to: '/' },
+            { label: 'All devices', to: '/products' },
+            ...(pageTitle !== 'Certified refurbished devices' && pageTitle !== 'Good deals'
+              ? [{ label: pageTitle }]
+              : []),
+          ]}
+        />
+
         {/* ── Page header ──────────────────────────────── */}
         <div style={{ marginBottom: 'var(--spacing-32)' }}>
           <div className="overline mb-3">{pageLabel}</div>
