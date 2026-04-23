@@ -95,7 +95,7 @@ export default function AIAssistant() {
         onClick={() => setIsOpen(true)}
         style={{
           position: 'fixed', bottom: '32px', right: '32px', width: '64px', height: '64px',
-          background: 'var(--black)', color: 'white', borderRadius: '50%',
+          background: 'var(--brand-primary)', color: 'white', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: 'var(--shadow-lg)', cursor: 'pointer', zIndex: 50, border: 'none',
           transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -105,7 +105,7 @@ export default function AIAssistant() {
         className={isOpen ? 'hidden' : ''}
       >
         <Bot size={28} />
-        <div style={{ position: 'absolute', top: 0, right: 0, width: '18px', height: '18px', background: 'var(--blue-60)', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'absolute', top: 0, right: 0, width: '18px', height: '18px', background: 'var(--brand-cyan)', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Sparkles size={10} color="white" />
         </div>
       </button>
@@ -153,13 +153,13 @@ export default function AIAssistant() {
                 <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
                   <div style={{ maxWidth: '85%', display: 'flex', gap: '12px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row' }}>
                     
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: msg.role === 'user' ? 'var(--grey-10)' : 'var(--blue-10)', color: msg.role === 'user' ? 'var(--grey-60)' : 'var(--blue-60)' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: msg.role === 'user' ? 'var(--grey-10)' : 'rgba(0, 186, 219, 0.1)', color: msg.role === 'user' ? 'var(--grey-60)' : 'var(--brand-cyan)' }}>
                       {msg.role === 'user' ? <User size={14} /> : <Bot size={14} />}
                     </div>
                     
                     <div style={{
                       padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '13px', lineHeight: 1.6,
-                      background: msg.role === 'user' ? 'var(--black)' : 'var(--grey-5)',
+                      background: msg.role === 'user' ? 'var(--brand-primary)' : 'var(--grey-5)',
                       color: msg.role === 'user' ? 'white' : 'var(--black)',
                       borderRadius: 'var(--radius-lg)',
                       borderTopRightRadius: msg.role === 'user' ? 0 : 'var(--radius-lg)',
@@ -177,7 +177,7 @@ export default function AIAssistant() {
                       <Bot size={14} />
                     </div>
                     <div style={{ padding: '12px 16px', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)', borderTopLeftRadius: 0 }}>
-                      <Loader2 size={16} className="animate-spin" style={{ color: 'var(--blue-60)' }} />
+                      <Loader2 size={16} className="animate-spin" style={{ color: 'var(--brand-cyan)' }} />
                     </div>
                   </div>
                 </div>
@@ -195,13 +195,13 @@ export default function AIAssistant() {
                     borderRadius: 'var(--radius-lg)', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)',
                     outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box'
                   }}
-                  onFocus={(e) => e.target.style.borderColor = 'var(--blue-60)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-10)'}
+                  onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-10)'}
                 />
                 <button
                   onClick={handleSend} disabled={!input.trim() || isLoading}
                   style={{
                     position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)',
-                    width: '36px', height: '36px', background: 'var(--black)', color: 'white', border: 'none',
+                    width: '36px', height: '36px', background: 'var(--brand-cyan)', color: 'white', border: 'none',
                     borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     cursor: (!input.trim() || isLoading) ? 'not-allowed' : 'pointer', opacity: (!input.trim() || isLoading) ? 0.5 : 1
                   }}

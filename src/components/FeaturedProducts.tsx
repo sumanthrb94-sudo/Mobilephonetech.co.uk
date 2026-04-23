@@ -9,8 +9,6 @@ const BRAND_TABS = [
   { id: 'Apple',    label: 'Apple' },
   { id: 'Samsung',  label: 'Samsung' },
   { id: 'Google',   label: 'Google' },
-  { id: 'OnePlus',  label: 'OnePlus' },
-  { id: 'Motorola', label: 'Motorola' },
 ];
 
 export default function FeaturedProducts() {
@@ -103,8 +101,8 @@ export default function FeaturedProducts() {
                   fontSize: '14px',
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? 'var(--grey-0)' : 'var(--grey-60)',
-                  background: isActive ? 'var(--black)' : 'var(--grey-0)',
-                  border: `1.5px solid ${isActive ? 'var(--black)' : 'var(--grey-20)'}`,
+                  background: isActive ? 'var(--brand-cyan)' : 'var(--grey-0)',
+                  border: `1.5px solid ${isActive ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
                   cursor: 'pointer',
                   transition: 'all var(--duration-fast) var(--ease-default)',
                   whiteSpace: 'nowrap',

@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
-  HelpCircle, ShieldCheck, Menu, X, Laptop,
-  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, BarChart3, Moon, Sun
+  HelpCircle, ShieldCheck, Menu, X,
+  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Moon, Sun, Volume2
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
@@ -18,15 +18,16 @@ interface NavbarProps {
 }
 
 const CATEGORIES = [
-  { label: 'Good deals',        href: '/products?deal=true',           icon: null },
-  { label: 'Smartphones',       href: '/products?category=phones',     icon: Smartphone },
-  { label: 'Laptops',           href: '/products?category=computing',  icon: Laptop },
-  { label: 'Tablets',           href: '/products?category=tablets',    icon: Tablet },
-  { label: 'Gaming consoles',   href: '/products?category=gaming',     icon: Gamepad2 },
-  { label: 'Smartwatches',      href: '/products?category=watches',    icon: Watch },
-  { label: 'Headphones',        href: '/products?category=Accessories',icon: Headphones },
-  { label: 'Trade-In',          href: '#trade-in',                     icon: RefreshCw },
-  { label: 'Compare Devices',   href: '/compare',                      icon: BarChart3 },
+  { label: 'Home',              href: '/',                             icon: null },
+  { label: 'Apple',             href: '/products?brand=Apple',         icon: Smartphone },
+  { label: 'Samsung',           href: '/products?brand=Samsung',       icon: Smartphone },
+  { label: 'Google',            href: '/products?brand=Google',        icon: Smartphone },
+  { label: 'Ipads & Tabs',      href: '/products?category=tablets',    icon: Tablet },
+  { label: 'Accessories',       href: '/products?category=Accessories',icon: Watch },
+  { label: 'Speakers',          href: '/products?category=Speakers',   icon: Volume2 },
+  { label: 'Hearables',         href: '/products?category=Hearables',  icon: Headphones },
+  { label: 'Playables',         href: '/products?category=Playables',  icon: Gamepad2 },
+  { label: 'Why us',            href: '#why-us',                       icon: ShieldCheck },
 ];
 
 export default function Navbar({ onCartClick }: NavbarProps) {
@@ -34,7 +35,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
   const [isAccountOpen, setIsAccountOpen]         = useState(false);
-  const [searchFocused, setSearchFocused]         = useState(false);
+
   const [activeCategory, setActiveCategory]       = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const catNavRef   = useRef<HTMLDivElement>(null);
@@ -86,7 +87,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
         borderRadius: '8px',
         cursor: 'pointer', 
         border: 'none', 
-        backgroundColor: isHovered ? 'var(--grey-5)' : 'transparent',
+        backgroundColor: isHovered ? 'rgba(255,255,255,0.1)' : 'transparent',
         transition: 'background-color 0.2s',
         minWidth: '40px', 
         minHeight: '44px',
@@ -95,21 +96,21 @@ export default function Navbar({ onCartClick }: NavbarProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div style={{ position: 'relative' }}>
-        <Icon size={20} style={{ color: 'var(--grey-70)' }} />
+        <Icon size={22} style={{ color: 'var(--grey-0)' }} />
         {badge !== undefined && badge > 0 && (
           <span
             style={{ 
               position: 'absolute', 
               top: '-6px', 
               right: '-6px', 
-              width: '16px', 
-              height: '16px', 
+              width: '18px', 
+              height: '18px', 
               borderRadius: '50%', 
-              background: 'var(--blue-60)', 
-              color: 'white',
-              fontSize: '9px', 
+              background: 'var(--brand-cyan)', 
+              color: 'var(--grey-0)',
+              fontSize: '10px', 
               fontFamily: 'var(--font-sans)',
-              fontWeight: 700,
+              fontWeight: 800,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -136,17 +137,29 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   return (
     <>
       {/* ═══════════════════════════════════════════════════
-          FIXED HEADER — 64px — white, logo/search/icons
+          ANNOUNCEMENT BAR & FIXED HEADER
       ═══════════════════════════════════════════════════ */}
       <div
         className="fixed top-0 left-0 right-0 z-[60]"
         style={{
-          backgroundColor: 'var(--grey-0)',
-          borderBottom: '1px solid var(--grey-20)',
-          boxShadow: isScrolled ? 'var(--shadow-sm)' : 'none',
+          backgroundColor: 'var(--brand-header)',
+          boxShadow: isScrolled ? 'var(--shadow-md)' : 'none',
           transition: 'box-shadow var(--duration-normal)',
         }}
       >
+        {/* Announcement Bar */}
+        <div style={{
+          backgroundColor: 'rgba(0,0,0,0.2)',
+          color: 'var(--grey-0)',
+          textAlign: 'center',
+          padding: '6px 16px',
+          fontFamily: 'var(--font-sans)',
+          fontSize: '12px',
+          fontWeight: 600,
+          letterSpacing: '0.02em',
+        }}>
+          Announce something here
+        </div>
         {/* Main header row — 64px */}
         <header style={{ height: 'var(--header-h)', display: 'flex', alignItems: 'center' }}>
           <div
@@ -170,8 +183,9 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               aria-label="Open menu"
               id="navbar-hamburger"
+              className="lg:hidden"
             >
-              <Menu size={22} style={{ color: 'var(--black)' }} />
+              <Menu size={24} style={{ color: 'var(--grey-0)' }} />
             </button>
 
             {/* ── Logo — BM wordmark style ── */}
@@ -200,14 +214,13 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
-                  fontSize: '18px',
+                  fontSize: '24px',
                   letterSpacing: '-0.04em',
-                  color: 'var(--black)',
+                  color: 'var(--brand-cyan)',
                   lineHeight: 1,
                 }}
               >
-                mobile<span style={{ color: 'var(--blue-60)' }}>tech</span>
-                <span className="hidden sm:inline" style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
+                Mobile<span style={{ color: 'var(--grey-0)' }}>Market</span>
               </span>
             </Link>
 
@@ -217,32 +230,38 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               className="hidden md:flex flex-grow max-w-xl relative"
               id="navbar-search-form"
             >
-              <div className="relative w-full">
                 <Search
                   size={18}
                   style={{
                     position: 'absolute',
-                    left: '14px',
+                    right: '14px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: searchFocused ? 'var(--black)' : 'var(--grey-40)',
-                    transition: 'color var(--duration-fast)',
+                    color: 'var(--grey-0)',
                     pointerEvents: 'none',
                   }}
                 />
                 <input
                   type="text"
-                  className="search-input w-full"
-                  placeholder="Search for phones, brands, models…"
+                  className="w-full"
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setSearchFocused(false)}
-                  style={{ paddingLeft: '44px' }}
+                  style={{
+                    paddingLeft: '16px',
+                    paddingRight: '44px',
+                    height: '40px',
+                    borderRadius: 'var(--radius-full)',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: 'var(--grey-0)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '15px',
+                    outline: 'none',
+                  }}
                   aria-label="Search products"
                 />
-              </div>
-            </form>
+              </form>
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>

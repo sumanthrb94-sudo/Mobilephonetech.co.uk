@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ArrowLeft, ShieldCheck, Battery, RefreshCw } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
@@ -11,66 +11,38 @@ import { Link } from 'react-router-dom';
 
 const SLIDES = [
   {
-    overline: 'Flash Sale — Up to 40% off',
-    headline: 'Like new.\nAt half\nthe price.',
-    body: 'Certified refurbished iPhones, inspected to a 90-point standard. 12-month warranty included — always.',
-    ctaLabel: 'Shop iPhones',
-    ctaHref: '/products?brand=Apple',
+    headline: 'The New iPhone\nExperience the Future',
+    ctaLabel: 'Shop Now',
+    ctaHref: '/products?category=phones&brand=Apple',
     image: '/assets/iphone-15-pro-max.png',
-    imageAlt: 'iPhone 15 Pro Max',
-    brand: 'Apple',
-    model: 'iPhone 15 Pro Max',
-    storage: '256 GB · Titanium',
-    grade: 'Pristine',
-    gradeClass: 'badge badge-pristine',
-    price: '£849',
-    rrp: '£1,199',
-    bgFrom: '#fafafa',
-    bgAccent: '#eff6ff',
+    imageAlt: 'New iPhone',
+    bgFrom: '#e0c3fc',
+    bgAccent: '#8ec5fc',
+    btnColor: 'var(--brand-purple)',
   },
   {
-    overline: 'New arrivals — Samsung Galaxy',
-    headline: 'Premium\nAndroid.\nBig savings.',
-    body: 'Galaxy S24 Ultra in Excellent condition. Save over £300 compared to new. Free next-day delivery.',
-    ctaLabel: 'Shop Samsung',
-    ctaHref: '/products?brand=Samsung',
+    headline: 'Galaxy S24 Ultra\nPremium Android',
+    ctaLabel: 'Shop Now',
+    ctaHref: '/products?category=phones&brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
-    imageAlt: 'Samsung Galaxy S24 Ultra',
-    brand: 'Samsung',
-    model: 'Galaxy S24 Ultra',
-    storage: '256 GB · Titanium Grey',
-    grade: 'Excellent',
-    gradeClass: 'badge badge-excellent',
-    price: '£749',
-    rrp: '£1,099',
-    bgFrom: '#fafafa',
-    bgAccent: '#f0fdf4',
-  },
-  {
-    overline: 'Best sellers — Google Pixel',
-    headline: 'The camera\nphone you\nactually want.',
-    body: 'Google Pixel 8 Pro. AI-powered photography in Good+ condition. 7-year OS updates guaranteed.',
-    ctaLabel: 'Shop Pixel',
-    ctaHref: '/products?brand=Google',
-    image: '/assets/pixel-8-pro.png',
-    imageAlt: 'Google Pixel 8 Pro',
-    brand: 'Google',
-    model: 'Google Pixel 8 Pro',
-    storage: '128 GB · Obsidian',
-    grade: 'Excellent',
-    gradeClass: 'badge badge-excellent',
-    price: '£469',
-    rrp: '£749',
-    bgFrom: '#fafafa',
-    bgAccent: '#fef3c7',
-  },
+    imageAlt: 'Samsung Galaxy',
+    bgFrom: '#fdfbfb',
+    bgAccent: '#ebedee',
+    btnColor: 'var(--brand-cyan)',
+  }
 ];
 
-const TRUST_ITEMS = [
-  { icon: ShieldCheck, text: '12-month warranty' },
-  { icon: Battery,     text: '90%+ battery health' },
-  { icon: RefreshCw,   text: '30-day free returns' },
+const CATEGORY_BUBBLES = [
+  { label: 'Apple',       image: '/assets/iphone-15-pro-max.png', href: '/products?brand=Apple' },
+  { label: 'Samsung',     image: '/assets/samsung-s24-ultra.png', href: '/products?brand=Samsung' },
+  { label: 'Google',      image: '/assets/pixel-8-pro.png',        href: '/products?brand=Google' },
+  { label: 'Ipads & Tabs',image: '/assets/ipad-pro.png',           href: '/products?category=tablets' },
+  { label: 'Accessories', image: '/assets/powerbank.png',          href: '/products?category=Accessories' },
+  { label: 'Speakers',    image: '/assets/speaker.png',            href: '/products?category=Speakers' },
+  { label: 'Hearables',   image: '/assets/headphones.png',         href: '/products?category=Hearables' },
+  { label: 'Playables',   image: '/assets/meta-quest.png',         href: '/products?category=Playables' },
 ];
+
 
 export default function Hero() {
   const [current, setCurrent] = useState(0);
@@ -155,155 +127,61 @@ export default function Hero() {
             }}
           >
             {/* ── Left: Text block ──────────────── */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div className="overline mb-4" style={{ fontSize: 'clamp(10px, 1.5vw, 11px)' }}>{slide.overline}</div>
-
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', gridColumn: isDesktop ? 'span 1' : 'span 2' }}>
               <h1
                 style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(34px, 5vw, 68px)',
-                  fontWeight: 700,
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 'clamp(32px, 5vw, 48px)',
+                  fontWeight: 800,
                   letterSpacing: '-0.02em',
-                  lineHeight: 1.05,
-                  color: 'var(--black)',
-                  marginBottom: '20px',
+                  lineHeight: 1.1,
+                  color: 'var(--brand-header)',
+                  marginBottom: '24px',
                   whiteSpace: 'pre-line',
                 }}
               >
                 {slide.headline}
               </h1>
 
-              <p
-                className="type-body-1"
-                style={{
-                  color: 'var(--grey-50)',
-                  marginBottom: '32px',
-                  maxWidth: '440px',
-                  fontSize: 'clamp(14px, 2vw, 16px)',
+              <Link
+                to={slide.ctaHref}
+                className="btn"
+                id={`hero-cta-${current}`}
+                style={{ 
+                  backgroundColor: slide.btnColor,
+                  color: 'white',
+                  textDecoration: 'none', 
+                  height: '48px', 
+                  padding: '0 40px',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  fontWeight: 600
                 }}
               >
-                {slide.body}
-              </p>
-
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '40px' }}>
-                <Link
-                  to={slide.ctaHref}
-                  className="btn btn-primary btn-lg"
-                  id={`hero-cta-${current}`}
-                  style={{ textDecoration: 'none', height: 'clamp(48px, 5vw, 56px)', padding: '0 32px' }}
-                >
-                  {slide.ctaLabel}
-                  <ArrowRight size={18} style={{ marginLeft: '8px' }} />
-                </Link>
-                <a href="#trade-in" className="btn btn-secondary btn-lg" style={{ height: 'clamp(48px, 5vw, 56px)', padding: '0 24px' }}>
-                  Sell your phone
-                </a>
-              </div>
-
-              <div className="flex flex-wrap gap-x-8 gap-y-3">
-                {TRUST_ITEMS.map((t) => (
-                  <div key={t.text} className="flex items-center gap-2">
-                    <t.icon size={15} style={{ color: 'var(--blue-60)', flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--grey-50)' }}>
-                      {t.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                {slide.ctaLabel}
+              </Link>
             </div>
 
-            {/* ── Right: Product card ───────────── */}
+            {/* ── Right: Product Image ───────────── */}
             <div 
               ref={cardRef}
               className="relative" 
               style={{ 
                 display: isDesktop ? 'flex' : 'none', 
-                justifyContent: 'flex-end' 
+                justifyContent: 'center',
+                alignItems: 'center'
               }}
             >
-              <div
-                className="card card-xl"
+              <img
+                src={slide.image}
+                alt={slide.imageAlt}
+                loading={current === 0 ? "eager" : "lazy"}
                 style={{
-                  maxWidth: '360px',
-                  width: '100%',
-                  padding: 0,
-                  overflow: 'hidden',
-                  position: 'relative'
+                  maxHeight: '320px',
+                  objectFit: 'contain',
+                  filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
                 }}
-              >
-                <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 2 }}>
-                  <span className={slide.gradeClass}>{slide.grade}</span>
-                </div>
-                <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 2 }}>
-                  <span className="badge badge-savings">Save £{parseInt(slide.rrp.replace('£','')) - parseInt(slide.price.replace('£',''))}</span>
-                </div>
-
-                <div
-                  style={{
-                    background: 'var(--grey-5)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    aspectRatio: '1.1 / 1',
-                    position: 'relative',
-                  }}
-                >
-                  <img
-                    src={slide.image}
-                    alt={slide.imageAlt}
-                    loading={current === 0 ? "eager" : "lazy"}
-                    style={{
-                      maxHeight: '240px',
-                      objectFit: 'contain',
-                      filter: 'drop-shadow(0 12px 32px rgba(0,0,0,0.10))',
-                      padding: '24px',
-                    }}
-                  />
-                </div>
-
-                <div style={{ padding: '24px' }}>
-                  <p style={{ fontSize: '11px', fontFamily: 'var(--font-sans)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-40)', marginBottom: '4px' }}>
-                    {slide.brand}
-                  </p>
-                  <h3
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontWeight: 800,
-                      fontSize: '20px',
-                      letterSpacing: '-0.025em',
-                      color: 'var(--black)',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    {slide.model}
-                  </h3>
-                  <p style={{ fontSize: '14px', color: 'var(--grey-40)', fontFamily: 'var(--font-body)', marginBottom: '16px' }}>
-                    {slide.storage}
-                  </p>
-
-                  <div className="flex items-baseline gap-3 mb-4">
-                    <span
-                      className="type-price"
-                      style={{ fontSize: '32px', color: 'var(--black)' }}
-                    >
-                      {slide.price}
-                    </span>
-                    <span style={{ fontSize: '16px', color: 'var(--grey-40)', textDecoration: 'line-through', fontFamily: 'var(--font-body)' }}>
-                      {slide.rrp}
-                    </span>
-                  </div>
-
-                  <div
-                    className="flex gap-4 pt-4"
-                    style={{ borderTop: '1px solid var(--grey-10)' }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck size={14} style={{ color: 'var(--blue-60)' }} />
-                      <span style={{ fontSize: '13px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)', fontWeight: 500 }}>12m warranty</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              />
             </div>
           </motion.div>
         </AnimatePresence>
@@ -365,6 +243,28 @@ export default function Hero() {
           >
             <ArrowRight size={20} />
           </button>
+        </div>
+      </div>
+      {/* Category Bubbles Row */}
+      <div style={{ background: 'var(--grey-5)', padding: 'clamp(24px, 5vw, 48px) 16px' }}>
+        <div style={{ 
+          maxWidth: '1280px', 
+          margin: '0 auto', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          gap: 'clamp(16px, 4vw, 48px)', 
+          flexWrap: 'wrap' 
+        }}>
+          {CATEGORY_BUBBLES.map((cat, idx) => (
+            <Link to={cat.href} key={idx} className="category-bubble">
+              <div className="category-bubble-img-container">
+                <img src={cat.image} alt={cat.label} />
+              </div>
+              <span className="category-bubble-label">
+                {cat.label}
+              </span>
+            </Link>
+          ))}
         </div>
       </div>
     </section>

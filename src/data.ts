@@ -65,7 +65,7 @@ export const MOCK_PHONES: Product[] = [
       { id: 'v2', color: 'Blue Titanium', storage: '512GB', price: 949, originalPrice: 1399, stock: 3 }
     ]
   },
-{
+  {
     id: 'apple-iphone-14-pro',
     model: 'iPhone 14 Pro',
     brand: 'Apple',
@@ -1390,114 +1390,160 @@ export const MOCK_PHONES: Product[] = [
       miscModels: 'QA55LS03BAK'
     }
   },
+
   {
-    id: 'lg-c2-48-oled',
-    model: 'C2 48" OLED',
-    brand: 'LG',
-    category: 'TV',
-    price: 699,
-    originalPrice: 1299,
-    grade: 'Good',
+    id: 'apple-ipad-pro-12-9',
+    model: 'iPad Pro 12.9 (6th Gen)',
+    brand: 'Apple',
+    category: 'Ipads & Tabs',
+    price: 899,
+    originalPrice: 1249,
+    grade: 'Pristine',
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/tv-frame-gen.svg',
+    imageUrl: '/assets/ipad-pro.png',
     isCertified: true,
-    stock: 4,
-    specs: { display: '48" 4K OLED evo', processor: 'α9 Gen5 AI Processor', features: 'HDMI 2.1, 120Hz, webOS' }
+    stock: 8,
+    specs: { display: '12.9" Liquid Retina XDR', chip: 'Apple M2', storage: '128GB/256GB/512GB/1TB/2TB' }
   },
   {
-    id: 'sony-bravia-xr-55',
-    model: 'Bravia XR 55" 4K',
-    brand: 'Sony',
-    category: 'TV',
-    price: 579,
-    originalPrice: 1099,
+    id: 'samsung-galaxy-tab-s9-ultra',
+    model: 'Galaxy Tab S9 Ultra',
+    brand: 'Samsung',
+    category: 'Ipads & Tabs',
+    price: 799,
+    originalPrice: 1199,
     grade: 'Excellent',
+    batteryHealth: 98,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/samsung-tab-s9.png',
+    isCertified: true,
+    stock: 5,
+    specs: { display: '14.6" Dynamic AMOLED 2X', chip: 'Snapdragon 8 Gen 2', storage: '256GB/512GB/1TB' }
+  },
+  {
+    id: 'vidvie-bluetooth-speaker-sp914',
+    model: 'VIDVIE SP914 Portable Speaker',
+    brand: 'VIDVIE',
+    category: 'Speakers',
+    price: 29.99,
+    originalPrice: 49.99,
+    grade: 'New',
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/tv-frame-gen.svg',
+    imageUrl: '/assets/speaker.png',
     isCertified: true,
-    stock: 6,
-    specs: { display: '55" 4K LED', processor: 'Cognitive Processor XR', features: 'Google TV, Dolby Vision, Acoustic Multi-Audio' }
+    stock: 25,
+    specs: { output: '24W', battery: '4000mAh', protection: 'IPX7 Waterproof' }
+  },
+  {
+    id: 'vidvie-headphones-bb502',
+    model: 'VIDVIE BB502 Bass Headphones',
+    brand: 'VIDVIE',
+    category: 'Hearables',
+    price: 39.99,
+    originalPrice: 59.99,
+    grade: 'New',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/headphones.png',
+    isCertified: true,
+    stock: 15,
+    specs: { type: 'Bluetooth 5.0', drivers: '40mm', batteryLife: '20 hours' }
+  },
+  {
+    id: 'meta-quest-3s',
+    model: 'Meta Quest 3S (128GB)',
+    brand: 'Meta',
+    category: 'Playables',
+    price: 275,
+    originalPrice: 299,
+    grade: 'New',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/meta-quest.png',
+    isCertified: true,
+    stock: 10,
+    specs: { display: 'Mixed Reality', storage: '128GB', processor: 'Snapdragon XR2 Gen 2' }
+  },
+  {
+    id: 'ps5-slim-disc',
+    model: 'PlayStation 5 Slim (Disc Edition)',
+    brand: 'Sony',
+    category: 'Playables',
+    price: 429,
+    originalPrice: 479,
+    grade: 'Pristine',
+    batteryHealth: 100,
+    warrantyMonths: 12,
+    returnDays: 30,
+    imageUrl: '/assets/ps5.png',
+    isCertified: true,
+    stock: 3,
+    specs: { drive: 'Ultra HD Blu-ray', storage: '1TB SSD', support: '4K 120Hz' }
   }
 ];
 
 export const MOCK_CATEGORIES: Category[] = [
   {
-    id: 'phones',
-    name: 'Smartphones',
-    imageUrl: '/assets/cat-smartphones.png',
-    description: 'UK\'s top 5 brands: Apple, Samsung, Google, OnePlus & Motorola',
-    productCount: 17,
-    children: [
-      {
-        id: 'phones-apple',
-        name: 'Apple iPhone',
-        imageUrl: '/assets/iphone-15-pro-max.png',
-        parent: 'phones',
-        description: 'iPhone 15 down to iPhone 11',
-        productCount: 45,
-      },
-      {
-        id: 'phones-samsung',
-        name: 'Samsung Galaxy',
-        imageUrl: '/assets/samsung-s24-ultra.png',
-        parent: 'phones',
-        description: 'S24 Ultra to S20 Series',
-        productCount: 38,
-      },
-      {
-        id: 'phones-google',
-        name: 'Google Pixel',
-        imageUrl: '/assets/pixel-8-pro.png',
-        parent: 'phones',
-        description: 'Pixel 8 Pro to Pixel 5',
-        productCount: 22,
-      }
-    ]
+    id: 'apple',
+    name: 'Apple',
+    imageUrl: '/assets/iphone-15-pro-max.png',
+    description: 'Latest iPhones and refurbished Apple devices',
+    productCount: 45
   },
-{
-    id: 'accessories',
-    name: 'Accessories',
-    imageUrl: '/assets/accessory-airpods.svg',
-    description: 'Genuine chargers, cases, and audio for your mobile',
-    productCount: 3
+  {
+    id: 'samsung',
+    name: 'Samsung',
+    imageUrl: '/assets/samsung-s24-ultra.png',
+    description: 'Samsung Galaxy smartphones and accessories',
+    productCount: 38
+  },
+  {
+    id: 'google',
+    name: 'Google',
+    imageUrl: '/assets/pixel-8-pro.png',
+    description: 'Google Pixel phones and smart technology',
+    productCount: 22
   },
   {
     id: 'tablets',
-    name: 'Tablets',
-    imageUrl: '/assets/cat-tablets.png',
-    description: 'iPad, Galaxy Tab, and Windows tablets ready for work or streaming',
-    productCount: 3
+    name: 'Ipads & Tabs',
+    imageUrl: '/assets/ipad-pro.png',
+    description: 'iPads and Android tablets for work and play',
+    productCount: 15
   },
   {
-    id: 'computing',
-    name: 'Laptops',
-    imageUrl: '/assets/computing-laptop.svg',
-    description: 'Certified MacBook, Dell, and Lenovo laptops for everyday work',
-    productCount: 3
+    id: 'accessories',
+    name: 'Accessories',
+    imageUrl: '/assets/powerbank.png',
+    description: 'Cases, chargers, and essential mobile add-ons',
+    productCount: 120
   },
   {
-    id: 'gaming',
-    name: 'Gaming consoles',
-    imageUrl: '/assets/gaming-ps5.svg',
-    description: 'PlayStation, Xbox, and Nintendo hardware with warranty cover',
-    productCount: 3
+    id: 'speakers',
+    name: 'Speakers',
+    imageUrl: '/assets/speaker.png',
+    description: 'Bluetooth and portable speakers for every occasion',
+    productCount: 18
   },
   {
-    id: 'watches',
-    name: 'Smartwatches',
-    imageUrl: '/assets/smartwatch-apple-watch.svg',
-    description: 'Apple Watch, Galaxy Watch, and Pixel Watch models',
-    productCount: 3
+    id: 'hearables',
+    name: 'Hearables',
+    imageUrl: '/assets/headphones.png',
+    description: 'High-quality headphones and wireless earbuds',
+    productCount: 24
   },
   {
-    id: 'tv',
-    name: 'Smart TVs',
-    imageUrl: '/assets/tv-frame-gen.svg',
-    description: 'Refurbished 4K OLED, QLED, and smart TVs for home cinema',
-    productCount: 3
+    id: 'playables',
+    name: 'Playables',
+    imageUrl: '/assets/meta-quest.png',
+    description: 'Gaming consoles, VR headsets, and interactive gear',
+    productCount: 12
   }
 ];

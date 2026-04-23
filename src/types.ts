@@ -65,8 +65,14 @@ export interface ProductSpecs {
   miscModels?: string;
   miscPrice?: string;
   sound?: string;
-  soundLoudspeaker?: string;
+   soundLoudspeaker?: string;
   soundJack?: string;
+  output?: string;
+  type?: string;
+  drive?: string;
+  protection?: string;
+  drivers?: string;
+  support?: string;
 }
 
 export interface Review {
@@ -78,7 +84,7 @@ export interface Review {
   date: string;
 }
 
-export type ProductCategory = 'Phones' | 'Tablets' | 'Computing' | 'Gaming' | 'Smartwatches' | 'TV' | 'Accessories';
+export type ProductCategory = 'Phones' | 'Tablets' | 'Computing' | 'Gaming' | 'Smartwatches' | 'TV' | 'Accessories' | 'Ipads & Tabs' | 'Speakers' | 'Hearables' | 'Playables' | 'Apple' | 'Samsung' | 'Google';
 
 export interface Product {
   id: string;

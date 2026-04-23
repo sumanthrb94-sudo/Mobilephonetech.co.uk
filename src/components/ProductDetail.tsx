@@ -2,11 +2,11 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
-  Award, Zap, Heart, Share2, ChevronLeft, ChevronRight
+  Heart, Share2, ChevronLeft, ChevronRight, Star
 } from 'lucide-react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import ReviewsSection from './ReviewsSection';
 import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
@@ -55,7 +55,7 @@ export default function ProductDetail() {
   const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone.batteryHealth;
   const displayStock = selectedVariant?.stock ?? phone.stock;
   const savings = displayOriginalPrice - displayPrice;
-  const savingsPercent = Math.round((savings / displayOriginalPrice) * 100);
+
 
   const galleryImages = phone.galleryImages || [phone.imageUrl];
 
@@ -118,21 +118,12 @@ export default function ProductDetail() {
               }}
             >
               {/* Product Image (shared component) */}
-              <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} galleryImages={phone.galleryImages} />
-
-              {/* Condition Badge */}
-              <div 
-                className="badge-pristine"
-                style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', alignItems: 'center', gap: '6px', background: 'white', border: '1px solid var(--grey-10)', color: 'var(--black)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontSize: '11px', fontWeight: 700 }}
-              >
-                <Award size={12} style={{ color: 'var(--trust-green)' }} />
-                {selectedVariant?.condition || phone.grade}
-              </div>
+              <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} />
 
               {/* Savings Badge */}
               {savings > 0 && (
-                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--black)', color: 'white', padding: '4px 12px', borderRadius: 'var(--radius-full)', fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  Save {savingsPercent}%
+                <div style={{ position: 'absolute', top: '16px', right: '16px', background: '#ef4444', color: 'white', padding: '4px 12px', borderRadius: '4px', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                  Sale
                 </div>
               )}
 
@@ -170,29 +161,28 @@ export default function ProductDetail() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
             
             <div>
-              <p className="overline" style={{ marginBottom: '8px' }}>{phone.brand || 'Premium Device'}</p>
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 4.5vw, 56px)', fontWeight: 700, color: 'var(--black)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
+              <p className="overline" style={{ marginBottom: '8px', color: 'var(--grey-50)' }}>{phone.brand || 'Premium Device'}</p>
+              <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4.5vw, 40px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
                 {phone.model || 'Product Details'}
               </h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ display: 'flex', gap: '2px', color: '#f59e0b' }}>
-                  {[...Array(5)].map((_, i) => <CheckCircle2 key={i} size={16} fill="currentColor" />)}
+                  {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
-                  Verified Refurbished • 4.8★ (342 reviews)
+                  4.8★ (342 reviews)
                 </span>
               </div>
             </div>
 
             {/* Price Block */}
-            <div style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-xl)' }}>
+            <div style={{ padding: 'var(--spacing-16) 0', borderBottom: '1px solid var(--grey-10)' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(36px, 4vw, 48px)', fontWeight: 900, color: 'var(--black)', letterSpacing: '-0.04em' }}>£{displayPrice}</span>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
+                {savings > 0 && (
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+                )}
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--trust-green)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Zap size={14} /> You save £{savings} vs buying new
-              </p>
             </div>
 
             {/* Key Value Props Strip */}

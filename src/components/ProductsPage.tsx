@@ -16,53 +16,60 @@ import { motion, AnimatePresence } from 'motion/react';
 
 const CATEGORY_DEPARTMENTS = [
   {
-    id: 'phones',
-    label: 'Smartphones',
-    intro: 'Certified iPhone, Samsung Galaxy, Google Pixel, OnePlus, and Motorola handsets.',
-    matches: ['phones', 'phone', 'smartphones'],
-    category: 'Phones',
+    id: 'apple',
+    label: 'Apple',
+    intro: 'Latest iPhones and refurbished Apple devices.',
+    matches: ['apple', 'iphone', 'ios'],
+    category: 'Apple',
+  },
+  {
+    id: 'samsung',
+    label: 'Samsung',
+    intro: 'Samsung Galaxy smartphones and accessories.',
+    matches: ['samsung', 'galaxy', 'android'],
+    category: 'Samsung',
+  },
+  {
+    id: 'google',
+    label: 'Google',
+    intro: 'Google Pixel phones and smart technology.',
+    matches: ['google', 'pixel'],
+    category: 'Google',
+  },
+  {
+    id: 'tablets',
+    label: 'Ipads & Tabs',
+    intro: 'iPads and Android tablets for work and play.',
+    matches: ['tablets', 'tablet', 'ipad'],
+    category: 'Ipads & Tabs',
   },
   {
     id: 'accessories',
     label: 'Accessories',
-    intro: 'Audio, earbuds, chargers, and mobile essentials checked for everyday use.',
-    matches: ['accessories', 'headphones', 'audio'],
+    intro: 'Cases, chargers, and essential mobile add-ons.',
+    matches: ['accessories', 'accessory'],
     category: 'Accessories',
   },
   {
-    id: 'tablets',
-    label: 'Tablets',
-    intro: 'iPad, Galaxy Tab, and Windows tablets for work, streaming, and study.',
-    matches: ['tablets', 'tablet'],
-    category: 'Tablets',
+    id: 'speakers',
+    label: 'Speakers',
+    intro: 'Bluetooth and portable speakers for every occasion.',
+    matches: ['speakers', 'speaker', 'audio'],
+    category: 'Speakers',
   },
   {
-    id: 'computing',
-    label: 'Laptops',
-    intro: 'MacBook, Dell, and Lenovo laptops ready for productivity demos and everyday work.',
-    matches: ['computing', 'laptops', 'laptop'],
-    category: 'Computing',
+    id: 'hearables',
+    label: 'Hearables',
+    intro: 'High-quality headphones and wireless earbuds.',
+    matches: ['hearables', 'hearable', 'headphones', 'earbuds'],
+    category: 'Hearables',
   },
   {
-    id: 'gaming',
-    label: 'Gaming consoles',
-    intro: 'PlayStation, Xbox, and Nintendo consoles with warranty-backed refurbished pricing.',
-    matches: ['gaming', 'consoles', 'console'],
-    category: 'Gaming',
-  },
-  {
-    id: 'watches',
-    label: 'Smartwatches',
-    intro: 'Apple Watch, Galaxy Watch, and Pixel Watch models with tested battery health.',
-    matches: ['watches', 'smartwatches', 'watch'],
-    category: 'Smartwatches',
-  },
-  {
-    id: 'tv',
-    label: 'Smart TVs',
-    intro: 'Refurbished 4K OLED, QLED, and smart TVs for home cinema demos.',
-    matches: ['tv', 'tvs', 'smart-tv', 'smart-tvs'],
-    category: 'TV',
+    id: 'playables',
+    label: 'Playables',
+    intro: 'Gaming consoles, VR headsets, and interactive gear.',
+    matches: ['playables', 'playable', 'gaming', 'console', 'ps5', 'xbox', 'nintendo'],
+    category: 'Playables',
   },
 ];
 
@@ -182,7 +189,7 @@ export default function ProductsPage() {
     return (
       <div style={{ padding: '0 16px' }}>
         {hasActiveFilters && (
-          <button onClick={resetFilters} style={{ fontSize: '13px', color: '#007185', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
+          <button onClick={resetFilters} style={{ fontSize: '13px', color: 'var(--brand-cyan)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: '16px' }}>
             &lt; Clear all filters
           </button>
         )}
@@ -202,7 +209,7 @@ export default function ProductsPage() {
                 cursor: 'pointer',
                 fontFamily: 'var(--font-body)',
                 fontSize: '14px',
-                color: filters.category?.includes(category) ? '#e47911' : 'var(--black)',
+                color: filters.category?.includes(category) ? 'var(--brand-cyan)' : 'var(--black)',
                 fontWeight: filters.category?.includes(category) ? 700 : 400
               }}
             >
@@ -450,7 +457,7 @@ function FilterGroup({ title, children }: { title: string; children: React.React
 function FilterCheckbox({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
   return (
     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-      <input type="checkbox" checked={checked} onChange={onChange} style={{ width: '16px', height: '16px', accentColor: '#007185', cursor: 'pointer', margin: 0 }} />
+      <input type="checkbox" checked={checked} onChange={onChange} style={{ width: '16px', height: '16px', accentColor: 'var(--brand-cyan)', cursor: 'pointer', margin: 0 }} />
       <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
         {label}
       </span>

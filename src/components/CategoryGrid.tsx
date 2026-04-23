@@ -218,7 +218,7 @@ export default function CategoryGrid() {
         </div>
 
         {/* ── Row 2: supporting departments ───────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
           {remainingCategories.map((cat, i) => (
             <SmallCard key={cat.id} category={cat} index={i} />
           ))}

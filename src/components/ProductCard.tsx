@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, Battery, ShieldCheck, Heart, Star } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { Product } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -17,16 +17,7 @@ interface ProductCardProps {
   phone: Product;
 }
 
-function getBadgeClass(grade: string): string {
-  switch (grade) {
-    case 'Pristine':  return 'badge badge-pristine';
-    case 'Excellent': return 'badge badge-excellent';
-    case 'Good':      return 'badge badge-good';
-    case 'Fair':      return 'badge badge-fair';
-    case 'New':       return 'badge badge-new';
-    default:          return 'badge badge-tag';
-  }
-}
+
 
 const ProductCard = memo(({ phone }: ProductCardProps) => {
   const navigate = useNavigate();
@@ -79,21 +70,27 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
       <div
         style={{
           position: 'relative',
-          background: 'var(--grey-5)',
+          background: 'var(--grey-0)',
           aspectRatio: '1 / 1',
           borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
           overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px'
         }}
       >
         <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} />
 
-        <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
-          <span className={getBadgeClass(phone.grade)}>{phone.grade}</span>
-        </div>
-
         {savingsPct > 0 && (
-          <div style={{ position: 'absolute', top: '12px', right: '40px' }}>
-            <span className="badge badge-savings">-{savingsPct}%</span>
+          <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
+            <span style={{ 
+              background: '#ef4444', color: 'white', padding: '4px 8px', 
+              borderRadius: '4px', fontSize: '11px', fontWeight: 'bold',
+              textTransform: 'uppercase'
+            }}>
+              Sale
+            </span>
           </div>
         )}
 
@@ -171,7 +168,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           </p>
         )}
 
-        <div className="flex items-center gap-1.5 mb-10">
+        <div className="flex items-center gap-1.5 mb-2">
           <div className="stars flex gap-0.5">
             {[1,2,3,4,5].map((s) => (
               <Star
@@ -181,17 +178,14 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               />
             ))}
           </div>
-          <span style={{ fontSize: '12px', color: 'var(--grey-40)', fontFamily: 'var(--font-body)' }}>
-            ({ratingRounded})
-          </span>
         </div>
 
         <div style={{ flexGrow: 1 }} />
 
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
           <span
             className="type-price"
-            style={{ fontSize: '22px', color: 'var(--black)' }}
+            style={{ fontSize: '20px', color: 'var(--brand-header)' }}
           >
             £{phone.price}
           </span>
@@ -202,34 +196,16 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           )}
         </div>
 
-        <div
-          className="flex items-center gap-4 pb-4 mb-4"
-          style={{ borderBottom: '1px solid var(--grey-10)' }}
-        >
-          <div className="flex items-center gap-1.5">
-            <Battery size={12} style={{ color: '#10b981' }} />
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)', fontWeight: 500 }}>
-              {phone.batteryHealth}%
-            </span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck size={12} style={{ color: 'var(--blue-60)' }} />
-            <span style={{ fontSize: '12px', fontFamily: 'var(--font-body)', color: 'var(--grey-50)', fontWeight: 500 }}>
-              12m warranty
-            </span>
-          </div>
-        </div>
-
         <button
           onClick={handleAddToCart}
           className="btn btn-primary btn-md btn-full"
-          style={{ fontFamily: 'var(--font-sans)' }}
+          style={{ fontFamily: 'var(--font-sans)', borderRadius: '4px' }}
           aria-label={added ? 'Added to cart' : `Add ${phone.model} to cart`}
         >
           {added ? (
             <>✓ Added</>
           ) : (
-            <><ShoppingBag size={15} /> Add to cart</>
+            <>Choose Options</>
           )}
         </button>
       </div>
