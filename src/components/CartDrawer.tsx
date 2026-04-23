@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -38,11 +39,23 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     navigate('/checkout');
   };
 
+  // Lock body scroll while the drawer is open so the page behind can't
+  // bleed scroll through (especially on mobile where the drawer fills
+  // the viewport).
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — sits above the navbar (z-60) so the cart reads as
+              a proper full-page overlay on mobile, not a drawer sliding
+              beneath the category pills. */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -51,7 +64,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             onClick={onClose}
             style={{
               position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.4)',
-              backdropFilter: 'blur(2px)', zIndex: 40
+              backdropFilter: 'blur(2px)', zIndex: 90
             }}
           />
 
@@ -63,7 +76,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             style={{
               position: 'fixed', right: 0, top: 0, height: '100%', width: '100%', maxWidth: '440px',
-              background: 'var(--grey-0)', zIndex: 50, display: 'flex', flexDirection: 'column',
+              background: 'var(--grey-0)', zIndex: 100, display: 'flex', flexDirection: 'column',
               boxShadow: '-8px 0 32px rgba(0, 0, 0, 0.08)'
             }}
           >
