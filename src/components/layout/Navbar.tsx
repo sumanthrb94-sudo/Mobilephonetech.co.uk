@@ -190,29 +190,17 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             <Link
               to="/"
               id="navbar-logo"
-              className="flex-shrink-0 flex items-center gap-2 min-w-0"
+              className="navbar-logo flex-shrink-0 flex items-center min-w-0"
               style={{ textDecoration: 'none' }}
             >
-              <div
-                className="flex-shrink-0"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  background: 'var(--brand-cyan)',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <RefreshCw size={16} color="white" strokeWidth={2.5} />
-              </div>
+              <span className="navbar-logo-tile flex-shrink-0">
+                <RefreshCw className="navbar-logo-icon" color="white" strokeWidth={2.5} />
+              </span>
               <span
-                className="truncate"
+                className="navbar-logo-wordmark truncate"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
-                  fontSize: 'clamp(18px, 4.5vw, 24px)',
                   letterSpacing: '-0.04em',
                   color: 'var(--brand-cyan)',
                   lineHeight: 1,

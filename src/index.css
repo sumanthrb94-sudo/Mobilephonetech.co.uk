@@ -222,6 +222,46 @@ html.dark .glass-card {
   }
 }
 
+/* ──────────────────────────────────────────────────────────
+   Navbar logo lockup — tile + wordmark scale together so
+   the cyan tile never visually overshadows the wordmark on
+   small viewports. All three (tile size, icon size, wordmark
+   font-size, gap) ramp from mobile → desktop in lockstep.
+─────────────────────────────────────────────────────────── */
+.navbar-logo {
+  gap: 8px;
+}
+
+.navbar-logo-tile {
+  width: 30px;
+  height: 30px;
+  background: var(--brand-cyan);
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-logo-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.navbar-logo-wordmark {
+  font-size: 20px;
+}
+
+@media (min-width: 640px) {
+  .navbar-logo { gap: 10px; }
+  .navbar-logo-tile { width: 32px; height: 32px; }
+  .navbar-logo-icon { width: 16px; height: 16px; }
+  .navbar-logo-wordmark { font-size: 22px; }
+}
+
+@media (min-width: 1024px) {
+  .navbar-logo-wordmark { font-size: 24px; }
+}
+
 @media (min-width: 640px) {
   .navbar-header {
     padding-left: 24px;
