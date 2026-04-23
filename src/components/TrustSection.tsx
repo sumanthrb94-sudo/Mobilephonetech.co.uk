@@ -11,8 +11,8 @@ import { motion } from 'motion/react';
 const PILLARS = [
   {
     icon: ShieldCheck,
-    accentColor: 'var(--blue-60)',
-    accentBg: 'var(--blue-10)',
+    accentColor: 'var(--brand-cyan-hover)',
+    accentBg: 'var(--color-brand-subtle)',
     title: '12-Month Warranty',
     body: 'Full technical cover on every certified device. Backed by our in-house engineering team, no third-party exceptions.',
   },
@@ -39,8 +39,8 @@ const PILLARS = [
   },
   {
     icon: BadgeCheck,
-    accentColor: 'var(--blue-60)',
-    accentBg: 'var(--blue-10)',
+    accentColor: 'var(--brand-cyan-hover)',
+    accentBg: 'var(--color-brand-subtle)',
     title: '90-Point Inspection',
     body: 'Every device passes a rigorous 90-point diagnostic check before it ships. Cameras, speakers, connectors — all tested.',
   },

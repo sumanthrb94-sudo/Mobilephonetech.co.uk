@@ -134,7 +134,7 @@ export default function AIAssistant() {
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 700, color: 'var(--black)', margin: '0 0 4px 0', lineHeight: 1.1 }}>Tech Advisor</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <div style={{ width: '6px', height: '6px', background: 'var(--trust-green)', borderRadius: '50%' }} />
+                    <div style={{ width: '6px', height: '6px', background: 'var(--color-trust-text)', borderRadius: '50%' }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', fontWeight: 700, color: 'var(--grey-40)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>GSMARENA TRAINED</span>
                   </div>
                 </div>
@@ -173,7 +173,7 @@ export default function AIAssistant() {
               {isLoading && (
                 <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
                   <div style={{ display: 'flex', gap: '12px' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--blue-10)', color: 'var(--blue-60)' }}>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)' }}>
                       <Bot size={14} />
                     </div>
                     <div style={{ padding: '12px 16px', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)', borderTopLeftRadius: 0 }}>

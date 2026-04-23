@@ -326,7 +326,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                           cursor: 'pointer', textAlign: 'left'
                         }}
                       >
-                        <ShieldCheck size={18} style={{ color: 'var(--blue-60)' }} />
+                        <ShieldCheck size={18} style={{ color: 'var(--brand-cyan-hover)' }} />
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
                           Quality Guarantee
                         </span>

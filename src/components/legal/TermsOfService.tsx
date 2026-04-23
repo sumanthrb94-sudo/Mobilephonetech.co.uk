@@ -14,8 +14,8 @@ export default function TermsOfService() {
         {/* Header */}
         <div style={{ marginBottom: 'var(--spacing-48)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--spacing-16)' }}>
-            <FileText size={20} style={{ color: 'var(--blue-60)' }} />
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, color: 'var(--blue-60)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <FileText size={20} style={{ color: 'var(--brand-cyan-hover)' }} />
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, color: 'var(--brand-cyan-hover)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Legal & Compliance
             </span>
           </div>
