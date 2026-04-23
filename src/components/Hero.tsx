@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 /**
  * Hero — BM spec Section 3
@@ -60,16 +61,9 @@ const SLIDES = [
 export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const { isDesktop } = useBreakpoint();
   const total = SLIDES.length;
   const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
-    checkDesktop();
-    window.addEventListener('resize', checkDesktop);
-    return () => window.removeEventListener('resize', checkDesktop);
-  }, []);
 
   const goTo = (idx: number, dir = 1) => {
     setDirection(dir);
