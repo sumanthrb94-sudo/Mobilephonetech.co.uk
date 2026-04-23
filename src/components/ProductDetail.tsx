@@ -236,7 +236,7 @@ export default function ProductDetail() {
                   onClick={handleAddToCart}
                   disabled={displayStock === 0}
                   className="btn btn-primary"
-                  style={{ flex: 1, padding: '0 32px', height: '52px', fontSize: '15px', borderRadius: 'var(--radius-md)' }}
+                  style={{ flex: 1, padding: '0 32px', height: '60px', fontSize: '18px', fontWeight: 700, borderRadius: 'var(--radius-md)', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                 >
                   {displayStock > 0 ? 'Add to cart' : 'Out of Stock'}
                 </button>
