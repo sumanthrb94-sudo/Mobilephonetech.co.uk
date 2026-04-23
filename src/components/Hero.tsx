@@ -11,36 +11,49 @@ import { Link } from 'react-router-dom';
 
 const SLIDES = [
   {
-    headline: 'The New iPhone\nExperience the Future',
-    ctaLabel: 'Shop Now',
-    ctaHref: '/products?category=phones&brand=Apple',
+    eyebrow: 'Certified refurbished',
+    headline: 'Premium iPhones.\nUp to 70% off new.',
+    subline: 'Every device inspected, tested and backed by a 12-month warranty.',
+    ctaLabel: 'Shop iPhones',
+    ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-15-pro-max.png',
-    imageAlt: 'New iPhone',
+    imageAlt: 'Refurbished iPhone',
     bgFrom: '#e0c3fc',
     bgAccent: '#8ec5fc',
-    btnColor: 'var(--brand-purple)',
   },
   {
-    headline: 'Galaxy S24 Ultra\nPremium Android',
-    ctaLabel: 'Shop Now',
-    ctaHref: '/products?category=phones&brand=Samsung',
+    eyebrow: 'Galaxy S range',
+    headline: 'Samsung Galaxy.\nFrom £299.',
+    subline: 'Grade A refurbished Galaxy flagships — pristine condition, unbeatable price.',
+    ctaLabel: 'Shop Samsung',
+    ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy',
     bgFrom: '#fdfbfb',
     bgAccent: '#ebedee',
-    btnColor: 'var(--brand-cyan)',
-  }
-];
-
-const CATEGORY_BUBBLES = [
-  { label: 'Apple',       image: '/assets/iphone-15-pro-max.png', href: '/products?brand=Apple' },
-  { label: 'Samsung',     image: '/assets/samsung-s24-ultra.png', href: '/products?brand=Samsung' },
-  { label: 'Google',      image: '/assets/pixel-8-pro.png',        href: '/products?brand=Google' },
-  { label: 'Ipads & Tabs',image: '/assets/ipad-pro.png',           href: '/products?category=tablets' },
-  { label: 'Accessories', image: '/assets/powerbank.png',          href: '/products?category=Accessories' },
-  { label: 'Speakers',    image: '/assets/speaker.png',            href: '/products?category=Speakers' },
-  { label: 'Hearables',   image: '/assets/headphones.png',         href: '/products?category=Hearables' },
-  { label: 'Playables',   image: '/assets/meta-quest.png',         href: '/products?category=Playables' },
+  },
+  {
+    eyebrow: 'Google Pixel',
+    headline: 'Pure Android.\nPixel-perfect price.',
+    subline: 'Google Pixel devices fully tested, certified and ready for their next owner.',
+    ctaLabel: 'Shop Pixel',
+    ctaHref: '/products?brand=Google',
+    image: '/assets/pixel-8-pro.png',
+    imageAlt: 'Google Pixel',
+    bgFrom: '#e0f7fa',
+    bgAccent: '#b3e5fc',
+  },
+  {
+    eyebrow: 'Trade-in',
+    headline: 'Trade your old phone.\nGet cash today.',
+    subline: 'Instant quote, free postage, payment within 24 hours of receipt.',
+    ctaLabel: 'Get a free quote',
+    ctaHref: '/#trade-in',
+    image: '/assets/iphone-15-pro-max.png',
+    imageAlt: 'Trade in your phone',
+    bgFrom: '#dcfce7',
+    bgAccent: '#bbf7d0',
+  },
 ];
 
 
@@ -89,7 +102,7 @@ export default function Hero() {
           top: 0, right: 0,
           width: '50%',
           height: '100%',
-          background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.6) 100%)',
+          background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.25) 100%)',
           pointerEvents: 'none',
         }}
       />
@@ -127,7 +140,13 @@ export default function Hero() {
             }}
           >
             {/* ── Left: Text block ──────────────── */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', gridColumn: isDesktop ? 'span 1' : 'span 2' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: isDesktop ? 'flex-start' : 'center', textAlign: isDesktop ? 'left' : 'center', gridColumn: isDesktop ? 'span 1' : 'span 2' }}>
+              <div
+                className="overline"
+                style={{ marginBottom: '12px', color: 'var(--brand-header)' }}
+              >
+                {slide.eyebrow}
+              </div>
               <h1
                 style={{
                   fontFamily: 'var(--font-sans)',
@@ -136,29 +155,35 @@ export default function Hero() {
                   letterSpacing: '-0.02em',
                   lineHeight: 1.1,
                   color: 'var(--brand-header)',
-                  marginBottom: '24px',
+                  marginBottom: '16px',
                   whiteSpace: 'pre-line',
                 }}
               >
                 {slide.headline}
               </h1>
+              <p
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '15px',
+                  color: 'var(--grey-70)',
+                  maxWidth: '420px',
+                  marginBottom: '28px',
+                  lineHeight: 1.55,
+                }}
+              >
+                {slide.subline}
+              </p>
 
               <Link
                 to={slide.ctaHref}
-                className="btn"
+                className="btn btn-primary btn-lg"
                 id={`hero-cta-${current}`}
-                style={{ 
-                  backgroundColor: slide.btnColor,
-                  color: 'white',
-                  textDecoration: 'none', 
-                  height: '48px', 
-                  padding: '0 40px',
-                  borderRadius: '4px',
-                  fontSize: '16px',
-                  fontWeight: 600
+                style={{
+                  textDecoration: 'none',
+                  padding: '0 32px',
                 }}
               >
-                {slide.ctaLabel}
+                {slide.ctaLabel} <ArrowRight size={18} />
               </Link>
             </div>
 
@@ -243,28 +268,6 @@ export default function Hero() {
           >
             <ArrowRight size={20} />
           </button>
-        </div>
-      </div>
-      {/* Category Bubbles Row */}
-      <div style={{ background: 'var(--grey-5)', padding: 'clamp(24px, 5vw, 48px) 16px' }}>
-        <div style={{ 
-          maxWidth: '1280px', 
-          margin: '0 auto', 
-          display: 'flex', 
-          justifyContent: 'center', 
-          gap: 'clamp(16px, 4vw, 48px)', 
-          flexWrap: 'wrap' 
-        }}>
-          {CATEGORY_BUBBLES.map((cat, idx) => (
-            <Link to={cat.href} key={idx} className="category-bubble">
-              <div className="category-bubble-img-container">
-                <img src={cat.image} alt={cat.label} />
-              </div>
-              <span className="category-bubble-label">
-                {cat.label}
-              </span>
-            </Link>
-          ))}
         </div>
       </div>
     </section>
