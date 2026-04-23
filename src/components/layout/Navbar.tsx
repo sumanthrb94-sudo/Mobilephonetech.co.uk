@@ -27,7 +27,7 @@ const CATEGORIES = [
   { label: 'Speakers',          href: '/products?category=Speakers',   icon: Volume2 },
   { label: 'Hearables',         href: '/products?category=Hearables',  icon: Headphones },
   { label: 'Playables',         href: '/products?category=Playables',  icon: Gamepad2 },
-  { label: 'Why us',            href: '#why-us',                       icon: ShieldCheck },
+  { label: 'Why us',            href: '/#why-us',                      icon: ShieldCheck },
 ];
 
 export default function Navbar({ onCartClick }: NavbarProps) {
@@ -124,7 +124,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
         style={{
           fontFamily: 'var(--font-body)',
           fontSize: '10px',
-          color: 'var(--grey-50)',
+          color: 'rgba(255,255,255,0.75)',
           lineHeight: 1,
         }}
       >
@@ -284,20 +284,20 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   }}
                 >
                   <div style={{ position: 'relative' }}>
-                    <User size={20} style={{ color: 'var(--grey-70)' }} />
+                    <User size={20} style={{ color: 'var(--grey-0)' }} />
                     <span
-                      style={{ 
-                        position: 'absolute', 
-                        top: '-2px', 
-                        right: '-4px', 
-                        width: '6px', 
-                        height: '6px', 
-                        borderRadius: '50%', 
-                        background: 'var(--blue-60)',
+                      style={{
+                        position: 'absolute',
+                        top: '-2px',
+                        right: '-4px',
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        background: 'var(--brand-cyan)',
                       }}
                     />
                   </div>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'var(--grey-50)', lineHeight: 1 }}>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'rgba(255,255,255,0.75)', lineHeight: 1 }}>
                     Menu
                   </span>
                 </button>
@@ -450,7 +450,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           >
             {CATEGORIES.map((cat) => {
               const isActive = activeCategory === cat.label;
-              return cat.href.startsWith('#') ? (
+              return cat.href.includes('#') ? (
                 <a
                   key={cat.label}
                   href={cat.href}
@@ -571,7 +571,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               {/* Nav links */}
               <div className="flex-grow py-2">
                 {CATEGORIES.map((cat) => (
-                  cat.href.startsWith('#') ? (
+                  cat.href.includes('#') ? (
                     <a
                       key={cat.label}
                       href={cat.href}

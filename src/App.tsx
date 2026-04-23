@@ -61,15 +61,10 @@ function HomePage() {
       <Hero />
 
       {/* Section 4: Category Grid */}
-      <div id="categories">
-        <CategoryGrid />
-      </div>
+      <CategoryGrid />
 
       {/* Section 5: Featured Products */}
-      <div id="products">
-        <FeaturedProducts />
-      </div>
-
+      <FeaturedProducts />
 
       {/* Section 5: Value Proposition / Trust */}
       <TrustSection />
