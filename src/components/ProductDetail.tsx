@@ -235,34 +235,53 @@ export default function ProductDetail() {
               
               <div style={{ display: 'flex', gap: '12px' }} className="flex-col sm:flex-row">
                 {/* Quantity */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-md)', padding: '4px', alignSelf: 'flex-start' }}>
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} style={{ width: '40px', height: '40px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--black)' }}>−</button>
-                  <span style={{ width: '32px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, color: 'var(--black)' }}>{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} style={{ width: '40px', height: '40px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: 'var(--black)' }}>+</button>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    border: '1px solid var(--grey-20)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '2px',
+                    alignSelf: 'flex-start',
+                    height: '56px',
+                  }}
+                  role="group"
+                  aria-label="Quantity"
+                >
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    aria-label="Decrease quantity"
+                    disabled={quantity <= 1}
+                    style={{ width: '44px', height: '100%', background: 'none', border: 'none', cursor: quantity <= 1 ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 700, color: 'var(--black)', opacity: quantity <= 1 ? 0.4 : 1 }}
+                  >−</button>
+                  <span style={{ width: '36px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, color: 'var(--black)' }} aria-live="polite">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    aria-label="Increase quantity"
+                    style={{ width: '44px', height: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 700, color: 'var(--black)' }}
+                  >+</button>
                 </div>
 
-                <button 
+                <button
                   onClick={handleAddToCart}
                   disabled={displayStock === 0}
-                  className="btn btn-primary"
-                  style={{ flex: 1, padding: '0 32px', height: '60px', fontSize: '18px', fontWeight: 700, borderRadius: 'var(--radius-md)', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                  className="btn btn-primary btn-lg"
+                  style={{ flex: 1 }}
                 >
-                  {displayStock > 0 ? 'Add to cart' : 'Out of Stock'}
+                  {displayStock > 0 ? 'Add to cart' : 'Out of stock'}
                 </button>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <button 
+                <button
                   onClick={() => setIsWishlisted(!isWishlisted)}
-                  className="btn btn-secondary"
-                  style={{ height: '44px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  className="btn btn-secondary btn-md"
+                  aria-pressed={isWishlisted}
                 >
-                  <Heart size={16} fill={isWishlisted ? 'var(--black)' : 'none'} color="var(--black)" /> Wishlist
+                  <Heart size={16} fill={isWishlisted ? 'var(--color-sale)' : 'none'} color={isWishlisted ? 'var(--color-sale)' : 'var(--black)'} />
+                  {isWishlisted ? 'Saved' : 'Wishlist'}
                 </button>
-                <button 
-                  className="btn btn-secondary"
-                  style={{ height: '44px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
+                <button className="btn btn-secondary btn-md" aria-label="Share product">
                   <Share2 size={16} /> Share
                 </button>
               </div>
