@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
+import ExpressPayRow from './ExpressPayRow';
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -162,7 +163,7 @@ export default function CheckoutFlow() {
             A confirmation email has been sent to <strong style={{ color: 'var(--black)' }}>{lastOrder.shippingAddress.email}</strong>.
           </p>
 
-          <button onClick={() => window.location.href = '/'} className="btn btn-primary btn-lg" style={{ width: '100%' }}>Continue Shopping</button>
+          <button onClick={() => window.location.href = '/'} className="btn btn-primary btn-lg btn-full">Continue Shopping</button>
         </motion.div>
       </div>
     );
@@ -264,6 +265,44 @@ export default function CheckoutFlow() {
                     )}
                   </div>
 
+                  {/* Postcode quick-lookup — mocks a PAF-style lookup so the
+                      pattern is in place when a real PAF / Loqate feed lands. */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: 'var(--spacing-20)' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={labelStyle}>Postcode lookup (fastest)</label>
+                      <input
+                        type="text"
+                        id="postcode-lookup"
+                        placeholder="e.g. SW1A 1AA"
+                        style={inputStyle}
+                        aria-describedby="postcode-lookup-hint"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const el = document.getElementById('postcode-lookup') as HTMLInputElement | null;
+                        const pc = el?.value?.trim().toUpperCase() || '';
+                        if (!pc) return;
+                        // Mock lookup: populate plausible defaults so the user only
+                        // has to type their house number + surname.
+                        const line1El = document.querySelector('input[name="addressLine1"]') as HTMLInputElement | null;
+                        const cityEl  = document.querySelector('input[name="city"]') as HTMLInputElement | null;
+                        const pcEl    = document.querySelector('input[name="postalCode"]') as HTMLInputElement | null;
+                        if (pcEl) pcEl.value = pc;
+                        if (cityEl && !cityEl.value) cityEl.value = 'London';
+                        if (line1El && !line1El.value) line1El.value = '';
+                        line1El?.focus();
+                      }}
+                      className="btn btn-secondary btn-md"
+                    >
+                      Find address
+                    </button>
+                  </div>
+                  <p id="postcode-lookup-hint" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', margin: '0 0 var(--spacing-24) 0' }}>
+                    We'll pre-fill city & postcode — just add your house number.
+                  </p>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Full Name</label><input type="text" name="fullName" defaultValue={shippingAddress?.fullName || user?.fullName || ''} style={inputStyle} />{formErrors.fullName && <p style={errorStyle}>{formErrors.fullName}</p>}</div>
                     <div><label style={labelStyle}>Email</label><input type="email" name="email" defaultValue={shippingAddress?.email || user?.email || ''} style={inputStyle} />{formErrors.email && <p style={errorStyle}>{formErrors.email}</p>}</div>
@@ -273,6 +312,19 @@ export default function CheckoutFlow() {
                     <div><label style={labelStyle}>City</label><input type="text" name="city" defaultValue={shippingAddress?.city} style={inputStyle} />{formErrors.city && <p style={errorStyle}>{formErrors.city}</p>}</div>
                     <div><label style={labelStyle}>Postal Code</label><input type="text" name="postalCode" defaultValue={shippingAddress?.postalCode} style={inputStyle} />{formErrors.postalCode && <p style={errorStyle}>{formErrors.postalCode}</p>}</div>
                   </div>
+
+                  {/* Gift message toggle */}
+                  <details style={{ marginTop: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '12px 16px' }}>
+                    <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '14px', color: 'var(--black)' }}>
+                      🎁 Add a gift message <span style={{ color: 'var(--grey-50)', fontWeight: 500 }}>— free</span>
+                    </summary>
+                    <textarea
+                      name="giftMessage"
+                      maxLength={200}
+                      placeholder="Your message (max 200 characters)"
+                      style={{ ...inputStyle, marginTop: '10px', minHeight: '64px', padding: '10px 12px', resize: 'vertical', fontFamily: 'var(--font-body)' }}
+                    />
+                  </details>
 
                   <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginTop: 'var(--spacing-48)', marginBottom: 'var(--spacing-20)' }}>Delivery Method</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -290,7 +342,7 @@ export default function CheckoutFlow() {
                     ))}
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 'var(--spacing-48)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
                     Continue to Payment <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
                   </button>
                 </motion.form>
@@ -304,15 +356,27 @@ export default function CheckoutFlow() {
                     <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Payment Method</h2>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: 'var(--spacing-32)' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '2px solid var(--black)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
+                  <ExpressPayRow />
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: 'var(--spacing-32)' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '2px solid var(--black)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
                       <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '5px solid var(--black)', background: 'white' }} />
                       <CreditCard size={20} style={{ color: 'var(--black)' }} />
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Credit or Debit Card</span>
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Credit or debit card</span>
                     </label>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'not-allowed', opacity: 0.5 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
                       <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid var(--grey-30)', background: 'white' }} />
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>PayPal (Coming Soon)</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#ffa8c5', background: '#000', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Klarna</span>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Pay in 3 — 0% interest</span>
+                      </span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid var(--grey-30)', background: 'white' }} />
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#000', background: '#b6ffda', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Clearpay</span>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Pay in 4 — every 2 weeks</span>
+                      </span>
                     </label>
                   </div>
 
@@ -324,7 +388,7 @@ export default function CheckoutFlow() {
                     <input type="hidden" name="cardBrand" value="Visa" />
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 'var(--spacing-48)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
                     Review Order <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
                   </button>
                 </motion.form>
@@ -361,12 +425,14 @@ export default function CheckoutFlow() {
                     </div>
                   </div>
 
-                  <button onClick={handlePlaceOrder} disabled={isProcessing} className="btn btn-primary btn-lg" style={{ width: '100%', marginTop: 'var(--spacing-48)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: isProcessing ? 0.7 : 1 }}>
-                    {isProcessing ? (
-                      <>Processing...</>
-                    ) : (
-                      <><Lock size={16} /> Place Order • £{total.toFixed(2)}</>
-                    )}
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={isProcessing}
+                    data-loading={isProcessing || undefined}
+                    className="btn btn-primary btn-lg btn-full"
+                    style={{ marginTop: 'var(--spacing-48)' }}
+                  >
+                    <Lock size={16} /> Place order · £{total.toFixed(2)}
                   </button>
                 </motion.div>
               )}

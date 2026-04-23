@@ -1,6 +1,8 @@
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
+import { useWishlist } from '../context/WishlistContext';
+import { useUI } from '../context/UIContext';
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 
@@ -17,7 +19,17 @@ interface CartDrawerProps {
 export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { items, removeFromCart, updateQuantity, cartTotal } = useCart();
   const { setCurrentStep } = useCheckout();
+  const { addToWishlist } = useWishlist();
+  const { showToast } = useUI();
   const navigate = useNavigate();
+
+  const saveForLater = (itemId: string) => {
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+    addToWishlist(item);
+    removeFromCart(itemId);
+    showToast(`${item.model} saved for later`, 'info');
+  };
 
   const handleCheckout = () => {
     setCurrentStep('shipping');
@@ -144,14 +156,35 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
                         <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 900, color: 'var(--black)', margin: 0 }}>£{item.price}</p>
-                        
+
                         {/* Quantity */}
                         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
-                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ width: '28px', height: '28px', background: 'var(--grey-0)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Minus size={12} color="var(--black)" /></button>
+                          <button onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label="Decrease quantity" style={{ width: '28px', height: '28px', background: 'var(--grey-0)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Minus size={12} color="var(--black)" /></button>
                           <span style={{ width: '24px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, color: 'var(--black)', borderLeft: '1px solid var(--grey-10)', borderRight: '1px solid var(--grey-10)' }}>{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} style={{ width: '28px', height: '28px', background: 'var(--grey-0)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Plus size={12} color="var(--black)" /></button>
+                          <button onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label="Increase quantity" style={{ width: '28px', height: '28px', background: 'var(--grey-0)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Plus size={12} color="var(--black)" /></button>
                         </div>
                       </div>
+
+                      <button
+                        onClick={() => saveForLater(item.id)}
+                        style={{
+                          marginTop: '10px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          background: 'none',
+                          border: 'none',
+                          padding: 0,
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: 'var(--brand-cyan-hover)',
+                        }}
+                      >
+                        <Bookmark size={12} />
+                        Save for later
+                      </button>
                     </div>
                   </motion.div>
                 ))
