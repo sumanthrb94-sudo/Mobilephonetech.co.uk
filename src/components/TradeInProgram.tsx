@@ -33,7 +33,7 @@ const VALUATIONS = [
 export default function TradeInProgram() {
   return (
     <section
-      className="py-12 md:py-20"
+      className="section-y"
       style={{ background: 'var(--grey-95)' }}
       id="trade-in"
     >

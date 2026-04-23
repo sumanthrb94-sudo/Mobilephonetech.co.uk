@@ -63,7 +63,8 @@ const STATS = [
 export default function TrustSection() {
   return (
     <section
-      style={{ background: 'var(--grey-0)', padding: 'var(--spacing-80) 0' }}
+      className="section-y"
+      style={{ background: 'var(--grey-0)' }}
       id="why-us"
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>

@@ -20,7 +20,7 @@ export default function FeaturedProducts() {
 
   return (
     <section
-      className="py-12 md:py-20"
+      className="section-y"
       style={{ background: 'var(--grey-5)' }}
       id="products"
     >

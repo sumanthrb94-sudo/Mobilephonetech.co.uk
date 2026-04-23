@@ -748,6 +748,21 @@ html.dark .glass-card {
 }
 
 /* ───────────────────────────────────────────────────────────────
+   12b. SECTION RHYTHM — standard vertical padding for landing sections
+─────────────────────────────────────────────────────────────── */
+.section-y {
+  padding-top: var(--spacing-48);
+  padding-bottom: var(--spacing-48);
+}
+
+@media (min-width: 768px) {
+  .section-y {
+    padding-top: var(--spacing-80);
+    padding-bottom: var(--spacing-80);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
    13. ANIMATIONS
 ─────────────────────────────────────────────────────────────── */
 @keyframes fadeUp {
