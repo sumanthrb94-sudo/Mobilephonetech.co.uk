@@ -3,8 +3,14 @@ import { useLocation } from 'react-router-dom';
 import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
-import { SlidersHorizontal, ChevronDown } from 'lucide-react';
+import { SlidersHorizontal, ChevronDown, SearchX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+type SortKey = 'price-asc' | 'price-desc' | 'condition' | null;
+
+const GRADE_ORDER: Record<string, number> = {
+  Pristine: 0, New: 0, Excellent: 1, Good: 2, Fair: 3,
+};
 
 /**
  * ProductsPage — Verified Form design philosophy
@@ -98,6 +104,7 @@ export default function ProductsPage() {
   const { searchQuery, filters, setFilters, resetFilters } = useSearch();
   const location = useLocation();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const [sortBy, setSortBy] = React.useState<SortKey>(null);
 
   // Scroll to top on every navigation change
   useEffect(() => {
@@ -150,6 +157,15 @@ export default function ProductsPage() {
       return true;
     });
   }, [scopedProducts, searchQuery, filters]);
+
+  const sortedProducts = useMemo(() => {
+    if (!sortBy) return filteredProducts;
+    const copy = [...filteredProducts];
+    if (sortBy === 'price-asc')  copy.sort((a, b) => a.price - b.price);
+    if (sortBy === 'price-desc') copy.sort((a, b) => b.price - a.price);
+    if (sortBy === 'condition')  copy.sort((a, b) => (GRADE_ORDER[a.grade] ?? 99) - (GRADE_ORDER[b.grade] ?? 99));
+    return copy;
+  }, [filteredProducts, sortBy]);
 
   const handleBrandToggle = (brand: string) =>
     setFilters({ ...filters, brand: filters.brand.includes(brand) ? filters.brand.filter(b => b !== brand) : [...filters.brand, brand] });
@@ -248,22 +264,21 @@ export default function ProductsPage() {
             <input
               type="number"
               placeholder="Min"
+              aria-label="Minimum price"
               value={minPrice}
               onChange={e => setMinPrice(e.target.value)}
-              style={{ width: '60px', padding: '6px', border: '1px solid var(--grey-30)', borderRadius: '4px', fontSize: '13px' }}
+              style={{ width: '64px', height: '32px', padding: '0 8px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-sm)', fontSize: '13px', fontFamily: 'var(--font-body)' }}
             />
-            <span style={{ color: 'var(--grey-50)' }}>-</span>
+            <span style={{ color: 'var(--grey-50)' }}>–</span>
             <input
               type="number"
               placeholder="Max"
+              aria-label="Maximum price"
               value={maxPriceInput}
               onChange={e => setMaxPriceInput(e.target.value)}
-              style={{ width: '60px', padding: '6px', border: '1px solid var(--grey-30)', borderRadius: '4px', fontSize: '13px' }}
+              style={{ width: '64px', height: '32px', padding: '0 8px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-sm)', fontSize: '13px', fontFamily: 'var(--font-body)' }}
             />
-            <button
-              type="submit"
-              style={{ padding: '6px 12px', background: 'white', border: '1px solid var(--grey-30)', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
-            >
+            <button type="submit" className="btn btn-secondary btn-sm">
               Go
             </button>
           </form>
@@ -305,7 +320,7 @@ export default function ProductsPage() {
           className="lg:hidden"
         >
           <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-            {filteredProducts.length} result{filteredProducts.length !== 1 ? 's' : ''}
+            {sortedProducts.length} result{sortedProducts.length !== 1 ? 's' : ''}
           </span>
           <button
             id="products-filter-toggle"
@@ -362,26 +377,40 @@ export default function ProductsPage() {
                 }}
               >
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-                  Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{filteredProducts.length}</strong> of {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''}
+                  Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{sortedProducts.length}</strong> of {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''}
                 </p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {['Price ↑', 'Price ↓', 'Condition'].map(sort => (
-                    <button
-                      key={sort}
-                      style={{
-                        height: '30px', padding: '0 10px',
-                        fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 500,
-                        color: 'var(--grey-60)', background: 'none',
-                        border: '1.5px solid var(--grey-10)', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                      }}
-                    >
-                      {sort}
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', gap: '8px' }} role="group" aria-label="Sort products">
+                  {([
+                    { key: 'price-asc' as const,  label: 'Price ↑' },
+                    { key: 'price-desc' as const, label: 'Price ↓' },
+                    { key: 'condition' as const,  label: 'Condition' },
+                  ]).map(({ key, label }) => {
+                    const active = sortBy === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setSortBy(active ? null : key)}
+                        aria-pressed={active}
+                        style={{
+                          height: '32px', padding: '0 12px',
+                          fontFamily: 'var(--font-body)', fontSize: '12px',
+                          fontWeight: active ? 700 : 500,
+                          color: active ? 'var(--grey-0)' : 'var(--grey-60)',
+                          background: active ? 'var(--black)' : 'var(--grey-0)',
+                          border: `1.5px solid ${active ? 'var(--black)' : 'var(--grey-20)'}`,
+                          borderRadius: 'var(--radius-md)',
+                          cursor: 'pointer',
+                          transition: 'all var(--duration-fast) var(--ease-default)',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              {filteredProducts.length === 0 ? (
+              {sortedProducts.length === 0 ? (
                 <div
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -394,15 +423,16 @@ export default function ProductsPage() {
                       borderRadius: '50%', background: 'var(--grey-5)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       marginBottom: 'var(--spacing-20)',
+                      color: 'var(--grey-40)',
                     }}
                   >
-                    <span style={{ fontSize: '36px' }}>🔍</span>
+                    <SearchX size={28} />
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>
                     No results
                   </h3>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-24)' }}>
-                    Try adjusting your search or clearing the filters
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-24)', maxWidth: '360px' }}>
+                    Try adjusting your search or clearing the filters.
                   </p>
                   <button
                     onClick={resetFilters}
@@ -420,7 +450,7 @@ export default function ProductsPage() {
                     gap: 'var(--spacing-20)',
                   }}
                 >
-                  {filteredProducts.map((phone, index) => (
+                  {sortedProducts.map((phone, index) => (
                     <motion.div
                       key={phone.id}
                       initial={{ opacity: 0, y: 16 }}
