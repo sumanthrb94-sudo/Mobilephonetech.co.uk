@@ -1,12 +1,12 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
+import {
   ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
   Heart, Share2, ChevronLeft, ChevronRight, Star
 } from 'lucide-react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import ReviewsSection from './ReviewsSection';
 import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
@@ -14,6 +14,7 @@ import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
 import TechnicalSpecs from './TechnicalSpecs';
 import { ProductVariant, ProductGrade } from '../types';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -33,12 +34,30 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isMobile } = useBreakpoint();
   const [quantity, setQuantity] = React.useState(1);
   const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
   const [isWishlisted, setIsWishlisted] = React.useState(false);
+  const primaryCtaRef = React.useRef<HTMLButtonElement>(null);
+  const [isPrimaryCtaInView, setIsPrimaryCtaInView] = React.useState(true);
 
   const phone = MOCK_PHONES.find(p => p.id === id);
+
+  // Sticky mobile CTA: show the bottom bar only when the main Add-to-cart
+  // button is off-screen. Using IntersectionObserver instead of scroll math
+  // avoids layout-thrash and stays correct as the button position shifts
+  // (variant picker expanding, etc.).
+  React.useEffect(() => {
+    const node = primaryCtaRef.current;
+    if (!node || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      ([entry]) => setIsPrimaryCtaInView(entry.isIntersecting),
+      { rootMargin: '0px 0px -40px 0px', threshold: 0 },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [phone?.id]);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -263,6 +282,7 @@ export default function ProductDetail() {
                 </div>
 
                 <button
+                  ref={primaryCtaRef}
                   onClick={handleAddToCart}
                   disabled={displayStock === 0}
                   className="btn btn-primary btn-lg"
@@ -307,6 +327,72 @@ export default function ProductDetail() {
         <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
         <RelatedProductsSection currentProduct={phone} />
       </div>
+
+      {/* ── Sticky mobile Add-to-cart bar ─────────────────────
+          Only mounts on mobile and only renders when the primary
+          CTA is scrolled out of view. Leaves a matching spacer so
+          the page content isn't hidden under the fixed bar. */}
+      <AnimatePresence>
+        {isMobile && !isPrimaryCtaInView && (
+          <motion.div
+            initial={{ y: 80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 80, opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+            role="region"
+            aria-label="Add to cart"
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: 'var(--grey-0)',
+              borderTop: '1px solid var(--grey-10)',
+              padding: '12px 16px calc(12px + env(safe-area-inset-bottom, 0px))',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: '0 -8px 24px rgba(0,0,0,0.08)',
+              zIndex: 35,
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '12px',
+                  color: 'var(--grey-50)',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {phone.brand} {phone.model}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span className="type-price" style={{ fontSize: '20px', color: 'var(--black)' }}>
+                  £{displayPrice}
+                </span>
+                {savings > 0 && (
+                  <span style={{ fontSize: '13px', color: 'var(--grey-40)', textDecoration: 'line-through', fontFamily: 'var(--font-body)' }}>
+                    £{displayOriginalPrice}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={handleAddToCart}
+              disabled={displayStock === 0}
+              className="btn btn-primary btn-md"
+              style={{ flexShrink: 0 }}
+              aria-label={displayStock > 0 ? `Add ${phone.model} to cart` : 'Out of stock'}
+            >
+              {displayStock > 0 ? 'Add to cart' : 'Out of stock'}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
