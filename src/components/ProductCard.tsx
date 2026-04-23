@@ -1,12 +1,13 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, Eye, Plus } from 'lucide-react';
 import { Product, ProductGrade } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import ProductImage from './ProductImage';
+import QuickViewModal from './QuickViewModal';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -33,6 +34,8 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { showToast } = useUI();
   const [added, setAdded] = React.useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
   const inWishlist = isInWishlist(phone.id);
   // Product image handled by ProductImage component (Gemini fallback)
 
@@ -63,13 +66,21 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
   // Image resolution is delegated to ProductImage (Gemini fallback)
 
+  const handleQuickView = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setQuickViewOpen(true);
+  };
+
   return (
+    <>
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
       className="card"
       style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
       onClick={() => navigate(`/product/${phone.id}`)}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
       id={`product-card-${phone.id}`}
       role="article"
       aria-label={`${phone.model} — ${phone.grade} condition, £${phone.price}`}
@@ -89,6 +100,43 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
         }}
       >
         <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} />
+
+        {/* Quick-view button — appears on hover (desktop) or always on touch */}
+        <AnimatePresence>
+          {isHovering && (
+            <motion.button
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
+              onClick={handleQuickView}
+              aria-label={`Quick view ${phone.model}`}
+              style={{
+                position: 'absolute',
+                bottom: '12px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 14px',
+                background: 'var(--grey-0)',
+                color: 'var(--black)',
+                border: '1px solid var(--grey-20)',
+                borderRadius: 'var(--radius-full)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '12px',
+                fontWeight: 700,
+                letterSpacing: '-0.005em',
+                cursor: 'pointer',
+                boxShadow: 'var(--shadow-md)',
+              }}
+            >
+              <Eye size={14} />
+              Quick view
+            </motion.button>
+          )}
+        </AnimatePresence>
 
         <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
           {phone.grade && (
@@ -223,15 +271,31 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           aria-label={added ? 'Added to cart' : `Add ${phone.model} to cart`}
         >
           {added ? (
-            <>✓ Added</>
+            <><Plus size={16} style={{ opacity: 0.9 }} /> Added</>
           ) : phone.variants && phone.variants.length > 1 ? (
-            <>Choose Options</>
+            <>Choose options</>
           ) : (
             <>Add to cart</>
           )}
         </button>
       </div>
     </motion.div>
+
+    <QuickViewModal
+      phone={phone}
+      isOpen={quickViewOpen}
+      onClose={() => setQuickViewOpen(false)}
+      onAddToCart={() => {
+        addToCart(phone, 1);
+        showToast(`${phone.model} added to cart`, 'success');
+        setQuickViewOpen(false);
+      }}
+      onViewFull={() => {
+        setQuickViewOpen(false);
+        navigate(`/product/${phone.id}`);
+      }}
+    />
+    </>
   );
 });
 

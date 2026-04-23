@@ -9,6 +9,7 @@ import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
+import SearchAutocomplete from '../SearchAutocomplete';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
@@ -210,47 +211,8 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               </span>
             </Link>
 
-            {/* ── Search bar — center, BM spec ── */}
-            <form
-              onSubmit={handleSearch}
-              className="hidden md:flex flex-grow max-w-xl relative"
-              id="navbar-search-form"
-            >
-                <Search
-                  size={18}
-                  style={{
-                    position: 'absolute',
-                    left: '16px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: 'var(--grey-50)',
-                    pointerEvents: 'none',
-                  }}
-                />
-                <input
-                  type="text"
-                  className="w-full"
-                  placeholder="Search iPhone, Galaxy, Pixel…"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    paddingLeft: '44px',
-                    paddingRight: '16px',
-                    height: '40px',
-                    borderRadius: 'var(--radius-full)',
-                    background: 'var(--grey-0)',
-                    border: '1px solid transparent',
-                    color: 'var(--black)',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '15px',
-                    outline: 'none',
-                    transition: 'box-shadow var(--duration-fast) var(--ease-default)',
-                  }}
-                  onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--color-brand-subtle)'; }}
-                  onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.boxShadow = 'none'; }}
-                  aria-label="Search products"
-                />
-              </form>
+            {/* ── Search — navbar autocomplete ── */}
+            <SearchAutocomplete />
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
