@@ -223,58 +223,6 @@ export default function CategoryGrid() {
             <SmallCard key={cat.id} category={cat} index={i} />
           ))}
         </div>
-
-        {/* ── Trade-in banner ──────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-5 rounded-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 p-8 md:p-10"
-          style={{
-            background: 'var(--gradient-navy)',
-            border: '1px solid rgba(255,255,255,0.06)',
-          }}
-          id="categories-tradein"
-        >
-          <div>
-            <div
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '11px',
-                fontWeight: 700,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: 'rgba(147,197,253,0.9)',
-                marginBottom: '8px',
-              }}
-            >
-              Trade-In Programme
-            </div>
-            <h3
-              style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(22px, 2.5vw, 30px)',
-                fontWeight: 700,
-                color: 'white',
-                letterSpacing: '-0.02em',
-                lineHeight: 1.2,
-              }}
-            >
-              Sell your old phone.<br />Get cash today.
-            </h3>
-          </div>
-          <div className="flex-shrink-0">
-            <a
-              href="#trade-in"
-              className="btn btn-secondary btn-md"
-              style={{ textDecoration: 'none', background: 'white', color: 'var(--black)' }}
-              id="categories-tradein-cta"
-            >
-              Get a free quote <ArrowRight size={16} />
-            </a>
-          </div>
-        </motion.div>
       </div>
 
       {/* Hover style via global */}
