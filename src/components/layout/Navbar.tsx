@@ -121,6 +121,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
         )}
       </div>
       <span
+        className="hidden sm:inline"
         style={{
           fontFamily: 'var(--font-body)',
           fontSize: '10px',
@@ -168,11 +169,8 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               maxWidth: '1280px',
               marginLeft: 'auto',
               marginRight: 'auto',
-              paddingLeft: '16px',
-              paddingRight: '16px',
               display: 'flex',
               alignItems: 'center',
-              gap: '16px',
               boxSizing: 'border-box',
             }}
             className="navbar-header"
@@ -214,13 +212,14 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
-                  fontSize: '24px',
+                  fontSize: 'clamp(18px, 4.5vw, 24px)',
                   letterSpacing: '-0.04em',
                   color: 'var(--brand-cyan)',
                   lineHeight: 1,
                 }}
               >
-                mobile<span style={{ color: 'var(--grey-0)' }}>tech</span><span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
+                mobile<span style={{ color: 'var(--grey-0)' }}>tech</span>
+                <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
               </span>
             </Link>
 
@@ -291,7 +290,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   <div style={{ position: 'relative' }}>
                     <MoreHorizontal size={22} style={{ color: 'var(--grey-0)' }} />
                   </div>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'rgba(255,255,255,0.75)', lineHeight: 1 }}>
+                  <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'rgba(255,255,255,0.75)', lineHeight: 1 }}>
                     More
                   </span>
                 </button>
@@ -397,11 +396,11 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               <button
                 id="navbar-cart-btn"
                 onClick={onCartClick}
+                className="navbar-cart"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '8px 16px',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   border: 'none',
@@ -411,6 +410,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   fontWeight: 700,
                   fontSize: '14px',
                   transition: 'background-color var(--duration-fast) var(--ease-default)',
+                  flexShrink: 0,
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--brand-cyan-hover)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--brand-cyan)'; }}

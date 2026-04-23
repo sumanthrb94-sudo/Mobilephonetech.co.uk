@@ -113,7 +113,8 @@ export default function ProductsPage() {
 
   const searchParams = new URLSearchParams(location.search);
   const categoryParam = searchParams.get('category')?.toLowerCase() || '';
-  const dealOnly = searchParams.get('deal') === 'true';
+  const brandParam    = searchParams.get('brand') || '';
+  const dealOnly      = searchParams.get('deal') === 'true';
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
@@ -125,12 +126,15 @@ export default function ProductsPage() {
       if (selectedDepartment) {
         return product.category === selectedDepartment.category;
       }
+      if (brandParam) {
+        return product.brand.toLowerCase() === brandParam.toLowerCase();
+      }
       if (dealOnly) {
         return product.originalPrice > product.price && ((product.originalPrice - product.price) / product.originalPrice) >= 0.35;
       }
       return true;
     });
-  }, [brandCategory, selectedDepartment, dealOnly]);
+  }, [brandCategory, selectedDepartment, brandParam, dealOnly]);
 
   const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
   const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
@@ -184,11 +188,18 @@ export default function ProductsPage() {
     filters.priceRange[0] !== 0 || filters.priceRange[1] !== 1500 ||
     filters.storage.length > 0;
 
-  const pageTitle = brandCategory?.label || selectedDepartment?.label || (dealOnly ? 'Good deals' : 'Certified refurbished devices');
-  const pageIntro = brandCategory?.intro || selectedDepartment?.intro || (dealOnly
-    ? 'The strongest savings across every department, still tested and warranty-backed.'
-    : 'Phones, tablets, laptops, watches, consoles, and accessories — tested and warranty-backed.');
-  const pageLabel = brandCategory || selectedDepartment || dealOnly ? 'Department' : 'All devices';
+  const brandTitle = brandParam ? brandParam.charAt(0).toUpperCase() + brandParam.slice(1).toLowerCase() : '';
+  const pageTitle = brandCategory?.label
+    || selectedDepartment?.label
+    || (brandParam ? `${brandTitle} devices` : (dealOnly ? 'Good deals' : 'Certified refurbished devices'));
+  const pageIntro = brandCategory?.intro
+    || selectedDepartment?.intro
+    || (brandParam
+      ? `Refurbished ${brandTitle} devices — tested, certified and warranty-backed.`
+      : dealOnly
+        ? 'The strongest savings across every department, still tested and warranty-backed.'
+        : 'Phones, tablets, laptops, watches, consoles, and accessories — tested and warranty-backed.');
+  const pageLabel = brandCategory || selectedDepartment || brandParam || dealOnly ? 'Department' : 'All devices';
 
   // ── Filter panel (shared between desktop sticky + mobile drawer) ──────────
   const FilterPanel = () => {

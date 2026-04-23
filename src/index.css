@@ -202,6 +202,26 @@ html.dark .glass-card {
   border-color: #404040;
 }
 
+/* Mobile-first base for the header row — kept tight so the icon column
+   (More + Wishlist + Cart) doesn't overflow on 360–393px viewports */
+.navbar-header {
+  padding-left: 12px;
+  padding-right: 12px;
+  gap: 8px;
+}
+
+/* Cart pill: compact on mobile, comfortable on tablet+ */
+.navbar-cart {
+  height: 40px;
+  padding: 0 10px;
+}
+
+@media (min-width: 640px) {
+  .navbar-cart {
+    padding: 0 16px;
+  }
+}
+
 @media (min-width: 640px) {
   .navbar-header {
     padding-left: 24px;
