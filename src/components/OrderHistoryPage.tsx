@@ -1,3 +1,4 @@
+import React from 'react';
 import { useCheckout } from '../context/CheckoutContext';
 import { ArrowLeft, Package, Truck, CheckCircle2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -8,17 +9,18 @@ export default function OrderHistoryPage() {
   const navigate = useNavigate();
 
   const getStatusIcon = (status: string) => {
+    const common = { size: 16 };
     switch (status) {
       case 'pending':
-        return <Clock className="h-5 w-5 text-amber-500" />;
+        return <Clock {...common} style={{ color: 'var(--color-warn)' }} />;
       case 'confirmed':
-        return <CheckCircle2 className="h-5 w-5 text-blue-500" />;
+        return <CheckCircle2 {...common} style={{ color: 'var(--brand-cyan-hover)' }} />;
       case 'shipped':
-        return <Truck className="h-5 w-5 text-blue-600" />;
+        return <Truck {...common} style={{ color: 'var(--brand-cyan-hover)' }} />;
       case 'delivered':
-        return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
+        return <CheckCircle2 {...common} style={{ color: 'var(--color-trust-text)' }} />;
       default:
-        return <Package className="h-5 w-5 text-slate-400" />;
+        return <Package {...common} style={{ color: 'var(--grey-40)' }} />;
     }
   };
 
@@ -37,18 +39,17 @@ export default function OrderHistoryPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusChipStyle = (status: string): React.CSSProperties => {
     switch (status) {
       case 'pending':
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        return { background: 'var(--color-warn-subtle)', color: '#92400e', border: '1px solid #fde68a' };
       case 'confirmed':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'shipped':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return { background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)', border: '1px solid rgba(0,186,219,0.3)' };
       case 'delivered':
-        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+        return { background: 'var(--green-5)', color: 'var(--color-trust-text)', border: '1px solid var(--green-20)' };
       default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return { background: 'var(--grey-5)', color: 'var(--grey-70)', border: '1px solid var(--grey-20)' };
     }
   };
 
@@ -82,9 +83,9 @@ export default function OrderHistoryPage() {
             <p className="text-slate-500 font-medium mb-6">Start shopping to see your orders here</p>
             <button
               onClick={() => navigate('/products')}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors"
+              className="btn btn-primary btn-md"
             >
-              Browse Products
+              Browse products
             </button>
           </motion.div>
         ) : (
@@ -113,7 +114,10 @@ export default function OrderHistoryPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Status</p>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-bold ${getStatusColor(order.status)}`}>
+                    <div
+                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold"
+                      style={{ ...getStatusChipStyle(order.status), fontFamily: 'var(--font-sans)', letterSpacing: '0.04em' }}
+                    >
                       {getStatusIcon(order.status)}
                       {getStatusLabel(order.status)}
                     </div>

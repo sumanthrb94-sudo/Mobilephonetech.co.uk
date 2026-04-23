@@ -72,11 +72,11 @@ export default function WishlistPage() {
                 onClick={clearWishlist}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700,
-                  color: 'var(--red)', textTransform: 'uppercase', letterSpacing: '0.05em'
+                  fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
+                  color: 'var(--color-sale)',
                 }}
               >
-                Clear Wishlist
+                Clear wishlist
               </button>
             </div>
             
