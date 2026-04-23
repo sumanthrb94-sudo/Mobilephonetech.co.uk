@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -23,6 +23,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { addToWishlist } = useWishlist();
   const { showToast } = useUI();
   const navigate = useNavigate();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   const saveForLater = (itemId: string) => {
     const item = items.find((i) => i.id === itemId);
@@ -41,11 +42,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   // Lock body scroll while the drawer is open so the page behind can't
   // bleed scroll through (especially on mobile where the drawer fills
-  // the viewport).
+  // the viewport). Also resets the drawer's own scroll position so a
+  // re-opened cart always starts at the top.
   useEffect(() => {
     if (!isOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    scrollAreaRef.current?.scrollTo({ top: 0 });
     return () => { document.body.style.overflow = prev; };
   }, [isOpen]);
 
@@ -113,7 +116,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             </div>
 
             {/* ── Items ─────────────────────────────────────────────── */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-24)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div ref={scrollAreaRef} style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-24)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {items.length === 0 ? (
                 <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '16px' }}>
                   <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--grey-5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

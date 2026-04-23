@@ -16,6 +16,7 @@ import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import MobileBottomNav from './components/layout/MobileBottomNav';
+import ScrollToTop from './components/ScrollToTop';
 import { Suspense, lazy } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
@@ -241,6 +242,7 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
+      <ScrollToTop />
       <UIProvider>
         <AuthProvider>
           <CartProvider>
