@@ -566,6 +566,32 @@
   width: 100%;
 }
 
+/* Loading state — show an inline spinner, fade the label, preserve width so
+   the layout doesn't jump when a button goes from idle → loading. */
+.btn[data-loading="true"] {
+  cursor: progress;
+  pointer-events: none;
+  color: transparent !important;
+}
+.btn[data-loading="true"]::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: btn-spin 0.7s linear infinite;
+  color: var(--grey-0);
+}
+.btn-secondary[data-loading="true"]::after,
+.btn-tertiary[data-loading="true"]::after {
+  color: var(--black);
+}
+@keyframes btn-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ───────────────────────────────────────────────────────────────
    6. CARD SYSTEM (BM spec)
 ─────────────────────────────────────────────────────────────── */
@@ -804,6 +830,11 @@
 /* ───────────────────────────────────────────────────────────────
    13. ANIMATIONS
 ─────────────────────────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 @keyframes fadeUp {
   from {
     opacity: 0;
