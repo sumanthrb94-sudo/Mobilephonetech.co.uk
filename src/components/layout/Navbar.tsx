@@ -158,7 +158,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           fontWeight: 600,
           letterSpacing: '0.02em',
         }}>
-          Announce something here
+          Free next-day delivery · 12-month warranty · 30-day free returns
         </div>
         {/* Main header row — 64px */}
         <header style={{ height: 'var(--header-h)', display: 'flex', alignItems: 'center' }}>
@@ -200,7 +200,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 style={{
                   width: '32px',
                   height: '32px',
-                  background: 'var(--blue-60)',
+                  background: 'var(--brand-cyan)',
                   borderRadius: 'var(--radius-md)',
                   display: 'flex',
                   alignItems: 'center',
@@ -220,7 +220,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   lineHeight: 1,
                 }}
               >
-                Mobile<span style={{ color: 'var(--grey-0)' }}>Market</span>
+                mobile<span style={{ color: 'var(--grey-0)' }}>tech</span><span style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
               </span>
             </Link>
 
@@ -404,19 +404,22 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 id="navbar-cart-btn"
                 onClick={onCartClick}
                 style={{
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  gap: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  cursor: 'pointer', 
-                  border: 'none', 
-                  backgroundColor: 'var(--black)',
-                  color: 'white',
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: 'var(--brand-cyan)',
+                  color: 'var(--grey-0)',
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 700,
                   fontSize: '14px',
+                  transition: 'background-color var(--duration-fast) var(--ease-default)',
                 }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--brand-cyan-hover)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--brand-cyan)'; }}
                 aria-label={`Cart (${cartCount} items)`}
               >
                 <ShoppingBag size={18} />
@@ -537,7 +540,8 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 style={{ borderBottom: '1px solid var(--grey-10)', height: '64px' }}
               >
                 <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: 'var(--black)' }}>
-                  mobiletech
+                  mobile<span style={{ color: 'var(--brand-cyan)' }}>tech</span>
+                  <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
                 </span>
                 <button
                   onClick={() => setIsMobileOpen(false)}

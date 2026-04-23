@@ -106,12 +106,12 @@ export default function Footer() {
                   color: 'white',
                   outline: 'none',
                 }}
-                onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--blue-60)'; }}
+                onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--brand-cyan)'; }}
                 onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'rgba(255,255,255,0.12)'; }}
               />
               <button
                 type="submit"
-                className="btn btn-brand btn-md"
+                className="btn btn-primary btn-md"
                 id="footer-subscribe-btn"
                 style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)' }}
               >
@@ -141,7 +141,7 @@ export default function Footer() {
                 style={{
                   width: '32px',
                   height: '32px',
-                  background: 'var(--blue-60)',
+                  background: 'var(--brand-cyan)',
                   borderRadius: 'var(--radius-md)',
                   display: 'flex',
                   alignItems: 'center',
@@ -159,8 +159,8 @@ export default function Footer() {
                   color: 'white',
                 }}
               >
-                mobile<span style={{ color: 'var(--blue-40)' }}>tech</span>
-                <span style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
+                mobile<span style={{ color: 'var(--brand-cyan)' }}>tech</span>
+                <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
               </span>
             </Link>
 
@@ -221,8 +221,8 @@ export default function Footer() {
                     transition: 'all var(--duration-fast)',
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background = 'var(--blue-60)';
-                    (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--blue-60)';
+                    (e.currentTarget as HTMLAnchorElement).style.background = 'var(--brand-cyan)';
+                    (e.currentTarget as HTMLAnchorElement).style.borderColor = 'var(--brand-cyan)';
                     (e.currentTarget as HTMLAnchorElement).style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
