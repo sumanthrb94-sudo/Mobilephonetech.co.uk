@@ -127,7 +127,7 @@ export default function CheckoutFlow() {
           initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
           style={{ background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-48)', width: '100%', maxWidth: '480px', textAlign: 'center' }}
         >
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }} style={{ width: '64px', height: '64px', background: 'var(--trust-green)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--spacing-24)' }}>
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }} style={{ width: '64px', height: '64px', background: 'var(--color-trust-text)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--spacing-24)' }}>
             <CheckCircle2 size={32} color="white" />
           </motion.div>
 
@@ -143,7 +143,7 @@ export default function CheckoutFlow() {
                 <span>Subtotal</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{lastOrder.subtotal.toFixed(2)}</span>
               </div>
               {discount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--trust-green)', fontWeight: 600 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-trust-text)', fontWeight: 600 }}>
                   <span>Discount</span> <span>-£{discount.toFixed(2)}</span>
                 </div>
               )}
@@ -173,7 +173,7 @@ export default function CheckoutFlow() {
   // ── COMMON STYLES ──────────────────────────────────────────────────────────
   const inputStyle = { width: '100%', padding: '14px 16px', background: 'var(--grey-0)', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' as const };
   const labelStyle = { display: 'block', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' };
-  const errorStyle = { fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--red)', marginTop: '4px' };
+  const errorStyle = { fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--color-sale)', marginTop: '4px' };
 
   return (
     <div style={{ background: 'var(--grey-5)', minHeight: '100vh', paddingTop: '100px', paddingBottom: '80px' }}>
@@ -188,10 +188,10 @@ export default function CheckoutFlow() {
               
               return (
                 <div key={step} style={{ display: 'flex', alignItems: 'center', flex: 1, ...((index === 2) ? { flex: 'none' } : {}) }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, transition: 'all 0.3s', background: isActive ? 'var(--blue-60)' : 'var(--grey-10)', color: isActive ? 'white' : 'var(--grey-40)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, transition: 'all 0.3s', background: isActive ? 'var(--brand-cyan-hover)' : 'var(--grey-10)', color: isActive ? 'white' : 'var(--grey-40)' }}>
                     {isCompleted ? <Check size={16} strokeWidth={3} /> : index + 1}
                   </div>
-                  {index < 2 && <div style={{ flex: 1, height: '2px', margin: '0 16px', background: isCompleted ? 'var(--blue-60)' : 'var(--grey-10)', transition: 'background 0.3s' }} />}
+                  {index < 2 && <div style={{ flex: 1, height: '2px', margin: '0 16px', background: isCompleted ? 'var(--brand-cyan-hover)' : 'var(--grey-10)', transition: 'background 0.3s' }} />}
                 </div>
               );
             })}
@@ -221,7 +221,7 @@ export default function CheckoutFlow() {
                       <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>Guest Checkout</h3>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', marginBottom: '24px', lineHeight: 1.5 }}>No account needed. Checkout securely as a guest.</p>
                       <form onSubmit={handleGuestCheckout} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <input type="email" name="guestEmail" required placeholder="Email address" style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--blue-60)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                        <input type="email" name="guestEmail" required placeholder="Email address" style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan-hover)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                         <button type="submit" className="btn btn-secondary btn-md" style={{ width: '100%' }}>Continue as Guest</button>
                       </form>
                     </div>
@@ -236,7 +236,7 @@ export default function CheckoutFlow() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-32)' }}>
                     <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: 'var(--black)' }}>Shipping Address</h2>
                     {!isAuthenticated && (
-                      <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', color: 'var(--blue-60)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change Mode</button>
+                      <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change Mode</button>
                     )}
                   </div>
 
@@ -318,7 +318,7 @@ export default function CheckoutFlow() {
                     <div style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <h3 className="overline" style={{ margin: 0 }}>Shipping Address</h3>
-                        <button onClick={() => setCurrentStep('shipping')} style={{ background: 'none', border: 'none', color: 'var(--blue-60)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
+                        <button onClick={() => setCurrentStep('shipping')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
                       </div>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)', lineHeight: 1.5 }}>
                         {shippingAddress?.fullName}<br />{shippingAddress?.addressLine1}<br />{shippingAddress?.city}, {shippingAddress?.postalCode}
@@ -328,7 +328,7 @@ export default function CheckoutFlow() {
                     <div style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <h3 className="overline" style={{ margin: 0 }}>Payment Method</h3>
-                        <button onClick={() => setCurrentStep('payment')} style={{ background: 'none', border: 'none', color: 'var(--blue-60)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
+                        <button onClick={() => setCurrentStep('payment')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <CreditCard size={20} style={{ color: 'var(--black)' }} />
@@ -373,12 +373,12 @@ export default function CheckoutFlow() {
               <div style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-24)', marginBottom: 'var(--spacing-24)' }}>
                 <p className="overline" style={{ marginBottom: '12px' }}>Promo Code</p>
                 {appliedCoupon ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between', padding: '12px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--trust-green)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between', padding: '12px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--color-trust-text)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                      <Tag size={14} color="var(--trust-green)" />
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--trust-green)' }}>{appliedCoupon.code}</span>
+                      <Tag size={14} color="var(--color-trust-text)" />
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--color-trust-text)' }}>{appliedCoupon.code}</span>
                     </div>
-                    <button onClick={removeCoupon} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--trust-green)' }}><X size={14} /></button>
+                    <button onClick={removeCoupon} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--color-trust-text)' }}><X size={14} /></button>
                   </div>
                 ) : (
                   <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '8px' }}>
@@ -396,7 +396,7 @@ export default function CheckoutFlow() {
                   <span>Subtotal</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{subtotal.toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--trust-green)', fontWeight: 600 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-trust-text)', fontWeight: 600 }}>
                     <span>Discount</span> <span>-£{discount.toFixed(2)}</span>
                   </div>
                 )}
