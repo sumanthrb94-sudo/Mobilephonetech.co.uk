@@ -31,10 +31,30 @@ const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
 
-// Loading state component
+// Loading state component — on-brand skeleton
 const PageLoader = () => (
-  <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--grey-0)' }}>
-    <div style={{ width: '40px', height: '40px', border: '2px solid var(--grey-10)', borderTopColor: 'var(--black)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+  <div
+    style={{
+      minHeight: '60vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--grey-0)',
+      padding: 'var(--spacing-48) var(--spacing-16)',
+    }}
+  >
+    <div
+      style={{
+        width: '44px',
+        height: '44px',
+        border: '3px solid var(--color-brand-subtle)',
+        borderTopColor: 'var(--brand-cyan)',
+        borderRadius: '50%',
+        animation: 'spin 0.7s linear infinite',
+      }}
+      role="status"
+      aria-label="Loading"
+    />
     <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
   </div>
 );
