@@ -3,14 +3,22 @@ import { GoogleGenAI } from "@google/genai";
 import { Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
-import gsmarenaData from '../gsmarena_data.json';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 /**
- * AIAssistant — Verified Form design philosophy
- * Space: Sharp corners, clinical framing.
- * Colour: Pure white container, strict grey lines. Primary actions are solid black. Blue used only as the trust/tech indicator.
- * Typography: DM Sans for conversational text, Playfair Display for headers, Inter for small technical details.
+ * AIAssistant — floating tech-advisor chat.
+ * The 17KB GSMArena spec dataset is dynamically imported on first
+ * message send so it stays out of the initial bundle.
  */
+
+type GsmarenaEntry = { model: string; specs: Record<string, unknown> };
+let gsmarenaPromise: Promise<GsmarenaEntry[]> | null = null;
+const loadGsmarena = (): Promise<GsmarenaEntry[]> => {
+  if (!gsmarenaPromise) {
+    gsmarenaPromise = import('../gsmarena_data.json').then((m) => m.default as GsmarenaEntry[]);
+  }
+  return gsmarenaPromise;
+};
 
 const ai = process.env.GEMINI_API_KEY
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
@@ -24,6 +32,7 @@ export default function AIAssistant() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { isMobile } = useBreakpoint();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -45,8 +54,9 @@ export default function AIAssistant() {
     setIsLoading(true);
 
     try {
-      const relevantData = gsmarenaData.filter(d => 
-        userMessage.toLowerCase().includes(d.model.toLowerCase()) || 
+      const gsmarenaData = await loadGsmarena();
+      const relevantData = gsmarenaData.filter(d =>
+        userMessage.toLowerCase().includes(d.model.toLowerCase()) ||
         d.model.toLowerCase().includes(userMessage.toLowerCase())
       );
 
@@ -93,9 +103,14 @@ export default function AIAssistant() {
       {/* Floating Toggle */}
       <button
         onClick={() => setIsOpen(true)}
+        aria-label="Open Tech Advisor"
         style={{
-          position: 'fixed', bottom: '32px', right: '32px', width: '64px', height: '64px',
-          background: 'var(--brand-primary)', color: 'white', borderRadius: '50%',
+          position: 'fixed',
+          bottom: isMobile ? '20px' : '32px',
+          right: isMobile ? '20px' : '32px',
+          width: isMobile ? '56px' : '64px',
+          height: isMobile ? '56px' : '64px',
+          background: 'var(--brand-header)', color: 'white', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: 'var(--shadow-lg)', cursor: 'pointer', zIndex: 50, border: 'none',
           transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
@@ -114,15 +129,30 @@ export default function AIAssistant() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            initial={{ opacity: 0, y: isMobile ? 80 : 40, scale: isMobile ? 1 : 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.95 }}
+            exit={{ opacity: 0, y: isMobile ? 80 : 40, scale: isMobile ? 1 : 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Tech Advisor chat"
             style={{
-              position: 'fixed', bottom: '32px', right: '32px', width: '400px', height: '600px', maxHeight: 'calc(100vh - 64px)',
-              background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', overflow: 'hidden',
-              display: 'flex', flexDirection: 'column', zIndex: 50,
-              border: '1px solid var(--grey-10)', boxShadow: '0 24px 48px rgba(0,0,0,0.12)'
+              position: 'fixed',
+              bottom: isMobile ? 0 : '32px',
+              right: isMobile ? 0 : '32px',
+              left: isMobile ? 0 : 'auto',
+              top: isMobile ? 'var(--nav-total)' : 'auto',
+              width: isMobile ? 'auto' : '400px',
+              height: isMobile ? 'auto' : '600px',
+              maxHeight: isMobile ? 'none' : 'calc(100vh - 64px)',
+              background: 'var(--grey-0)',
+              borderRadius: isMobile ? 'var(--radius-xl) var(--radius-xl) 0 0' : 'var(--radius-xl)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 70,
+              border: '1px solid var(--grey-10)',
+              boxShadow: '0 24px 48px rgba(0,0,0,0.12)',
             }}
           >
             {/* ── Header ────────────────────────────────────────────── */}
@@ -132,7 +162,7 @@ export default function AIAssistant() {
                   <Bot size={20} style={{ color: 'var(--black)' }} />
                 </div>
                 <div>
-                  <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 700, color: 'var(--black)', margin: '0 0 4px 0', lineHeight: 1.1 }}>Tech Advisor</h3>
+                  <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: '0 0 4px 0', lineHeight: 1.1 }}>Tech Advisor</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <div style={{ width: '6px', height: '6px', background: 'var(--color-trust-text)', borderRadius: '50%' }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', fontWeight: 700, color: 'var(--grey-40)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>GSMARENA TRAINED</span>
@@ -159,7 +189,7 @@ export default function AIAssistant() {
                     
                     <div style={{
                       padding: '12px 16px', fontFamily: 'var(--font-body)', fontSize: '13px', lineHeight: 1.6,
-                      background: msg.role === 'user' ? 'var(--brand-primary)' : 'var(--grey-5)',
+                      background: msg.role === 'user' ? 'var(--brand-header)' : 'var(--grey-5)',
                       color: msg.role === 'user' ? 'white' : 'var(--black)',
                       borderRadius: 'var(--radius-lg)',
                       borderTopRightRadius: msg.role === 'user' ? 0 : 'var(--radius-lg)',
