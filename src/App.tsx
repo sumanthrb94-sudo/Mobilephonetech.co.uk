@@ -109,7 +109,7 @@ function HomePage() {
 }
 
 function AppContent() {
-  const { isCartOpen, setIsCartOpen } = useCart();
+  const { isCartOpen, setIsCartOpen, cartCount } = useCart();
 
   return (
     <div
@@ -121,6 +121,14 @@ function AppContent() {
         position: 'relative',
       }}
     >
+      {/* Keyboard skip link — becomes visible on focus */}
+      <a href="#main-content" className="skip-link">Skip to main content</a>
+
+      {/* aria-live cart announcer — screen readers hear when the count changes */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {cartCount > 0 ? `Cart contains ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Cart is empty'}
+      </div>
+
       {/* Fixed header (64px) + Category nav (48px) = 112px */}
       <Navbar
         onCartClick={() => setIsCartOpen(true)}
@@ -134,7 +142,7 @@ function AppContent() {
         Hero already handles its own padding-top via CSS var(--nav-total).
         Non-hero pages (products, checkout etc.) need top padding.
       */}
-      <main style={{ flexGrow: 1 }}>
+      <main id="main-content" style={{ flexGrow: 1 }}>
         <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>

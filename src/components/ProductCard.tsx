@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import ProductImage from './ProductImage';
 import QuickViewModal from './QuickViewModal';
 import { haptic } from '../utils/haptics';
+import { useHoverPrefetch } from '../hooks/useHoverPrefetch';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -73,6 +74,8 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
     setQuickViewOpen(true);
   };
 
+  const prefetchProductDetail = useHoverPrefetch(() => import('./ProductDetail'));
+
   return (
     <>
     <motion.div
@@ -81,8 +84,10 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
       className="card"
       style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
       onClick={() => navigate(`/product/${phone.id}`)}
-      onMouseEnter={() => setIsHovering(true)}
+      onMouseEnter={(e) => { setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
       onMouseLeave={() => setIsHovering(false)}
+      onFocus={prefetchProductDetail.onFocus}
+      onTouchStart={prefetchProductDetail.onTouchStart}
       id={`product-card-${phone.id}`}
       role="article"
       aria-label={`${phone.model} — ${phone.grade} condition, £${phone.price}`}

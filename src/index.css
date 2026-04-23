@@ -179,6 +179,37 @@
   }
 }
 
+/* Skip-to-content link — off-screen until focused by keyboard */
+.skip-link {
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  background: var(--black);
+  color: var(--grey-0);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  z-index: 200;
+  transform: translateY(-200%);
+  transition: transform var(--duration-normal) var(--ease-default);
+}
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* sr-only for visually hidden, screen-reader accessible text */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
 /* Checkout step labels hide on very narrow phones so the three
    numbered circles + connectors fit below 380px viewports */
 .checkout-step-label {
