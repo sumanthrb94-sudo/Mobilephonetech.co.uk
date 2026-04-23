@@ -16,6 +16,9 @@ import TechnicalSpecs from './TechnicalSpecs';
 import { ProductVariant, ProductGrade } from '../types';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import Breadcrumbs from './ui/Breadcrumbs';
+import FinanceOptions from './FinanceOptions';
+import GradeExplainer from './GradeExplainer';
+import PriceHistoryChart from './PriceHistoryChart';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -42,6 +45,7 @@ export default function ProductDetail() {
   const [isWishlisted, setIsWishlisted] = React.useState(false);
   const primaryCtaRef = React.useRef<HTMLButtonElement>(null);
   const [isPrimaryCtaInView, setIsPrimaryCtaInView] = React.useState(true);
+  const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
 
   const phone = MOCK_PHONES.find(p => p.id === id);
 
@@ -211,6 +215,18 @@ export default function ProductDetail() {
                     {phone.grade}
                   </span>
                 )}
+                <button
+                  onClick={() => setGradeExplainerOpen(true)}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600,
+                    color: 'var(--brand-cyan-hover)',
+                    textDecoration: 'underline', textUnderlineOffset: '3px',
+                    padding: 0,
+                  }}
+                >
+                  How does grading work?
+                </button>
                 <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
@@ -228,10 +244,13 @@ export default function ProductDetail() {
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
                 )}
               </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-                or 3 interest-free payments of £{Math.ceil(displayPrice / 3)} with Klarna
-              </p>
             </div>
+
+            {/* Finance split-payment breakdown */}
+            <FinanceOptions price={displayPrice} />
+
+            {/* 90-day price history */}
+            <PriceHistoryChart productId={phone.id} currentPrice={displayPrice} />
 
             {/* Key Value Props Strip */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -403,6 +422,8 @@ export default function ProductDetail() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <GradeExplainer isOpen={gradeExplainerOpen} onClose={() => setGradeExplainerOpen(false)} />
     </div>
   );
 }
