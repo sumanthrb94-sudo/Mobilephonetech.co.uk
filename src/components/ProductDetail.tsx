@@ -13,7 +13,15 @@ import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
 import TechnicalSpecs from './TechnicalSpecs';
-import { ProductVariant } from '../types';
+import { ProductVariant, ProductGrade } from '../types';
+
+const GRADE_CLASS: Record<ProductGrade, string> = {
+  Pristine: 'badge-pristine',
+  Excellent: 'badge-excellent',
+  Good: 'badge-good',
+  Fair: 'badge-fair',
+  New: 'badge-new',
+};
 
 /**
  * ProductDetail — Verified Form design philosophy
@@ -122,9 +130,12 @@ export default function ProductDetail() {
 
               {/* Savings Badge */}
               {savings > 0 && (
-                <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'var(--color-sale)', color: 'white', padding: '4px 12px', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-                  Sale
-                </div>
+                <span
+                  className="badge badge-savings"
+                  style={{ position: 'absolute', top: '16px', right: '16px' }}
+                >
+                  Save {Math.round((savings / phone.originalPrice) * 100)}%
+                </span>
               )}
 
               {/* Navigation Controls (Hidden on very small screens if not needed) */}
@@ -165,7 +176,12 @@ export default function ProductDetail() {
               <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4.5vw, 40px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
                 {phone.model || 'Product Details'}
               </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                {phone.grade && (
+                  <span className={`badge ${GRADE_CLASS[phone.grade]}`}>
+                    {phone.grade}
+                  </span>
+                )}
                 <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }}>
                   {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
                 </div>
@@ -183,6 +199,9 @@ export default function ProductDetail() {
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
                 )}
               </div>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
+                or 3 interest-free payments of £{Math.ceil(displayPrice / 3)} with Klarna
+              </p>
             </div>
 
             {/* Key Value Props Strip */}
