@@ -210,6 +210,18 @@ html.dark .glass-card {
   gap: 8px;
 }
 
+/* Checkout step labels hide on very narrow phones so the three
+   numbered circles + connectors fit below 380px viewports */
+.checkout-step-label {
+  display: none;
+}
+
+@media (min-width: 480px) {
+  .checkout-step-label {
+    display: inline;
+  }
+}
+
 /* Cart pill: compact on mobile, comfortable on tablet+ */
 .navbar-cart {
   height: 40px;

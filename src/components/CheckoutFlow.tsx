@@ -7,11 +7,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 
 /**
- * CheckoutFlow — Verified Form design philosophy
- * Space: Immense negative space, clean borders, minimal decoration.
- * Colour: Pure white background for form inputs, grey-5 for summaries. Black primary actions. Blue strictly for active states/trust.
- * Typography: Playfair Display for main titles. DM Sans for functional. Inter for data.
- * Structure: Clinical and trustworthy.
+ * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
+ * Uses the shared .btn system, cyan brand accents, and a progress indicator
+ * whose step labels hide on very narrow phones.
  */
 
 export default function CheckoutFlow() {
@@ -131,7 +129,7 @@ export default function CheckoutFlow() {
             <CheckCircle2 size={32} color="white" />
           </motion.div>
 
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' }}>Order Confirmed</h2>
+          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: '8px' }}>Order Confirmed</h2>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-32)' }}>Thank you for your purchase.</p>
 
           <div style={{ background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-24)', textAlign: 'left', marginBottom: 'var(--spacing-32)' }}>
@@ -185,13 +183,39 @@ export default function CheckoutFlow() {
             {['Shipping', 'Payment', 'Review'].map((step, index) => {
               const isActive = (index === 0 && ['shipping', 'payment', 'review'].includes(currentStep)) || (index === 1 && ['payment', 'review'].includes(currentStep)) || (index === 2 && currentStep === 'review');
               const isCompleted = (index === 0 && ['payment', 'review'].includes(currentStep)) || (index === 1 && currentStep === 'review');
-              
+              const accent = isActive || isCompleted ? 'var(--brand-cyan-hover)' : 'var(--grey-40)';
+
               return (
                 <div key={step} style={{ display: 'flex', alignItems: 'center', flex: 1, ...((index === 2) ? { flex: 'none' } : {}) }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, transition: 'all 0.3s', background: isActive ? 'var(--brand-cyan-hover)' : 'var(--grey-10)', color: isActive ? 'white' : 'var(--grey-40)' }}>
-                    {isCompleted ? <Check size={16} strokeWidth={3} /> : index + 1}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                    <div
+                      aria-current={isActive ? 'step' : undefined}
+                      style={{
+                        width: '32px', height: '32px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800,
+                        transition: 'all 0.3s', flexShrink: 0,
+                        background: isActive || isCompleted ? 'var(--brand-cyan-hover)' : 'var(--grey-10)',
+                        color: isActive || isCompleted ? 'white' : 'var(--grey-40)',
+                      }}
+                    >
+                      {isCompleted ? <Check size={16} strokeWidth={3} /> : index + 1}
+                    </div>
+                    <span
+                      className="checkout-step-label"
+                      style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '13px',
+                        fontWeight: isActive ? 700 : 500,
+                        color: accent,
+                        letterSpacing: '-0.01em',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {step}
+                    </span>
                   </div>
-                  {index < 2 && <div style={{ flex: 1, height: '2px', margin: '0 16px', background: isCompleted ? 'var(--brand-cyan-hover)' : 'var(--grey-10)', transition: 'background 0.3s' }} />}
+                  {index < 2 && <div style={{ flex: 1, height: '2px', margin: '0 12px', background: isCompleted ? 'var(--brand-cyan-hover)' : 'var(--grey-10)', transition: 'background 0.3s', minWidth: '20px' }} />}
                 </div>
               );
             })}
@@ -206,7 +230,7 @@ export default function CheckoutFlow() {
               {/* Login / Guest Selection */}
               {checkoutMode === 'selection' && !isAuthenticated && !user?.isGuest && (
                 <motion.div key="selection" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 700, color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Checkout</h2>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Checkout</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <div style={{ padding: 'var(--spacing-24)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
@@ -234,7 +258,7 @@ export default function CheckoutFlow() {
               {currentStep === 'shipping' && checkoutMode === 'shipping' && (
                 <motion.form key="shipping" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handleShippingSubmit} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-32)' }}>
-                    <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: 'var(--black)' }}>Shipping Address</h2>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Shipping Address</h2>
                     {!isAuthenticated && (
                       <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change Mode</button>
                     )}
@@ -277,7 +301,7 @@ export default function CheckoutFlow() {
                 <motion.form key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handlePaymentSubmit} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: 'var(--spacing-32)' }}>
                     <button type="button" onClick={() => setCurrentStep('shipping')} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyItems: 'center', background: 'var(--grey-5)', border: 'none', borderRadius: '50%', cursor: 'pointer', color: 'var(--black)' }}><ArrowLeft size={16} style={{margin: 'auto'}} /></button>
-                    <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: 'var(--black)' }}>Payment Method</h2>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Payment Method</h2>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: 'var(--spacing-32)' }}>
@@ -311,7 +335,7 @@ export default function CheckoutFlow() {
                 <motion.div key="review" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: 'var(--spacing-32)' }}>
                     <button type="button" onClick={() => setCurrentStep('payment')} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyItems: 'center', background: 'var(--grey-5)', border: 'none', borderRadius: '50%', cursor: 'pointer', color: 'var(--black)' }}><ArrowLeft size={16} style={{margin: 'auto'}} /></button>
-                    <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 700, color: 'var(--black)' }}>Review Order</h2>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Review Order</h2>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
