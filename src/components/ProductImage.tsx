@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React from 'react'
 import { generateProductImageUrl } from '../utils'
 import { fetchGeminiImage } from '../services/geminiFlash'
 
@@ -10,37 +10,37 @@ export interface ProductImageProps {
   alt?: string
 }
 
-// Simple, consistent product image component with Gemini fallback
+// Simple product image component - tries Gemini first, then generated fallback, then static imageUrl
 export function ProductImage({ brand, model, storage, imageUrl, alt }: ProductImageProps) {
-  const [geminiUrl, setGeminiUrl] = useState<string | null>(null)
-  const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+  const [src, setSrc] = React.useState<string>(imageUrl)
 
-  useEffect(() => {
+  React.useEffect(() => {
     let mounted = true
     const load = async () => {
       // Try Gemini first
       try {
         const url = await fetchGeminiImage({ brand, model, storage })
-        if (url && mounted) setGeminiUrl(url)
+        if (url && mounted) {
+          setSrc(url)
+          return
+        }
       } catch {
         // ignore Gemini failure
       }
-      // Fallback: generate a generic image to ensure a consistent image is shown
-      if (mounted && !geminiUrl) {
-        try {
-          const generated = await generateProductImageUrl({ brand, model, storage })
-          if (generated) setGeneratedUrl(generated)
-        } catch {
-          // ignore
+      // Fallback to generated SVG placeholder
+      try {
+        const generated = await generateProductImageUrl({ brand, model, storage })
+        if (generated && mounted) {
+          setSrc(generated)
         }
+      } catch {
+        // keep original imageUrl
       }
     }
     load()
     return () => { mounted = false }
-  }, [brand, model, storage, geminiUrl])
+  }, [brand, model, storage])
 
-  // Prefer Gemini URL, then generated fallback, then provided imageUrl
-  const src = geminiUrl ?? generatedUrl ?? imageUrl
   return (
     <img
       src={src}
