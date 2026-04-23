@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
-  HelpCircle, ShieldCheck, Menu, X,
+  HelpCircle, ShieldCheck, Menu, MoreHorizontal, X,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Moon, Sun, Volume2
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -234,31 +234,34 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   size={18}
                   style={{
                     position: 'absolute',
-                    right: '14px',
+                    left: '16px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    color: 'var(--grey-0)',
+                    color: 'var(--grey-50)',
                     pointerEvents: 'none',
                   }}
                 />
                 <input
                   type="text"
                   className="w-full"
-                  placeholder="Search..."
+                  placeholder="Search iPhone, Galaxy, Pixel…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
-                    paddingLeft: '16px',
-                    paddingRight: '44px',
+                    paddingLeft: '44px',
+                    paddingRight: '16px',
                     height: '40px',
                     borderRadius: 'var(--radius-full)',
-                    background: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    color: 'var(--grey-0)',
+                    background: 'var(--grey-0)',
+                    border: '1px solid transparent',
+                    color: 'var(--black)',
                     fontFamily: 'var(--font-body)',
                     fontSize: '15px',
                     outline: 'none',
+                    transition: 'box-shadow var(--duration-fast) var(--ease-default)',
                   }}
+                  onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.boxShadow = '0 0 0 3px var(--color-brand-subtle)'; }}
+                  onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.boxShadow = 'none'; }}
                   aria-label="Search products"
                 />
               </form>
@@ -270,7 +273,9 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                 <button
                   id="navbar-menu-btn"
                   onClick={() => setIsAccountOpen(!isAccountOpen)}
-                  aria-label="Menu"
+                  aria-label="More options"
+                  aria-haspopup="menu"
+                  aria-expanded={isAccountOpen}
                   style={{ 
                     display: 'flex', 
                     flexDirection: 'column', 
@@ -284,21 +289,10 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   }}
                 >
                   <div style={{ position: 'relative' }}>
-                    <User size={20} style={{ color: 'var(--grey-0)' }} />
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: '-2px',
-                        right: '-4px',
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        background: 'var(--brand-cyan)',
-                      }}
-                    />
+                    <MoreHorizontal size={22} style={{ color: 'var(--grey-0)' }} />
                   </div>
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'rgba(255,255,255,0.75)', lineHeight: 1 }}>
-                    Menu
+                    More
                   </span>
                 </button>
 
