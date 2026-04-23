@@ -19,6 +19,29 @@ const GRADE_CLASS: Record<ProductGrade, string> = {
   New: 'badge-new',
 };
 
+// Reusable colour-name → hex map for the on-card swatch row.
+// Falls back to lower-cased CSS colour name when missing.
+const SWATCHES: Record<string, string> = {
+  'Natural Titanium': '#C0C0C0',
+  'Blue Titanium':    '#4A90E2',
+  'White Titanium':   '#F5F5F5',
+  'Black Titanium':   '#1A1A1A',
+  'Space Black':      '#0D0D0D',
+  'Silver':           '#E8E8E8',
+  'Gold':             '#FFD700',
+  'Pacific Blue':     '#0066CC',
+  'Midnight':         '#1A1A2E',
+  'Starlight':        '#F0E68C',
+  'Blue':             '#4A90E2',
+  'Phantom Black':    '#0D0D0D',
+  'Phantom White':    '#F5F5F5',
+  'Lavender':         '#C8A2C8',
+  'Cream':            '#F5E6D3',
+  'Snow':             '#FFFFFF',
+  'Obsidian':         '#1F1F22',
+  'Hazel':            '#A6907A',
+};
+
 /**
  * ProductCard — Verified Form design philosophy
  * Optimized for performance using React.memo and lazy image loading.
@@ -232,6 +255,37 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           </p>
         )}
 
+        {/* Colour-options indicator — small swatch row + count */}
+        {(() => {
+          const colours = phone.colorOptions ?? Array.from(new Set((phone.variants ?? []).map((v) => v.color).filter(Boolean) as string[]));
+          if (colours.length === 0) return null;
+          const visible = colours.slice(0, 4);
+          const overflow = colours.length - visible.length;
+          return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }} aria-label={`${colours.length} colour options`}>
+              {visible.map((c) => (
+                <span
+                  key={c}
+                  title={c}
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    borderRadius: '50%',
+                    background: SWATCHES[c] ?? c.toLowerCase(),
+                    border: '1px solid var(--grey-20)',
+                    boxShadow: '0 0 0 1px var(--grey-0) inset',
+                  }}
+                />
+              ))}
+              {overflow > 0 && (
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--grey-50)' }}>
+                  +{overflow}
+                </span>
+              )}
+            </div>
+          );
+        })()}
+
         <div className="flex items-center gap-1.5 mb-2">
           <div className="stars flex gap-0.5">
             {[1,2,3,4,5].map((s) => (
@@ -265,11 +319,44 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             fontFamily: 'var(--font-body)',
             fontSize: '12px',
             color: 'var(--grey-50)',
-            marginBottom: '16px',
+            marginBottom: '4px',
           }}
         >
           or 3 payments of £{Math.ceil(phone.price / 3)} with Klarna
         </p>
+
+        {/* Free-delivery + low-stock micro-trust row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontFamily: 'var(--font-body)',
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--color-trust-text)',
+              letterSpacing: '0.01em',
+            }}
+          >
+            <span aria-hidden style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-trust-text)' }} />
+            Free next-day delivery
+          </span>
+          {phone.stock > 0 && phone.stock <= 5 && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                fontFamily: 'var(--font-body)',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: '#92400e',
+              }}
+            >
+              · Only {phone.stock} left
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleAddToCart}

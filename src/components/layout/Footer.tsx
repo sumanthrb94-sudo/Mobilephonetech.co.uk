@@ -278,6 +278,110 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* ── Payment + Certifications strip ──────────────────────── */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+        <div
+          className="container-bm py-6"
+          style={{
+            maxWidth: 'var(--container-max)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '14px',
+          }}
+        >
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.5)',
+                }}
+              >
+                Payments
+              </span>
+              {[
+                { id: 'visa',     label: 'VISA',       fontWeight: 900, letterSpacing: '0.08em', italic: true },
+                { id: 'mc',       label: 'mastercard', fontWeight: 700, letterSpacing: '-0.02em' },
+                { id: 'amex',     label: 'AMEX',       fontWeight: 900, letterSpacing: '0.06em' },
+                { id: 'apay',     label: 'Pay',        fontWeight: 700, letterSpacing: '-0.02em', prefix: '' },
+                { id: 'gpay',     label: 'G Pay',      fontWeight: 700, letterSpacing: '-0.02em' },
+                { id: 'klarna',   label: 'Klarna',     fontWeight: 800, letterSpacing: '-0.01em' },
+                { id: 'clearpay', label: 'Clearpay',   fontWeight: 800, letterSpacing: '-0.01em' },
+                { id: 'paypal',   label: 'PayPal',     fontWeight: 800, italic: true, letterSpacing: '-0.02em' },
+              ].map((p) => (
+                <span
+                  key={p.id}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    height: '24px',
+                    padding: '0 9px',
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '11px',
+                    fontWeight: p.fontWeight,
+                    letterSpacing: p.letterSpacing,
+                    fontStyle: p.italic ? 'italic' : 'normal',
+                    color: 'rgba(255,255,255,0.7)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {p.label}
+                </span>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(255,255,255,0.5)',
+                }}
+              >
+                Certified
+              </span>
+              {[
+                'PCI DSS Compliant',
+                'GDPR Ready',
+                'B Corp Pending',
+                'Carbon-neutral delivery',
+              ].map((c) => (
+                <span
+                  key={c}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    height: '24px',
+                    padding: '0 9px',
+                    background: 'rgba(0,186,219,0.10)',
+                    border: '1px solid rgba(0,186,219,0.18)',
+                    borderRadius: 'var(--radius-full)',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: 'var(--brand-cyan)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {c}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Legal strip ──────────────────────── */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <div
