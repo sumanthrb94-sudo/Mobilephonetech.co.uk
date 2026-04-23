@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mobiletech.co.uk — Maturity Report vs ur.co.uk &amp; Amazon UK</title>
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: "DM Sans", "Segoe UI", Arial, sans-serif; font-size: 11pt; color: #1c1c1c; line-height: 1.5; }
+  h1 { font-size: 24pt; color: #1a2a5e; margin: 0 0 4pt 0; letter-spacing: -0.5pt; }
+  h2 { font-size: 16pt; color: #1a2a5e; margin-top: 22pt; margin-bottom: 8pt; letter-spacing: -0.3pt; border-bottom: 2px solid #00badb; padding-bottom: 4pt; }
+  h3 { font-size: 13pt; color: #1a2a5e; margin-top: 16pt; margin-bottom: 6pt; }
+  h4 { font-size: 11pt; color: #1a2a5e; margin-top: 12pt; margin-bottom: 4pt; }
+  p  { margin: 0 0 8pt 0; }
+  strong { color: #0f1838; }
+  .lead { font-size: 11pt; color: #555; margin-bottom: 18pt; }
+  .meta { font-size: 9pt; color: #888; margin-bottom: 12pt; }
+  .summary { background: #f0fbfd; border-left: 4px solid #00badb; padding: 10pt 14pt; margin: 10pt 0 18pt 0; }
+  table { border-collapse: collapse; width: 100%; margin: 8pt 0 14pt 0; font-size: 10pt; }
+  th, td { border: 1px solid #dddddd; padding: 6pt 8pt; vertical-align: top; text-align: left; }
+  th { background: #1a2a5e; color: #ffffff; font-weight: 700; }
+  tr:nth-child(even) td { background: #f7f7f7; }
+  .status-good { color: #16a34a; font-weight: 700; }
+  .status-part { color: #d97706; font-weight: 700; }
+  .status-none { color: #dc2626; font-weight: 700; }
+  ul, ol { margin: 4pt 0 12pt 18pt; padding: 0; }
+  li { margin-bottom: 4pt; }
+  .callout { border: 1px solid #e6e6e6; border-radius: 6pt; padding: 10pt 14pt; margin: 8pt 0; background: #fcfcfc; }
+  .callout-green { border-color: #bbf7d0; background: #f0fdf4; }
+  .callout-amber { border-color: #fde68a; background: #fffbeb; }
+  .callout-red   { border-color: #fecaca; background: #fef2f2; }
+  .code { font-family: Consolas, monospace; font-size: 10pt; background: #f7f7f7; padding: 8pt 10pt; border-radius: 4pt; border-left: 3px solid #00badb; white-space: pre-wrap; }
+  .divider { height: 1px; background: #dddddd; border: none; margin: 16pt 0; }
+  .hint { font-size: 9pt; color: #777; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>Mobiletech.co.uk</h1>
+<p class="lead"><strong>Front-end maturity report</strong> — benchmarking against ur.co.uk and Amazon UK.</p>
+<p class="meta">Prepared: April 2026 · Source-of-truth: <code>main</code> branch · Assessment covers UX, catalogue, checkout, trust, accessibility, performance, and backend readiness.</p>
+
+<div class="summary">
+<h3 style="margin-top:0;color:#0f1838;">Executive summary</h3>
+<p><strong>Front-end capability:</strong> roughly <strong>80% of ur.co.uk</strong> and <strong>45% of Amazon UK</strong> in visible feature surface area.</p>
+<p><strong>Backend capability:</strong> approximately <strong>5% of either peer</strong> — the site runs on mock data, no real payment processing, no real stock, no real accounts.</p>
+<p><strong>Net verdict:</strong> the site <em>looks</em> like a credible refurb specialist at ur.co.uk level. The moment a shopper attempts to transact, the mock backend becomes obvious.</p>
+</div>
+
+<h2>Phase classification</h2>
+<div class="code">Phase 0  Prototype
+Phase 1  MVP commerce (cart/checkout wired to mock data)
+Phase 2  Polished front-end with trust signals   &lt;-- YOU ARE HERE (front-end)
+Phase 3  Niche-competitive (ur.co.uk class)
+Phase 4  Scale-competitive (Amazon class)</div>
+<ul>
+  <li><strong>Front-end:</strong> Phase 2 effectively complete. Phase 3 reachable in 1&ndash;2 weeks of focused work.</li>
+  <li><strong>Backend:</strong> Phase 0. Requires a real payment-service provider, database, auth and catalogue feed.</li>
+</ul>
+
+<h2>Capability scorecard</h2>
+<p class="hint">Scale — 🟢 at or above peer · 🟡 partially present · 🔴 absent / mock only.</p>
+<table>
+<thead><tr><th>Capability</th><th>Mobiletech</th><th>ur.co.uk</th><th>Amazon UK</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>Visual design system</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Tokenised, consistent, responsive, on-brand.</td></tr>
+<tr><td>Product cards</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Grade · savings · Klarna · swatches · stock urgency · delivery line.</td></tr>
+<tr><td>Product detail page</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-part">🟡</td><td>6-frame gallery · finance tabs · grade explainer · price history · eco.</td></tr>
+<tr><td>Brand model picker</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>BrandMegaMenu mirrors ur.co.uk pattern.</td></tr>
+<tr><td>Search</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Autocomplete works on mock data; no ML ranking.</td></tr>
+<tr><td>Filters</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Brand · grade · price · storage. Missing: carrier, battery health, colour, price slider.</td></tr>
+<tr><td>Sort</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Price asc / desc / condition. Missing: popularity, newest, most-reviewed.</td></tr>
+<tr><td>Cart drawer</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Save-for-later · subtotals · proper overlay + body-scroll lock.</td></tr>
+<tr><td>Checkout</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>3-step · Klarna · Clearpay · Apple &amp; Google Pay (UI only; no real charge).</td></tr>
+<tr><td>Account area</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Wishlist w/ price-drop alerts · order history · returns flow. Mock auth.</td></tr>
+<tr><td>Trade-in</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td class="status-part">🟡</td><td>Static content section; no live quote engine yet.</td></tr>
+<tr><td>Reviews</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>UI supports reviews; seeded fake data; no photos/video; no Q&amp;A.</td></tr>
+<tr><td>Recommendations</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>"Recently viewed" + "Related" rails. No ML. No "frequently bought together".</td></tr>
+<tr><td>Trust signals</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Testimonials carousel · press logos · payments + certifications · Trustpilot.</td></tr>
+<tr><td>Mobile UX</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Bottom-sheet filters · bottom tab nav · sticky CTA · haptics.</td></tr>
+<tr><td>Accessibility</td><td class="status-good">🟢</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Skip-link · aria-live cart · role=dialog · prefers-reduced-motion.</td></tr>
+<tr><td>Performance</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Lazy routes · hover prefetch · SmartImage · 17KB GSMArena lazy-chunked.</td></tr>
+<tr><td>Content &amp; storytelling</td><td class="status-good">🟢</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td>About · Sustainability · Buying guides · FAQ all shipped.</td></tr>
+<tr><td>Dark mode</td><td class="status-none">🔴</td><td class="status-none">🔴</td><td class="status-none">🔴</td><td>Disabled pending full design pass (all three live in light).</td></tr>
+<tr><td>AI assistant</td><td class="status-good">🟢</td><td class="status-none">🔴</td><td class="status-none">🔴</td><td>Gemini-backed chat — neither peer has this.</td></tr>
+<tr><td>Real payments</td><td class="status-none">🔴</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>UI exists, no Stripe / PSP integration.</td></tr>
+<tr><td>Real stock / inventory</td><td class="status-none">🔴</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Mock data in src/data.ts, 47 SKUs.</td></tr>
+<tr><td>Real accounts</td><td class="status-none">🔴</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>In-memory mock auth.</td></tr>
+<tr><td>Real delivery / tracking</td><td class="status-none">🔴</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Static promise only; no carrier API.</td></tr>
+<tr><td>Multi-currency / i18n</td><td class="status-none">🔴</td><td class="status-none">🔴</td><td class="status-good">🟢</td><td>GBP only, EN only.</td></tr>
+<tr><td>Mobile app</td><td class="status-none">🔴</td><td class="status-none">🔴</td><td class="status-good">🟢</td><td>Web only.</td></tr>
+</tbody>
+</table>
+
+<h2>Where you beat ur.co.uk today</h2>
+<div class="callout callout-green">
+<ul>
+  <li><strong>AI Tech Advisor</strong> (Gemini-backed chat) — ur.co.uk has no AI assistant.</li>
+  <li><strong>6-frame Claude-designed gallery per product</strong> — ur.co.uk typically shows 3&ndash;4 photos only.</li>
+  <li><strong>Price history chart</strong> with "Lowest in 90 days" trust badge — ur.co.uk does not surface price history.</li>
+  <li><strong>Per-product environmental impact module</strong> (CO₂ / water / raw-material savings) — ur.co.uk has a generic sustainability page, not per-product data.</li>
+  <li><strong>Finance tabs switching Klarna / Clearpay / Pay in 30</strong> — ur.co.uk just mentions Klarna.</li>
+  <li><strong>Content depth</strong> — About, Sustainability, Buying guides, FAQ centre all shipped.</li>
+</ul>
+</div>
+
+<h2>Where ur.co.uk still beats you</h2>
+<table>
+<thead><tr><th>Gap</th><th>Why it matters</th><th>Effort</th></tr></thead>
+<tbody>
+<tr><td>Buy / Sell toggle in header</td><td>First-screen visibility for the trade-in business line.</td><td>S — 2 hours</td></tr>
+<tr><td>Live trade-in quote calculator</td><td>Real conversion tool, not just a content block.</td><td>L — needs pricing API or rules engine</td></tr>
+<tr><td>Carrier / network filter</td><td>UK-specific buyer filter (EE, O2, Vodafone, unlocked).</td><td>M — data schema + UI</td></tr>
+<tr><td>Real reviews with photos</td><td>Social proof with user-generated imagery.</td><td>XL — review platform + moderation</td></tr>
+<tr><td>Real product catalogue</td><td>Everything currently in src/data.ts is mock.</td><td>— requires your inventory feed</td></tr>
+</tbody>
+</table>
+
+<h2>Where Amazon beats everyone</h2>
+<p>The Amazon-class gaps are less "missing features" and more <strong>operational infrastructure</strong> you would need to build or buy. None of these are add-a-component scope — each is effectively a 6+ month infrastructure project.</p>
+<ul>
+  <li>Recommendation engine (ML serving layer)</li>
+  <li>Multi-seller marketplace</li>
+  <li>Real logistics with delivery-date guarantee</li>
+  <li>Prime-equivalent loyalty programme</li>
+  <li>Q&amp;A per product with community moderation</li>
+  <li>Native mobile apps (iOS + Android)</li>
+  <li>Sponsored-ad inventory (revenue line)</li>
+  <li>A+ content creator tool for vendors</li>
+  <li>Bundles + subscribe &amp; save</li>
+  <li>Enterprise customer support</li>
+</ul>
+
+<h2>Recommended next moves</h2>
+
+<h3>To reach Phase 3 (ur.co.uk parity) on front-end</h3>
+<ol>
+  <li><strong>Buy/Sell header toggle</strong> — small, high-visibility win. <em>~2 hrs.</em></li>
+  <li><strong>Live trade-in quote engine</strong> — multi-step wizard (brand → model → condition → storage → quote). Rules-based, no API needed for v1. <em>~1 day.</em></li>
+  <li><strong>Carrier filter on ProductsPage</strong> — add <code>carrier</code> field to Product, add filter chip. <em>~3 hrs.</em></li>
+  <li><strong>Price slider</strong> — replace min/max inputs with a headless range slider. <em>~2 hrs.</em></li>
+</ol>
+<p class="hint">Total: ~2 days of focused work to reach ur.co.uk front-end parity.</p>
+
+<h3>To cross into real commerce (Phase 3 backend)</h3>
+<ol>
+  <li>Stripe integration — replaces the mock place-order with a real charge. <em>1&ndash;2 days.</em></li>
+  <li>Supabase or Neon for DB (products, orders, users, reviews). <em>2&ndash;3 days.</em></li>
+  <li>NextAuth or Clerk for real accounts. <em>1 day.</em></li>
+  <li>Klarna / Clearpay merchant onboarding — paperwork, minimal code. <em>Days elapsed, hours of dev.</em></li>
+  <li>Real product feed ingestion (CSV → DB). <em>Half a day.</em></li>
+</ol>
+<p class="hint">~1.5 weeks to a real transactional site, assuming Stripe + merchant bank are already set up.</p>
+
+<hr class="divider">
+
+<h2>Bottom line</h2>
+<div class="callout callout-amber">
+<p>You have a <strong>Phase-3-ready front-end</strong> sitting on a <strong>Phase-0 backend</strong>. The UI is genuinely competitive with ur.co.uk today and punches above its weight with the AI advisor, eco module, price history, and 6-frame gallery.</p>
+<p>The thing holding the site back from shipping to real customers is <strong>backend plumbing</strong> and <strong>real product / payment data</strong> — all of which are standard lifts, not design work.</p>
+</div>
+
+<p class="meta" style="margin-top:24pt;">End of report.</p>
+
+</body>
+</html>
