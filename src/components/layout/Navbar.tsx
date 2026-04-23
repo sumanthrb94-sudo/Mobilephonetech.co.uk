@@ -78,19 +78,20 @@ export default function Navbar({ onCartClick }: NavbarProps) {
       id={id}
       onClick={onClick}
       aria-label={label}
-      style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         gap: '2px',
         padding: '4px 4px',
         borderRadius: '8px',
-        cursor: 'pointer', 
-        border: 'none', 
+        cursor: 'pointer',
+        border: 'none',
         backgroundColor: isHovered ? 'rgba(255,255,255,0.1)' : 'transparent',
         transition: 'background-color 0.2s',
-        minWidth: '40px', 
-        minHeight: '44px',
+        width: '40px',
+        height: '40px',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -178,12 +179,12 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             {/* ── Mobile hamburger ── */}
             <button
               onClick={() => setIsMobileOpen(true)}
-              style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
+              style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
               aria-label="Open menu"
               id="navbar-hamburger"
               className="lg:hidden"
             >
-              <Menu size={24} style={{ color: 'var(--grey-0)' }} />
+              <Menu size={22} style={{ color: 'var(--grey-0)' }} />
             </button>
 
             {/* ── Logo — BM wordmark style ── */}
@@ -263,16 +264,19 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                   aria-label="More options"
                   aria-haspopup="menu"
                   aria-expanded={isAccountOpen}
-                  style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '2px',
                     padding: '4px 8px',
                     borderRadius: '8px',
-                    cursor: 'pointer', 
-                    border: 'none', 
-                    backgroundColor: 'transparent' 
+                    cursor: 'pointer',
+                    border: 'none',
+                    backgroundColor: 'transparent',
+                    width: '40px',
+                    height: '40px',
                   }}
                 >
                   <div style={{ position: 'relative' }}>
