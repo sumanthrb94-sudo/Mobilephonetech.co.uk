@@ -1,12 +1,20 @@
 import React, { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Star } from 'lucide-react';
-import { Product } from '../types';
+import { Product, ProductGrade } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { motion } from 'motion/react';
 import ProductImage from './ProductImage';
+
+const GRADE_CLASS: Record<ProductGrade, string> = {
+  Pristine: 'badge-pristine',
+  Excellent: 'badge-excellent',
+  Good: 'badge-good',
+  Fair: 'badge-fair',
+  New: 'badge-new',
+};
 
 /**
  * ProductCard — Verified Form design philosophy
@@ -82,17 +90,18 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
       >
         <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} />
 
-        {savingsPct > 0 && (
-          <div style={{ position: 'absolute', top: '12px', left: '12px' }}>
-            <span style={{ 
-              background: '#ef4444', color: 'white', padding: '4px 8px', 
-              borderRadius: '4px', fontSize: '11px', fontWeight: 'bold',
-              textTransform: 'uppercase'
-            }}>
-              Sale
+        <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
+          {phone.grade && (
+            <span className={`badge ${GRADE_CLASS[phone.grade]}`}>
+              {phone.grade}
             </span>
-          </div>
-        )}
+          )}
+          {savingsPct > 0 && (
+            <span className="badge badge-savings">
+              Save {savingsPct}%
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleWishlist}
@@ -182,7 +191,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
         <div style={{ flexGrow: 1 }} />
 
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
           <span
             className="type-price"
             style={{ fontSize: '20px', color: 'var(--brand-header)' }}
@@ -196,16 +205,29 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           )}
         </div>
 
+        <p
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '12px',
+            color: 'var(--grey-50)',
+            marginBottom: '16px',
+          }}
+        >
+          or 3 payments of £{Math.ceil(phone.price / 3)} with Klarna
+        </p>
+
         <button
           onClick={handleAddToCart}
           className="btn btn-primary btn-md btn-full"
-          style={{ fontFamily: 'var(--font-sans)', borderRadius: '4px' }}
+          style={{ fontFamily: 'var(--font-sans)' }}
           aria-label={added ? 'Added to cart' : `Add ${phone.model} to cart`}
         >
           {added ? (
             <>✓ Added</>
-          ) : (
+          ) : phone.variants && phone.variants.length > 1 ? (
             <>Choose Options</>
+          ) : (
+            <>Add to cart</>
           )}
         </button>
       </div>
