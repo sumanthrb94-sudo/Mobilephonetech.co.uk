@@ -76,7 +76,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 92,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/iphone-12-pro.png',
+    imageUrl: '/assets/iphone-14-pro.png',
     isCertified: true,
     stock: 18,
     specs: {
@@ -135,7 +135,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 88,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/iphone-12-pro.png',
+    imageUrl: '/assets/iphone-13.png',
     isCertified: true,
     stock: 25,
     specs: {
@@ -194,7 +194,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 85,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/iphone-12-pro.png',
+    imageUrl: '/assets/iphone-12.png',
     isCertified: true,
     stock: 30,
     specs: {
@@ -253,7 +253,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 82,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/iphone-12-pro.png',
+    imageUrl: '/assets/iphone-11.png',
     isCertified: true,
     stock: 40,
     specs: {
@@ -373,7 +373,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 94,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/samsung-s24-ultra.png',
+    imageUrl: '/assets/samsung-s23-ultra.png',
     isCertified: true,
     stock: 15,
     specs: {
@@ -432,7 +432,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 87,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/samsung-s24-ultra.png',
+    imageUrl: '/assets/samsung-s22.png',
     isCertified: true,
     stock: 22,
     specs: {
@@ -491,7 +491,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 89,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/samsung-s24-ultra.png',
+    imageUrl: '/assets/samsung-s21-fe.png',
     isCertified: true,
     stock: 28,
     specs: {
@@ -611,7 +611,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 95,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/pixel-8-pro.png',
+    imageUrl: '/assets/pixel-7a.png',
     isCertified: true,
     stock: 20,
     specs: { display: '6.1" OLED', processor: 'Tensor G2', storage: '128GB' }
@@ -627,7 +627,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 84,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/pixel-8-pro.png',
+    imageUrl: '/assets/pixel-6.png',
     isCertified: true,
     stock: 35,
     specs: { display: '6.4" AMOLED', processor: 'Google Tensor', storage: '128GB' }
@@ -645,7 +645,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-smartphones.png',
+    imageUrl: '/assets/oneplus-12.png',
     isCertified: true,
     stock: 8,
     specs: {
@@ -704,7 +704,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 92,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-smartphones.png',
+    imageUrl: '/assets/oneplus-11.png',
     isCertified: true,
     stock: 12,
     specs: { display: '6.7" AMOLED', processor: 'Snapdragon 8 Gen 2' }
@@ -720,7 +720,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 86,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-smartphones.png',
+    imageUrl: '/assets/oneplus-9-pro.png',
     isCertified: true,
     stock: 15,
     specs: { display: '6.7" AMOLED', processor: 'Snapdragon 888' }
@@ -738,7 +738,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 96,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-smartphones.png',
+    imageUrl: '/assets/motorola-edge-40.png',
     isCertified: true,
     stock: 10,
     specs: { display: '6.55" P-OLED', processor: 'Dimensity 8020', storage: '256GB' }
@@ -754,7 +754,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/cat-smartphones.png',
+    imageUrl: '/assets/motorola-g84.png',
     isCertified: true,
     stock: 25,
     specs: { display: '6.5" P-OLED', processor: 'Snapdragon 695', storage: '256GB' }
@@ -772,7 +772,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/accessory-airpods.svg',
+    imageUrl: '/assets/cat-accessories.png',
     isCertified: true,
     stock: 50,
     specs: { features: 'Active Noise Cancellation, Transparency Mode, H2 Chip' }
@@ -788,7 +788,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/accessory-buds.svg',
+    imageUrl: '/assets/cat-accessories.png',
     isCertified: true,
     stock: 45,
     specs: { features: '24-bit Hi-Fi Audio, Intelligent ANC, IPX7' }
@@ -804,7 +804,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/accessory-pixel-buds.svg',
+    imageUrl: '/assets/cat-accessories.png',
     isCertified: true,
     stock: 30,
     specs: { features: 'Active Noise Cancellation, Silent Seal, Hey Google' }

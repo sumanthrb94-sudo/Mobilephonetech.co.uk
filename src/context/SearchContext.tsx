@@ -5,7 +5,7 @@ interface SearchContextType {
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   filters: FilterState;
-  setFilters: (filters: FilterState) => void;
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   resetFilters: () => void;
 }
 
@@ -14,8 +14,9 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 const DEFAULT_FILTERS: FilterState = {
   brand: [],
   grade: [],
-  priceRange: [0, 1000],
+  priceRange: [0, 1500], // Increased to cover more devices
   storage: [],
+  category: [],
 };
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {

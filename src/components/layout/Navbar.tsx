@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
   HelpCircle, ShieldCheck, Menu, X, Laptop,
-  Smartphone, Headphones, Watch, Tablet, Gamepad2, Tv, RefreshCw, BarChart3, Moon, Sun
+  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, BarChart3, Moon, Sun
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
@@ -24,8 +24,7 @@ const CATEGORIES = [
   { label: 'Tablets',           href: '/products?category=tablets',    icon: Tablet },
   { label: 'Gaming consoles',   href: '/products?category=gaming',     icon: Gamepad2 },
   { label: 'Smartwatches',      href: '/products?category=watches',    icon: Watch },
-  { label: 'Headphones',        href: '/products?category=accessories',icon: Headphones },
-  { label: 'Smart TVs',         href: '/products?category=tv',         icon: Tv },
+  { label: 'Headphones',        href: '/products?category=Accessories',icon: Headphones },
   { label: 'Trade-In',          href: '#trade-in',                     icon: RefreshCw },
   { label: 'Compare Devices',   href: '/compare',                      icon: BarChart3 },
 ];

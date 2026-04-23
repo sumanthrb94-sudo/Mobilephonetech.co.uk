@@ -130,4 +130,5 @@ export interface FilterState {
   grade: ProductGrade[];
   priceRange: [number, number];
   storage: string[];
+  category: string[];
 }
