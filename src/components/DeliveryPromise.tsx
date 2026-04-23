@@ -1,3 +1,4 @@
+import React from 'react';
 import { Truck, MapPin } from 'lucide-react';
 import { motion } from 'motion/react';
 import { calculateDeliveryPromises, isNextDayDeliveryAvailable } from '../utils/deliveryCalculator';
@@ -8,6 +9,12 @@ interface DeliveryPromiseProps {
   showAllOptions?: boolean;
 }
 
+const CONFIDENCE_STYLE: Record<string, React.CSSProperties> = {
+  high:   { background: 'var(--green-5)',         color: 'var(--color-trust-text)', border: '1px solid var(--green-20)' },
+  medium: { background: 'var(--color-warn-subtle)', color: '#92400e',                border: '1px solid #fde68a' },
+  low:    { background: 'var(--grey-5)',          color: 'var(--grey-70)',          border: '1px solid var(--grey-20)' },
+};
+
 export default function DeliveryPromiseComponent({
   postalCode = 'SW1A 1AA',
   orderTime = new Date(),
@@ -17,78 +24,122 @@ export default function DeliveryPromiseComponent({
   const isNextDayAvailable = isNextDayDeliveryAvailable(orderTime);
   const fastestPromise = promises[0];
 
-  if (!fastestPromise) {
-    return null;
-  }
+  if (!fastestPromise) return null;
 
   return (
-    <div className="space-y-4">
-      {/* Fastest Delivery Highlight */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-2xl p-6 border border-emerald-200"
+        style={{
+          background: 'var(--color-brand-subtle)',
+          border: '1px solid rgba(0, 186, 219, 0.25)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 'var(--spacing-20) var(--spacing-24)',
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '16px',
+        }}
       >
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 flex-shrink-0">
-            <Truck size={24} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">
-              {isNextDayAvailable ? 'FASTEST DELIVERY' : 'STANDARD DELIVERY'}
+        <div
+          style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--grey-0)',
+            color: 'var(--brand-cyan-hover)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Truck size={22} />
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--brand-cyan-hover)',
+              margin: '0 0 4px 0',
+            }}
+          >
+            {isNextDayAvailable ? 'Fastest delivery' : 'Standard delivery'}
+          </p>
+          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)', margin: '0 0 4px 0', letterSpacing: '-0.01em' }}>
+            {fastestPromise.label}
+          </h3>
+          {fastestPromise.time && (
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)', margin: 0 }}>
+              Delivery {fastestPromise.time}
             </p>
-            <h3 className="text-lg font-black text-slate-900 mb-1">
-              {fastestPromise.label}
-            </h3>
-            <p className="text-sm text-slate-600">
-              {fastestPromise.time && `Delivery ${fastestPromise.time}`}
-            </p>
-            <div className="flex items-center gap-2 mt-3 text-[10px] font-bold text-slate-500">
-              <MapPin className="h-3 w-3" />
-              <span>Postcode: {postalCode}</span>
-            </div>
-          </div>
-          <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-            fastestPromise.confidence === 'high'
-              ? 'bg-emerald-100 text-emerald-700'
-              : fastestPromise.confidence === 'medium'
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-slate-100 text-slate-700'
-          }`}>
-            {fastestPromise.confidence} confidence
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '10px', fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>
+            <MapPin size={12} />
+            <span>Postcode: {postalCode}</span>
           </div>
         </div>
+
+        <span
+          className="badge"
+          style={{ ...CONFIDENCE_STYLE[fastestPromise.confidence], flexShrink: 0 }}
+        >
+          {fastestPromise.confidence} confidence
+        </span>
       </motion.div>
 
-      {/* All Options */}
       {showAllOptions && promises.length > 1 && (
-        <div className="space-y-2">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-2">
-            Other Options
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '11px',
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--grey-50)',
+              padding: '0 4px',
+              margin: 0,
+            }}
+          >
+            Other options
           </p>
           {promises.slice(1).map((promise, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 hover:border-blue-200 transition-colors cursor-pointer"
+              transition={{ delay: index * 0.08 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: 'var(--grey-5)',
+                border: '1px solid var(--grey-10)',
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer',
+                transition: 'border-color var(--duration-fast)',
+              }}
             >
               <div>
-                <p className="text-sm font-bold text-slate-900">{promise.label}</p>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', margin: 0 }}>
+                  {promise.label}
+                </p>
                 {promise.time && (
-                  <p className="text-[10px] text-slate-500">{promise.time}</p>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', margin: '2px 0 0 0' }}>
+                    {promise.time}
+                  </p>
                 )}
               </div>
-              <div className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase ${
-                promise.confidence === 'high'
-                  ? 'bg-emerald-100 text-emerald-700'
-                  : promise.confidence === 'medium'
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-slate-100 text-slate-700'
-              }`}>
+              <span className="badge" style={CONFIDENCE_STYLE[promise.confidence]}>
                 {promise.confidence}
-              </div>
+              </span>
             </motion.div>
           ))}
         </div>

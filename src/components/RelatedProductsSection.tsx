@@ -29,16 +29,27 @@ export default function RelatedProductsSection({ currentProduct }: RelatedProduc
   }
 
   return (
-    <section className="py-16 border-t border-slate-100">
-      <h3 className="text-2xl font-black text-slate-900 mb-8">Related Products</h3>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+    <section style={{ paddingTop: 'var(--spacing-64)', paddingBottom: 'var(--spacing-64)', borderTop: '1px solid var(--grey-10)' }}>
+      <h2
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 'clamp(22px, 2.5vw, 28px)',
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
+          color: 'var(--black)',
+          marginBottom: 'var(--spacing-32)',
+        }}
+      >
+        You may also like
+      </h2>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {relatedProducts.map((product, index) => (
           <motion.div
             key={product.id}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
+            transition={{ delay: index * 0.08 }}
             viewport={{ once: true }}
           >
             <ProductCard phone={product} />
