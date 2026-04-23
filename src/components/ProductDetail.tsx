@@ -22,6 +22,8 @@ import PriceHistoryChart from './PriceHistoryChart';
 import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
+import RecentlyViewed from './RecentlyViewed';
+import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -49,6 +51,7 @@ export default function ProductDetail() {
   const primaryCtaRef = React.useRef<HTMLButtonElement>(null);
   const [isPrimaryCtaInView, setIsPrimaryCtaInView] = React.useState(true);
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
+  const { track: trackRecent } = useRecentlyViewed();
 
   const phone = MOCK_PHONES.find(p => p.id === id);
 
@@ -72,6 +75,7 @@ export default function ProductDetail() {
     if (phone?.variants && phone.variants.length > 0) {
       setSelectedVariant(phone.variants[0]);
     }
+    if (phone?.id) trackRecent(phone.id);
   }, [phone?.id]);
 
   if (!phone) {
@@ -369,6 +373,7 @@ export default function ProductDetail() {
 
         <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
         <RelatedProductsSection currentProduct={phone} />
+        <RecentlyViewed excludeId={phone.id} />
       </div>
 
       {/* ── Sticky mobile Add-to-cart bar ─────────────────────

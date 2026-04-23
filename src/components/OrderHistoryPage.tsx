@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCheckout } from '../context/CheckoutContext';
-import { ArrowLeft, Package, Truck, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowLeft, Package, Truck, CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
+import ReturnFlowModal from './ReturnFlowModal';
 
 export default function OrderHistoryPage() {
   const { orders } = useCheckout();
   const navigate = useNavigate();
+  const [returnOrderId, setReturnOrderId] = useState<string | null>(null);
 
   const getStatusIcon = (status: string) => {
     const common = { size: 16 };
@@ -151,11 +153,27 @@ export default function OrderHistoryPage() {
                     <p>{order.shippingAddress.country}</p>
                   </div>
                 </div>
+
+                {/* Post-purchase actions */}
+                <div style={{ borderTop: '1px solid var(--grey-10)', marginTop: '24px', paddingTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setReturnOrderId(order.id)}
+                    className="btn btn-secondary btn-md"
+                  >
+                    <RotateCcw size={14} /> Start a return
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
         )}
       </div>
+
+      <ReturnFlowModal
+        orderId={returnOrderId ?? ''}
+        isOpen={!!returnOrderId}
+        onClose={() => setReturnOrderId(null)}
+      />
     </div>
   );
 }
