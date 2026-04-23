@@ -82,12 +82,14 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: 'clamp(420px, 60vw, 480px)',
+        minHeight: 'clamp(460px, 60vw, 520px)',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 55%)`,
         transition: `background var(--duration-slow) var(--ease-default)`,
         paddingTop: 'var(--nav-total)',
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
       <div
@@ -109,10 +111,12 @@ export default function Hero() {
           marginRight: 'auto',
           paddingLeft: '16px',
           paddingRight: '16px',
-          height: '100%',
           position: 'relative',
           zIndex: 2,
           boxSizing: 'border-box',
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
         }}
         className="hero-container"
       >
@@ -129,8 +133,9 @@ export default function Hero() {
               gridTemplateColumns: isDesktop ? 'repeat(2, 1fr)' : '1fr',
               gap: isDesktop ? '32px' : '20px',
               alignItems: 'center',
-              padding: isDesktop ? '48px 0' : '32px 0',
-              height: '100%',
+              padding: isDesktop ? '48px 0 24px' : '24px 0 16px',
+              flex: 1,
+              minHeight: 0,
             }}
           >
             {/* ── Left (mobile: bottom): Text block ──────────────── */}
@@ -215,26 +220,26 @@ export default function Hero() {
           marginRight: 'auto',
           paddingLeft: '16px',
           paddingRight: '16px',
-          position: 'absolute',
-          bottom: '24px',
-          left: '0',
-          right: '0',
+          paddingBottom: '20px',
+          paddingTop: '8px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          zIndex: 10,
+          gap: '12px',
+          zIndex: 2,
           boxSizing: 'border-box',
         }}
       >
-        <div className="flex items-center gap-2.5">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {SLIDES.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i, i > current ? 1 : -1)}
               aria-label={`Go to slide ${i + 1}`}
+              aria-current={i === current}
               style={{
-                width: i === current ? '32px' : '10px',
-                height: '10px',
+                width: i === current ? '28px' : '8px',
+                height: '8px',
                 borderRadius: 'var(--radius-full)',
                 background: i === current ? 'var(--black)' : 'var(--grey-30)',
                 border: 'none',
@@ -246,22 +251,22 @@ export default function Hero() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={() => goTo(current - 1, -1)}
             aria-label="Previous slide"
             className="btn btn-secondary"
-            style={{ width: '44px', height: '44px', padding: 0, borderRadius: 'var(--radius-full)' }}
+            style={{ width: '40px', height: '40px', padding: 0, borderRadius: 'var(--radius-full)' }}
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={18} />
           </button>
           <button
             onClick={() => goTo(current + 1, 1)}
             aria-label="Next slide"
             className="btn btn-primary"
-            style={{ width: '44px', height: '44px', padding: 0, borderRadius: 'var(--radius-full)' }}
+            style={{ width: '40px', height: '40px', padding: 0, borderRadius: 'var(--radius-full)' }}
           >
-            <ArrowRight size={20} />
+            <ArrowRight size={18} />
           </button>
         </div>
       </div>
