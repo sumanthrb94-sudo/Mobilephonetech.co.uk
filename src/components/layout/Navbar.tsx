@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
   HelpCircle, ShieldCheck, Menu, MoreHorizontal, X,
@@ -10,6 +10,8 @@ import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
+import BrandMegaMenu from '../BrandMegaMenu';
+import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
@@ -37,6 +39,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const [isAccountOpen, setIsAccountOpen]         = useState(false);
 
   const [activeCategory, setActiveCategory]       = useState('');
+  const [openBrand, setOpenBrand]                 = useState<'Apple' | 'Samsung' | 'Google' | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const catNavRef   = useRef<HTMLDivElement>(null);
 
@@ -44,6 +47,10 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
+
+  // Close the brand mega-menu on any route change
+  useEffect(() => { setOpenBrand(null); }, [pathname, search]);
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -376,6 +383,51 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           >
             {CATEGORIES.map((cat) => {
               const isActive = activeCategory === cat.label;
+              // Brand triggers: Apple / Samsung / Google open the BrandMegaMenu
+              const brandKey = cat.label === 'Apple' || cat.label === 'Samsung' || cat.label === 'Google'
+                ? (cat.label as 'Apple' | 'Samsung' | 'Google')
+                : null;
+              if (brandKey) {
+                const isOpen = openBrand === brandKey;
+                return (
+                  <button
+                    key={cat.label}
+                    data-brand-trigger
+                    aria-haspopup="menu"
+                    aria-expanded={isOpen}
+                    aria-controls={`brand-menu-${brandKey.toLowerCase()}`}
+                    onClick={() => setOpenBrand(isOpen ? null : brandKey)}
+                    id={`catnav-${cat.label.toLowerCase()}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      padding: '0 12px',
+                      height: '100%',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '14px',
+                      fontWeight: isOpen || isActive ? 700 : 500,
+                      color: isOpen || isActive ? 'var(--black)' : 'var(--grey-60)',
+                      background: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      borderBottom: isOpen || isActive ? '2px solid var(--black)' : '2px solid transparent',
+                      borderRadius: 0,
+                      transition: 'all var(--duration-fast)',
+                    }}
+                  >
+                    {cat.label}
+                    <motion.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.18 }}
+                      style={{ display: 'inline-flex', color: 'var(--grey-50)' }}
+                    >
+                      <ChevronDown size={14} />
+                    </motion.span>
+                  </button>
+                );
+              }
               return cat.href.includes('#') ? (
                 <a
                   key={cat.label}
@@ -437,6 +489,15 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           </div>
         </nav>
       </div>
+
+      {/* Brand mega-menu (Apple / Samsung / Google) */}
+      {openBrand && (
+        <BrandMegaMenu
+          brand={openBrand}
+          isOpen={!!openBrand}
+          onClose={() => setOpenBrand(null)}
+        />
+      )}
 
       {/* ═══════════════════════════════════════════════════
           MOBILE FULL-SCREEN MENU

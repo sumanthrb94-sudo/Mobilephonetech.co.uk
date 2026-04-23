@@ -179,6 +179,17 @@
   }
 }
 
+/* Brand mega-menu model grid — 1 col on phones, 2 on tablets, 3 on desktop */
+.brand-mega-grid {
+  grid-template-columns: 1fr !important;
+}
+@media (min-width: 640px) {
+  .brand-mega-grid { grid-template-columns: repeat(2, 1fr) !important; column-gap: 8px !important; }
+}
+@media (min-width: 1024px) {
+  .brand-mega-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
 /* Skip-to-content link — off-screen until focused by keyboard */
 .skip-link {
   position: fixed;

@@ -118,12 +118,17 @@ export default function ProductsPage() {
   const searchParams = new URLSearchParams(location.search);
   const categoryParam = searchParams.get('category')?.toLowerCase() || '';
   const brandParam    = searchParams.get('brand') || '';
+  const modelParam    = searchParams.get('model') || '';
   const dealOnly      = searchParams.get('deal') === 'true';
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
   const scopedProducts = useMemo(() => {
     return MOCK_PHONES.filter(product => {
+      if (brandParam && modelParam) {
+        return product.brand.toLowerCase() === brandParam.toLowerCase()
+          && product.model.toLowerCase() === modelParam.toLowerCase();
+      }
       if (brandCategory) {
         return product.category === brandCategory.category && product.brand === brandCategory.brand;
       }
@@ -138,7 +143,7 @@ export default function ProductsPage() {
       }
       return true;
     });
-  }, [brandCategory, selectedDepartment, brandParam, dealOnly]);
+  }, [brandCategory, selectedDepartment, brandParam, modelParam, dealOnly]);
 
   const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
   const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
@@ -193,17 +198,22 @@ export default function ProductsPage() {
     filters.storage.length > 0;
 
   const brandTitle = brandParam ? brandParam.charAt(0).toUpperCase() + brandParam.slice(1).toLowerCase() : '';
-  const pageTitle = brandCategory?.label
-    || selectedDepartment?.label
-    || (brandParam ? `${brandTitle} devices` : (dealOnly ? 'Good deals' : 'Certified refurbished devices'));
-  const pageIntro = brandCategory?.intro
-    || selectedDepartment?.intro
-    || (brandParam
-      ? `Refurbished ${brandTitle} devices — tested, certified and warranty-backed.`
-      : dealOnly
-        ? 'The strongest savings across every department, still tested and warranty-backed.'
-        : 'Phones, tablets, laptops, watches, consoles, and accessories — tested and warranty-backed.');
-  const pageLabel = brandCategory || selectedDepartment || brandParam || dealOnly ? 'Department' : 'All devices';
+  const modelTitle = modelParam;
+  const pageTitle = modelParam
+    ? `${brandTitle} ${modelTitle}`.trim()
+    : brandCategory?.label
+      || selectedDepartment?.label
+      || (brandParam ? `${brandTitle} devices` : (dealOnly ? 'Good deals' : 'Certified refurbished devices'));
+  const pageIntro = modelParam
+    ? `Every grade of the ${brandTitle} ${modelTitle} — tested, certified and warranty-backed.`
+    : brandCategory?.intro
+      || selectedDepartment?.intro
+      || (brandParam
+        ? `Refurbished ${brandTitle} devices — tested, certified and warranty-backed.`
+        : dealOnly
+          ? 'The strongest savings across every department, still tested and warranty-backed.'
+          : 'Phones, tablets, laptops, watches, consoles, and accessories — tested and warranty-backed.');
+  const pageLabel = modelParam ? 'Model' : (brandCategory || selectedDepartment || brandParam || dealOnly ? 'Department' : 'All devices');
 
   // ── Filter panel (shared between desktop sticky + mobile drawer) ──────────
   const FilterPanel = () => {
@@ -313,9 +323,14 @@ export default function ProductsPage() {
           items={[
             { label: 'Home', to: '/' },
             { label: 'All devices', to: '/products' },
-            ...(pageTitle !== 'Certified refurbished devices' && pageTitle !== 'Good deals'
-              ? [{ label: pageTitle }]
-              : []),
+            ...(brandParam && modelParam
+              ? [
+                  { label: brandTitle, to: `/products?brand=${encodeURIComponent(brandParam)}` },
+                  { label: modelTitle },
+                ]
+              : pageTitle !== 'Certified refurbished devices' && pageTitle !== 'Good deals'
+                ? [{ label: pageTitle }]
+                : []),
           ]}
         />
 
