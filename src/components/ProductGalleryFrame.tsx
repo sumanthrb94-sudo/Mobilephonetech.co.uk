@@ -75,7 +75,7 @@ function HeroFrame({ product }: { product: Product }) {
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, var(--color-brand-subtle) 0%, var(--grey-5) 100%)' }} />
       <SoftGroundShadow />
       <div style={{ position: 'relative', width: '70%', height: '70%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <ProductImage brand={product.brand} model={product.model} storage={product.storage} imageUrl={product.imageUrl} alt={`${product.model} — front view`} />
+        <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — front view`} />
       </div>
     </>
   );
@@ -98,7 +98,7 @@ function BackFrame({ product }: { product: Product }) {
       </svg>
       <SoftGroundShadow />
       <div style={{ position: 'relative', width: '65%', height: '65%', transform: 'scaleX(-1)', filter: 'brightness(0.96)' }}>
-        <ProductImage brand={product.brand} model={product.model} storage={product.storage} imageUrl={product.imageUrl} alt={`${product.model} — back view`} />
+        <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — back view`} />
       </div>
       <CornerLabel text="Back" />
     </>
@@ -150,7 +150,7 @@ function ColorwaysFrame({ product, swatches }: { product: Product; swatches: str
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '28px', padding: 'clamp(16px, 4vw, 32px)', boxSizing: 'border-box' }}>
         {/* Small hero image at the top */}
         <div style={{ width: '52%', maxWidth: '220px', aspectRatio: '1 / 1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ProductImage brand={product.brand} model={product.model} storage={product.storage} imageUrl={product.imageUrl} alt={`${product.model} — colour options`} />
+          <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — colour options`} />
         </div>
 
         {/* Swatch row */}
@@ -199,7 +199,7 @@ function DetailFrame({ product }: { product: Product }) {
           filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.4))',
         }}
       >
-        <ProductImage brand={product.brand} model={product.model} storage={product.storage} imageUrl={product.imageUrl} alt={`${product.model} — camera & finish detail`} />
+        <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — camera & finish detail`} />
       </div>
 
       {/* Focus ring + caption */}
@@ -244,7 +244,7 @@ function LifestyleFrame({ product }: { product: Product }) {
       </svg>
 
       <div style={{ position: 'relative', width: '60%', height: '60%', transform: 'rotate(-6deg)', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 18px 40px rgba(0,0,0,0.18))' }}>
-        <ProductImage brand={product.brand} model={product.model} storage={product.storage} imageUrl={product.imageUrl} alt={`${product.model} — in everyday use`} />
+        <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — in everyday use`} />
       </div>
 
       <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(6px)', borderRadius: 'var(--radius-full)', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-header)' }}>

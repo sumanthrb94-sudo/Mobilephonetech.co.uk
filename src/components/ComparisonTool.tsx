@@ -3,6 +3,7 @@ import { MOCK_PHONES } from '../data';
 import { Phone } from '../types';
 import { X, Plus, Search, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ProductImage from './ProductImage';
 
 export default function ComparisonTool() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -121,12 +122,9 @@ export default function ComparisonTool() {
                     </button>
                     
                     <div className="h-48 mb-8 flex flex-col items-center justify-center text-center">
-                      <img 
-                        src={phone.imageUrl} 
-                        alt={phone.model} 
-                        className="h-32 object-contain mb-4 transform transition-transform hover:scale-110"
-                        referrerPolicy="no-referrer"
-                      />
+                      <div style={{ height: '128px', width: '100%', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        <ProductImage brand={phone.brand} model={phone.model} category={phone.category} imageUrl={phone.imageUrl} alt={phone.model} />
+                      </div>
                       <h3 className="font-black text-slate-900 tracking-tight">{phone.model}</h3>
                     </div>
 

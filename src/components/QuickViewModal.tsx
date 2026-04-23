@@ -61,7 +61,7 @@ export default function QuickViewModal({
             position: 'relative',
           }}
         >
-          <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} />
+          <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} category={phone.category} imageUrl={phone.imageUrl} alt={phone.model} />
           {savingsPct > 0 && (
             <span className="badge badge-savings" style={{ position: 'absolute', top: '12px', right: '12px' }}>
               Save {savingsPct}%

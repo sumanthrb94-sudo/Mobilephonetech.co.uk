@@ -4,6 +4,7 @@ import { Search, Clock, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
 import { useSearch } from '../context/SearchContext';
+import ProductImage from './ProductImage';
 
 const RECENT_KEY = 'mobiletech:recent-searches';
 const MAX_RECENT = 6;
@@ -214,8 +215,8 @@ export default function SearchAutocomplete({
                         borderLeft: `3px solid ${isActive ? 'var(--brand-cyan)' : 'transparent'}`,
                       }}
                     >
-                      <div style={{ width: '40px', height: '40px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px' }}>
-                        <img src={m.imageUrl} alt="" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                      <div style={{ width: '40px', height: '40px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', overflow: 'hidden' }}>
+                        <ProductImage brand={m.brand} model={m.model} category={m.category} imageUrl={m.imageUrl} alt="" />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

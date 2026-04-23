@@ -6,6 +6,7 @@ import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, 
 import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 import ExpressPayRow from './ExpressPayRow';
+import ProductImage from './ProductImage';
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -447,8 +448,8 @@ export default function CheckoutFlow() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: 'var(--spacing-24)' }}>
                 {items.map((item) => (
                   <div key={item.id} style={{ display: 'flex', gap: '16px' }}>
-                    <div style={{ width: '64px', height: '64px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '4px', flexShrink: 0 }}>
-                      <img src={item.imageUrl} alt={item.model} style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                    <div style={{ width: '64px', height: '64px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '4px', flexShrink: 0, overflow: 'hidden' }}>
+                      <ProductImage brand={item.brand} model={item.model} category={item.category} imageUrl={item.imageUrl} alt={item.model} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.model}</p>

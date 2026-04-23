@@ -6,6 +6,7 @@ import { useUI } from '../context/UIContext';
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import ProductImage from './ProductImage';
 
 /**
  * CartDrawer — right-anchored slide-in panel.
@@ -149,8 +150,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     }}
                   >
                     {/* Product Image */}
-                    <div style={{ width: '80px', height: '80px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '8px' }}>
-                      <img src={item.imageUrl} alt={item.model} style={{ width: '100%', height: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+                    <div style={{ width: '80px', height: '80px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '8px', overflow: 'hidden' }}>
+                      <ProductImage brand={item.brand} model={item.model} category={item.category} imageUrl={item.imageUrl} alt={item.model} />
                     </div>
 
                     {/* Details */}
