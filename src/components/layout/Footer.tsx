@@ -59,7 +59,7 @@ const LEGAL = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--grey-95)', color: 'rgba(255,255,255,0.85)' }}>
+    <footer style={{ background: 'var(--color-surface-inverse)', color: 'rgba(255,255,255,0.85)' }}>
 
       {/* ── Newsletter strip ─────────────────── */}
       <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>

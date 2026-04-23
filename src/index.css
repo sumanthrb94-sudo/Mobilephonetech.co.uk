@@ -72,6 +72,9 @@
   --color-warn-subtle: #fef3c7;
   --color-star: #f59e0b;
 
+  /* ── Theme-invariant surfaces (stay dark in both modes) ── */
+  --color-surface-inverse: #0a0a0a;
+
   /* ── Feature gradients (navy, used for trade-in/premium cards) ── */
   --gradient-navy: linear-gradient(120deg, #0f172a 0%, var(--brand-header) 100%);
 
@@ -179,6 +182,9 @@ html.dark {
   --color-text-subtle: #a3a3a3;
   --color-border: #404040;
   --color-border-subtle: #262626;
+
+  /* Theme-invariant: still the fixed dark surface */
+  --color-surface-inverse: #0a0a0a;
 }
 
 /* Dark mode shadows */

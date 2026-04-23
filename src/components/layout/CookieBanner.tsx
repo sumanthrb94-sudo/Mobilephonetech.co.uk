@@ -36,7 +36,7 @@ export default function CookieBanner() {
           aria-describedby="cookie-banner-desc"
           style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 100,
-            background: 'var(--grey-95)', color: 'white',
+            background: 'var(--color-surface-inverse)', color: 'white',
             borderTop: '1px solid rgba(255,255,255,0.08)',
             padding: 'var(--spacing-24) 0',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.2)'

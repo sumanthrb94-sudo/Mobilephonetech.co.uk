@@ -34,7 +34,7 @@ export default function TradeInProgram() {
   return (
     <section
       className="section-y"
-      style={{ background: 'var(--grey-95)' }}
+      style={{ background: 'var(--color-surface-inverse)' }}
       id="trade-in"
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
