@@ -12,6 +12,7 @@ import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
+import TechnicalSpecs from './TechnicalSpecs';
 import { ProductVariant } from '../types';
 
 /**
@@ -273,19 +274,7 @@ export default function ProductDetail() {
         </div>
 
         {/* ── Specs Section ────────────────── */}
-        <div style={{ paddingTop: 'var(--spacing-48)', borderTop: '1px solid var(--grey-10)', marginBottom: 'var(--spacing-64)' }}>
-          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: 'var(--spacing-32)' }}>
-            Technical specifications
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 'var(--spacing-20)' }}>
-            {Object.entries(phone.specs).map(([key, value]) => (
-              <div key={key} style={{ paddingBottom: '16px', borderBottom: '1px solid var(--grey-10)' }}>
-                <p className="overline" style={{ marginBottom: '4px', fontSize: '9px' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 500, color: 'var(--black)', lineHeight: 1.4 }}>{value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TechnicalSpecs specs={phone.specs} />
 
         <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
         <RelatedProductsSection currentProduct={phone} />

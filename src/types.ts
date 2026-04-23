@@ -15,22 +15,58 @@ export interface ProductVariant {
 
 export interface ProductSpecs {
   display?: string;
+  displaySize?: string;
+  displayResolution?: string;
+  displayProtection?: string;
+  displayFeatures?: string;
   processor?: string;
+  cpu?: string;
+  gpu?: string;
+  chip?: string;
   camera?: string;
-  battery?: string;
-  ram?: string;
-  os?: string;
-  storage?: string;
-  body?: string;
-  network?: string;
-  platform?: string;
   mainCamera?: string;
+  mainCameraFeatures?: string;
+  mainCameraVideo?: string;
   selfieCamera?: string;
-  sound?: string;
+  selfieCameraFeatures?: string;
+  selfieCameraVideo?: string;
+  battery?: string;
+  batteryCharging?: string;
+  batteryChargingSpeed?: string;
+  batteryLife?: string;
+  ram?: string;
+  storage?: string;
+  storageExpandable?: string;
+  os?: string;
+  osVersion?: string;
+  body?: string;
+  bodyDimensions?: string;
+  bodyWeight?: string;
+  bodyBuild?: string;
+  bodySIM?: string;
+  bodyProtection?: string;
+  network?: string;
+  network2G?: string;
+  network3G?: string;
+  network4G?: string;
+  network5G?: string;
+  networkSpeed?: string;
   comms?: string;
+  commsWLAN?: string;
+  commsBluetooth?: string;
+  commsNFC?: string;
+  commsUSB?: string;
+  commsGPS?: string;
   features?: string;
+  featuresSensors?: string;
+  featuresRadio?: string;
   misc?: string;
-  tests?: string;
+  miscColors?: string;
+  miscModels?: string;
+  miscPrice?: string;
+  sound?: string;
+  soundLoudspeaker?: string;
+  soundJack?: string;
 }
 
 export interface Review {
