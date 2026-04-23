@@ -8,6 +8,7 @@ import { useUI } from '../context/UIContext';
 import { motion, AnimatePresence } from 'motion/react';
 import ProductImage from './ProductImage';
 import QuickViewModal from './QuickViewModal';
+import { haptic } from '../utils/haptics';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -57,6 +58,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
     e.stopPropagation();
     addToCart(phone, 1);
     setAdded(true);
+    haptic('success');
     showToast(`${phone.model} added to cart`, 'success');
     setTimeout(() => setAdded(false), 1200);
   };

@@ -6,6 +6,8 @@ import { useSearch } from '../context/SearchContext';
 import { SlidersHorizontal, ChevronDown, SearchX } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Breadcrumbs from './ui/Breadcrumbs';
+import BottomSheet from './ui/BottomSheet';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 type SortKey = 'price-asc' | 'price-desc' | 'condition' | null;
 
@@ -106,6 +108,7 @@ export default function ProductsPage() {
   const location = useLocation();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<SortKey>(null);
+  const { isDesktop } = useBreakpoint();
 
   // Scroll to top on every navigation change
   useEffect(() => {
@@ -362,20 +365,34 @@ export default function ProductsPage() {
           </button>
         </div>
 
-        {/* Mobile filter drawer */}
-        <AnimatePresence>
-          {isFilterOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              style={{ overflow: 'hidden', marginBottom: 'var(--spacing-20)' }}
-              className="lg:hidden"
-            >
-              <FilterPanel />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Mobile filter bottom-sheet */}
+        {!isDesktop && (
+          <BottomSheet
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            title="Filters"
+            footer={
+              <>
+                <button
+                  onClick={() => { resetFilters(); }}
+                  className="btn btn-secondary btn-md"
+                  style={{ flex: 1 }}
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => setIsFilterOpen(false)}
+                  className="btn btn-primary btn-md"
+                  style={{ flex: 2 }}
+                >
+                  Show {sortedProducts.length} result{sortedProducts.length === 1 ? '' : 's'}
+                </button>
+              </>
+            }
+          >
+            <FilterPanel />
+          </BottomSheet>
+        )}
 
         {/* ── Main grid (sidebar + products) ─────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-32)' }} className="lg:products-grid">

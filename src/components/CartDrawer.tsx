@@ -29,6 +29,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     addToWishlist(item);
     removeFromCart(itemId);
     showToast(`${item.model} saved for later`, 'info');
+    import('../utils/haptics').then((m) => m.haptic('tap'));
   };
 
   const handleCheckout = () => {

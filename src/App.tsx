@@ -13,6 +13,7 @@ import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
+import MobileBottomNav from './components/layout/MobileBottomNav';
 import { Suspense, lazy } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
@@ -182,6 +183,7 @@ function AppContent() {
       <Toast />
       <CookieBanner />
       <Footer />
+      <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />
     </div>
   );
 }

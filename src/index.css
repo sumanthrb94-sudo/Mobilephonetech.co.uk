@@ -171,6 +171,14 @@
   gap: 8px;
 }
 
+/* Reserve bottom room for MobileBottomNav on small viewports so the fixed
+   tab bar doesn't cover footer legal text or page-level sticky CTAs. */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* Checkout step labels hide on very narrow phones so the three
    numbered circles + connectors fit below 380px viewports */
 .checkout-step-label {
