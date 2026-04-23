@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="PlayStation 5">
+  <defs>
+    <linearGradient id="ps-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e8e8e8"/>
+    </linearGradient>
+    <linearGradient id="ps-fin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dddddd"/>
+      <stop offset="1" stop-color="#b8b8b8"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="182" rx="60" ry="4" fill="rgba(0,0,0,0.14)"/>
+  <!-- Left fin -->
+  <path d="M 70 36 Q 60 32 58 44 L 58 170 Q 58 178 64 178 L 70 178 Z"
+        fill="url(#ps-fin)"/>
+  <!-- Right fin -->
+  <path d="M 130 36 Q 140 32 142 44 L 142 170 Q 142 178 136 178 L 130 178 Z"
+        fill="url(#ps-fin)"/>
+  <!-- Centre dark body -->
+  <rect x="72" y="30" width="56" height="148" rx="6" fill="#0b1126"/>
+  <!-- Power/eject strip -->
+  <rect x="80" y="48" width="40" height="3" rx="1.5" fill="rgba(255,255,255,0.25)"/>
+  <!-- Disc slot -->
+  <rect x="82" y="116" width="36" height="3" rx="1.5" fill="rgba(255,255,255,0.3)"/>
+  <!-- PS logo -->
+  <text x="100" y="82" font-family="DM Sans, sans-serif" font-size="16"
+        font-weight="900" text-anchor="middle" fill="#00badb"
+        letter-spacing="-0.05em">PS5</text>
+  <!-- Cyan accent glow on side fin -->
+  <rect x="56" y="162" width="4" height="14" rx="2" fill="#00badb"/>
+</svg>

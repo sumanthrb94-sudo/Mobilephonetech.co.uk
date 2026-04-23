@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Bluetooth speaker">
+  <defs>
+    <linearGradient id="sp-body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a2a5e"/>
+      <stop offset="1" stop-color="#0f1838"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="182" rx="60" ry="4" fill="rgba(0,0,0,0.14)"/>
+  <!-- Body (cylindrical speaker with rounded ends) -->
+  <rect x="52" y="32" width="96" height="144" rx="20" fill="url(#sp-body)"/>
+  <!-- Top speaker mesh (perforated dot grid) -->
+  <g fill="rgba(255,255,255,0.35)">
+    <circle cx="72"  cy="54" r="2"/>
+    <circle cx="86"  cy="54" r="2"/>
+    <circle cx="100" cy="54" r="2"/>
+    <circle cx="114" cy="54" r="2"/>
+    <circle cx="128" cy="54" r="2"/>
+    <circle cx="72"  cy="68" r="2"/>
+    <circle cx="86"  cy="68" r="2"/>
+    <circle cx="100" cy="68" r="2"/>
+    <circle cx="114" cy="68" r="2"/>
+    <circle cx="128" cy="68" r="2"/>
+    <circle cx="72"  cy="82" r="2"/>
+    <circle cx="86"  cy="82" r="2"/>
+    <circle cx="100" cy="82" r="2"/>
+    <circle cx="114" cy="82" r="2"/>
+    <circle cx="128" cy="82" r="2"/>
+  </g>
+  <!-- Volume slider -->
+  <rect x="72" y="110" width="56" height="3" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+  <circle cx="108" cy="111.5" r="5" fill="#00badb"/>
+  <!-- Controls -->
+  <circle cx="82"  cy="140" r="7" fill="rgba(255,255,255,0.12)"/>
+  <circle cx="100" cy="140" r="9" fill="#00badb"/>
+  <polygon points="97,136 97,144 104,140" fill="#ffffff"/>
+  <circle cx="118" cy="140" r="7" fill="rgba(255,255,255,0.12)"/>
+  <!-- Bluetooth indicator -->
+  <circle cx="100" cy="162" r="2.5" fill="#00badb"/>
+</svg>

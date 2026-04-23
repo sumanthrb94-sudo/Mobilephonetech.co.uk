@@ -1402,7 +1402,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/ipad-pro.png',
+    imageUrl: '/assets/ipad-pro.svg',
     isCertified: true,
     stock: 8,
     specs: { display: '12.9" Liquid Retina XDR', chip: 'Apple M2', storage: '128GB/256GB/512GB/1TB/2TB' }
@@ -1418,7 +1418,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 98,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/samsung-tab-s9.png',
+    imageUrl: '/assets/samsung-tab-s9.svg',
     isCertified: true,
     stock: 5,
     specs: { display: '14.6" Dynamic AMOLED 2X', chip: 'Snapdragon 8 Gen 2', storage: '256GB/512GB/1TB' }
@@ -1434,7 +1434,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/speaker.png',
+    imageUrl: '/assets/speaker.svg',
     isCertified: true,
     stock: 25,
     specs: { output: '24W', battery: '4000mAh', protection: 'IPX7 Waterproof' }
@@ -1450,7 +1450,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/headphones.png',
+    imageUrl: '/assets/headphones.svg',
     isCertified: true,
     stock: 15,
     specs: { type: 'Bluetooth 5.0', drivers: '40mm', batteryLife: '20 hours' }
@@ -1466,7 +1466,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/meta-quest.png',
+    imageUrl: '/assets/meta-quest.svg',
     isCertified: true,
     stock: 10,
     specs: { display: 'Mixed Reality', storage: '128GB', processor: 'Snapdragon XR2 Gen 2' }
@@ -1482,7 +1482,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: '/assets/ps5.png',
+    imageUrl: '/assets/ps5.svg',
     isCertified: true,
     stock: 3,
     specs: { drive: 'Ultra HD Blu-ray', storage: '1TB SSD', support: '4K 120Hz' }
@@ -1514,35 +1514,35 @@ export const MOCK_CATEGORIES: Category[] = [
   {
     id: 'tablets',
     name: 'Ipads & Tabs',
-    imageUrl: '/assets/ipad-pro.png',
+    imageUrl: '/assets/ipad-pro.svg',
     description: 'iPads and Android tablets for work and play',
     productCount: 15
   },
   {
     id: 'accessories',
     name: 'Accessories',
-    imageUrl: '/assets/powerbank.png',
+    imageUrl: '/assets/powerbank.svg',
     description: 'Cases, chargers, and essential mobile add-ons',
     productCount: 120
   },
   {
     id: 'speakers',
     name: 'Speakers',
-    imageUrl: '/assets/speaker.png',
+    imageUrl: '/assets/speaker.svg',
     description: 'Bluetooth and portable speakers for every occasion',
     productCount: 18
   },
   {
     id: 'hearables',
     name: 'Hearables',
-    imageUrl: '/assets/headphones.png',
+    imageUrl: '/assets/headphones.svg',
     description: 'High-quality headphones and wireless earbuds',
     productCount: 24
   },
   {
     id: 'playables',
     name: 'Playables',
-    imageUrl: '/assets/meta-quest.png',
+    imageUrl: '/assets/meta-quest.svg',
     description: 'Gaming consoles, VR headsets, and interactive gear',
     productCount: 12
   }

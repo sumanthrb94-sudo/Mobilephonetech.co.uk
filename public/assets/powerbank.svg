@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Power bank">
+  <defs>
+    <linearGradient id="pb-body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a2a5e"/>
+      <stop offset="1" stop-color="#0f1838"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="100" cy="180" rx="66" ry="4" fill="rgba(0,0,0,0.14)"/>
+  <!-- Body -->
+  <rect x="42" y="38" width="116" height="138" rx="14" fill="url(#pb-body)"/>
+  <!-- Glossy highlight -->
+  <rect x="50" y="46" width="18" height="122" rx="8" fill="rgba(255,255,255,0.07)"/>
+  <!-- Brand plate -->
+  <rect x="62" y="58" width="76" height="40" rx="6" fill="rgba(255,255,255,0.06)"/>
+  <text x="100" y="83" font-family="DM Sans, sans-serif" font-size="12"
+        font-weight="800" letter-spacing="0.18em" text-anchor="middle"
+        fill="#00badb">20000mAh</text>
+  <!-- LED indicators -->
+  <g>
+    <rect x="74" y="116" width="8" height="4" rx="2" fill="#00badb"/>
+    <rect x="87" y="116" width="8" height="4" rx="2" fill="#00badb"/>
+    <rect x="100" y="116" width="8" height="4" rx="2" fill="#00badb"/>
+    <rect x="113" y="116" width="8" height="4" rx="2" fill="rgba(255,255,255,0.2)"/>
+  </g>
+  <!-- Power button -->
+  <circle cx="100" cy="138" r="7" fill="rgba(255,255,255,0.1)" stroke="#00badb"/>
+  <path d="M 100 134 L 100 139 M 96 137 A 5 5 0 1 0 104 137"
+        stroke="#00badb" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+  <!-- USB-C port hint -->
+  <rect x="90" y="160" width="20" height="6" rx="2.5" fill="rgba(255,255,255,0.14)"/>
+</svg>

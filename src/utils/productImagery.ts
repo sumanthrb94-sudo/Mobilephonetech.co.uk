@@ -30,10 +30,17 @@ const KNOWN_ASSETS = new Set<string>([
   '/assets/gaming-ps5.svg',
   '/assets/gaming-switch.svg',
   '/assets/gaming-xbox.svg',
+  '/assets/headphones.svg',
+  '/assets/ipad-pro.svg',
   '/assets/iphone-15-pro-max-gen.svg',
+  '/assets/meta-quest.svg',
   '/assets/pixel-8-pro-gen.svg',
+  '/assets/powerbank.svg',
+  '/assets/ps5.svg',
   '/assets/samsung-s24-ultra-gen.svg',
+  '/assets/samsung-tab-s9.svg',
   '/assets/smartwatch-apple-watch.svg',
+  '/assets/speaker.svg',
   '/assets/tv-frame-gen.svg',
 
   // Phone photography
