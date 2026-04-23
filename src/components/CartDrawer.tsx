@@ -5,10 +5,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 
 /**
- * CartDrawer — Verified Form design philosophy
- * Space: Right-anchored panel, strict borders, clean padding.
- * Typography: Playfair Display for main title, DM Sans for items, Inter for quantities/prices.
- * Color: Pure white drawer `var(--grey-0)`, `var(--grey-5)` for item cards. Black primary actions.
+ * CartDrawer — right-anchored slide-in panel.
+ * Uses the app's btn system for actions and cyan tokens for the header icon.
  */
 
 interface CartDrawerProps {
@@ -64,13 +62,13 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--grey-5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <ShoppingBag size={18} style={{ color: 'var(--black)' }} />
+                <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--color-brand-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShoppingBag size={18} style={{ color: 'var(--brand-cyan-hover)' }} />
                 </div>
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '20px', fontWeight: 700, color: 'var(--black)', margin: 0, lineHeight: 1.2 }}>Shopping Cart</h2>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--grey-40)', margin: 0 }}>
-                    {items.reduce((acc, item) => acc + item.quantity, 0)} items
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.2 }}>Your cart</h2>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--grey-50)', margin: 0 }}>
+                    {items.reduce((acc, item) => acc + item.quantity, 0)} item{items.reduce((acc, item) => acc + item.quantity, 0) === 1 ? '' : 's'}
                   </p>
                 </div>
               </div>
@@ -91,12 +89,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             {/* ── Items ─────────────────────────────────────────────── */}
             <div style={{ flex: 1, overflowY: 'auto', padding: 'var(--spacing-24)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {items.length === 0 ? (
-                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--grey-5)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '16px' }}>
+                  <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--grey-5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ShoppingBag size={24} style={{ color: 'var(--grey-30)' }} />
                   </div>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', margin: '0 0 8px 0' }}>Your cart is empty</p>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', margin: 0 }}>Discover certified refurbished devices.</p>
+                  <div>
+                    <p style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', margin: '0 0 4px 0' }}>Your cart is empty</p>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', margin: 0 }}>Discover certified refurbished devices.</p>
+                  </div>
+                  <button
+                    onClick={() => { onClose(); navigate('/products'); }}
+                    className="btn btn-primary btn-md"
+                  >
+                    Browse devices <ArrowRight size={16} />
+                  </button>
                 </div>
               ) : (
                 items.map((item) => (
@@ -127,8 +133,9 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         </div>
                         <button
                           onClick={() => removeFromCart(item.id)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--grey-40)', padding: '4px' }}
-                          onMouseOver={(e) => e.currentTarget.style.color = 'var(--red)'}
+                          aria-label={`Remove ${item.model} from cart`}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--grey-40)', padding: '4px', transition: 'color var(--duration-fast)' }}
+                          onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-sale)'}
                           onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-40)'}
                         >
                           <Trash2 size={16} />
@@ -159,7 +166,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <span>Subtotal</span> <span style={{ fontWeight: 600, color: 'var(--black)' }}>£{cartTotal.toFixed(2)}</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                    <span>Shipping</span> <span style={{ fontWeight: 600, color: 'var(--trust-green)' }}>FREE</span>
+                    <span>Shipping</span> <span style={{ fontWeight: 700, color: 'var(--color-trust-text)' }}>FREE</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', paddingTop: '12px', marginTop: '4px', borderTop: '1px solid var(--grey-10)' }}>
                     <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)' }}>Total</span>
@@ -167,11 +174,15 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                 </div>
 
-                <button onClick={handleCheckout} className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <button
+                  onClick={handleCheckout}
+                  className="btn btn-primary btn-lg btn-full"
+                  style={{ marginBottom: '12px' }}
+                >
                   Checkout <ArrowRight size={16} />
                 </button>
-                <button onClick={onClose} className="btn btn-secondary btn-md" style={{ width: '100%' }}>
-                  Continue Shopping
+                <button onClick={onClose} className="btn btn-secondary btn-md btn-full">
+                  Continue shopping
                 </button>
               </div>
             )}
