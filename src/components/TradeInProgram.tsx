@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { ArrowRight, Smartphone, Banknote, PackageCheck } from 'lucide-react';
+import { ArrowRight, Smartphone, Banknote, PackageCheck, Lightbulb } from 'lucide-react';
 
 const STEPS = [
   {
@@ -54,21 +54,21 @@ export default function TradeInProgram() {
                 alignItems: 'center',
                 padding: '4px 12px',
                 borderRadius: 'var(--radius-full)',
-                background: 'rgba(37,99,235,0.18)',
-                border: '1px solid rgba(59,130,246,0.3)',
+                background: 'rgba(0, 186, 219, 0.15)',
+                border: '1px solid rgba(0, 186, 219, 0.35)',
                 fontFamily: 'var(--font-sans)',
                 fontSize: '11px',
                 fontWeight: 700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color: 'var(--blue-30)',
+                color: 'var(--brand-cyan)',
                 marginBottom: 'var(--spacing-20)',
               }}
             >
               Trade-In Programme
             </div>
 
-            {/* Headline — Playfair serif (your brand's display voice) */}
+            {/* Headline */}
             <h2
               style={{
                 fontFamily: 'var(--font-serif)',
@@ -81,7 +81,7 @@ export default function TradeInProgram() {
               }}
             >
               Turn your old phone<br />
-              into <span style={{ color: 'var(--blue-40)' }}>cash today.</span>
+              into <span style={{ color: 'var(--brand-cyan)' }}>cash today.</span>
             </h2>
 
             <p
@@ -115,15 +115,15 @@ export default function TradeInProgram() {
                       width: '44px',
                       height: '44px',
                       borderRadius: 'var(--radius-md)',
-                      background: 'rgba(37,99,235,0.2)',
-                      border: '1px solid rgba(59,130,246,0.25)',
+                      background: 'rgba(0, 186, 219, 0.15)',
+                      border: '1px solid rgba(0, 186, 219, 0.3)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
                     }}
                   >
-                    <step.icon size={18} style={{ color: 'var(--blue-40)' }} />
+                    <step.icon size={18} style={{ color: 'var(--brand-cyan)' }} />
                   </div>
                   <div>
                     <div
@@ -133,7 +133,7 @@ export default function TradeInProgram() {
                         fontWeight: 700,
                         letterSpacing: '0.1em',
                         textTransform: 'uppercase',
-                        color: 'var(--blue-40)',
+                        color: 'var(--brand-cyan)',
                         marginBottom: '4px',
                       }}
                     >
@@ -159,22 +159,11 @@ export default function TradeInProgram() {
               ))}
             </div>
 
-            {/* CTAs — black primary per spec + ghost */}
+            {/* CTAs */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-12)' }}>
               <button
-                className="btn btn-md"
+                className="btn btn-primary btn-md"
                 id="tradein-quote-btn"
-                style={{
-                  background: 'white',
-                  color: 'var(--black)',
-                  border: '1px solid white',
-                  borderRadius: 'var(--radius-md)',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 700,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
               >
                 Get a free quote <ArrowRight size={16} />
               </button>
@@ -182,9 +171,8 @@ export default function TradeInProgram() {
                 className="btn btn-md"
                 style={{
                   background: 'transparent',
-                  color: 'rgba(255,255,255,0.7)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  borderRadius: 'var(--radius-md)',
+                  color: 'rgba(255,255,255,0.8)',
+                  border: '1px solid rgba(255,255,255,0.2)',
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 600,
                 }}
@@ -212,7 +200,7 @@ export default function TradeInProgram() {
               <div
                 style={{
                   padding: 'var(--spacing-16) var(--spacing-24)',
-                  background: 'rgba(37,99,235,0.15)',
+                  background: 'rgba(0, 186, 219, 0.12)',
                   borderBottom: '1px solid rgba(255,255,255,0.06)',
                   display: 'flex',
                   alignItems: 'center',
@@ -229,7 +217,7 @@ export default function TradeInProgram() {
                     fontWeight: 700,
                     letterSpacing: '0.08em',
                     textTransform: 'uppercase',
-                    color: 'var(--blue-40)',
+                    color: 'var(--brand-cyan)',
                   }}
                 >
                   Live prices
@@ -259,7 +247,7 @@ export default function TradeInProgram() {
                     </div>
                     <div
                       className="type-price"
-                      style={{ fontSize: '18px', color: 'var(--blue-40)' }}
+                      style={{ fontSize: '18px', color: 'var(--brand-cyan)' }}
                     >
                       {v.price}
                     </div>
@@ -271,16 +259,16 @@ export default function TradeInProgram() {
               <div
                 style={{
                   padding: 'var(--spacing-16) var(--spacing-24)',
-                  background: 'rgba(37,99,235,0.08)',
-                  borderTop: '1px solid rgba(37,99,235,0.2)',
+                  background: 'rgba(0, 186, 219, 0.06)',
+                  borderTop: '1px solid rgba(0, 186, 219, 0.18)',
                   display: 'flex',
                   gap: '10px',
                   alignItems: 'flex-start',
                 }}
               >
-                <span style={{ fontSize: '16px', flexShrink: 0 }}>💡</span>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, margin: 0 }}>
-                  <span style={{ fontWeight: 700, color: 'var(--blue-30)' }}>Tip: </span>
+                <Lightbulb size={16} style={{ color: 'var(--brand-cyan)', flexShrink: 0, marginTop: '2px' }} />
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
+                  <span style={{ fontWeight: 700, color: 'var(--brand-cyan)' }}>Tip: </span>
                   Trade in when buying refurbished and combine the savings. Your upgrade can cost surprisingly little.
                 </p>
               </div>
