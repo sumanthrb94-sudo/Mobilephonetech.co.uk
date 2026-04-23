@@ -8,7 +8,7 @@ import { CheckCircle2, Truck, Shield, AlertCircle } from 'lucide-react';
 
 export default function WarrantyAndReturns() {
   return (
-    <section className="py-16 md:py-24" style={{ background: 'var(--grey-5)' }}>
+    <section className="section-y" style={{ background: 'var(--grey-5)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         
         {/* Header */}
@@ -31,7 +31,7 @@ export default function WarrantyAndReturns() {
             className="card card-xl"
             style={{ padding: 'clamp(24px, 5vw, 48px)', display: 'flex', flexDirection: 'column' }}
           >
-            <div style={{ width: '56px', height: '56px', background: 'var(--blue-10)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--blue-60)', marginBottom: '24px' }}>
+            <div style={{ width: '56px', height: '56px', background: 'var(--color-brand-subtle)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand-cyan-hover)', marginBottom: '24px' }}>
               <Shield size={28} />
             </div>
             <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>12-Month Warranty</h3>
@@ -44,7 +44,7 @@ export default function WarrantyAndReturns() {
                 'Dedicated UK support team'
               ].map((text, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <CheckCircle2 size={18} style={{ color: 'var(--trust-green)', flexShrink: 0, marginTop: '2px' }} />
+                  <CheckCircle2 size={18} style={{ color: 'var(--color-trust-text)', flexShrink: 0, marginTop: '2px' }} />
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', margin: 0 }}>{text}</p>
                 </div>
               ))}
@@ -78,7 +78,7 @@ export default function WarrantyAndReturns() {
                 'Secure doorstep collection available'
               ].map((text, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <CheckCircle2 size={18} style={{ color: 'var(--trust-green)', flexShrink: 0, marginTop: '2px' }} />
+                  <CheckCircle2 size={18} style={{ color: 'var(--color-trust-text)', flexShrink: 0, marginTop: '2px' }} />
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', margin: 0 }}>{text}</p>
                 </div>
               ))}
@@ -115,7 +115,7 @@ export default function WarrantyAndReturns() {
             ].map((faq, i) => (
               <div key={i}>
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-                  <AlertCircle size={16} style={{ color: 'var(--blue-60)' }} />
+                  <AlertCircle size={16} style={{ color: 'var(--brand-cyan-hover)' }} />
                   <h4 style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700, color: 'var(--black)', margin: 0 }}>{faq.q}</h4>
                 </div>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', lineHeight: 1.5, margin: 0, paddingLeft: '26px' }}>{faq.a}</p>
