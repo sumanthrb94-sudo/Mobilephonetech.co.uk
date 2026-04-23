@@ -119,33 +119,53 @@ export default function TechnicalSpecs({ specs }: TechnicalSpecsProps) {
 
   return (
     <div style={{ marginTop: 'var(--spacing-48)' }}>
-      <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '24px', fontWeight: 700, marginBottom: 'var(--spacing-24)', color: 'var(--black)' }}>
-        Technical Specifications
+      <h2
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 'clamp(22px, 2.5vw, 28px)',
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
+          marginBottom: 'var(--spacing-24)',
+          color: 'var(--black)',
+        }}
+      >
+        Technical specifications
       </h2>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: 'var(--spacing-24)', overflowX: 'auto', paddingBottom: '4px' }}>
-        {visibleGroups.map((group, idx) => (
-          <button
-            key={group.title}
-            onClick={() => setActiveTab(idx)}
-            style={{
-              padding: '8px 16px',
-              fontFamily: 'var(--font-sans)',
-              fontSize: '13px',
-              fontWeight: 600,
-              border: 'none',
-              borderRadius: 'var(--radius-md)',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              background: activeTab === idx ? 'var(--black)' : 'var(--grey-5)',
-              color: activeTab === idx ? 'white' : 'var(--grey-50)',
-              transition: 'all 0.2s',
-            }}
-          >
-            {group.title}
-          </button>
-        ))}
+      <div
+        role="tablist"
+        aria-label="Specification categories"
+        style={{ display: 'flex', gap: '6px', marginBottom: 'var(--spacing-24)', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}
+      >
+        {visibleGroups.map((group, idx) => {
+          const active = activeTab === idx;
+          return (
+            <button
+              key={group.title}
+              role="tab"
+              aria-selected={active}
+              onClick={() => setActiveTab(idx)}
+              style={{
+                padding: '0 16px',
+                height: '36px',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '13px',
+                fontWeight: active ? 700 : 600,
+                border: '1.5px solid',
+                borderColor: active ? 'var(--black)' : 'var(--grey-20)',
+                borderRadius: 'var(--radius-full)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                background: active ? 'var(--black)' : 'var(--grey-0)',
+                color: active ? 'var(--grey-0)' : 'var(--grey-60)',
+                transition: 'all var(--duration-fast) var(--ease-default)',
+              }}
+            >
+              {group.title}
+            </button>
+          );
+        })}
       </div>
 
       {/* Spec Table */}
