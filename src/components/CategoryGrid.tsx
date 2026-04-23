@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { MOCK_CATEGORIES } from '../data';
+import CategoryIllustration from './CategoryIllustration';
 
 /**
  * CategoryGrid — BM spec Section 4
@@ -28,29 +29,16 @@ export default function CategoryGrid() {
       }}
       id={`category-large-${category.id}`}
     >
-      {/* Image — top half, contained (BM spec: "product image centred") */}
+      {/* Claude-designed SVG category illustration */}
       <div
         style={{
-          background: 'var(--grey-5)',
           height: '220px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           overflow: 'hidden',
           position: 'relative',
         }}
+        className="category-img-wrap"
       >
-        <img
-          src={category.imageUrl}
-          alt={category.name}
-          style={{
-            maxHeight: '160px',
-            maxWidth: '80%',
-            objectFit: 'contain',
-            transition: 'transform var(--duration-slow) var(--ease-default)',
-          }}
-          className="category-img"
-        />
+        <CategoryIllustration category={category.id || category.name} rounded={false} />
       </div>
 
       {/* Body */}
@@ -118,27 +106,9 @@ export default function CategoryGrid() {
       }}
       id={`category-small-${category.id}`}
     >
-      {/* Image */}
-      <div
-        style={{
-          background: 'var(--grey-5)',
-          height: '160px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-        }}
-      >
-        <img
-          src={category.imageUrl}
-          alt={category.name}
-          style={{
-            maxHeight: '110px',
-            maxWidth: '75%',
-            objectFit: 'contain',
-            transition: 'transform var(--duration-slow) var(--ease-default)',
-          }}
-        />
+      {/* Claude-designed SVG category illustration */}
+      <div style={{ height: '160px', overflow: 'hidden' }}>
+        <CategoryIllustration category={category.id || category.name} rounded={false} />
       </div>
 
       {/* Body */}
@@ -227,8 +197,8 @@ export default function CategoryGrid() {
 
       {/* Hover style via global */}
       <style>{`
-        .category-img { transition: transform var(--duration-slow) var(--ease-default); }
-        a:hover .category-img { transform: scale(1.05); }
+        .category-img-wrap > div { transition: transform var(--duration-slow) var(--ease-default); }
+        a:hover .category-img-wrap > div { transform: scale(1.05); }
         a:hover .card-arrow { background: var(--black) !important; border-color: var(--black) !important; }
         a:hover .card-arrow svg { color: white !important; }
       `}</style>

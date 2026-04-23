@@ -24,6 +24,7 @@ import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import ProductGalleryFrame, { FRAMES } from './ProductGalleryFrame';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -111,8 +112,8 @@ export default function ProductDetail() {
     }
   };
 
-  const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % galleryImages.length);
-  const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
+  const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % FRAMES.length);
+  const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + FRAMES.length) % FRAMES.length);
 
   return (
     <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
@@ -150,62 +151,72 @@ export default function ProductDetail() {
           className="lg:grid-cols-2 lg:gap-16 items-start mb-16"
         >
           
-          {/* ── Left Column: Imagery ────────────────── */}
+          {/* ── Left Column: Claude-designed 6-frame gallery ─ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}>
-            
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
               style={{
                 position: 'relative',
-                background: 'var(--grey-5)',
                 borderRadius: 'var(--radius-xl)',
                 aspectRatio: '1/1',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: 'clamp(16px, 5vw, 48px)',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                background: 'var(--grey-5)',
               }}
             >
-              {/* Product Image (shared component) */}
-              <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} imageUrl={phone.imageUrl} alt={phone.model} />
+              <ProductGalleryFrame product={phone} kind={FRAMES[selectedImageIndex % FRAMES.length].kind} />
 
-              {/* Savings Badge */}
               {savings > 0 && (
                 <span
                   className="badge badge-savings"
-                  style={{ position: 'absolute', top: '16px', right: '16px' }}
+                  style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 2 }}
                 >
                   Save {Math.round((savings / phone.originalPrice) * 100)}%
                 </span>
               )}
 
-              {/* Navigation Controls (Hidden on very small screens if not needed) */}
-              {galleryImages.length > 1 && (
-                <>
-                  <button onClick={prevImage} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'white', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)' }}><ChevronLeft size={18} /></button>
-                  <button onClick={nextImage} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'white', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)' }}><ChevronRight size={18} /></button>
-                </>
-              )}
+              <button
+                onClick={prevImage}
+                aria-label="Previous view"
+                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 2 }}
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <button
+                onClick={nextImage}
+                aria-label="Next view"
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 2 }}
+              >
+                <ChevronRight size={18} />
+              </button>
             </motion.div>
-            
-            {/* Thumbnails */}
-            {galleryImages.length > 1 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
-                {galleryImages.map((img, i) => (
+
+            {/* 6 thumbnails — each a miniature of its frame */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
+              {FRAMES.map((f, i) => {
+                const isActive = selectedImageIndex === i;
+                return (
                   <button
-                    key={i}
+                    key={f.kind}
                     onClick={() => setSelectedImageIndex(i)}
+                    aria-label={`Show ${f.label.toLowerCase()} view`}
+                    aria-pressed={isActive}
                     style={{
-                      aspectRatio: '1/1', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '6px', cursor: 'pointer',
-                      border: selectedImageIndex === i ? '1.5px solid var(--black)' : '1px solid transparent',
-                      opacity: selectedImageIndex === i ? 1 : 0.6,
-                      transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      aspectRatio: '1/1',
+                      borderRadius: 'var(--radius-md)',
+                      padding: 0,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      border: isActive ? '2px solid var(--black)' : '1px solid var(--grey-20)',
+                      opacity: isActive ? 1 : 0.75,
+                      transition: 'all 0.2s',
+                      background: 'transparent',
                     }}
                   >
-                    <img src={img} alt={`View ${i+1}`} style={{ maxHeight: '100%', objectFit: 'contain', mixBlendMode: 'multiply' }} loading="lazy" />
+                    <ProductGalleryFrame product={phone} kind={f.kind} />
                   </button>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
 
           {/* ── Right Column: Info IA ────────────────── */}
