@@ -156,51 +156,12 @@
 }
 
 
-/* ═══════════════════════════════════════════════════════════════
-   DARK MODE OVERRIDES
-   Applied when html has .dark class
-══════════════════════════════════════════════════════════════ */
-html.dark {
-  --grey-0: #0d0d0d;
-  --grey-5: #171717;
-  --grey-10: #262626;
-  --grey-20: #404040;
-  --grey-30: #525252;
-  --grey-40: #a3a3a3;
-  --grey-50: #d4d4d4;
-  --grey-60: #e5e5e5;
-  --grey-70: #f5f5f5;
-  --grey-80: #fafafa;
-  --grey-90: #fafafa;
-  --grey-95: #fafafa;
-  --black: #fafafa;
-
-  --color-bg-default: #0d0d0d;
-  --color-bg-subtle: #171717;
-  --color-bg-emphasis: #f5f5f5;
-  --color-text-default: #f5f5f5;
-  --color-text-subtle: #a3a3a3;
-  --color-border: #404040;
-  --color-border-subtle: #262626;
-
-  /* Theme-invariant: still the fixed dark surface */
-  --color-surface-inverse: #0a0a0a;
-}
-
-/* Dark mode shadows */
-html.dark {
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.4);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.45);
-}
-
-/* Dark mode cards */
-html.dark .card,
-html.dark .glass-card {
-  background: #171717;
-  border-color: #404040;
-}
+/* Dark mode was auto-detected via prefers-color-scheme but never
+   had complete token coverage (brand-header navy, several inline
+   text colours, AIAssistant, etc. didn't flip), so it shipped with
+   invisible text on near-black backgrounds. Removed until a full
+   dark-mode design pass lands. The .dark class is now a no-op;
+   UIContext also strips any legacy localStorage preference.     */
 
 /* Mobile-first base for the header row — kept tight so the icon column
    (More + Wishlist + Cart) doesn't overflow on 360–393px viewports */

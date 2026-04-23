@@ -3,12 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
   HelpCircle, ShieldCheck, Menu, MoreHorizontal, X,
-  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Moon, Sun, Volume2
+  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
-import { useUI } from '../../context/UIContext';
 import AuthModal from '../AuthModal';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -43,7 +42,6 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const { cartCount }                 = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
-  const { darkMode, toggleDarkMode } = useUI();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -336,26 +334,6 @@ export default function Navbar({ onCartClick }: NavbarProps) {
                         <HelpCircle size={18} style={{ color: 'var(--grey-50)' }} />
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
                           Help & Support
-                        </span>
-                      </button>
-
-                      <button
-                        onClick={() => { toggleDarkMode(); setIsAccountOpen(false); }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '12px',
-                          width: '100%', padding: '12px 16px',
-                          background: 'transparent', border: 'none',
-                          cursor: 'pointer', textAlign: 'left',
-                          borderTop: '1px solid var(--grey-10)'
-                        }}
-                      >
-                        {darkMode ? (
-                          <Sun size={18} style={{ color: 'var(--grey-50)' }} />
-                        ) : (
-                          <Moon size={18} style={{ color: 'var(--grey-50)' }} />
-                        )}
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
-                          {darkMode ? 'Light Mode' : 'Dark Mode'}
                         </span>
                       </button>
 

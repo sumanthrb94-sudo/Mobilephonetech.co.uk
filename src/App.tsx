@@ -12,6 +12,7 @@ import CartDrawer from './components/CartDrawer';
 import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
+import ErrorBoundary from './components/ErrorBoundary';
 import { Suspense, lazy } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
@@ -125,6 +126,7 @@ function AppContent() {
         Non-hero pages (products, checkout etc.) need top padding.
       */}
       <main style={{ flexGrow: 1 }}>
+        <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/"         element={<HomePage />} />
@@ -170,6 +172,7 @@ function AppContent() {
             } />
           </Routes>
         </Suspense>
+        </ErrorBoundary>
       </main>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
