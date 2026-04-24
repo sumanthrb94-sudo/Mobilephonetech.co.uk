@@ -13,6 +13,10 @@ import ProductImage from './ProductImage';
  * Everything uses the existing token palette (--grey-5, --grey-10,
  * --color-brand-subtle, --brand-cyan, --brand-header) so the frames feel
  * native to the rest of the UI.
+ *
+ * `compact` suppresses all text chrome (corner pills, captions, footers)
+ * so the same frame visuals also work as ~50-80px thumbnails without
+ * looking broken.
  */
 
 export type FrameKind = 'hero' | 'back' | 'profile' | 'colorways' | 'detail' | 'lifestyle';
@@ -36,9 +40,11 @@ const SWATCH_PALETTES: Record<string, string[]> = {
 export default function ProductGalleryFrame({
   product,
   kind,
+  compact = false,
 }: {
   product: Product;
   kind: FrameKind;
+  compact?: boolean;
 }) {
   const swatches = SWATCH_PALETTES[product.brand] ?? SWATCH_PALETTES.default;
 
@@ -57,11 +63,11 @@ export default function ProductGalleryFrame({
       }}
     >
       {kind === 'hero' && <HeroFrame product={product} />}
-      {kind === 'back' && <BackFrame product={product} />}
-      {kind === 'profile' && <ProfileFrame product={product} />}
-      {kind === 'colorways' && <ColorwaysFrame product={product} swatches={swatches} />}
-      {kind === 'detail' && <DetailFrame product={product} />}
-      {kind === 'lifestyle' && <LifestyleFrame product={product} />}
+      {kind === 'back' && <BackFrame product={product} compact={compact} />}
+      {kind === 'profile' && <ProfileFrame product={product} compact={compact} />}
+      {kind === 'colorways' && <ColorwaysFrame product={product} swatches={swatches} compact={compact} />}
+      {kind === 'detail' && <DetailFrame product={product} compact={compact} />}
+      {kind === 'lifestyle' && <LifestyleFrame product={product} compact={compact} />}
     </div>
   );
 }
@@ -84,7 +90,7 @@ function HeroFrame({ product }: { product: Product }) {
 // ─────────────────────────────────────────────────────────────────────
 // Frame 2 — Back (flipped horizontally, warmer tint)
 // ─────────────────────────────────────────────────────────────────────
-function BackFrame({ product }: { product: Product }) {
+function BackFrame({ product, compact }: { product: Product; compact?: boolean }) {
   return (
     <>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, var(--grey-5) 0%, var(--grey-10) 100%)' }} />
@@ -100,7 +106,7 @@ function BackFrame({ product }: { product: Product }) {
       <div style={{ position: 'relative', width: '65%', height: '65%', transform: 'scaleX(-1)', filter: 'brightness(0.96)' }}>
         <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — back view`} />
       </div>
-      <CornerLabel text="Back" />
+      {!compact && <CornerLabel text="Back" />}
     </>
   );
 }
@@ -108,7 +114,7 @@ function BackFrame({ product }: { product: Product }) {
 // ─────────────────────────────────────────────────────────────────────
 // Frame 3 — Side / thin profile silhouette
 // ─────────────────────────────────────────────────────────────────────
-function ProfileFrame({ product }: { product: Product }) {
+function ProfileFrame({ product, compact }: { product: Product; compact?: boolean }) {
   return (
     <>
       <div style={{ position: 'absolute', inset: 0, background: 'var(--grey-0)' }} />
@@ -132,10 +138,14 @@ function ProfileFrame({ product }: { product: Product }) {
         <span style={{ position: 'absolute', left: '-3px', top: '34%', width: '3px', height: '14px', background: 'var(--grey-70)', borderRadius: '1px' }} />
         <span style={{ position: 'absolute', right: '-3px', top: '28%', width: '3px', height: '22px', background: 'var(--grey-70)', borderRadius: '1px' }} />
       </div>
-      <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--grey-50)' }}>
-        Slim profile · {product.model}
-      </div>
-      <CornerLabel text="Side" />
+      {!compact && (
+        <>
+          <div style={{ position: 'absolute', bottom: '16%', left: 0, right: 0, textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--grey-50)' }}>
+            Slim profile · {product.model}
+          </div>
+          <CornerLabel text="Side" />
+        </>
+      )}
     </>
   );
 }
@@ -143,7 +153,31 @@ function ProfileFrame({ product }: { product: Product }) {
 // ─────────────────────────────────────────────────────────────────────
 // Frame 4 — Colourways swatches row
 // ─────────────────────────────────────────────────────────────────────
-function ColorwaysFrame({ product, swatches }: { product: Product; swatches: string[] }) {
+function ColorwaysFrame({ product, swatches, compact }: { product: Product; swatches: string[]; compact?: boolean }) {
+  if (compact) {
+    // Thumbnail variant — just swatches tiled on the tinted ground
+    return (
+      <>
+        <div style={{ position: 'absolute', inset: 0, background: 'var(--grey-5)' }} />
+        <div style={{ position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px', padding: '14%', width: '100%', height: '100%', boxSizing: 'border-box' }}>
+          {swatches.slice(0, 6).map((c, i) => (
+            <span
+              key={i}
+              aria-hidden
+              style={{
+                width: '100%',
+                aspectRatio: '1 / 1',
+                borderRadius: '50%',
+                background: c,
+                border: '1.5px solid var(--grey-0)',
+                boxShadow: '0 0 0 1px var(--grey-20)',
+              }}
+            />
+          ))}
+        </div>
+      </>
+    );
+  }
   return (
     <>
       <div style={{ position: 'absolute', inset: 0, background: 'var(--grey-5)' }} />
@@ -183,7 +217,7 @@ function ColorwaysFrame({ product, swatches }: { product: Product; swatches: str
 // ─────────────────────────────────────────────────────────────────────
 // Frame 5 — Detail (zoomed-in crop with focus ring)
 // ─────────────────────────────────────────────────────────────────────
-function DetailFrame({ product }: { product: Product }) {
+function DetailFrame({ product, compact }: { product: Product; compact?: boolean }) {
   return (
     <>
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, var(--grey-95) 0%, var(--brand-header) 100%)' }} />
@@ -202,15 +236,19 @@ function DetailFrame({ product }: { product: Product }) {
         <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — camera & finish detail`} />
       </div>
 
-      {/* Focus ring + caption */}
-      <svg aria-hidden viewBox="0 0 400 400" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-        <circle cx="200" cy="190" r="94" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeDasharray="4 6" />
-        <circle cx="200" cy="190" r="66" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
-      </svg>
-      <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-        <span>Detail view</span>
-        <span style={{ color: 'var(--brand-cyan)' }}>2×</span>
-      </div>
+      {!compact && (
+        <>
+          {/* Focus ring + caption */}
+          <svg aria-hidden viewBox="0 0 400 400" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+            <circle cx="200" cy="190" r="94" fill="none" stroke="rgba(255,255,255,0.28)" strokeWidth="1.5" strokeDasharray="4 6" />
+            <circle cx="200" cy="190" r="66" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1" />
+          </svg>
+          <div style={{ position: 'absolute', bottom: '16px', left: '16px', right: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'rgba(255,255,255,0.85)', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            <span>Detail view</span>
+            <span style={{ color: 'var(--brand-cyan)' }}>2×</span>
+          </div>
+        </>
+      )}
     </>
   );
 }
@@ -218,7 +256,7 @@ function DetailFrame({ product }: { product: Product }) {
 // ─────────────────────────────────────────────────────────────────────
 // Frame 6 — Lifestyle (hand-held vibe, abstract scene behind)
 // ─────────────────────────────────────────────────────────────────────
-function LifestyleFrame({ product }: { product: Product }) {
+function LifestyleFrame({ product, compact }: { product: Product; compact?: boolean }) {
   return (
     <>
       <svg aria-hidden viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
@@ -247,9 +285,11 @@ function LifestyleFrame({ product }: { product: Product }) {
         <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — in everyday use`} />
       </div>
 
-      <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(6px)', borderRadius: 'var(--radius-full)', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-header)' }}>
-        In everyday use
-      </div>
+      {!compact && (
+        <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(6px)', borderRadius: 'var(--radius-full)', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-header)' }}>
+          In everyday use
+        </div>
+      )}
     </>
   );
 }

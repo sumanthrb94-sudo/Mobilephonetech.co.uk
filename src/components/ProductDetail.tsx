@@ -200,19 +200,22 @@ export default function ProductDetail() {
                     onClick={() => setSelectedImageIndex(i)}
                     aria-label={`Show ${f.label.toLowerCase()} view`}
                     aria-pressed={isActive}
+                    title={f.label}
                     style={{
                       aspectRatio: '1/1',
                       borderRadius: 'var(--radius-md)',
                       padding: 0,
                       overflow: 'hidden',
                       cursor: 'pointer',
-                      border: isActive ? '2px solid var(--black)' : '1px solid var(--grey-20)',
-                      opacity: isActive ? 1 : 0.75,
+                      border: isActive ? '2px solid var(--brand-cyan)' : '1px solid var(--grey-20)',
+                      outline: isActive ? '2px solid var(--color-brand-subtle)' : 'none',
+                      outlineOffset: '-4px',
+                      opacity: isActive ? 1 : 0.85,
                       transition: 'all 0.2s',
                       background: 'transparent',
                     }}
                   >
-                    <ProductGalleryFrame product={phone} kind={f.kind} />
+                    <ProductGalleryFrame product={phone} kind={f.kind} compact />
                   </button>
                 );
               })}
