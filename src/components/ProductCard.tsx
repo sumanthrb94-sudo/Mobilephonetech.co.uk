@@ -78,8 +78,21 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
     }
   };
 
+  // A product has multiple buyer choices if it exposes more than one
+  // variant, colour OR storage — any of those means the CTA should
+  // route to the PDP so the buyer can actually pick, not silently
+  // bind to an arbitrary default.
+  const hasChoices =
+    (phone.variants?.length ?? 0) > 1 ||
+    (phone.colorOptions?.length ?? 0) > 1 ||
+    (phone.storageOptions?.length ?? 0) > 1;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (hasChoices) {
+      navigate(`/product/${phone.id}`);
+      return;
+    }
     addToCart(phone, 1);
     setAdded(true);
     haptic('success');
@@ -369,11 +382,15 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           onClick={handleAddToCart}
           className="btn btn-primary btn-lg btn-full"
           style={{ fontFamily: 'var(--font-sans)' }}
-          aria-label={added ? 'Added to cart' : `Add ${phone.model} to cart`}
+          aria-label={
+            added ? 'Added to cart' :
+            hasChoices ? `Choose options for ${phone.model}` :
+            `Add ${phone.model} to cart`
+          }
         >
           {added ? (
             <><Plus size={16} style={{ opacity: 0.9 }} /> Added</>
-          ) : phone.variants && phone.variants.length > 1 ? (
+          ) : hasChoices ? (
             <>Choose options</>
           ) : (
             <>Add to cart</>
