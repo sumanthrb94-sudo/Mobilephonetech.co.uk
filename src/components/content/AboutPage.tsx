@@ -1,4 +1,3 @@
-import React from 'react';
 import Breadcrumbs from '../ui/Breadcrumbs';
 import { ShieldCheck, Leaf, Users, BadgeCheck } from 'lucide-react';
 

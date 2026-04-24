@@ -7821,7 +7821,7 @@ export const MOCK_PHONES: Product[] = [
     variants: [
 {
         id: "vidvie-wireless-charger-iphone-service-128gb-excellent-default",
-        color: null,
+        color: undefined,
         storage: "128GB",
         condition: "Excellent",
         price: 699,

@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Bookmark } from 'lucide-react';
-import { motion } from 'motion/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import ProductImage from './ProductImage';

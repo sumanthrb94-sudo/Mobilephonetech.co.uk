@@ -1,4 +1,3 @@
-import React from 'react';
 
 /**
  * PriceHistoryChart — 90-day line chart + "lowest in 90 days" trust cue.

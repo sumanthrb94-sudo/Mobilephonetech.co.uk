@@ -32,7 +32,7 @@ const CATEGORIES = [
   { label: 'Why us',            href: '/#why-us',                      icon: ShieldCheck },
 ];
 
-export default function Navbar({ onCartClick }: NavbarProps) {
+export default function Navbar(_: NavbarProps) {
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
   const [isAccountOpen, setIsAccountOpen]         = useState(false);

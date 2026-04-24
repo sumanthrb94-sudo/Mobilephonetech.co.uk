@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState, type MouseEvent } from 'react';
+import React, { useRef, useState, type MouseEvent } from 'react';
 import { Product } from '../types';
 import ProductImage from './ProductImage';
 import {
   Smartphone, Sparkles, Ruler, Package, Palette,
-  ZoomIn, Check, CreditCard, Cable, Wrench, FileText,
+  ZoomIn, Check, Cable, Wrench, FileText,
   Headphones, BatteryCharging, Plug, Gamepad2, Watch,
-  ChevronsRight, Info,
+  Info,
 } from 'lucide-react';
 
 /**
@@ -184,7 +184,7 @@ function seededRandom(seed: string) {
 function ConditionFrame({ product, compact }: { product: Product; compact?: boolean }) {
   const grade = GRADE_COPY[product.grade] ?? GRADE_COPY.Good;
   const rand = seededRandom(`${product.id}:${product.grade}`);
-  const marks: Mark[] = Array.from({ length: grade.marks }, (_, i) => ({
+  const marks: Mark[] = Array.from({ length: grade.marks }, () => ({
     x: 25 + rand() * 50,  // inside the device rect
     y: 20 + rand() * 60,
     label: MARK_COPY[Math.floor(rand() * MARK_COPY.length)],

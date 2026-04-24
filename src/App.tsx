@@ -25,8 +25,7 @@ import CheckoutHeader from './components/layout/CheckoutHeader';
 import CheckoutFooter from './components/layout/CheckoutFooter';
 import AnnouncementBar from './components/layout/AnnouncementBar';
 import ScrollToTop from './components/ScrollToTop';
-import { useLocation } from 'react-router-dom';
-import React, { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
@@ -164,7 +163,7 @@ function AppContent() {
 
   // Toggle a root class so CSS can strip the mobile-reserved bottom
   // padding (which normally makes room for the fixed tab bar).
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof document === 'undefined') return;
     document.documentElement.classList.toggle('is-checkout', isCheckoutRoute);
     return () => { document.documentElement.classList.remove('is-checkout'); };

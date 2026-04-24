@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Apple, Smartphone, CircuitBoard, Battery } from 'lucide-react';
 import Breadcrumbs from '../ui/Breadcrumbs';

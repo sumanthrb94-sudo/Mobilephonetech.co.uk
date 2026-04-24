@@ -1,4 +1,3 @@
-import React from 'react';
 
 /**
  * PressLogosStrip — "As featured in …" row. Text-based wordmarks (no real

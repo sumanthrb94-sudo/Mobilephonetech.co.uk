@@ -1,4 +1,3 @@
-import React from 'react';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';

@@ -120,7 +120,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
       className="card"
       style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', height: '100%' }}
       onClick={() => navigate(`/product/${phone.id}`)}
-      onMouseEnter={(e) => { setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
+      onMouseEnter={() => { setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
       onMouseLeave={() => setIsHovering(false)}
       onFocus={prefetchProductDetail.onFocus}
       onTouchStart={prefetchProductDetail.onTouchStart}

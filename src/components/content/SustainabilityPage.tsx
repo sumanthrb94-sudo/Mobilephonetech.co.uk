@@ -1,4 +1,3 @@
-import React from 'react';
 import Breadcrumbs from '../ui/Breadcrumbs';
 import { Leaf, Droplet, Factory, Recycle } from 'lucide-react';
 

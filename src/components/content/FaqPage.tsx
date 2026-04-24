@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import Breadcrumbs from '../ui/Breadcrumbs';
 import Accordion from '../ui/Accordion';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Modal from './ui/Modal';
 import { Camera, CheckCircle2 } from 'lucide-react';
 import { useUI } from '../context/UIContext';

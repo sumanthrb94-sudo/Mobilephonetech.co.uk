@@ -5,7 +5,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { useNavigate } from 'react-router-dom';
 import {
-  Trash2, Minus, Plus, ShoppingBag, ArrowRight, Bookmark,
+  Minus, Plus, ShoppingBag, ArrowRight, Bookmark,
   ShieldCheck, Truck, RotateCcw, CheckCircle2
 } from 'lucide-react';
 import { motion } from 'motion/react';

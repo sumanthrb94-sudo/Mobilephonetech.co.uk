@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Product, ProductVariant, ProductGrade } from '../types';
 import { motion } from 'motion/react';
-import { Check, Zap } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface VariantSelectorProps {
   product: Product;

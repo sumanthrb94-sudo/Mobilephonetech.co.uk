@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Store, Heart, ShoppingBag, UserCircle } from 'lucide-react';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
@@ -9,7 +8,7 @@ import { useCart } from '../../context/CartContext';
  * phones. Hidden on desktop where the top navbar already covers these
  * destinations. Respects iOS safe-area inset.
  */
-export default function MobileBottomNav({ onCartClick }: { onCartClick: () => void }) {
+export default function MobileBottomNav(_: { onCartClick?: () => void }) {
   const { isDesktop } = useBreakpoint();
   const { cartCount } = useCart();
   const navigate = useNavigate();
