@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
@@ -24,6 +24,7 @@ import AnnouncementBar from './components/layout/AnnouncementBar';
 import ScrollToTop from './components/ScrollToTop';
 import { useLocation } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
@@ -119,15 +120,28 @@ function HomePage() {
   );
 }
 
+/**
+ * AnimatedPage — page-level fade/slide transition wrapper.
+ * Applied to every route so route changes feel coordinated, not abrupt.
+ */
+function AnimatedPage({ children, paddingTop }: { children: React.ReactNode; paddingTop?: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+      style={{ paddingTop }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function AppContent() {
   const { isCartOpen, setIsCartOpen, cartCount } = useCart();
-  const { pathname } = useLocation();
-
-  // Checkout routes use a minimal header with no brand nav / search /
-  // wishlist — the Amazon & BackMarket pattern that keeps the shopper
-  // in the funnel. Bottom tab bar is also hidden on those routes so
-  // there's no distracting tap-out back to Home / Shop / Wishlist.
-  const isCheckoutRoute = pathname.startsWith('/checkout');
+  const location = useLocation();
+  const isCheckoutRoute = location.pathname.startsWith('/checkout');
 
   // Toggle a root class so CSS can strip the mobile-reserved bottom
   // padding (which normally makes room for the fixed tab bar).
@@ -174,84 +188,86 @@ function AppContent() {
       <main id="main-content" style={{ flexGrow: 1 }}>
         <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/"         element={<HomePage />} />
-            <Route path="/product/:id" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <ProductDetail />
-              </div>
-            } />
-            <Route path="/products" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <ProductsPage />
-              </div>
-            } />
-            <Route path="/compare"  element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <ComparisonTool />
-              </div>
-            } />
-            <Route path="/cart" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <CartPage />
-              </div>
-            } />
-            <Route path="/checkout" element={
-              <div style={{ paddingTop: 'calc(var(--header-h) + 30px)' }}>
-                <CheckoutFlow />
-              </div>
-            } />
-            <Route path="/wishlist" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <WishlistPage />
-              </div>
-            } />
-            <Route path="/orders"   element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <OrderHistoryPage />
-              </div>
-            } />
-            <Route path="/privacy"  element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <PrivacyPolicy />
-              </div>
-            } />
-            <Route path="/terms"    element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <TermsOfService />
-              </div>
-            } />
-            <Route path="/about" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <AboutPage />
-              </div>
-            } />
-            <Route path="/sustainability" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <SustainabilityPage />
-              </div>
-            } />
-            <Route path="/guides" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <BuyingGuidesPage />
-              </div>
-            } />
-            <Route path="/guides/:slug" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <BuyingGuidesPage />
-              </div>
-            } />
-            <Route path="/faq" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <FaqPage />
-              </div>
-            } />
-            <Route path="/help" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
-                <FaqPage />
-              </div>
-            } />
-          </Routes>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/product/:id" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <ProductDetail />
+                </AnimatedPage>
+              } />
+              <Route path="/products" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <ProductsPage />
+                </AnimatedPage>
+              } />
+              <Route path="/compare" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <ComparisonTool />
+                </AnimatedPage>
+              } />
+              <Route path="/cart" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <CartPage />
+                </AnimatedPage>
+              } />
+              <Route path="/checkout" element={
+                <AnimatedPage paddingTop="calc(var(--header-h) + 30px)">
+                  <CheckoutFlow />
+                </AnimatedPage>
+              } />
+              <Route path="/wishlist" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <WishlistPage />
+                </AnimatedPage>
+              } />
+              <Route path="/orders" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <OrderHistoryPage />
+                </AnimatedPage>
+              } />
+              <Route path="/privacy" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <PrivacyPolicy />
+                </AnimatedPage>
+              } />
+              <Route path="/terms" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <TermsOfService />
+                </AnimatedPage>
+              } />
+              <Route path="/about" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <AboutPage />
+                </AnimatedPage>
+              } />
+              <Route path="/sustainability" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <SustainabilityPage />
+                </AnimatedPage>
+              } />
+              <Route path="/guides" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <BuyingGuidesPage />
+                </AnimatedPage>
+              } />
+              <Route path="/guides/:slug" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <BuyingGuidesPage />
+                </AnimatedPage>
+              } />
+              <Route path="/faq" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <FaqPage />
+                </AnimatedPage>
+              } />
+              <Route path="/help" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <FaqPage />
+                </AnimatedPage>
+              } />
+            </Routes>
+          </AnimatePresence>
         </Suspense>
         </ErrorBoundary>
       </main>
@@ -274,19 +290,21 @@ export default function App() {
   return (
     <Router>
       <ScrollToTop />
-      <UIProvider>
-        <AuthProvider>
-          <CartProvider>
-            <SearchProvider>
-              <CheckoutProvider>
-                <WishlistProvider>
-                  <AppContent />
-                </WishlistProvider>
-              </CheckoutProvider>
-            </SearchProvider>
-          </CartProvider>
-        </AuthProvider>
-      </UIProvider>
+      <MotionConfig reducedMotion="user">
+        <UIProvider>
+          <AuthProvider>
+            <CartProvider>
+              <SearchProvider>
+                <CheckoutProvider>
+                  <WishlistProvider>
+                    <AppContent />
+                  </WishlistProvider>
+                </CheckoutProvider>
+              </SearchProvider>
+            </CartProvider>
+          </AuthProvider>
+        </UIProvider>
+      </MotionConfig>
     </Router>
   );
 }

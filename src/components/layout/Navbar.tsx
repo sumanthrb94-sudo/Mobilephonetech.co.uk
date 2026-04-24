@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useMotionValue, useTransform, useSpring, motion } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
@@ -33,7 +34,6 @@ const CATEGORIES = [
 ];
 
 export default function Navbar({ onCartClick }: NavbarProps) {
-  const [isScrolled, setIsScrolled]               = useState(false);
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
   const [isAccountOpen, setIsAccountOpen]         = useState(false);
@@ -49,14 +49,25 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
 
-  // Close the brand mega-menu on any route change
-  useEffect(() => { setOpenBrand(null); }, [pathname, search]);
+  // Spring-based scroll shadow — smooth interpolation instead of binary toggle
+  const scrollY = useMotionValue(0);
+  const shadowOpacity = useTransform(scrollY, [0, 64], [0, 1]);
+  const smoothShadowOpacity = useSpring(shadowOpacity, { stiffness: 300, damping: 30 });
+  const boxShadow = useTransform(
+    smoothShadowOpacity,
+    (v) => v > 0.01
+      ? `0 4px 6px -1px rgba(0,0,0,${0.07 * v}), 0 2px 4px -2px rgba(0,0,0,${0.06 * v})`
+      : 'none'
+  );
 
   useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 8);
+    const onScroll = () => scrollY.set(window.scrollY);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [scrollY]);
+
+  // Close the brand mega-menu on any route change
+  useEffect(() => { setOpenBrand(null); }, [pathname, search]);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -147,12 +158,11 @@ export default function Navbar({ onCartClick }: NavbarProps) {
       {/* ═══════════════════════════════════════════════════
           ANNOUNCEMENT BAR & FIXED HEADER
       ═══════════════════════════════════════════════════ */}
-      <div
+      <motion.div
         className="fixed top-0 left-0 right-0 z-[60]"
         style={{
           backgroundColor: 'var(--brand-header)',
-          boxShadow: isScrolled ? 'var(--shadow-md)' : 'none',
-          transition: 'box-shadow var(--duration-normal)',
+          boxShadow,
         }}
       >
         {/* Main header row — 64px */}
@@ -475,7 +485,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
             })}
           </div>
         </nav>
-      </div>
+      </motion.div>
 
       {/* Brand mega-menu (Apple / Samsung / Google) */}
       {openBrand && (

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Flame, Eye, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 
 type Cue = { kind: 'stock' | 'viewers' | 'recent'; icon: React.ElementType; text: string };
 
@@ -8,6 +9,8 @@ type Cue = { kind: 'stock' | 'viewers' | 'recent'; icon: React.ElementType; text
  * one of three deterministic messages (stock, viewers, recent purchase)
  * and cycles every 6s. All values synthesised from the product id/stock
  * so the same product reads consistently across reloads.
+ *
+ * Text changes animate with AnimatePresence cross-fade for a polished feel.
  */
 export default function UrgencyCue({ productId, stock }: { productId: string; stock: number }) {
   const cues = buildCues(productId, stock);
@@ -39,10 +42,22 @@ export default function UrgencyCue({ productId, stock }: { productId: string; st
         fontFamily: 'var(--font-body)',
         fontSize: '12px',
         fontWeight: 600,
+        minWidth: 0,
       }}
     >
       <Icon size={12} />
-      <span>{cue.text}</span>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={cue.text}
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
+          style={{ display: 'inline-block' }}
+        >
+          {cue.text}
+        </motion.span>
+      </AnimatePresence>
     </div>
   );
 }

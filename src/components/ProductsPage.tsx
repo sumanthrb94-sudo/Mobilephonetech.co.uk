@@ -517,58 +517,67 @@ export default function ProductsPage() {
                 </div>
               </div>
 
-              {sortedProducts.length === 0 ? (
-                <div
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    justifyContent: 'center', padding: 'var(--spacing-80) 0', textAlign: 'center',
-                  }}
-                >
-                  <div
+              <AnimatePresence mode="popLayout">
+                {sortedProducts.length === 0 ? (
+                  <motion.div
+                    key="no-results"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.3 }}
                     style={{
-                      width: '64px', height: '64px',
-                      borderRadius: '50%', background: 'var(--grey-5)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: 'var(--spacing-20)',
-                      color: 'var(--grey-40)',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      justifyContent: 'center', padding: 'var(--spacing-80) 0', textAlign: 'center',
                     }}
                   >
-                    <SearchX size={28} />
-                  </div>
-                  <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>
-                    No results
-                  </h3>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-24)', maxWidth: '360px' }}>
-                    Try adjusting your search or clearing the filters.
-                  </p>
-                  <button
-                    onClick={resetFilters}
-                    className="btn btn-primary btn-md"
-                    id="products-clear-filters"
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              ) : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                    gap: 'var(--spacing-20)',
-                  }}
-                >
-                  {sortedProducts.map((phone, index) => (
-                    <motion.div
-                      key={phone.id}
-                      initial={{ opacity: 0, y: 16 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(index, 7) * 0.07, duration: 0.35, ease: [0.2, 0, 0, 1] }}
+                    <div
+                      style={{
+                        width: '64px', height: '64px',
+                        borderRadius: '50%', background: 'var(--grey-5)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        marginBottom: 'var(--spacing-20)',
+                        color: 'var(--grey-40)',
+                      }}
                     >
-                      <ProductCard phone={phone} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
+                      <SearchX size={28} />
+                    </div>
+                    <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>
+                      No results
+                    </h3>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-24)', maxWidth: '360px' }}>
+                      Try adjusting your search or clearing the filters.
+                    </p>
+                    <button
+                      onClick={resetFilters}
+                      className="btn btn-primary btn-md"
+                      id="products-clear-filters"
+                    >
+                      Clear all filters
+                    </button>
+                  </motion.div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                      gap: 'var(--spacing-20)',
+                    }}
+                  >
+                    {sortedProducts.map((phone, index) => (
+                      <motion.div
+                        key={phone.id}
+                        layout
+                        initial={{ opacity: 0, y: 16 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ delay: Math.min(index, 7) * 0.05, duration: 0.35, ease: [0.2, 0, 0, 1], layout: { duration: 0.35 } }}
+                      >
+                        <ProductCard phone={phone} />
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </div>

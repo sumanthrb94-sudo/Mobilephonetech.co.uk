@@ -1,6 +1,7 @@
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Star, Eye, Plus } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Product, ProductGrade } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -181,9 +182,11 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           )}
         </div>
 
-        <button
+        <motion.button
           onClick={handleWishlist}
           aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+          whileTap={{ scale: 1.25 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 15 }}
           style={{
             position: 'absolute',
             top: '10px',
@@ -202,14 +205,19 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--grey-40)'; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--grey-20)'; }}
         >
-          <Heart
-            size={15}
-            style={{
-              color: inWishlist ? 'var(--color-sale)' : 'var(--grey-40)',
-              fill: inWishlist ? 'var(--color-sale)' : 'transparent',
-            }}
-          />
-        </button>
+          <motion.div
+            animate={inWishlist ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+          >
+            <Heart
+              size={15}
+              style={{
+                color: inWishlist ? 'var(--color-sale)' : 'var(--grey-40)',
+                fill: inWishlist ? 'var(--color-sale)' : 'transparent',
+              }}
+            />
+          </motion.div>
+        </motion.button>
       </div>
 
       {/* ── Card Body ───────────────────────── */}

@@ -93,6 +93,7 @@ export default function FeaturedProducts() {
                 onClick={() => setActiveTab(tab.id)}
                 id={`brand-tab-${tab.id}`}
                 style={{
+                  position: 'relative',
                   flexShrink: 0,
                   height: '36px',
                   padding: '0 16px',
@@ -101,17 +102,31 @@ export default function FeaturedProducts() {
                   fontSize: '14px',
                   fontWeight: isActive ? 700 : 500,
                   color: isActive ? 'var(--grey-0)' : 'var(--grey-60)',
-                  background: isActive ? 'var(--brand-cyan)' : 'var(--grey-0)',
+                  background: 'transparent',
                   border: `1.5px solid ${isActive ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
                   cursor: 'pointer',
-                  transition: 'all var(--duration-fast) var(--ease-default)',
+                  transition: 'color var(--duration-fast) var(--ease-default)',
                   whiteSpace: 'nowrap',
+                  overflow: 'hidden',
                 }}
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="featured-active-pill"
+                    transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+                    style={{
+                      position: 'absolute',
+                      inset: '-1.5px',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--brand-cyan)',
+                      zIndex: -1,
+                    }}
+                  />
+                )}
                 {tab.label}
               </button>
             );
-          })}
+          })}       
 
           {/* Spacer + filter icon */}
           <div style={{ marginLeft: 'auto', flexShrink: 0 }}>

@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Bookmark } from 'lucide-react';
+import { motion } from 'motion/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import ProductImage from './ProductImage';
@@ -178,7 +179,15 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         {/* Quantity */}
                         <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label="Decrease quantity" style={{ width: '28px', height: '28px', background: 'var(--grey-0)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Minus size={12} color="var(--black)" /></button>
-                          <span style={{ width: '24px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, color: 'var(--black)', borderLeft: '1px solid var(--grey-10)', borderRight: '1px solid var(--grey-10)' }}>{item.quantity}</span>
+                          <motion.span
+                            key={item.quantity}
+                            initial={{ scale: 1.3, color: 'var(--brand-cyan)' }}
+                            animate={{ scale: 1, color: 'var(--black)' }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                            style={{ width: '24px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, borderLeft: '1px solid var(--grey-10)', borderRight: '1px solid var(--grey-10)', display: 'inline-block' }}
+                          >
+                            {item.quantity}
+                          </motion.span>
                           <button onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label="Increase quantity" style={{ width: '28px', height: '28px', background: 'var(--grey-0)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><Plus size={12} color="var(--black)" /></button>
                         </div>
                       </div>

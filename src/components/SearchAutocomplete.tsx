@@ -201,33 +201,39 @@ export default function SearchAutocomplete({
                 {matches.map((m, i) => {
                   const isActive = i === activeIndex;
                   return (
-                    <Link
+                    <motion.div
                       key={m.id}
-                      to={`/product/${m.id}`}
-                      onClick={() => setIsOpen(false)}
-                      role="option"
-                      aria-selected={isActive}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '12px',
-                        padding: '10px 16px',
-                        background: isActive ? 'var(--color-brand-subtle)' : 'transparent',
-                        textDecoration: 'none',
-                        borderLeft: `3px solid ${isActive ? 'var(--brand-cyan)' : 'transparent'}`,
-                      }}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.03, duration: 0.2, ease: [0.2, 0, 0, 1] }}
                     >
-                      <div style={{ width: '40px', height: '40px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', overflow: 'hidden' }}>
-                        <ProductImage brand={m.brand} model={m.model} category={m.category} imageUrl={m.imageUrl} alt="" />
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {m.brand} {m.model}
+                      <Link
+                        to={`/product/${m.id}`}
+                        onClick={() => setIsOpen(false)}
+                        role="option"
+                        aria-selected={isActive}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '12px',
+                          padding: '10px 16px',
+                          background: isActive ? 'var(--color-brand-subtle)' : 'transparent',
+                          textDecoration: 'none',
+                          borderLeft: `3px solid ${isActive ? 'var(--brand-cyan)' : 'transparent'}`,
+                        }}
+                      >
+                        <div style={{ width: '40px', height: '40px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', overflow: 'hidden' }}>
+                          <ProductImage brand={m.brand} model={m.model} category={m.category} imageUrl={m.imageUrl} alt="" />
                         </div>
-                        <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>
-                          {m.grade} · from £{m.price}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {m.brand} {m.model}
+                          </div>
+                          <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>
+                            {m.grade} · from £{m.price}
+                          </div>
                         </div>
-                      </div>
-                      <X size={0} />
-                    </Link>
+                        <X size={0} />
+                      </Link>
+                    </motion.div>
                   );
                 })}
                 <div

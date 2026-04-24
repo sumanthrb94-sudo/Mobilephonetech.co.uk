@@ -4,6 +4,7 @@ import {
   ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
   Heart, Share2, ChevronLeft, ChevronRight, Star
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -365,7 +366,16 @@ export default function ProductDetail() {
                     disabled={quantity <= 1}
                     style={{ width: '40px', height: '100%', background: 'none', border: 'none', cursor: quantity <= 1 ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 700, color: 'var(--black)', opacity: quantity <= 1 ? 0.4 : 1 }}
                   >−</button>
-                  <span style={{ width: '28px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, color: 'var(--black)' }} aria-live="polite">{quantity}</span>
+                  <motion.span
+                    key={quantity}
+                    initial={{ scale: 1.3, color: 'var(--brand-cyan)' }}
+                    animate={{ scale: 1, color: 'var(--black)' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                    style={{ width: '28px', textAlign: 'center', fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, display: 'inline-block' }}
+                    aria-live="polite"
+                  >
+                    {quantity}
+                  </motion.span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
                     aria-label="Increase quantity"
@@ -383,10 +393,12 @@ export default function ProductDetail() {
                   {displayStock > 0 ? 'Add to cart' : 'Out of stock'}
                 </button>
 
-                <button
+                <motion.button
                   onClick={() => setIsWishlisted(!isWishlisted)}
                   aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   aria-pressed={isWishlisted}
+                  whileTap={{ scale: 1.15 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
                   style={{
                     width: '56px',
                     height: '56px',
@@ -400,8 +412,13 @@ export default function ProductDetail() {
                     cursor: 'pointer',
                   }}
                 >
-                  <Heart size={20} fill={isWishlisted ? 'var(--color-sale)' : 'none'} color={isWishlisted ? 'var(--color-sale)' : 'var(--black)'} />
-                </button>
+                  <motion.div
+                    animate={isWishlisted ? { scale: [1, 1.3, 1] } : { scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+                  >
+                    <Heart size={20} fill={isWishlisted ? 'var(--color-sale)' : 'none'} color={isWishlisted ? 'var(--color-sale)' : 'var(--black)'} />
+                  </motion.div>
+                </motion.button>
 
                 <button
                   aria-label="Share product"
