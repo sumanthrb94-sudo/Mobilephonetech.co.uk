@@ -1,12 +1,11 @@
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Star, Eye, Plus } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Product, ProductGrade } from '../types';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
-import { motion, AnimatePresence } from 'motion/react';
 import ProductImage from './ProductImage';
 import QuickViewModal from './QuickViewModal';
 import { haptic } from '../utils/haptics';
@@ -106,7 +105,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
       className="card"
-      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column' }}
+      style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', height: '100%' }}
       onClick={() => navigate(`/product/${phone.id}`)}
       onMouseEnter={(e) => { setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
       onMouseLeave={() => setIsHovering(false)}

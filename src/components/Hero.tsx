@@ -194,6 +194,8 @@ export default function Hero() {
                 justifyContent: 'center',
                 alignItems: 'center',
                 order: isDesktop ? 0 : -1,
+                height: isDesktop ? '160px' : '90px',
+                width: '100%',
               }}
             >
               <img
@@ -201,8 +203,8 @@ export default function Hero() {
                 alt={slide.imageAlt}
                 loading={current === 0 ? 'eager' : 'lazy'}
                 style={{
-                  maxHeight: isDesktop ? '160px' : '90px',
-                  maxWidth: '100%',
+                  height: '100%',
+                  width: '100%',
                   objectFit: 'contain',
                   filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.15))',
                 }}

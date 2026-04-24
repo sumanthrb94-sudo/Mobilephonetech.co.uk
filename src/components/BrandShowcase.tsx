@@ -356,6 +356,7 @@ function ProductRail({
         className="series-rail"
         style={{
           display: 'flex',
+          alignItems: 'stretch',
           gap: '14px',
           overflowX: 'auto',
           overflowY: 'hidden',
@@ -377,6 +378,7 @@ function ProductRail({
               flex: '0 0 auto',
               width: 'clamp(220px, 62vw, 280px)',
               scrollSnapAlign: 'start',
+              display: 'flex',
             }}
           >
             <ProductCard phone={p} />
