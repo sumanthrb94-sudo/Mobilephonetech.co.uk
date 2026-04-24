@@ -190,32 +190,42 @@ export default function ProductDetail() {
               </button>
             </motion.div>
 
-            {/* 6 thumbnails — each a miniature of its frame */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }}>
+            {/* 5 tabs — icon + label, each opens a distinct gallery view */}
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${FRAMES.length}, 1fr)`, gap: '6px' }} role="tablist" aria-label="Product gallery views">
               {FRAMES.map((f, i) => {
                 const isActive = selectedImageIndex === i;
+                const Icon = f.icon;
                 return (
                   <button
                     key={f.kind}
+                    role="tab"
                     onClick={() => setSelectedImageIndex(i)}
-                    aria-label={`Show ${f.label.toLowerCase()} view`}
-                    aria-pressed={isActive}
+                    aria-label={`Show ${f.label.toLowerCase()}`}
+                    aria-selected={isActive}
                     title={f.label}
                     style={{
-                      aspectRatio: '1/1',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      padding: '8px 4px',
                       borderRadius: 'var(--radius-md)',
-                      padding: 0,
-                      overflow: 'hidden',
                       cursor: 'pointer',
                       border: isActive ? '2px solid var(--brand-cyan)' : '1px solid var(--grey-20)',
-                      outline: isActive ? '2px solid var(--color-brand-subtle)' : 'none',
-                      outlineOffset: '-4px',
-                      opacity: isActive ? 1 : 0.85,
-                      transition: 'all 0.2s',
-                      background: 'transparent',
+                      background: isActive ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                      color: isActive ? 'var(--brand-header)' : 'var(--grey-60)',
+                      transition: 'all var(--duration-fast) var(--ease-default)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '11px',
+                      fontWeight: isActive ? 700 : 600,
+                      lineHeight: 1.1,
                     }}
                   >
-                    <ProductGalleryFrame product={phone} kind={f.kind} compact />
+                    <Icon size={18} />
+                    <span style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                      {f.label}
+                    </span>
                   </button>
                 );
               })}
