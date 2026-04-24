@@ -10,11 +10,14 @@ const MESSAGES = [
 ] as const;
 
 /**
- * AnnouncementBar — single-row trust cues above the main header.
- * On narrow viewports the three messages rotated through would
- * wrap to two lines and eat 60px+ of above-the-fold real estate,
- * so on mobile we show one at a time with a 3.5s fade rotation.
- * On ≥640px there's room for the full joined string inline.
+ * AnnouncementBar — slim trust-cue strip pinned to the bottom of the
+ * viewport. On mobile it sits above the MobileBottomNav (tab bar);
+ * CSS (see index.css .announcement-bar / html.is-checkout) handles
+ * the positional offsets so the bar drops flush to bottom on checkout
+ * routes where the tab bar is hidden.
+ *
+ * - Mobile: rotating single cue (icon + label), fades every 3.5s.
+ * - ≥sm: inline joined string, all three cues in one row.
  */
 export default function AnnouncementBar() {
   const { isMobile } = useBreakpoint();
@@ -26,37 +29,17 @@ export default function AnnouncementBar() {
     return () => window.clearInterval(id);
   }, [isMobile]);
 
-  const baseStyle = {
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    color: 'var(--grey-0)',
-    fontFamily: 'var(--font-sans)',
-    fontSize: '12px',
-    fontWeight: 600,
-    letterSpacing: '0.02em',
-  } as const;
+  const Active = MESSAGES[index].icon;
 
-  if (isMobile) {
-    const Active = MESSAGES[index].icon;
-    return (
-      <div
-        role="status"
-        aria-live="polite"
-        style={{
-          ...baseStyle,
-          height: '30px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '0 16px',
-          overflow: 'hidden',
-        }}
-      >
+  return (
+    <div className="announcement-bar" role="status" aria-live="polite">
+      {isMobile ? (
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
             key={index}
-            initial={{ opacity: 0, y: 6 }}
+            initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
+            exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
           >
@@ -64,19 +47,19 @@ export default function AnnouncementBar() {
             {MESSAGES[index].label}
           </motion.span>
         </AnimatePresence>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      style={{
-        ...baseStyle,
-        textAlign: 'center',
-        padding: '6px 16px',
-      }}
-    >
-      {MESSAGES.map((m) => m.label).join(' · ')}
+      ) : (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
+          {MESSAGES.map((m) => {
+            const Icon = m.icon;
+            return (
+              <span key={m.label} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Icon size={13} style={{ flexShrink: 0, opacity: 0.85 }} />
+                {m.label}
+              </span>
+            );
+          })}
+        </span>
+      )}
     </div>
   );
 }

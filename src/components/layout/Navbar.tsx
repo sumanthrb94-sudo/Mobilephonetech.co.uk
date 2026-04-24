@@ -11,7 +11,6 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
-import AnnouncementBar from './AnnouncementBar';
 import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -156,8 +155,6 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           transition: 'box-shadow var(--duration-normal)',
         }}
       >
-        {/* Announcement Bar — rotating ticker on mobile, inline on ≥sm */}
-        <AnnouncementBar />
         {/* Main header row — 64px */}
         <header style={{ height: 'var(--header-h)', display: 'flex', alignItems: 'center' }}>
           <div

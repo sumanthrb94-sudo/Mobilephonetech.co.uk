@@ -18,6 +18,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import CheckoutHeader from './components/layout/CheckoutHeader';
 import CheckoutFooter from './components/layout/CheckoutFooter';
+import AnnouncementBar from './components/layout/AnnouncementBar';
 import ScrollToTop from './components/ScrollToTop';
 import { useLocation } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
@@ -256,6 +257,7 @@ function AppContent() {
       <CookieBanner />
       {isCheckoutRoute ? <CheckoutFooter /> : <Footer />}
       {!isCheckoutRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
+      <AnnouncementBar />
     </div>
   );
 }

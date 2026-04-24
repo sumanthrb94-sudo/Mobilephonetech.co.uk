@@ -171,15 +171,20 @@
   gap: 8px;
 }
 
-/* Reserve bottom room for MobileBottomNav on small viewports so the fixed
-   tab bar doesn't cover footer legal text or page-level sticky CTAs. */
+/* Reserve bottom room for the fixed chrome (AnnouncementBar + on
+   mobile the tab bar) so footer legal text / sticky CTAs aren't
+   covered. The announcement bar is 30px everywhere; the tab bar
+   is 64px but hidden on ≥1024px and on /checkout. */
+body {
+  padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+}
 @media (max-width: 1023px) {
   body {
-    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(30px + 64px + env(safe-area-inset-bottom, 0px));
   }
   /* …but on /checkout there is no bottom nav, so reclaim that room. */
   html.is-checkout body {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -259,19 +264,51 @@
   }
 }
 
-/* AI Assistant FAB — lifts above the 64px mobile bottom-nav so it
-   doesn't collide with the Account / Cart tabs. On checkout routes
-   the bottom nav is hidden, so the FAB drops back to its normal
-   edge offset. Desktop (≥1024px) has no bottom nav either. */
+/* Announcement bar — pinned to the bottom of the viewport.
+   Mobile: sits directly above the 64px MobileBottomNav tab bar.
+   Checkout (no tab bar): drops flush to the bottom edge.
+   Desktop (≥1024px, no tab bar either): also flush to bottom. */
+.announcement-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  background: var(--brand-header);
+  color: var(--grey-0);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+html.is-checkout .announcement-bar {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (min-width: 1024px) {
+  .announcement-bar {
+    bottom: 0;
+  }
+}
+
+/* AI Assistant FAB — must clear both the bottom-nav tab bar AND
+   the 30px announcement strip above it. On checkout the tab bar
+   is hidden so we only clear the announcement strip. */
 .ai-fab {
-  bottom: calc(64px + 16px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(64px + 30px + 12px + env(safe-area-inset-bottom, 0px));
 }
 html.is-checkout .ai-fab {
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(30px + 16px + env(safe-area-inset-bottom, 0px));
 }
 @media (min-width: 1024px) {
   .ai-fab {
-    bottom: 32px;
+    bottom: calc(30px + 20px);
   }
 }
 
