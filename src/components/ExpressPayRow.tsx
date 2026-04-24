@@ -77,12 +77,12 @@ function ExpressButton({ provider, onClick }: { provider: Provider; onClick: () 
       type="button"
       onClick={onClick}
       aria-label={`Pay with ${label(provider)}`}
+      className="express-pay-btn"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '8px',
-        height: '48px',
         padding: '0 18px',
         borderRadius: 'var(--radius-md)',
         border: 'none',

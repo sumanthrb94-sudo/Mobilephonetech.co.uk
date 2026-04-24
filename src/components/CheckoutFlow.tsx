@@ -176,12 +176,12 @@ export default function CheckoutFlow() {
   const errorStyle = { fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--color-sale)', marginTop: '4px' };
 
   return (
-    <div style={{ background: 'var(--grey-5)', minHeight: '100vh', paddingTop: '100px', paddingBottom: '80px' }}>
+    <div style={{ background: 'var(--grey-5)', minHeight: '100vh', paddingTop: 'var(--spacing-32)', paddingBottom: 'var(--spacing-80)' }}>
       <div className="container-bm" style={{ maxWidth: '1024px' }}>
-        
+
         {/* Progress Indicator */}
-        <div style={{ marginBottom: 'var(--spacing-48)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ marginBottom: 'var(--spacing-32)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '520px', margin: '0 auto' }}>
             {['Shipping', 'Payment', 'Review'].map((step, index) => {
               const isActive = (index === 0 && ['shipping', 'payment', 'review'].includes(currentStep)) || (index === 1 && ['payment', 'review'].includes(currentStep)) || (index === 2 && currentStep === 'review');
               const isCompleted = (index === 0 && ['payment', 'review'].includes(currentStep)) || (index === 1 && currentStep === 'review');
@@ -258,11 +258,13 @@ export default function CheckoutFlow() {
 
               {/* Shipping Form */}
               {currentStep === 'shipping' && checkoutMode === 'shipping' && (
-                <motion.form key="shipping" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handleShippingSubmit} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-32)' }}>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Shipping Address</h2>
+                <motion.form key="shipping" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handleShippingSubmit} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: 'var(--spacing-24)', flexWrap: 'wrap' }}>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.15 }}>
+                      Shipping address
+                    </h2>
                     {!isAuthenticated && (
-                      <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change Mode</button>
+                      <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change mode</button>
                     )}
                   </div>
 
@@ -351,30 +353,52 @@ export default function CheckoutFlow() {
 
               {/* Payment Form */}
               {currentStep === 'payment' && (
-                <motion.form key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handlePaymentSubmit} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: 'var(--spacing-32)' }}>
-                    <button type="button" onClick={() => setCurrentStep('shipping')} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyItems: 'center', background: 'var(--grey-5)', border: 'none', borderRadius: '50%', cursor: 'pointer', color: 'var(--black)' }}><ArrowLeft size={16} style={{margin: 'auto'}} /></button>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Payment Method</h2>
+                <motion.form key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handlePaymentSubmit} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
+                  <div style={{ marginBottom: 'var(--spacing-24)' }}>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep('shipping')}
+                      aria-label="Back to shipping"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        height: '32px', padding: '0 10px 0 6px',
+                        background: 'transparent', border: 'none', cursor: 'pointer',
+                        color: 'var(--grey-60)', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <ArrowLeft size={16} /> Back
+                    </button>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.15 }}>
+                      Payment method
+                    </h2>
                   </div>
 
                   <ExpressPayRow />
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: 'var(--spacing-32)' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '2px solid var(--black)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '5px solid var(--black)', background: 'white' }} />
-                      <CreditCard size={20} style={{ color: 'var(--black)' }} />
+                    {/* Card — selected by default */}
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '2px solid var(--brand-cyan)', background: 'var(--color-brand-subtle)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
+                      <span aria-hidden style={{ width: '18px', height: '18px', borderRadius: '50%', border: '2px solid var(--brand-cyan)', background: 'var(--grey-0)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-cyan)' }} />
+                      </span>
+                      <CreditCard size={20} style={{ color: 'var(--black)', flexShrink: 0 }} />
                       <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Credit or debit card</span>
                     </label>
+
+                    {/* Klarna */}
                     <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid var(--grey-30)', background: 'white' }} />
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <span aria-hidden style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid var(--grey-30)', background: 'var(--grey-0)', flexShrink: 0 }} />
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#ffa8c5', background: '#000', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Klarna</span>
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Pay in 3 — 0% interest</span>
                       </span>
                     </label>
+
+                    {/* Clearpay */}
                     <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1px solid var(--grey-30)', background: 'white' }} />
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                      <span aria-hidden style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid var(--grey-30)', background: 'var(--grey-0)', flexShrink: 0 }} />
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#000', background: '#b6ffda', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Clearpay</span>
                         <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Pay in 4 — every 2 weeks</span>
                       </span>
@@ -397,10 +421,25 @@ export default function CheckoutFlow() {
 
               {/* Review Step */}
               {currentStep === 'review' && (
-                <motion.div key="review" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: 'var(--spacing-32)' }}>
-                    <button type="button" onClick={() => setCurrentStep('payment')} style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyItems: 'center', background: 'var(--grey-5)', border: 'none', borderRadius: '50%', cursor: 'pointer', color: 'var(--black)' }}><ArrowLeft size={16} style={{margin: 'auto'}} /></button>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 3.5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)' }}>Review Order</h2>
+                <motion.div key="review" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
+                  <div style={{ marginBottom: 'var(--spacing-24)' }}>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep('payment')}
+                      aria-label="Back to payment"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '6px',
+                        height: '32px', padding: '0 10px 0 6px',
+                        background: 'transparent', border: 'none', cursor: 'pointer',
+                        color: 'var(--grey-60)', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
+                        marginBottom: '10px',
+                      }}
+                    >
+                      <ArrowLeft size={16} /> Back
+                    </button>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.15 }}>
+                      Review order
+                    </h2>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>

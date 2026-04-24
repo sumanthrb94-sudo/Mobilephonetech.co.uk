@@ -233,6 +233,28 @@
   }
 }
 
+/* Checkout card — mobile-first padding scale. 20/20 on phones so the
+   form breathes without overflowing narrow viewports; 32/32 on sm+ */
+.checkout-card {
+  padding: 20px 18px;
+}
+@media (min-width: 640px) {
+  .checkout-card {
+    padding: 32px;
+  }
+}
+
+/* Express-pay buttons — slightly shorter on phones so three stacked
+   buttons don't eat the whole viewport */
+.express-pay-btn {
+  height: 44px;
+}
+@media (min-width: 640px) {
+  .express-pay-btn {
+    height: 48px;
+  }
+}
+
 /* Cart pill: compact on mobile, comfortable on tablet+ */
 .navbar-cart {
   height: 40px;
