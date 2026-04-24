@@ -12,6 +12,9 @@ import ProductImage from './ProductImage';
  *   1. "Proceed to checkout" (primary)
  *   2. "Go to cart" (secondary)
  *   3. "Continue shopping" (ghost)
+ *
+ * Positioning uses a flexbox wrapper so framer-motion can animate the inner
+ * card freely without fighting a centering transform.
  */
 
 export default function AddedToCartModal() {
@@ -30,6 +33,14 @@ export default function AddedToCartModal() {
     }, 8000);
     return () => clearTimeout(timer);
   }, [isOpen, isHovered, clearLastAdded]);
+
+  // Lock body scroll while modal is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [isOpen]);
 
   const handleCheckout = () => {
     clearLastAdded();
@@ -66,255 +77,270 @@ export default function AddedToCartModal() {
             }}
           />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
+          {/* Centering wrapper — static, flexbox-based so motion.div is free to animate */}
+          <div
             style={{
               position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              width: 'min(480px, 92vw)',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              background: 'var(--grey-0)',
-              borderRadius: 'var(--radius-xl)',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
+              inset: 0,
               zIndex: 111,
               display: 'flex',
-              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+              pointerEvents: 'none',
             }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="added-to-cart-title"
           >
-            {/* Header */}
-            <div
+            {/* Animated card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 24 }}
+              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
               style={{
+                width: '100%',
+                maxWidth: '460px',
+                maxHeight: 'calc(100vh - 32px)',
+                overflowY: 'auto',
+                background: 'var(--grey-0)',
+                borderRadius: 'var(--radius-xl)',
+                boxShadow: '0 24px 80px rgba(0,0,0,0.18)',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: 'var(--spacing-24) var(--spacing-24) 0',
+                flexDirection: 'column',
+                pointerEvents: 'auto',
               }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="added-to-cart-title"
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div
+              {/* Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '20px 20px 0',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: 'var(--color-trust-text)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <CheckCircle2 size={16} color="white" strokeWidth={3} />
+                  </div>
+                  <h2
+                    id="added-to-cart-title"
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '17px',
+                      fontWeight: 800,
+                      color: 'var(--black)',
+                      margin: 0,
+                    }}
+                  >
+                    Added to Cart
+                  </h2>
+                </div>
+                <button
+                  onClick={handleClose}
+                  aria-label="Close"
                   style={{
-                    width: '28px',
-                    height: '28px',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--grey-50)',
+                    width: '32px',
+                    height: '32px',
                     borderRadius: '50%',
-                    background: 'var(--color-trust-text)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    transition: 'background 0.2s',
+                    flexShrink: 0,
                   }}
+                  onMouseOver={(e) => (e.currentTarget.style.background = 'var(--grey-5)')}
+                  onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
                 >
-                  <CheckCircle2 size={16} color="white" strokeWidth={3} />
-                </div>
-                <h2
-                  id="added-to-cart-title"
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '18px',
-                    fontWeight: 800,
-                    color: 'var(--black)',
-                    margin: 0,
-                  }}
-                >
-                  Added to Cart
-                </h2>
+                  <X size={18} />
+                </button>
               </div>
-              <button
-                onClick={handleClose}
-                aria-label="Close"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--grey-50)',
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s',
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.background = 'var(--grey-5)')}
-                onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            {/* Product summary */}
-            <div
-              style={{
-                padding: 'var(--spacing-20) var(--spacing-24)',
-                display: 'flex',
-                gap: '16px',
-                alignItems: 'center',
-              }}
-            >
+              {/* Product summary */}
               <div
                 style={{
-                  width: '72px',
-                  height: '72px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'center',
+                }}
+              >
+                <div
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    background: 'var(--grey-5)',
+                    borderRadius: 'var(--radius-md)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    flexShrink: 0,
+                    overflow: 'hidden',
+                  }}
+                >
+                  <ProductImage
+                    brand={lastAddedItem.brand}
+                    model={lastAddedItem.model}
+                    category={lastAddedItem.category}
+                    imageUrl={lastAddedItem.imageUrl}
+                    alt={lastAddedItem.model}
+                  />
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: 'var(--black)',
+                      margin: '0 0 4px 0',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {lastAddedItem.model}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '12px',
+                      color: 'var(--grey-50)',
+                      margin: '0 0 6px 0',
+                    }}
+                  >
+                    {lastAddedItem.brand}
+                    {lastAddedItem.storage ? ` · ${lastAddedItem.storage}` : ''}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '15px',
+                      fontWeight: 800,
+                      color: 'var(--black)',
+                      margin: 0,
+                    }}
+                  >
+                    £{lastAddedItem.price}
+                  </p>
+                </div>
+              </div>
+
+              {/* Cart subtotal summary */}
+              <div
+                style={{
+                  margin: '0 20px',
+                  padding: '12px 14px',
                   background: 'var(--grey-5)',
-                  borderRadius: 'var(--radius-md)',
+                  borderRadius: 'var(--radius-lg)',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px',
-                  flexShrink: 0,
-                  overflow: 'hidden',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
               >
-                <ProductImage
-                  brand={lastAddedItem.brand}
-                  model={lastAddedItem.model}
-                  category={lastAddedItem.category}
-                  imageUrl={lastAddedItem.imageUrl}
-                  alt={lastAddedItem.model}
-                />
-              </div>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    color: 'var(--black)',
-                    margin: '0 0 4px 0',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {lastAddedItem.model}
-                </p>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '12px',
-                    color: 'var(--grey-50)',
-                    margin: '0 0 6px 0',
-                  }}
-                >
-                  {lastAddedItem.brand}
-                  {lastAddedItem.storage ? ` · ${lastAddedItem.storage}` : ''}
-                </p>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '16px',
-                    fontWeight: 800,
-                    color: 'var(--black)',
-                    margin: 0,
-                  }}
-                >
-                  £{lastAddedItem.price}
-                </p>
-              </div>
-            </div>
-
-            {/* Cart subtotal summary */}
-            <div
-              style={{
-                margin: '0 var(--spacing-24)',
-                padding: '14px 16px',
-                background: 'var(--grey-5)',
-                borderRadius: 'var(--radius-lg)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <ShoppingBag size={16} style={{ color: 'var(--grey-50)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                  <ShoppingBag size={15} style={{ color: 'var(--grey-50)', flexShrink: 0 }} />
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '13px',
+                      color: 'var(--grey-60)',
+                    }}
+                  >
+                    Cart subtotal ({cartCount} item{cartCount === 1 ? '' : 's'})
+                  </span>
+                </div>
                 <span
                   style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '13px',
-                    color: 'var(--grey-60)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    color: 'var(--black)',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  Cart subtotal ({cartCount} item{cartCount === 1 ? '' : 's'})
+                  £{cartTotal.toFixed(2)}
                 </span>
               </div>
-              <span
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '16px',
-                  fontWeight: 800,
-                  color: 'var(--black)',
-                }}
-              >
-                £{cartTotal.toFixed(2)}
-              </span>
-            </div>
 
-            {/* Actions */}
-            <div
-              style={{
-                padding: 'var(--spacing-24)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-              }}
-            >
-              {/* Primary — Proceed to checkout (Amazon yellow style) */}
-              <button
-                onClick={handleCheckout}
-                className="btn btn-lg btn-full"
+              {/* Actions */}
+              <div
                 style={{
-                  background: '#FFD814',
-                  borderColor: '#FCD200',
-                  color: '#0F1111',
-                  fontWeight: 800,
-                  boxShadow: '0 2px 5px rgba(213,217,217,0.5)',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = '#F7CA00';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = '#FFD814';
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
                 }}
               >
-                Proceed to checkout <ArrowRight size={16} />
-              </button>
+                {/* Primary — Proceed to checkout (Amazon yellow style) */}
+                <button
+                  onClick={handleCheckout}
+                  className="btn btn-lg btn-full"
+                  style={{
+                    background: '#FFD814',
+                    borderColor: '#FCD200',
+                    color: '#0F1111',
+                    fontWeight: 800,
+                    boxShadow: '0 2px 5px rgba(213,217,217,0.5)',
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = '#F7CA00';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.background = '#FFD814';
+                  }}
+                >
+                  Proceed to checkout <ArrowRight size={16} />
+                </button>
 
-              {/* Secondary — Go to cart */}
-              <button
-                onClick={handleGoToCart}
-                className="btn btn-secondary btn-md btn-full"
-              >
-                Go to cart
-              </button>
+                {/* Secondary — Go to cart */}
+                <button
+                  onClick={handleGoToCart}
+                  className="btn btn-secondary btn-md btn-full"
+                >
+                  Go to cart
+                </button>
 
-              {/* Tertiary — Continue shopping */}
-              <button
-                onClick={handleClose}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: 'var(--brand-cyan-hover)',
-                  textDecoration: 'underline',
-                  textUnderlineOffset: '3px',
-                  padding: '4px 0',
-                }}
-              >
-                Continue shopping
-              </button>
-            </div>
-          </motion.div>
+                {/* Tertiary — Continue shopping */}
+                <button
+                  onClick={handleClose}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--brand-cyan-hover)',
+                    textDecoration: 'underline',
+                    textUnderlineOffset: '3px',
+                    padding: '4px 0',
+                  }}
+                >
+                  Continue shopping
+                </button>
+              </div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
