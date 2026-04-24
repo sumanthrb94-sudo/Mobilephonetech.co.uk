@@ -401,7 +401,7 @@ export default function ProductDetail() {
             aria-label="Add to cart"
             style={{
               position: 'fixed',
-              bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+              bottom: 'calc(64px + 30px + env(safe-area-inset-bottom, 0px))',
               left: 0,
               right: 0,
               background: 'var(--grey-0)',
