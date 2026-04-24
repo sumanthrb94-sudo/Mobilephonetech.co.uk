@@ -335,12 +335,12 @@ export default function ProductsPage() {
         />
 
         {/* ── Page header ──────────────────────────────── */}
-        <div style={{ marginBottom: 'var(--spacing-32)' }}>
-          <div className="overline mb-3">{pageLabel}</div>
+        <div style={{ marginBottom: 'var(--spacing-24)' }}>
+          {pageLabel !== 'All devices' && <div className="overline mb-3">{pageLabel}</div>}
           <h1
             style={{
               fontFamily: 'var(--font-sans)',
-              fontSize: 'clamp(28px, 4vw, 44px)',
+              fontSize: 'clamp(26px, 4vw, 44px)',
               fontWeight: 900,
               letterSpacing: '-0.03em',
               color: 'var(--black)',
@@ -350,34 +350,9 @@ export default function ProductsPage() {
           >
             {pageTitle}
           </h1>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', maxWidth: '440px' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', maxWidth: '560px', margin: 0 }}>
             {pageIntro} {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''} available.
           </p>
-        </div>
-
-        {/* Mobile filter toggle */}
-        <div
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--spacing-20)' }}
-          className="lg:hidden"
-        >
-          <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-            {sortedProducts.length} result{sortedProducts.length !== 1 ? 's' : ''}
-          </span>
-          <button
-            id="products-filter-toggle"
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              height: '36px', padding: '0 14px',
-              background: 'var(--grey-0)', border: '1.5px solid var(--grey-20)',
-              borderRadius: 'var(--radius-md)',
-              fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
-              color: 'var(--black)', cursor: 'pointer',
-            }}
-          >
-            <SlidersHorizontal size={14} /> Filters {hasActiveFilters && `(${filters.brand.length + filters.grade.length})`}
-            <ChevronDown size={12} style={{ transform: isFilterOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
-          </button>
         </div>
 
         {/* Mobile filter bottom-sheet */}
@@ -420,48 +395,103 @@ export default function ProductsPage() {
 
             {/* Product Grid */}
             <div className="lg:col-span-3">
-              {/* Results count + sort */}
+              {/* Unified toolbar: count · sort · (mobile) filters */}
               <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
+                  gap: '12px',
                   marginBottom: 'var(--spacing-20)',
                   paddingBottom: 'var(--spacing-16)',
                   borderBottom: '1px solid var(--grey-10)',
                 }}
               >
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-                  Showing <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{sortedProducts.length}</strong> of {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''}
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0, whiteSpace: 'nowrap' }}>
+                  <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{sortedProducts.length}</strong>
+                  <span className="hidden sm:inline"> of {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''}</span>
+                  <span className="sm:hidden"> result{sortedProducts.length !== 1 ? 's' : ''}</span>
                 </p>
-                <div style={{ display: 'flex', gap: '8px' }} role="group" aria-label="Sort products">
-                  {([
-                    { key: 'price-asc' as const,  label: 'Price ↑' },
-                    { key: 'price-desc' as const, label: 'Price ↓' },
-                    { key: 'condition' as const,  label: 'Condition' },
-                  ]).map(({ key, label }) => {
-                    const active = sortBy === key;
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => setSortBy(active ? null : key)}
-                        aria-pressed={active}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label
+                    style={{
+                      position: 'relative',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span className="sr-only">Sort by</span>
+                    <select
+                      aria-label="Sort products"
+                      value={sortBy ?? ''}
+                      onChange={(e) => setSortBy((e.target.value || null) as SortKey)}
+                      style={{
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        MozAppearance: 'none',
+                        height: '36px',
+                        padding: '0 30px 0 12px',
+                        background: 'var(--grey-0)',
+                        border: '1.5px solid var(--grey-20)',
+                        borderRadius: 'var(--radius-md)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        fontWeight: 600,
+                        color: 'var(--black)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <option value="">Sort: Recommended</option>
+                      <option value="price-asc">Price: Low to High</option>
+                      <option value="price-desc">Price: High to Low</option>
+                      <option value="condition">Condition</option>
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        color: 'var(--grey-50)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                  </label>
+                  <button
+                    id="products-filter-toggle"
+                    onClick={() => setIsFilterOpen(true)}
+                    className="lg:hidden"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '6px',
+                      height: '36px', padding: '0 12px',
+                      background: 'var(--grey-0)', border: '1.5px solid var(--grey-20)',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
+                      color: 'var(--black)', cursor: 'pointer',
+                    }}
+                  >
+                    <SlidersHorizontal size={14} />
+                    <span>Filters</span>
+                    {hasActiveFilters && (
+                      <span
+                        aria-label={`${filters.brand.length + filters.grade.length} active filters`}
                         style={{
-                          height: '32px', padding: '0 12px',
-                          fontFamily: 'var(--font-body)', fontSize: '12px',
-                          fontWeight: active ? 700 : 500,
-                          color: active ? 'var(--grey-0)' : 'var(--grey-60)',
-                          background: active ? 'var(--black)' : 'var(--grey-0)',
-                          border: `1.5px solid ${active ? 'var(--black)' : 'var(--grey-20)'}`,
-                          borderRadius: 'var(--radius-md)',
-                          cursor: 'pointer',
-                          transition: 'all var(--duration-fast) var(--ease-default)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minWidth: '18px',
+                          height: '18px',
+                          padding: '0 5px',
+                          borderRadius: '9px',
+                          background: 'var(--brand-cyan)',
+                          color: 'var(--grey-0)',
+                          fontSize: '11px',
+                          fontWeight: 700,
                         }}
                       >
-                        {label}
-                      </button>
-                    );
-                  })}
+                        {filters.brand.length + filters.grade.length + (filters.category?.length || 0)}
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
 
