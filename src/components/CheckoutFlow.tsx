@@ -9,6 +9,37 @@ import ExpressPayRow from './ExpressPayRow';
 import ProductImage from './ProductImage';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 
+// ── Card helpers (module-scope; demo-grade validation only) ─────────
+function luhnValid(cardNumber: string): boolean {
+  let sum = 0;
+  let alternate = false;
+  for (let i = cardNumber.length - 1; i >= 0; i--) {
+    let n = parseInt(cardNumber.charAt(i), 10);
+    if (alternate) { n *= 2; if (n > 9) n -= 9; }
+    sum += n;
+    alternate = !alternate;
+  }
+  return sum % 10 === 0;
+}
+
+function isFutureExpiry(mmYY: string): boolean {
+  const [mStr, yStr] = mmYY.replace(/\s+/g, '').split('/');
+  const month = parseInt(mStr, 10);
+  const year  = parseInt(yStr, 10);
+  if (isNaN(month) || isNaN(year) || month < 1 || month > 12) return false;
+  const now = new Date();
+  const cardDate = new Date(2000 + year, month, 0); // last day of that month
+  return cardDate >= new Date(now.getFullYear(), now.getMonth(), 1);
+}
+
+function detectCardBrand(cardNumber: string): string {
+  if (/^4/.test(cardNumber)) return 'Visa';
+  if (/^(5[1-5]|2[2-7])/.test(cardNumber)) return 'Mastercard';
+  if (/^3[47]/.test(cardNumber)) return 'Amex';
+  if (/^6(011|5)/.test(cardNumber)) return 'Discover';
+  return 'Card';
+}
+
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
  * Uses the shared .btn system, cyan brand accents, and a progress indicator
@@ -79,14 +110,36 @@ export default function CheckoutFlow() {
   const tax = (subtotal - discount + shippingCost) * 0.2; // 20% VAT
   const total = subtotal - discount + shippingCost + tax;
 
-  const validateShippingForm = (data: any) => {
+  // UK-postcode regex covers the official 2016 Royal Mail format:
+  // outward (A9/A9A/A99/AA9/AA9A/AA99) + space-optional + inward (9AA).
+  const UK_POSTCODE_RE = /^([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})$/i;
+  const PHONE_RE = /^[0-9+][\d\s()+-]{7,19}$/;
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateShippingForm = (data: Record<string, FormDataEntryValue | null>) => {
     const errors: Record<string, string> = {};
-    if (!data.fullName) errors.fullName = 'Full name is required';
-    if (!data.email) errors.email = 'Email is required';
-    if (!data.phone) errors.phone = 'Phone number is required';
-    if (!data.addressLine1) errors.addressLine1 = 'Address is required';
-    if (!data.city) errors.city = 'City is required';
-    if (!data.postalCode) errors.postalCode = 'Postal code is required';
+    const fullName     = String(data.fullName ?? '').trim();
+    const email        = String(data.email ?? '').trim();
+    const phone        = String(data.phone ?? '').trim();
+    const addressLine1 = String(data.addressLine1 ?? '').trim();
+    const city         = String(data.city ?? '').trim();
+    const postalCode   = String(data.postalCode ?? '').trim();
+
+    if (!fullName) errors.fullName = 'Full name is required';
+    else if (fullName.split(/\s+/).length < 2) errors.fullName = 'Please enter your first and last name';
+
+    if (!email) errors.email = 'Email is required';
+    else if (!EMAIL_RE.test(email)) errors.email = 'Please enter a valid email address';
+
+    if (!phone) errors.phone = 'Phone number is required';
+    else if (!PHONE_RE.test(phone)) errors.phone = 'Please enter a valid phone number';
+
+    if (!addressLine1) errors.addressLine1 = 'Address is required';
+    if (!city) errors.city = 'City is required';
+
+    if (!postalCode) errors.postalCode = 'Postcode is required';
+    else if (!UK_POSTCODE_RE.test(postalCode)) errors.postalCode = 'Please enter a valid UK postcode';
+
     return errors;
   };
 
@@ -113,13 +166,32 @@ export default function CheckoutFlow() {
   const handlePaymentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const method: PaymentMethod = {
-      id: Math.random().toString(36).substr(2, 9),
-      type: formData.get('paymentType') as 'card' | 'paypal' | 'apple_pay',
-      last4: formData.get('cardLast4') as string,
-      brand: formData.get('cardBrand') as string,
-    };
+    const cardNumber = String(formData.get('cardNumber') ?? '').replace(/\s+/g, '');
+    const cardExpiry = String(formData.get('cardExpiry') ?? '').trim();
+    const cardCvv    = String(formData.get('cardCvv') ?? '').trim();
 
+    // Luhn check + basic format validation. Real card tokenisation
+    // runs through a PSP widget (Stripe/Adyen) in production; this
+    // just stops an obviously empty / malformed form from submitting.
+    const errors: Record<string, string> = {};
+    if (!/^\d{13,19}$/.test(cardNumber)) errors.cardNumber = 'Enter a valid card number';
+    else if (!luhnValid(cardNumber)) errors.cardNumber = 'Card number check digit failed';
+    if (!/^\d{2}\s*\/\s*\d{2}$/.test(cardExpiry)) errors.cardExpiry = 'Use MM/YY';
+    else if (!isFutureExpiry(cardExpiry)) errors.cardExpiry = 'Card has expired';
+    if (!/^\d{3,4}$/.test(cardCvv)) errors.cardCvv = 'CVV is 3 or 4 digits';
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    setFormErrors({});
+    const method: PaymentMethod = {
+      id: Math.random().toString(36).slice(2, 11),
+      type: 'card',
+      last4: cardNumber.slice(-4),
+      brand: detectCardBrand(cardNumber),
+    };
     setPaymentMethod(method);
     setCurrentStep('review');
   };
@@ -447,7 +519,7 @@ export default function CheckoutFlow() {
                       pattern is in place when a real PAF / Loqate feed lands. */}
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: 'var(--spacing-20)' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={labelStyle}>Postcode lookup (fastest)</label>
+                      <label style={labelStyle}>Postcode lookup <span style={{ fontWeight: 500, color: 'var(--grey-40)' }}>(demo)</span></label>
                       <input
                         type="text"
                         id="postcode-lookup"
@@ -478,7 +550,7 @@ export default function CheckoutFlow() {
                     </button>
                   </div>
                   <p id="postcode-lookup-hint" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', margin: '0 0 var(--spacing-24) 0' }}>
-                    We'll pre-fill city & postcode — just add your house number.
+                    Demo lookup — fills a sample London address. A real PAF/Loqate integration replaces this in production.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -581,11 +653,57 @@ export default function CheckoutFlow() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Card Number</label><input type="text" placeholder="0000 0000 0000 0000" style={inputStyle} /></div>
-                    <div><label style={labelStyle}>Expiry Date</label><input type="text" placeholder="MM/YY" style={inputStyle} /></div>
-                    <div><label style={labelStyle}>CVV</label><input type="text" placeholder="123" style={inputStyle} /></div>
-                    <input type="hidden" name="cardLast4" value="4242" />
-                    <input type="hidden" name="cardBrand" value="Visa" />
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <label style={labelStyle} htmlFor="checkout-card-number">Card Number</label>
+                      <input
+                        id="checkout-card-number"
+                        name="cardNumber"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-number"
+                        placeholder="0000 0000 0000 0000"
+                        maxLength={23}
+                        required
+                        style={{ ...inputStyle, borderColor: formErrors.cardNumber ? 'var(--color-sale)' : inputStyle.border as string }}
+                        aria-invalid={!!formErrors.cardNumber}
+                        aria-describedby={formErrors.cardNumber ? 'err-cardNumber' : undefined}
+                      />
+                      {formErrors.cardNumber && <p id="err-cardNumber" style={errorStyle}>{formErrors.cardNumber}</p>}
+                    </div>
+                    <div>
+                      <label style={labelStyle} htmlFor="checkout-card-expiry">Expiry Date</label>
+                      <input
+                        id="checkout-card-expiry"
+                        name="cardExpiry"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-exp"
+                        placeholder="MM/YY"
+                        maxLength={5}
+                        required
+                        style={{ ...inputStyle, borderColor: formErrors.cardExpiry ? 'var(--color-sale)' : inputStyle.border as string }}
+                        aria-invalid={!!formErrors.cardExpiry}
+                        aria-describedby={formErrors.cardExpiry ? 'err-cardExpiry' : undefined}
+                      />
+                      {formErrors.cardExpiry && <p id="err-cardExpiry" style={errorStyle}>{formErrors.cardExpiry}</p>}
+                    </div>
+                    <div>
+                      <label style={labelStyle} htmlFor="checkout-card-cvv">CVV</label>
+                      <input
+                        id="checkout-card-cvv"
+                        name="cardCvv"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="cc-csc"
+                        placeholder="123"
+                        maxLength={4}
+                        required
+                        style={{ ...inputStyle, borderColor: formErrors.cardCvv ? 'var(--color-sale)' : inputStyle.border as string }}
+                        aria-invalid={!!formErrors.cardCvv}
+                        aria-describedby={formErrors.cardCvv ? 'err-cardCvv' : undefined}
+                      />
+                      {formErrors.cardCvv && <p id="err-cardCvv" style={errorStyle}>{formErrors.cardCvv}</p>}
+                    </div>
                   </div>
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>

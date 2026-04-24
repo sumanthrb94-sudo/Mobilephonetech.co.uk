@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Clock, X } from 'lucide-react';
+import { Search, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
 import { useSearch } from '../context/SearchContext';
@@ -231,7 +231,6 @@ export default function SearchAutocomplete({
                             {m.grade} · from £{m.price}
                           </div>
                         </div>
-                        <X size={0} />
                       </Link>
                     </motion.div>
                   );
@@ -250,7 +249,32 @@ export default function SearchAutocomplete({
               </>
             )}
 
-            {matches.length === 0 && recent.length === 0 && (
+            {matches.length === 0 && searchQuery.trim().length > 0 && (
+              <div style={{ padding: '16px', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)' }}>
+                <div style={{ fontWeight: 700, color: 'var(--black)', marginBottom: '4px' }}>
+                  No matches for "{searchQuery.trim()}"
+                </div>
+                <div>
+                  Try <button
+                    type="button"
+                    onClick={() => { setSearchQuery('iphone'); }}
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'var(--brand-cyan-hover)', cursor: 'pointer', textDecoration: 'underline' }}
+                  >iPhone</button>{' or '}
+                  <button
+                    type="button"
+                    onClick={() => { setSearchQuery('galaxy'); }}
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'var(--brand-cyan-hover)', cursor: 'pointer', textDecoration: 'underline' }}
+                  >Galaxy</button>{', or '}
+                  <button
+                    type="button"
+                    onClick={() => submit()}
+                    style={{ background: 'none', border: 'none', padding: 0, color: 'var(--brand-cyan-hover)', cursor: 'pointer', textDecoration: 'underline' }}
+                  >browse every device</button>.
+                </div>
+              </div>
+            )}
+
+            {matches.length === 0 && searchQuery.trim().length === 0 && recent.length === 0 && (
               <div style={{ padding: '16px', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
                 Start typing to see devices.
               </div>

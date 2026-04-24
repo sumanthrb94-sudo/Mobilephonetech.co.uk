@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Pause, Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
@@ -61,9 +61,22 @@ const SLIDES = [
 export default function Hero() {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const { isDesktop } = useBreakpoint();
   const total = SLIDES.length;
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Honour the OS-level reduced-motion preference so auto-advancing
+  // slides stop for anyone who's asked to minimise animation.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   const goTo = (idx: number, dir = 1) => {
     setDirection(dir);
@@ -71,9 +84,11 @@ export default function Hero() {
   };
 
   useEffect(() => {
+    if (isPaused || reducedMotion) return;
     const t = setTimeout(() => goTo((current + 1) % total, 1), 6000);
     return () => clearTimeout(t);
-  }, [current]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, isPaused, reducedMotion]);
 
   const slide = SLIDES[current];
 
@@ -258,6 +273,17 @@ export default function Hero() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => setIsPaused(p => !p)}
+            aria-label={isPaused || reducedMotion ? 'Resume carousel auto-play' : 'Pause carousel auto-play'}
+            aria-pressed={isPaused || reducedMotion}
+            className="btn btn-secondary"
+            style={{ width: '36px', height: '36px', padding: 0, borderRadius: 'var(--radius-full)' }}
+            disabled={reducedMotion}
+            title={reducedMotion ? 'Auto-play disabled by your system preferences' : undefined}
+          >
+            {isPaused || reducedMotion ? <Play size={15} /> : <Pause size={15} />}
+          </button>
           <button
             onClick={() => goTo(current - 1, -1)}
             aria-label="Previous slide"

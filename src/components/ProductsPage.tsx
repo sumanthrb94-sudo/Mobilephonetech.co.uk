@@ -122,7 +122,7 @@ const BRAND_CATEGORY_MATCHES: Record<string, { label: string; brand: string; cat
 };
 
 export default function ProductsPage() {
-  const { searchQuery, filters, setFilters, resetFilters } = useSearch();
+  const { searchQuery, filters, setFilters, resetFilters, priceCap } = useSearch();
   const location = useLocation();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<SortKey>(null);
@@ -245,7 +245,7 @@ export default function ProductsPage() {
 
   const hasActiveFilters =
     filters.brand.length > 0 || filters.grade.length > 0 || (filters.category && filters.category.length > 0) ||
-    filters.priceRange[0] !== 0 || filters.priceRange[1] !== 1500 ||
+    filters.priceRange[0] !== 0 || filters.priceRange[1] !== priceCap ||
     filters.storage.length > 0;
 
   const brandTitle = brandParam ? brandParam.charAt(0).toUpperCase() + brandParam.slice(1).toLowerCase() : '';
@@ -269,12 +269,12 @@ export default function ProductsPage() {
   // ── Filter panel (shared between desktop sticky + mobile drawer) ──────────
   const FilterPanel = () => {
     const [minPrice, setMinPrice] = React.useState(filters.priceRange[0].toString());
-    const [maxPriceInput, setMaxPriceInput] = React.useState(filters.priceRange[1] === 1500 ? '' : filters.priceRange[1].toString());
+    const [maxPriceInput, setMaxPriceInput] = React.useState(filters.priceRange[1] === priceCap ? '' : filters.priceRange[1].toString());
 
     const handlePriceSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       const min = parseInt(minPrice) || 0;
-      const max = parseInt(maxPriceInput) || 1500;
+      const max = parseInt(maxPriceInput) || priceCap;
       handlePriceChange(min, max);
     };
 
