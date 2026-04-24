@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Production Readiness vs Back Market</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { size: A4; margin: 15mm; }
+        body { font-family: 'Inter', -apple-system, sans-serif; color: #1a1a1a; background: #fff; font-size: 11pt; line-height: 1.5; }
+        
+        .btn-print {
+            position: fixed; top: 20px; right: 20px;
+            background: #1a1a1a; color: #fff; border: none;
+            padding: 12px 24px; font-size: 13px; font-weight: 600;
+            cursor: pointer; border-radius: 6px;
+        }
+        
+        .page { max-width: 180mm; margin: 0 auto; padding: 20pt; page-break-after: always; }
+        
+        h1 { font-size: 18pt; font-weight: 700; margin: 0 0 4pt; }
+        h2 { font-size: 13pt; font-weight: 700; margin: 20pt 0 8pt; border-bottom: 2px solid #1a1a1a; padding-bottom: 4pt; }
+        h3 { font-size: 11pt; font-weight: 600; margin: 12pt 0 6pt; }
+        
+        .subtitle { color: #666; font-size: 10pt; margin-bottom: 16pt; }
+        
+        table { width: 100%; border-collapse: collapse; margin: 8pt 0; font-size: 9pt; }
+        th, td { border: 0.5pt solid #ccc; padding: 6pt 8pt; text-align: left; vertical-align: top; }
+        th { background: #f5f5f5; font-weight: 600; }
+        
+        .score { font-weight: 700; font-size: 14pt; }
+        .score-green { color: #16a34a; }
+        .score-yellow { color: #ca8a04; }
+        .score-red { color: #dc2626; }
+        
+        .header { text-align: center; margin-bottom: 20pt; padding-bottom: 12pt; border-bottom: 2px solid #1a1a1a; }
+        
+        ul { margin: 4pt 0 4pt 14pt; }
+        li { margin-bottom: 3pt; }
+        
+        .check { color: #16a34a; font-weight: 600; }
+        .cross { color: #dc2626; font-weight: 600; }
+        .partial { color: #ca8a04; font-weight: 600; }
+        
+        .footer { margin-top: 20pt; padding-top: 8pt; border-top: 1px solid #ddd; font-size: 8pt; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <button class="btn-print" onclick="window.print()">Download PDF</button>
+
+    <div class="page">
+        <div class="header">
+            <h1>Mobilephonetech.co.uk vs Back Market</h1>
+            <p class="subtitle">Production Readiness Analysis | April 2026</p>
+        </div>
+
+        <h2>Executive Summary</h2>
+        <table>
+            <tr><th>Metric</th><th>Mobilephonetech.co.uk</th><th>Back Market</th></tr>
+            <tr><td><strong>Overall Score</strong></td><td class="score score-yellow">68/100</td><td class="score score-green">92/100</td></tr>
+            <tr><td><strong>Status</strong></td><td>Development</td><td>Market Leader</td></tr>
+            <tr><td><strong>Product Count</strong></td><td>~50 products</td><td>1,300+ products</td></tr>
+            <tr><td><strong>Launch Date</strong></td><td>2026</td><td>2015</td></tr>
+        </table>
+
+        <h2>1. Product Catalog & Inventory</h2>
+        <table>
+            <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+            <tr><td>Categories</td><td class="partial">7 (Phones, Tablets, Computing, Gaming, Watches, TV, Accessories)</td><td>10+ (Phones, MacBooks, iPads, AirPods, Gaming, Smart Home, etc)</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>SKU Count</td><td>~50</td><td>1,300+</td><td class="score-red">Critical</td></tr>
+            <tr><td>Brands</td><td>Apple, Samsung, Google, OnePlus, Motorola, Sony, LG, Microsoft</td><td>All major + niche</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Storage Variants</td><td class="partial">Basic (64GB-1TB)</td><td class="check">Full (32GB-2TB)</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Color Options</td><td class="partial">Partial</td><td class="check">Full</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Carrier Lock Status</td><td class="cross">Not displayed</td><td class="check">Clear Locked/Unlocked</td><td class="score-red">Critical</td></tr>
+            <tr><td>Condition Grading</td><td class="partial">3-tier (Pristine/Excellent/Good)</td><td class="check">4-tier (Premium/Excellent/Good/Fair)</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Verified Refurbisher</td><td class="cross">No</td><td class="check">Yes (seller network)</td><td class="score-red">Critical</td></tr>
+        </table>
+
+        <h2>2. Quality Assurance</h2>
+        <table>
+            <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+            <tr><td>Inspection Points</td><td class="cross">Not specified</td><td class="check">Up to 100-point inspection</td><td class="score-red">High</td></tr>
+            <tr><td>Battery Health</td><td class="check">Shown (80-100%)</td><td class="check">80%+ guaranteed</td><td>-</td></tr>
+            <tr><td>Functional Testing</td><td class="partial">Basic</td><td class="check">Diagnostic app</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Data Wipe Certificate</td><td class="cross">No</td><td class="check">Factory reset + wipe</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Genuine Parts Only</td><td class="cross">Not specified</td><td class="check">Guaranteed</td><td class="score-red">High</td></tr>
+        </table>
+
+        <h2>3. Trust & Warranty</h2>
+        <table>
+            <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+            <tr><td>Warranty</td><td class="partial">12 months</td><td class="check">1 year</td><td>-</td></tr>
+            <tr><td>Extended Warranty</td><td class="cross">No</td><td class="check">BackUp optional</td><td class="score-red">High</td></tr>
+            <tr><td>Returns</td><td class="partial">30 days</td><td class="check">30 days free</td><td>-</td></tr>
+            <tr><td>Free Shipping</td><td class="cross">Not shown</td><td class="check">Standard free</td><td class="score-red">High</td></tr>
+            <tr><td>Customer Reviews</td><td class="partial">Basic stars</td><td class="check">4.2/5 (28k+ reviews)</td><td class="score-yellow">Medium</td></tr>
+            <tr><td>Trust Score Display</td><td class="cross">No</td><td class="check">Durability 80%, Performance 62.5%, etc</td><td class="score-red">Critical</td></tr>
+            <tr><td>Help Center</td><td class="partial">Basic FAQ</td><td class="check">Comprehensive</td><td class="score-yellow">Medium</td></tr>
+        </table>
+
+        <div class="page">
+            <h2>4. User Experience</h2>
+            <table>
+                <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+                <tr><td>Search</td><td class="partial">Basic</td><td class="check">Advanced (brand, storage, carrier, price, condition)</td><td class="score-red">High</td></tr>
+                <tr><td>Filters</td><td class="partial">Category only</td><td class="check">Multiple filters</td><td class="score-red">High</td></tr>
+                <tr><td>Compare Tool</td><td class="check">Basic</td><td class="check">Feature comparison</td><td>-</td></tr>
+                <tr><td>Trade-In Program</td><td class="cross">None</td><td class="check">Full service</td><td class="score-red">Critical</td></tr>
+                <tr><td>Finance/Payment</td><td class="cross">Not integrated</td><td class="check">Klarna, monthly</td><td class="score-red">High</td></tr>
+                <tr><td>AI Assistant</td><td class="check">Basic</td><td class="check">Chat support</td><td>-</td></tr>
+                <tr><td>Blog/Guides</td><td class="partial">Basic</td><td class="check">Extensive</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>Mobile App</td><td class="cross">No</td><td class="check">iOS + Android</td><td class="score-red">Critical</td></tr>
+                <tr><td>PWA</td><td class="cross">No</td><td class="check">Yes</td><td class="score-red">Critical</td></tr>
+            </table>
+
+            <h2>5. Product Detail Page</h2>
+            <table>
+                <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+                <tr><td>Specs Tab</td><td class="check">GSMArena-style tabs</td><td class="check">Full tables</td><td>-</td></tr>
+                <tr><td>Network Bands</td><td class="cross">No</td><td class="check">Shown</td><td class="score-red">High</td></tr>
+                <tr><td>Compatible Carriers</td><td class="cross">No</td><td class="check">Yes</td><td class="score-red">Critical</td></tr>
+                <tr><td>IMEI Check</td><td class="cross">No</td><td class="check">BYOD checker</td><td class="score-red">Critical</td></tr>
+                <tr><td>Gallery Images</td><td class="partial">1-2 images</td><td class="check">Multiple + condition photos</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>Video Content</td><td class="cross">No</td><td class="check">Yes</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>Size/Weight</td><td class="check">Yes</td><td class="check">Yes</td><td>-</td></tr>
+            </table>
+
+            <h2>6. Checkout & Conversion</h2>
+            <table>
+                <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+                <tr><td>Guest Checkout</td><td class="check">Yes</td><td class="check">Yes</td><td>-</td></tr>
+                <tr><td>Express Checkout</td><td class="partial">Basic</td><td class="check">PayPal, Apple Pay, Google Pay</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>Order Tracking</td><td class="partial">Basic</td><td class="check">Real-time + app</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>Live Chat</td><td class="cross">No</td><td class="check">Yes</td><td class="score-red">High</td></tr>
+                <tr><td>Email Notifications</td><td class="check">Yes</td><td class="check">Yes</td><td>-</td></tr>
+            </table>
+
+            <h2>7. SEO & Performance</h2>
+            <table>
+                <tr><th>Feature</th><th>Mobilephonetech</th><th>Back Market</th><th>Gap</th></tr>
+                <tr><td>Page Speed</td><td class="partial">Moderate</td><td class="check">Fast (CDN)</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>SSR/SSG</td><td class="check">React + Vite</td><td class="check">Next.js</td><td>-</td></tr>
+                <tr><td>CDN</td><td class="cross">No</td><td class="check">Cloudflare</td><td class="score-red">High</td></tr>
+                <tr><td>SEO Content</td><td class="partial">Basic</td><td class="check">Full blog + guides</td><td class="score-yellow">Medium</td></tr>
+                <tr><td>Schema Markup</td><td class="partial">Partial</td><td class="check">Full</td><td class="score-yellow">Medium</td></tr>
+            </table>
+        </div>
+
+        <div class="page">
+            <h2>8. Priority Gap Analysis</h2>
+            
+            <h3>Critical (Fix Immediately)</h3>
+            <ul>
+                <li><strong>Carrier Lock Status</strong> - Display Locked/Unlocked for each device</li>
+                <li><strong>Compatible Carriers</strong> - Show which networks work</li>
+                <li><strong>IMEI/Network Checker</strong> - Help users verify compatibility</li>
+                <li><strong>Add Trade-In Program</strong> - Allow selling old devices</li>
+                <li><strong>Free Shipping Display</strong> - Prominently show free standard delivery</li>
+                <li><strong>Expand Catalog</strong> - Add 100+ more SKUs</li>
+                <li><strong>Mobile App or PWA</strong> - Consider progressive web app</li>
+            </ul>
+
+            <h3>High Priority</h3>
+            <ul>
+                <li><strong>4-Tier Grading System</strong> - Add Fair + detailed condition descriptions</li>
+                <li><strong>Inspection Points Display</strong> - Show 80-100 point check</li>
+                <li><strong>Finance Options</strong> - Integrate Klarna/monthly payments</li>
+                <li><strong>Trust Scores</strong> - Display transparency scores</li>
+                <li><strong>Customer Reviews</strong> - Implement verified buyer reviews</li>
+                <li><strong>Product Images</strong> - Add multiple + condition-specific photos</li>
+            </ul>
+
+            <h3>Medium Priority</h3>
+            <ul>
+                <li><strong>Extended Warranty</strong> - Offer BackUp-style protection plans</li>
+                <li><strong>Live Chat Support</strong> - Add real-time chat</li>
+                <li><strong>Advanced Search Filters</strong> - Storage, carrier, condition filters</li>
+                <li><strong>Video Content</strong> - Add product videos</li>
+                <li><strong>CDN Implementation</strong> - Add Cloudflare for faster delivery</li>
+            </ul>
+
+            <h2>9. Technical Roadmap</h2>
+            
+            <h3>Phase 1 (Month 1-2) - Foundation</h3>
+            <ul>
+                <li>Add carrier compatibility to all products</li>
+                <li>Display free shipping prominently</li>
+                <li>Expand catalog to 150+ SKUs</li>
+                <li>Implement 4-tier grading system</li>
+            </ul>
+
+            <h3>Phase 2 (Month 3-4) - Trust</h3>
+            <ul>
+                <li>Add trade-in program</li>
+                <li>Implement customer reviews</li>
+                <li>Add finance options (Klarna)</li>
+                <li>Transparency scores display</li>
+            </ul>
+
+            <h3>Phase 3 (Month 5-6) - Competitive</h3>
+            <ul>
+                <li>Build PWA</li>
+                <li>Add live chat support</li>
+                <li>Advanced filters</li>
+                <li>Extended warranty options</li>
+            </ul>
+
+            <div class="footer">
+                <p>Analysis Date: April 2026 | Mobilephonetech.co.uk vs Back Market</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
