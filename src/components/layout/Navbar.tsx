@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
+import AnnouncementBar from './AnnouncementBar';
 import { ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -155,19 +156,8 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           transition: 'box-shadow var(--duration-normal)',
         }}
       >
-        {/* Announcement Bar */}
-        <div style={{
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          color: 'var(--grey-0)',
-          textAlign: 'center',
-          padding: '6px 16px',
-          fontFamily: 'var(--font-sans)',
-          fontSize: '12px',
-          fontWeight: 600,
-          letterSpacing: '0.02em',
-        }}>
-          Free next-day delivery · 12-month warranty · 30-day free returns
-        </div>
+        {/* Announcement Bar — rotating ticker on mobile, inline on ≥sm */}
+        <AnnouncementBar />
         {/* Main header row — 64px */}
         <header style={{ height: 'var(--header-h)', display: 'flex', alignItems: 'center' }}>
           <div

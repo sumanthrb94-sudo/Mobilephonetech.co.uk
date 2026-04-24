@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Lock, RefreshCw, ArrowLeft } from 'lucide-react';
+import AnnouncementBar from './AnnouncementBar';
 
 /**
  * CheckoutHeader — minimal header that replaces the standard Navbar
@@ -29,22 +30,9 @@ export default function CheckoutHeader({ onBackToCart }: { onBackToCart?: () => 
         borderBottom: '1px solid rgba(255,255,255,0.06)',
       }}
     >
-      {/* Announcement bar — same dark navy stripe as the main header so the
+      {/* Announcement bar — same rotating ticker as the main header so the
           site identity carries through without the full catnav. */}
-      <div
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.2)',
-          color: 'var(--grey-0)',
-          textAlign: 'center',
-          padding: '6px 16px',
-          fontFamily: 'var(--font-sans)',
-          fontSize: '12px',
-          fontWeight: 600,
-          letterSpacing: '0.02em',
-        }}
-      >
-        Free next-day delivery · 12-month warranty · 30-day free returns
-      </div>
+      <AnnouncementBar />
 
       <div
         className="navbar-header"
