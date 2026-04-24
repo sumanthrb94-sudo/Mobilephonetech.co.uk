@@ -151,8 +151,10 @@ function OptionTile({
  */
 function deriveStorageLadder(single?: string): string[] {
   if (!single) return [];
+  // specs.storage is often a compound string like "256GB storage, no microSD"
+  // — pull the first capacity token we see.
   const m = single.match(/(\d+)\s*(GB|TB)/i);
-  if (!m) return [single];
+  if (!m) return [];
   const val = parseInt(m[1], 10);
   const unit = m[2].toUpperCase();
   if (unit === 'TB') return ['512 GB', '1 TB', '2 TB'];
@@ -161,6 +163,25 @@ function deriveStorageLadder(single?: string): string[] {
   if (val <= 256) return ['128 GB', '256 GB', '512 GB', '1 TB'];
   if (val <= 512) return ['256 GB', '512 GB', '1 TB'];
   return ['512 GB', '1 TB', '2 TB'];
+}
+
+/**
+ * Category-level default storage ladder for products whose data doesn't
+ * expose storage on the product or in specs. Covers every SKU type we
+ * stock that reasonably has storage capacity.
+ */
+function defaultLadderForCategory(category?: string, model?: string): string[] {
+  const c = (category || '').toLowerCase();
+  const m = (model || '').toLowerCase();
+  if (c === 'phones' || c === 'apple' || c === 'samsung' || c === 'google')
+    return ['128 GB', '256 GB', '512 GB', '1 TB'];
+  if (c === 'tablets' || c === 'ipads & tabs' || m.includes('ipad') || m.includes('tab'))
+    return ['64 GB', '128 GB', '256 GB', '512 GB'];
+  if (c === 'computing' || m.includes('macbook') || m.includes('laptop'))
+    return ['256 GB', '512 GB', '1 TB', '2 TB'];
+  if (c === 'playables' || c === 'gaming' || m.includes('ps5') || m.includes('xbox'))
+    return ['500 GB', '1 TB', '2 TB'];
+  return [];
 }
 
 export default function VariantSelector({
@@ -184,7 +205,14 @@ export default function VariantSelector({
       return Array.from(new Set((product.variants ?? []).map((v) => v.storage).filter(Boolean) as string[]));
     }
     if (product.storageOptions && product.storageOptions.length > 0) return product.storageOptions;
-    return deriveStorageLadder(product.storage);
+
+    // Try the top-level storage first, then any capacity token inside
+    // specs.storage, then fall back to a category-level default ladder.
+    const fromTopLevel = deriveStorageLadder(product.storage);
+    if (fromTopLevel.length > 0) return fromTopLevel;
+    const fromSpecs = deriveStorageLadder(product.specs?.storage);
+    if (fromSpecs.length > 0) return fromSpecs;
+    return defaultLadderForCategory(product.category, product.model);
   }, [product, hasRealVariants]);
 
   const conditionOptions = useMemo<ProductGrade[]>(() => {
