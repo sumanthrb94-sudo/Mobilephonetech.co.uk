@@ -154,8 +154,8 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
         className="container-bm"
         style={{
           maxWidth: 'var(--container-max)',
-          paddingTop: isDesktop ? 'var(--spacing-64)' : 'var(--spacing-40)',
-          paddingBottom: isDesktop ? 'var(--spacing-64)' : 'var(--spacing-32)',
+          paddingTop: isDesktop ? 'var(--spacing-40)' : 'var(--spacing-24)',
+          paddingBottom: isDesktop ? 'var(--spacing-40)' : 'var(--spacing-24)',
           position: 'relative',
           zIndex: 2,
         }}
@@ -168,10 +168,10 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
           transition={{ duration: 0.5, ease: [0.2, 0, 0, 1] }}
           style={{
             display: 'grid',
-            gridTemplateColumns: isDesktop ? 'repeat(2, 1fr)' : '1fr',
-            gap: isDesktop ? '32px' : '20px',
+            gridTemplateColumns: isDesktop ? 'minmax(0, 1.2fr) minmax(0, 1fr)' : '1.4fr 1fr',
+            gap: isDesktop ? '24px' : '14px',
             alignItems: 'center',
-            marginBottom: isDesktop ? 'var(--spacing-48)' : 'var(--spacing-32)',
+            marginBottom: isDesktop ? 'var(--spacing-32)' : 'var(--spacing-20)',
           }}
         >
           {/* Text block */}
@@ -180,25 +180,28 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'center',
-              alignItems: isDesktop ? 'flex-start' : 'center',
-              textAlign: isDesktop ? 'left' : 'center',
-              order: isDesktop ? 1 : 2,
+              alignItems: 'flex-start',
+              textAlign: 'left',
+              order: 1,
+              minWidth: 0,
             }}
           >
-            <div className="overline" style={{ marginBottom: '12px', color: panel.headlineColor }}>
+            <div
+              className="overline"
+              style={{ marginBottom: '6px', color: panel.headlineColor, fontSize: '10px' }}
+            >
               {panel.eyebrow}
             </div>
             <h2
               style={{
                 fontFamily: 'var(--font-sans)',
-                fontSize: 'clamp(28px, 4.5vw, 44px)',
+                fontSize: 'clamp(18px, 3vw, 28px)',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
-                lineHeight: 1.1,
+                lineHeight: 1.15,
                 color: panel.headlineColor,
-                marginBottom: '14px',
                 whiteSpace: 'pre-line',
-                margin: '0 0 14px 0',
+                margin: '0 0 6px 0',
               }}
             >
               {panel.headline}
@@ -206,42 +209,48 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
             <p
               style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: '15px',
+                fontSize: '12px',
                 color: panel.bodyColor,
                 maxWidth: '420px',
-                margin: '0 0 24px 0',
-                lineHeight: 1.55,
+                margin: '0 0 12px 0',
+                lineHeight: 1.4,
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
               }}
             >
               {panel.subline}
             </p>
             <Link
               to={panel.ctaHref}
-              className="btn btn-primary btn-lg"
+              className="btn btn-primary btn-sm"
               style={{ textDecoration: 'none' }}
             >
-              {panel.ctaLabel} <ArrowRight size={18} />
+              {panel.ctaLabel} <ArrowRight size={14} />
             </Link>
           </div>
 
-          {/* Flagship hero shot */}
+          {/* Flagship hero shot — compact rectangle so more of the page
+              can fit above the fold. Landscape aspect instead of square
+              keeps each panel half its previous height. */}
           <div
             style={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              order: isDesktop ? 2 : 1,
-              padding: isDesktop ? 0 : '0 0 8px 0',
+              order: 2,
             }}
           >
             <div
               style={{
-                width: 'clamp(220px, 50vw, 420px)',
-                aspectRatio: '1 / 1',
+                width: '100%',
+                maxWidth: isDesktop ? '220px' : '150px',
+                aspectRatio: '4 / 3',
                 background: 'rgba(255,255,255,0.55)',
-                borderRadius: 'var(--radius-xl)',
-                padding: 'clamp(16px, 3vw, 32px)',
-                boxShadow: '0 24px 48px rgba(0,0,0,0.08)',
+                borderRadius: 'var(--radius-lg)',
+                padding: 'clamp(8px, 1.5vw, 14px)',
+                boxShadow: '0 12px 24px rgba(0,0,0,0.08)',
               }}
             >
               <ProductImage
