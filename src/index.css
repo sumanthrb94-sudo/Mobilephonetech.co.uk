@@ -475,6 +475,10 @@ html.is-checkout .ai-fab {
     background: var(--blue-60);
   }
 
+  /* Series rail — hide horizontal scrollbar but keep swipe */
+  .series-rail::-webkit-scrollbar { display: none; }
+  .series-rail { -ms-overflow-style: none; }
+
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
 

@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
+import TabletMegaMenu from '../TabletMegaMenu';
 
 interface NavbarProps {
   onCartClick: () => void;
@@ -38,6 +39,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
 
   const [activeCategory, setActiveCategory]       = useState('');
   const [openBrand, setOpenBrand]                 = useState<'Apple' | 'Samsung' | 'Google' | null>(null);
+  const [openTablets, setOpenTablets]             = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const catNavRef   = useRef<HTMLDivElement>(null);
 
@@ -378,10 +380,46 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           >
             {CATEGORIES.map((cat) => {
               const isActive = activeCategory === cat.label;
+              const isTabletTrigger = cat.label === 'Ipads & Tabs';
               // Brand triggers: Apple / Samsung / Google open the BrandMegaMenu
               const brandKey = cat.label === 'Apple' || cat.label === 'Samsung' || cat.label === 'Google'
                 ? (cat.label as 'Apple' | 'Samsung' | 'Google')
                 : null;
+              if (isTabletTrigger) {
+                const isOpen = openTablets;
+                return (
+                  <button
+                    key={cat.label}
+                    data-tablet-trigger
+                    aria-haspopup="menu"
+                    aria-expanded={isOpen}
+                    aria-controls="tablet-menu"
+                    onClick={() => setOpenTablets(!isOpen)}
+                    id="catnav-tablets"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '4px',
+                      padding: '0 12px', height: '100%',
+                      fontFamily: 'var(--font-body)', fontSize: '14px',
+                      fontWeight: isOpen || isActive ? 700 : 500,
+                      color: isOpen || isActive ? 'var(--black)' : 'var(--grey-60)',
+                      background: 'transparent', border: 'none', cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      borderBottom: isOpen || isActive ? '2px solid var(--black)' : '2px solid transparent',
+                      borderRadius: 0,
+                      transition: 'all var(--duration-fast)',
+                    }}
+                  >
+                    {cat.label}
+                    <motion.span
+                      animate={{ rotate: isOpen ? 180 : 0 }}
+                      transition={{ duration: 0.18 }}
+                      style={{ display: 'inline-flex', color: 'var(--grey-50)' }}
+                    >
+                      <ChevronDown size={14} />
+                    </motion.span>
+                  </button>
+                );
+              }
               if (brandKey) {
                 const isOpen = openBrand === brandKey;
                 return (
@@ -493,6 +531,9 @@ export default function Navbar({ onCartClick }: NavbarProps) {
           onClose={() => setOpenBrand(null)}
         />
       )}
+
+      {/* Tablet mega-menu — iPads + Android tablets */}
+      <TabletMegaMenu isOpen={openTablets} onClose={() => setOpenTablets(false)} />
 
       {/* ═══════════════════════════════════════════════════
           MOBILE FULL-SCREEN MENU

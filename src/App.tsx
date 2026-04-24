@@ -4,7 +4,7 @@ import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
 import Hero from './components/Hero';
 import TrustBanner from './components/TrustBanner';
-import FeaturedProducts from './components/FeaturedProducts';
+import SeriesRows from './components/SeriesRows';
 import CategoryGrid from './components/CategoryGrid';
 import TrustSection from './components/TrustSection';
 import TestimonialsSection from './components/TestimonialsSection';
@@ -103,7 +103,7 @@ function HomePage() {
       <CategoryGrid />
 
       {/* Section 5: Featured Products */}
-      <FeaturedProducts />
+      <SeriesRows />
 
       {/* Section 5: Value Proposition / Trust */}
       <TrustSection />
