@@ -16,8 +16,11 @@ import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import MobileBottomNav from './components/layout/MobileBottomNav';
+import CheckoutHeader from './components/layout/CheckoutHeader';
+import CheckoutFooter from './components/layout/CheckoutFooter';
 import ScrollToTop from './components/ScrollToTop';
-import { Suspense, lazy } from 'react';
+import { useLocation } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
@@ -115,6 +118,21 @@ function HomePage() {
 
 function AppContent() {
   const { isCartOpen, setIsCartOpen, cartCount } = useCart();
+  const { pathname } = useLocation();
+
+  // Checkout routes use a minimal header with no brand nav / search /
+  // wishlist — the Amazon & BackMarket pattern that keeps the shopper
+  // in the funnel. Bottom tab bar is also hidden on those routes so
+  // there's no distracting tap-out back to Home / Shop / Wishlist.
+  const isCheckoutRoute = pathname.startsWith('/checkout');
+
+  // Toggle a root class so CSS can strip the mobile-reserved bottom
+  // padding (which normally makes room for the fixed tab bar).
+  React.useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('is-checkout', isCheckoutRoute);
+    return () => { document.documentElement.classList.remove('is-checkout'); };
+  }, [isCheckoutRoute]);
 
   return (
     <div
@@ -134,13 +152,16 @@ function AppContent() {
         {cartCount > 0 ? `Cart contains ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Cart is empty'}
       </div>
 
-      {/* Fixed header (64px) + Category nav (48px) = 112px */}
-      <Navbar
-        onCartClick={() => setIsCartOpen(true)}
-      />
-
-      {/* Sidebar (mobile alternative to category nav) */}
-      <Sidebar />
+      {isCheckoutRoute ? (
+        <CheckoutHeader onBackToCart={() => setIsCartOpen(true)} />
+      ) : (
+        <>
+          {/* Fixed header (64px) + Category nav (48px) = 112px */}
+          <Navbar onCartClick={() => setIsCartOpen(true)} />
+          {/* Sidebar (mobile alternative to category nav) */}
+          <Sidebar />
+        </>
+      )}
 
       {/*
         Main content — offset by nav height.
@@ -168,7 +189,7 @@ function AppContent() {
               </div>
             } />
             <Route path="/checkout" element={
-              <div style={{ paddingTop: 'var(--nav-total)' }}>
+              <div style={{ paddingTop: 'calc(var(--header-h) + 30px)' }}>
                 <CheckoutFlow />
               </div>
             } />
@@ -233,8 +254,8 @@ function AppContent() {
       </Suspense>
       <Toast />
       <CookieBanner />
-      <Footer />
-      <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />
+      {isCheckoutRoute ? <CheckoutFooter /> : <Footer />}
+      {!isCheckoutRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
     </div>
   );
 }

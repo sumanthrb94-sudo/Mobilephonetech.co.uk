@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod, Order } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
@@ -24,6 +24,15 @@ export default function CheckoutFlow() {
   const { user, isAuthenticated, continueAsGuest } = useAuth();
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // The checkout step transitions happen in-place (same URL) so the
+  // global ScrollToTop listener doesn't fire. Reset scroll manually on
+  // every step change so a tall Shipping form doesn't leave Payment
+  // scrolled halfway down when the user clicks Continue.
+  useEffect(() => {
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior }); }
+    catch { window.scrollTo(0, 0); }
+  }, [currentStep]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
@@ -121,51 +130,128 @@ export default function CheckoutFlow() {
 
   // ── CONFIRMATION PAGE ──────────────────────────────────────────────────────
   if (currentStep === 'confirmation' && lastOrder) {
+    // Plausible delivery ETA — matches the "order by 4pm" promise
+    const etaDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const etaStr  = etaDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--grey-0)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--spacing-24)' }}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
-          style={{ background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-48)', width: '100%', maxWidth: '480px', textAlign: 'center' }}
-        >
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: 'spring', stiffness: 200, damping: 20 }} style={{ width: '64px', height: '64px', background: 'var(--color-trust-text)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto var(--spacing-24)' }}>
-            <CheckCircle2 size={32} color="white" />
+      <div style={{ minHeight: 'calc(100vh - 200px)', background: 'var(--grey-5)', padding: 'var(--spacing-32) var(--spacing-16)' }}>
+        <div className="container-bm" style={{ maxWidth: '760px' }}>
+          {/* Celebratory hero card */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+            className="checkout-card"
+            style={{ background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-xl)', textAlign: 'center', marginBottom: 'var(--spacing-24)' }}
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.15, type: 'spring', stiffness: 240, damping: 18 }}
+              style={{
+                width: '80px', height: '80px', borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--color-trust-text) 0%, #0d7f4a 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto var(--spacing-20)',
+                boxShadow: '0 10px 30px rgba(22, 163, 74, 0.25)',
+              }}
+            >
+              <CheckCircle2 size={40} color="white" strokeWidth={2.4} />
+            </motion.div>
+
+            <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 5vw, 36px)', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--black)', margin: '0 0 8px 0', lineHeight: 1.1 }}>
+              Order placed · thank you{lastOrder.shippingAddress.fullName ? `, ${lastOrder.shippingAddress.fullName.split(' ')[0]}` : ''}
+            </h1>
+
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', margin: '0 0 var(--spacing-20) 0', lineHeight: 1.55 }}>
+              A confirmation has been emailed to <strong style={{ color: 'var(--black)' }}>{lastOrder.shippingAddress.email}</strong>.
+            </p>
+
+            {/* ETA pill */}
+            <div
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '8px',
+                padding: '10px 16px',
+                background: 'var(--color-brand-subtle)',
+                color: 'var(--brand-header)',
+                borderRadius: 'var(--radius-full)',
+                fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '14px',
+                letterSpacing: '-0.005em',
+              }}
+            >
+              <Truck size={16} />
+              Arriving <strong>{etaStr}</strong>
+            </div>
           </motion.div>
 
-          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: '8px' }}>Order Confirmed</h2>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-32)' }}>Thank you for your purchase.</p>
-
-          <div style={{ background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)', padding: 'var(--spacing-24)', textAlign: 'left', marginBottom: 'var(--spacing-32)' }}>
-            <p className="overline" style={{ marginBottom: '4px' }}>Order Number</p>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>{lastOrder.id}</p>
-
-            <div style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-16)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                <span>Subtotal</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{lastOrder.subtotal.toFixed(2)}</span>
-              </div>
-              {discount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-trust-text)', fontWeight: 600 }}>
-                  <span>Discount</span> <span>-£{discount.toFixed(2)}</span>
+          {/* Order summary + shipping preview — two columns on tablet+, stacked on mobile */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }} className="md:grid-cols-2">
+            {/* Summary */}
+            <div className="checkout-card" style={{ background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-xl)' }}>
+              <p className="overline" style={{ marginBottom: '4px' }}>Order number</p>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', margin: '0 0 var(--spacing-20) 0', letterSpacing: '-0.01em' }}>
+                {lastOrder.id}
+              </p>
+              <div style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-16)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <Row label="Subtotal" value={`£${lastOrder.subtotal.toFixed(2)}`} />
+                {discount > 0 && <Row label="Discount" value={`-£${discount.toFixed(2)}`} accent />}
+                <Row label="Shipping" value={lastOrder.shippingCost === 0 ? 'FREE' : `£${lastOrder.shippingCost.toFixed(2)}`} trust={lastOrder.shippingCost === 0} />
+                <Row label="Tax (20%)" value={`£${lastOrder.tax.toFixed(2)}`} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--grey-10)', paddingTop: '12px', marginTop: '4px', alignItems: 'baseline' }}>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)' }}>Total</span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 900, color: 'var(--black)', letterSpacing: '-0.02em' }}>£{lastOrder.total.toFixed(2)}</span>
                 </div>
-              )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                <span>Shipping</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{lastOrder.shippingCost.toFixed(2)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                <span>Tax (20%)</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{lastOrder.tax.toFixed(2)}</span>
+            </div>
+
+            {/* Shipping preview */}
+            <div className="checkout-card" style={{ background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-xl)' }}>
+              <p className="overline" style={{ marginBottom: '8px' }}>Shipping to</p>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700, color: 'var(--black)', margin: '0 0 6px 0' }}>
+                {lastOrder.shippingAddress.fullName}
+              </p>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.55 }}>
+                <div>{lastOrder.shippingAddress.addressLine1}</div>
+                {lastOrder.shippingAddress.addressLine2 && <div>{lastOrder.shippingAddress.addressLine2}</div>}
+                <div>{lastOrder.shippingAddress.city}, {lastOrder.shippingAddress.postalCode}</div>
+                <div>{lastOrder.shippingAddress.country}</div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--grey-10)', paddingTop: '12px', marginTop: '4px' }}>
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)' }}>Total</span>
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 900, color: 'var(--black)' }}>£{lastOrder.total.toFixed(2)}</span>
+
+              <div style={{ borderTop: '1px solid var(--grey-10)', marginTop: 'var(--spacing-20)', paddingTop: 'var(--spacing-16)' }}>
+                <p className="overline" style={{ marginBottom: '8px' }}>Payment</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
+                  <CreditCard size={18} style={{ color: 'var(--grey-60)' }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
+                    {lastOrder.paymentMethod.brand || 'Card'} ending in {lastOrder.paymentMethod.last4 || '4242'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', marginBottom: 'var(--spacing-32)' }}>
-            A confirmation email has been sent to <strong style={{ color: 'var(--black)' }}>{lastOrder.shippingAddress.email}</strong>.
-          </p>
+          {/* Exit CTAs */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', marginTop: 'var(--spacing-24)' }} className="sm:grid-cols-2">
+            <button
+              onClick={() => window.location.href = '/orders'}
+              className="btn btn-primary btn-lg btn-full"
+            >
+              <Truck size={18} /> Track order
+            </button>
+            <button
+              onClick={() => window.location.href = '/'}
+              className="btn btn-secondary btn-lg btn-full"
+            >
+              Continue shopping
+            </button>
+          </div>
 
-          <button onClick={() => window.location.href = '/'} className="btn btn-primary btn-lg btn-full">Continue Shopping</button>
-        </motion.div>
+          {/* Upsell / reassurance */}
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', textAlign: 'center', marginTop: 'var(--spacing-32)', lineHeight: 1.6 }}>
+            Need to make a change? You have 30 minutes to update your delivery address.{' '}
+            <a href="/faq" style={{ color: 'var(--brand-cyan-hover)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>Help centre</a>.
+          </p>
+        </div>
       </div>
     );
   }
@@ -557,6 +643,25 @@ export default function CheckoutFlow() {
         </div>
       </div>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onSuccess={() => setCheckoutMode('shipping')} />
+    </div>
+  );
+}
+
+function Row({ label, value, accent, trust }: { label: string; value: string; accent?: boolean; trust?: boolean }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--font-body)', fontSize: '14px' }}>
+      <span style={{ color: 'var(--grey-50)' }}>{label}</span>
+      <span
+        style={{
+          color: trust ? 'var(--color-trust-text)' : accent ? 'var(--color-trust-text)' : 'var(--black)',
+          fontWeight: trust || accent ? 700 : 600,
+          fontFamily: trust ? 'var(--font-sans)' : 'var(--font-body)',
+          letterSpacing: trust ? '0.06em' : 0,
+          fontSize: trust ? '13px' : '14px',
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 }

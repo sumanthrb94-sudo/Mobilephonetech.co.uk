@@ -177,6 +177,10 @@
   body {
     padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   }
+  /* …but on /checkout there is no bottom nav, so reclaim that room. */
+  html.is-checkout body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 
 /* Brand mega-menu model grid — 1 col on phones, 2 on tablets, 3 on desktop */
