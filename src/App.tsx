@@ -102,9 +102,6 @@ function HomePage() {
       {/* Section 3: Hero Carousel */}
       <Hero />
 
-      {/* Section 4: MPM-signature Inspected / Tested / Cleaned strip */}
-      <QualityPromise />
-
       {/* Brand-showcase hero panels (iPhone 17, Galaxy S, Fold, Pixel).
           CategoryGrid removed — the top category nav + its dropdowns already
           expose every department, so the grid was duplicate navigation. */}
@@ -130,6 +127,11 @@ function HomePage() {
 
       {/* FAQ accordion — reduces refurb skepticism right above the footer */}
       <HomeFaq />
+
+      {/* MPM-signature Inspected / Tested / Cleaned strip — moved down from
+          just-below-hero to footer-adjacent so product content takes the
+          above-the-fold real estate instead. */}
+      <QualityPromise />
 
       {/* Newsletter lead-capture */}
       <NewsletterSignup />
