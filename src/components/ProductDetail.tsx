@@ -24,7 +24,7 @@ import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
-import ProductGalleryFrame, { FRAMES } from './ProductGalleryFrame';
+
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
@@ -53,6 +53,7 @@ export default function ProductDetail() {
   const [isPrimaryCtaInView, setIsPrimaryCtaInView] = React.useState(true);
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
   const { track: trackRecent } = useRecentlyViewed();
+  const [imageLoaded, setImageLoaded] = React.useState<boolean[]>([]);
 
   const phone = MOCK_PHONES.find(p => p.id === id);
 
@@ -98,6 +99,10 @@ export default function ProductDetail() {
 
 
   const galleryImages = phone.galleryImages || [phone.imageUrl];
+  const activeGallery = galleryImages.length >= 6 ? galleryImages : [
+    ...galleryImages,
+    ...Array.from({ length: Math.max(0, 6 - galleryImages.length) }, (_, i) => galleryImages[i % galleryImages.length])
+  ];
 
   const handleAddToCart = () => {
     if (selectedVariant) {
@@ -112,8 +117,8 @@ export default function ProductDetail() {
     }
   };
 
-  const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % FRAMES.length);
-  const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + FRAMES.length) % FRAMES.length);
+  const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % activeGallery.length);
+  const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + activeGallery.length) % activeGallery.length);
 
   return (
     <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
@@ -153,6 +158,7 @@ export default function ProductDetail() {
           
           {/* ── Left Column: Claude-designed 6-frame gallery ─ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}>
+            {/* ── 6-Image Gallery ─────────────────────────────── */}
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
               style={{
@@ -163,7 +169,28 @@ export default function ProductDetail() {
                 background: 'var(--grey-5)',
               }}
             >
-              <ProductGalleryFrame product={phone} kind={FRAMES[selectedImageIndex % FRAMES.length].kind} />
+              <img
+                key={activeGallery[selectedImageIndex]}
+                src={activeGallery[selectedImageIndex]}
+                alt={`${phone.model} — view ${selectedImageIndex + 1}`}
+                loading="eager"
+                decoding="async"
+                onLoad={() => setImageLoaded(prev => { const next = [...prev]; next[selectedImageIndex] = true; return next; })}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  padding: '24px',
+                  opacity: imageLoaded[selectedImageIndex] ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}
+              />
+              {!imageLoaded[selectedImageIndex] && (
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: '40px', height: '40px', border: '3px solid var(--grey-10)', borderTopColor: 'var(--brand-cyan)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              )}
 
               {savings > 0 && (
                 <span
@@ -176,56 +203,56 @@ export default function ProductDetail() {
 
               <button
                 onClick={prevImage}
-                aria-label="Previous view"
-                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 2 }}
+                aria-label="Previous image"
+                style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 2 }}
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft size={20} />
               </button>
               <button
                 onClick={nextImage}
-                aria-label="Next view"
-                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 2 }}
+                aria-label="Next image"
+                style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 2 }}
               >
-                <ChevronRight size={18} />
+                <ChevronRight size={20} />
               </button>
             </motion.div>
 
-            {/* 5 tabs — icon + label, each opens a distinct gallery view */}
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${FRAMES.length}, 1fr)`, gap: '6px' }} role="tablist" aria-label="Product gallery views">
-              {FRAMES.map((f, i) => {
+            {/* 6 Thumbnails */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }} role="tablist" aria-label="Product gallery">
+              {activeGallery.map((src, i) => {
                 const isActive = selectedImageIndex === i;
-                const Icon = f.icon;
                 return (
                   <button
-                    key={f.kind}
+                    key={i}
                     role="tab"
                     onClick={() => setSelectedImageIndex(i)}
-                    aria-label={`Show ${f.label.toLowerCase()}`}
+                    aria-label={`Image ${i + 1}`}
                     aria-selected={isActive}
-                    title={f.label}
                     style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      padding: '8px 4px',
+                      position: 'relative',
+                      aspectRatio: '1/1',
                       borderRadius: 'var(--radius-md)',
                       cursor: 'pointer',
                       border: isActive ? '2px solid var(--brand-cyan)' : '1px solid var(--grey-20)',
-                      background: isActive ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
-                      color: isActive ? 'var(--brand-header)' : 'var(--grey-60)',
+                      background: 'var(--grey-0)',
+                      padding: '4px',
+                      overflow: 'hidden',
                       transition: 'all var(--duration-fast) var(--ease-default)',
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: '11px',
-                      fontWeight: isActive ? 700 : 600,
-                      lineHeight: 1.1,
                     }}
                   >
-                    <Icon size={18} />
-                    <span style={{ textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
-                      {f.label}
-                    </span>
+                    <img
+                      src={src}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        opacity: isActive ? 1 : 0.65,
+                        transition: 'opacity 0.2s',
+                      }}
+                    />
                   </button>
                 );
               })}

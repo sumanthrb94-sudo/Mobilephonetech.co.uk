@@ -13,9 +13,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-15-plus-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Box"
+    ],
     isCertified: true,
-    stock: 235,
+    stock: 400,
     specs: {
       displaySize: "6.7 inches",
       display: "Super Retina XDR OLED",
@@ -75,7 +83,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-premium-blue",
@@ -84,7 +92,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-excellent-blue",
@@ -93,7 +101,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-good-pink",
@@ -102,7 +110,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-premium-pink",
@@ -111,7 +119,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-excellent-pink",
@@ -120,7 +128,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-good-green",
@@ -129,7 +137,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-premium-green",
@@ -138,7 +146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-excellent-green",
@@ -147,7 +155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-good-yellow",
@@ -156,7 +164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-premium-yellow",
@@ -165,7 +173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-excellent-yellow",
@@ -174,7 +182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-good-black",
@@ -183,7 +191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-premium-black",
@@ -192,7 +200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-excellent-black",
@@ -201,7 +209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-good-blue",
@@ -210,7 +218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-premium-blue",
@@ -219,7 +227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-excellent-blue",
@@ -228,7 +236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-good-pink",
@@ -237,7 +245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-premium-pink",
@@ -246,7 +254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-excellent-pink",
@@ -255,7 +263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-good-green",
@@ -264,7 +272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-premium-green",
@@ -273,7 +281,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-excellent-green",
@@ -282,7 +290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-good-yellow",
@@ -291,7 +299,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-premium-yellow",
@@ -300,7 +308,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-unlocked-256gb-excellent-yellow",
@@ -309,7 +317,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-good-black",
@@ -318,7 +326,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-premium-black",
@@ -327,7 +335,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-excellent-black",
@@ -336,7 +344,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-good-blue",
@@ -345,7 +353,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-premium-blue",
@@ -354,7 +362,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-excellent-blue",
@@ -363,7 +371,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-good-pink",
@@ -372,7 +380,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-premium-pink",
@@ -381,7 +389,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-excellent-pink",
@@ -390,7 +398,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-good-green",
@@ -399,7 +407,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-premium-green",
@@ -408,7 +416,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-excellent-green",
@@ -417,7 +425,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-good-yellow",
@@ -426,7 +434,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-premium-yellow",
@@ -435,7 +443,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-unlocked-512gb-excellent-yellow",
@@ -444,7 +452,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-good-black",
@@ -453,7 +461,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-premium-black",
@@ -462,7 +470,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-unlocked-128gb-excellent-black",
@@ -471,7 +479,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 13,
+        stock: 15,
       }
     ],
   },
@@ -487,9 +495,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-17-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Box"
+    ],
     isCertified: true,
-    stock: 335,
+    stock: 400,
     specs: {
       displaySize: "6.3 inches",
       display: "Super Retina XDR OLED",
@@ -549,7 +565,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 11,
+        stock: 3,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-premium-mist-blue",
@@ -558,7 +574,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-excellent-mist-blue",
@@ -567,7 +583,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-good-mist-blue",
@@ -576,7 +592,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-brand-new-mist-blue",
@@ -585,7 +601,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-premium-mist-blue",
@@ -594,7 +610,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-excellent-mist-blue",
@@ -603,7 +619,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 11,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-good-mist-blue",
@@ -612,7 +628,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-brand-new-black-titanium",
@@ -621,7 +637,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 11,
+        stock: 3,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-premium-black-titanium",
@@ -630,7 +646,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-excellent-black-titanium",
@@ -639,7 +655,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-good-black-titanium",
@@ -648,7 +664,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-brand-new-lavender",
@@ -657,7 +673,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 11,
+        stock: 3,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-premium-lavender",
@@ -666,7 +682,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-excellent-lavender",
@@ -675,7 +691,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-good-lavender",
@@ -684,7 +700,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-brand-new-sage",
@@ -693,7 +709,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 11,
+        stock: 3,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-premium-sage",
@@ -702,7 +718,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-excellent-sage",
@@ -711,7 +727,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-good-sage",
@@ -720,7 +736,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-brand-new-white",
@@ -729,7 +745,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 11,
+        stock: 3,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-premium-white",
@@ -738,7 +754,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-excellent-white",
@@ -747,7 +763,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-unlocked-256gb-good-white",
@@ -756,7 +772,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-brand-new-black-titanium",
@@ -765,7 +781,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-premium-black-titanium",
@@ -774,7 +790,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-excellent-black-titanium",
@@ -783,7 +799,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 11,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-good-black-titanium",
@@ -792,7 +808,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-brand-new-lavender",
@@ -801,7 +817,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-premium-lavender",
@@ -810,7 +826,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-excellent-lavender",
@@ -819,7 +835,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 11,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-good-lavender",
@@ -828,7 +844,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-brand-new-sage",
@@ -837,7 +853,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-premium-sage",
@@ -846,7 +862,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-excellent-sage",
@@ -855,7 +871,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 11,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-good-sage",
@@ -864,7 +880,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-brand-new-white",
@@ -873,7 +889,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-premium-white",
@@ -882,7 +898,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-excellent-white",
@@ -891,7 +907,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 11,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-unlocked-512gb-good-white",
@@ -900,7 +916,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 9,
+        stock: 15,
       }
     ],
   },
@@ -916,9 +932,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-17-pro-max-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 426,
+    stock: 369,
     specs: {
       displaySize: "6.9 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -978,7 +1002,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-excellent-deep-blue",
@@ -987,7 +1011,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-good-deep-blue",
@@ -996,7 +1020,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-brand-new-silver",
@@ -1005,7 +1029,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 12,
+        stock: 1,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-premium-silver",
@@ -1014,7 +1038,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-excellent-silver",
@@ -1023,7 +1047,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-good-silver",
@@ -1032,7 +1056,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-brand-new-cosmic-orange",
@@ -1050,7 +1074,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-excellent-cosmic-orange",
@@ -1059,7 +1083,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-good-cosmic-orange",
@@ -1068,7 +1092,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-brand-new-deep-blue",
@@ -1086,7 +1110,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-excellent-deep-blue",
@@ -1095,7 +1119,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-good-deep-blue",
@@ -1104,7 +1128,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-brand-new-silver",
@@ -1122,7 +1146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 6,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-excellent-silver",
@@ -1131,7 +1155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-1-tb-good-silver",
@@ -1140,7 +1164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-brand-new-cosmic-orange",
@@ -1149,7 +1173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1709,
         originalPrice: 1799,
-        stock: 15,
+        stock: 10,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-premium-cosmic-orange",
@@ -1158,7 +1182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1475,
         originalPrice: 1799,
-        stock: 15,
+        stock: 14,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-excellent-cosmic-orange",
@@ -1167,7 +1191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1259,
         originalPrice: 1799,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-good-cosmic-orange",
@@ -1176,7 +1200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 989,
         originalPrice: 1799,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-brand-new-deep-blue",
@@ -1185,7 +1209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1709,
         originalPrice: 1799,
-        stock: 15,
+        stock: 10,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-premium-deep-blue",
@@ -1194,7 +1218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1475,
         originalPrice: 1799,
-        stock: 15,
+        stock: 14,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-excellent-deep-blue",
@@ -1203,7 +1227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1259,
         originalPrice: 1799,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-good-deep-blue",
@@ -1212,7 +1236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 989,
         originalPrice: 1799,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-brand-new-silver",
@@ -1221,7 +1245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1709,
         originalPrice: 1799,
-        stock: 15,
+        stock: 10,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-premium-silver",
@@ -1230,7 +1254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1475,
         originalPrice: 1799,
-        stock: 15,
+        stock: 14,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-excellent-silver",
@@ -1239,7 +1263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1259,
         originalPrice: 1799,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-2-tb-good-silver",
@@ -1248,7 +1272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 989,
         originalPrice: 1799,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-brand-new-cosmic-orange",
@@ -1257,7 +1281,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-premium-cosmic-orange",
@@ -1266,7 +1290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-excellent-cosmic-orange",
@@ -1275,7 +1299,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-good-cosmic-orange",
@@ -1284,7 +1308,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-brand-new-deep-blue",
@@ -1293,7 +1317,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-premium-deep-blue",
@@ -1302,7 +1326,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-excellent-deep-blue",
@@ -1311,7 +1335,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-good-deep-blue",
@@ -1320,7 +1344,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-brand-new-silver",
@@ -1329,7 +1353,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-premium-silver",
@@ -1338,7 +1362,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-excellent-silver",
@@ -1347,7 +1371,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-256gb-good-silver",
@@ -1356,7 +1380,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-brand-new-cosmic-orange",
@@ -1365,7 +1389,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 12,
+        stock: 1,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-premium-cosmic-orange",
@@ -1374,7 +1398,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-excellent-cosmic-orange",
@@ -1383,7 +1407,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-good-cosmic-orange",
@@ -1392,7 +1416,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-17-pro-max-unlocked-512gb-brand-new-deep-blue",
@@ -1401,7 +1425,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 12,
+        stock: 1,
       }
     ],
   },
@@ -1417,9 +1441,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-15-pro-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Box"
+    ],
     isCertified: true,
-    stock: 580,
+    stock: 520,
     specs: {
       displaySize: "6.1 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -1480,7 +1512,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-brand-new-blue-titanium",
@@ -1489,7 +1521,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-brand-new-natural-titanium",
@@ -1498,7 +1530,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-brand-new-white-titanium",
@@ -1507,7 +1539,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-brand-new-black-titanium",
@@ -1516,7 +1548,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-brand-new-blue-titanium",
@@ -1525,7 +1557,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-brand-new-natural-titanium",
@@ -1534,7 +1566,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-brand-new-white-titanium",
@@ -1543,7 +1575,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-brand-new-black-titanium",
@@ -1552,7 +1584,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-brand-new-blue-titanium",
@@ -1561,7 +1593,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-brand-new-natural-titanium",
@@ -1570,7 +1602,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-brand-new-white-titanium",
@@ -1579,7 +1611,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-brand-new-black-titanium",
@@ -1588,7 +1620,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 15,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-brand-new-blue-titanium",
@@ -1597,7 +1629,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 15,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-brand-new-natural-titanium",
@@ -1606,7 +1638,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 15,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-brand-new-white-titanium",
@@ -1615,7 +1647,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 15,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-premium-natural-titanium",
@@ -1633,7 +1665,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-excellent-natural-titanium",
@@ -1642,7 +1674,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-premium-natural-titanium",
@@ -1651,7 +1683,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 8,
+        stock: 10,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-good-natural-titanium",
@@ -1660,7 +1692,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-excellent-natural-titanium",
@@ -1669,7 +1701,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-premium-natural-titanium",
@@ -1678,7 +1710,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-good-natural-titanium",
@@ -1687,7 +1719,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-excellent-natural-titanium",
@@ -1696,7 +1728,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-premium-natural-titanium",
@@ -1714,7 +1746,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-excellent-white-titanium",
@@ -1723,7 +1755,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-premium-white-titanium",
@@ -1741,7 +1773,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-excellent-white-titanium",
@@ -1750,7 +1782,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-premium-white-titanium",
@@ -1759,7 +1791,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 8,
+        stock: 10,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-good-white-titanium",
@@ -1768,7 +1800,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-excellent-white-titanium",
@@ -1777,7 +1809,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-premium-white-titanium",
@@ -1786,7 +1818,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-good-white-titanium",
@@ -1795,7 +1827,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-excellent-white-titanium",
@@ -1804,7 +1836,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-premium-white-titanium",
@@ -1822,7 +1854,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-excellent-black-titanium",
@@ -1831,7 +1863,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-premium-black-titanium",
@@ -1849,7 +1881,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-excellent-black-titanium",
@@ -1858,7 +1890,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-premium-black-titanium",
@@ -1867,7 +1899,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 8,
+        stock: 10,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-good-black-titanium",
@@ -1876,7 +1908,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-excellent-black-titanium",
@@ -1885,7 +1917,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-premium-black-titanium",
@@ -1894,7 +1926,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-good-black-titanium",
@@ -1903,7 +1935,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-excellent-black-titanium",
@@ -1912,7 +1944,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-premium-black-titanium",
@@ -1930,7 +1962,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-excellent-blue-titanium",
@@ -1939,7 +1971,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-premium-blue-titanium",
@@ -1957,7 +1989,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-excellent-blue-titanium",
@@ -1966,7 +1998,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-pro-unlocked-256gb-premium-blue-titanium",
@@ -1975,7 +2007,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 8,
+        stock: 10,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-good-blue-titanium",
@@ -1984,7 +2016,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-excellent-blue-titanium",
@@ -1993,7 +2025,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-512gb-premium-blue-titanium",
@@ -2002,7 +2034,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-good-blue-titanium",
@@ -2011,7 +2043,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-excellent-blue-titanium",
@@ -2020,7 +2052,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-pro-unlocked-1tb-premium-blue-titanium",
@@ -2038,7 +2070,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-pro-unlocked-128gb-excellent-natural-titanium",
@@ -2047,7 +2079,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       }
     ],
   },
@@ -2063,9 +2095,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-17-pro-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Box"
+    ],
     isCertified: true,
-    stock: 276,
+    stock: 300,
     specs: {
       displaySize: "6.3 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -2124,7 +2164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-brand-new-cosmic-orange",
@@ -2133,7 +2173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-premium-cosmic-orange",
@@ -2142,7 +2182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-excellent-cosmic-orange",
@@ -2160,7 +2200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-brand-new-deep-blue",
@@ -2169,7 +2209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-premium-deep-blue",
@@ -2178,7 +2218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-excellent-deep-blue",
@@ -2187,7 +2227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 8,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-good-deep-blue",
@@ -2196,7 +2236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-brand-new-silver",
@@ -2205,7 +2245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-premium-silver",
@@ -2214,7 +2254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-excellent-silver",
@@ -2223,7 +2263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 8,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-good-silver",
@@ -2232,7 +2272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-brand-new-deep-blue",
@@ -2241,7 +2281,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-premium-deep-blue",
@@ -2250,7 +2290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-excellent-deep-blue",
@@ -2268,7 +2308,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-brand-new-silver",
@@ -2277,7 +2317,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-premium-silver",
@@ -2286,7 +2326,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-512gb-excellent-silver",
@@ -2304,7 +2344,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-brand-new-cosmic-orange",
@@ -2313,7 +2353,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-premium-cosmic-orange",
@@ -2331,7 +2371,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-good-cosmic-orange",
@@ -2340,7 +2380,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-brand-new-deep-blue",
@@ -2349,7 +2389,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-premium-deep-blue",
@@ -2367,7 +2407,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-good-deep-blue",
@@ -2376,7 +2416,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-brand-new-silver",
@@ -2385,7 +2425,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-premium-silver",
@@ -2403,7 +2443,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-17-pro-unlocked-1-tb-good-silver",
@@ -2412,7 +2452,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 6,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-brand-new-cosmic-orange",
@@ -2421,7 +2461,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-premium-cosmic-orange",
@@ -2430,7 +2470,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-17-pro-unlocked-256gb-excellent-cosmic-orange",
@@ -2439,7 +2479,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 8,
       }
     ],
   },
@@ -2455,9 +2495,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-8-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Box"
+    ],
     isCertified: true,
-    stock: 264,
+    stock: 318,
     specs: {
       displaySize: "4.7 inches",
       display: "Retina HD LCD",
@@ -2515,7 +2563,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-premium-gold",
@@ -2524,7 +2572,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-excellent-gold",
@@ -2533,7 +2581,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-good-gold",
@@ -2542,7 +2590,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-new-silver",
@@ -2551,7 +2599,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-premium-silver",
@@ -2560,7 +2608,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-excellent-silver",
@@ -2569,7 +2617,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-good-silver",
@@ -2578,7 +2626,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-new-space-grey",
@@ -2587,7 +2635,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-premium-space-grey",
@@ -2596,7 +2644,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-excellent-space-grey",
@@ -2605,7 +2653,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-8-unlocked-128gb-good-space-grey",
@@ -2614,7 +2662,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-new-gold",
@@ -2623,7 +2671,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-new-silver",
@@ -2632,7 +2680,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-new-space-grey",
@@ -2641,7 +2689,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-new-gold",
@@ -2650,7 +2698,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 664,
         originalPrice: 699,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-new-silver",
@@ -2659,7 +2707,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 664,
         originalPrice: 699,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-new-space-grey",
@@ -2668,7 +2716,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 664,
         originalPrice: 699,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-excellent-gold",
@@ -2677,7 +2725,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 3,
+        stock: 9,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-premium-gold",
@@ -2686,7 +2734,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 11,
+        stock: 2,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-good-silver",
@@ -2695,7 +2743,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 8,
+        stock: 10,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-excellent-silver",
@@ -2704,7 +2752,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 3,
+        stock: 9,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-premium-silver",
@@ -2713,7 +2761,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 11,
+        stock: 2,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-good-space-grey",
@@ -2722,7 +2770,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 8,
+        stock: 10,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-excellent-space-grey",
@@ -2731,7 +2779,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 3,
+        stock: 9,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-premium-space-grey",
@@ -2740,7 +2788,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 11,
+        stock: 2,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-good-gold",
@@ -2749,7 +2797,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-excellent-gold",
@@ -2758,7 +2806,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-premium-gold",
@@ -2767,7 +2815,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-good-silver",
@@ -2776,7 +2824,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-excellent-silver",
@@ -2785,7 +2833,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-premium-silver",
@@ -2794,7 +2842,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-good-space-grey",
@@ -2803,7 +2851,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-excellent-space-grey",
@@ -2812,7 +2860,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-8-unlocked-256gb-premium-space-grey",
@@ -2821,7 +2869,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-8-unlocked-64gb-good-gold",
@@ -2830,7 +2878,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 8,
+        stock: 10,
       }
     ],
   },
@@ -2846,9 +2894,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-16-pro-unlocked-copy.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 344,
+    stock: 328,
     specs: {
       displaySize: "6.9 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -2908,7 +2964,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-excellent-black-titanium",
@@ -2917,7 +2973,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-good-black-titanium",
@@ -2926,7 +2982,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-brand-new-white-titanium",
@@ -2935,7 +2991,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-premium-white-titanium",
@@ -2944,7 +3000,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-excellent-white-titanium",
@@ -2953,7 +3009,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-good-white-titanium",
@@ -2962,7 +3018,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-brand-new-natural-titanium",
@@ -2971,7 +3027,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1519,
         originalPrice: 1599,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-premium-natural-titanium",
@@ -2980,7 +3036,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 1,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-excellent-natural-titanium",
@@ -2989,7 +3045,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-good-natural-titanium",
@@ -2998,7 +3054,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 2,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-brand-new-desert-titanium",
@@ -3007,7 +3063,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1519,
         originalPrice: 1599,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-premium-desert-titanium",
@@ -3016,7 +3072,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 1,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-excellent-desert-titanium",
@@ -3025,7 +3081,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-good-desert-titanium",
@@ -3034,7 +3090,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 2,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-brand-new-black-titanium",
@@ -3043,7 +3099,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1519,
         originalPrice: 1599,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-premium-black-titanium",
@@ -3052,7 +3108,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 1,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-excellent-black-titanium",
@@ -3061,7 +3117,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-good-black-titanium",
@@ -3070,7 +3126,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 2,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-brand-new-white-titanium",
@@ -3079,7 +3135,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1519,
         originalPrice: 1599,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-premium-white-titanium",
@@ -3088,7 +3144,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 1,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-excellent-white-titanium",
@@ -3097,7 +3153,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-1tb-good-white-titanium",
@@ -3106,7 +3162,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 2,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-brand-new-natural-titanium",
@@ -3115,7 +3171,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-premium-natural-titanium",
@@ -3124,7 +3180,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-excellent-natural-titanium",
@@ -3133,7 +3189,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-good-natural-titanium",
@@ -3142,7 +3198,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-brand-new-desert-titanium",
@@ -3151,7 +3207,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-premium-desert-titanium",
@@ -3160,7 +3216,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-excellent-desert-titanium",
@@ -3169,7 +3225,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-good-desert-titanium",
@@ -3178,7 +3234,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-brand-new-black-titanium",
@@ -3187,7 +3243,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-premium-black-titanium",
@@ -3196,7 +3252,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-excellent-black-titanium",
@@ -3205,7 +3261,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-good-black-titanium",
@@ -3214,7 +3270,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-brand-new-white-titanium",
@@ -3223,7 +3279,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-premium-white-titanium",
@@ -3232,7 +3288,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-excellent-white-titanium",
@@ -3241,7 +3297,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-256gb-good-white-titanium",
@@ -3250,7 +3306,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-brand-new-natural-titanium",
@@ -3259,7 +3315,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-premium-natural-titanium",
@@ -3268,7 +3324,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-excellent-natural-titanium",
@@ -3277,7 +3333,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-good-natural-titanium",
@@ -3286,7 +3342,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-brand-new-desert-titanium",
@@ -3295,7 +3351,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-premium-desert-titanium",
@@ -3304,7 +3360,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-excellent-desert-titanium",
@@ -3313,7 +3369,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-good-desert-titanium",
@@ -3322,7 +3378,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-copy-512gb-brand-new-black-titanium",
@@ -3331,7 +3387,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1329,
         originalPrice: 1399,
-        stock: 13,
+        stock: 10,
       }
     ],
   },
@@ -3347,9 +3403,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-16-unlocked-copy.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16e+Box"
+    ],
     isCertified: true,
-    stock: 192,
+    stock: 188,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -3407,7 +3471,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 569,
         originalPrice: 599,
-        stock: 4,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-premium-black",
@@ -3416,7 +3480,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 491,
         originalPrice: 599,
-        stock: 8,
+        stock: 4,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-excellent-black",
@@ -3425,7 +3489,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 419,
         originalPrice: 599,
-        stock: 6,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-good-black",
@@ -3434,7 +3498,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 329,
         originalPrice: 599,
-        stock: 10,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-brand-new-white",
@@ -3443,7 +3507,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 569,
         originalPrice: 599,
-        stock: 4,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-premium-white",
@@ -3452,7 +3516,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 491,
         originalPrice: 599,
-        stock: 8,
+        stock: 4,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-excellent-white",
@@ -3461,7 +3525,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 419,
         originalPrice: 599,
-        stock: 6,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-copy-128gb-good-white",
@@ -3470,7 +3534,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 329,
         originalPrice: 599,
-        stock: 10,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-unlocked-copy-256gb-brand-new-black",
@@ -3488,7 +3552,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-unlocked-copy-256gb-excellent-black",
@@ -3497,7 +3561,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-unlocked-copy-256gb-good-black",
@@ -3506,7 +3570,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-copy-256gb-brand-new-white",
@@ -3524,7 +3588,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-unlocked-copy-256gb-excellent-white",
@@ -3533,7 +3597,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-unlocked-copy-256gb-good-white",
@@ -3542,7 +3606,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-brand-new-black",
@@ -3551,7 +3615,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 12,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-premium-black",
@@ -3560,7 +3624,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-excellent-black",
@@ -3569,7 +3633,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-good-black",
@@ -3578,7 +3642,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-brand-new-white",
@@ -3587,7 +3651,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 12,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-premium-white",
@@ -3596,7 +3660,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-excellent-white",
@@ -3605,7 +3669,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-copy-512gb-good-white",
@@ -3614,7 +3678,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 11,
+        stock: 6,
       }
     ],
   },
@@ -3630,9 +3694,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-16-pro-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Pro+Box"
+    ],
     isCertified: true,
-    stock: 424,
+    stock: 384,
     specs: {
       displaySize: "6.3 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -3692,7 +3764,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-brand-new-black-titanium",
@@ -3701,7 +3773,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-premium-black-titanium",
@@ -3710,7 +3782,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-excellent-black-titanium",
@@ -3719,7 +3791,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-good-black-titanium",
@@ -3728,7 +3800,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-brand-new-white-titanium",
@@ -3737,7 +3809,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-premium-white-titanium",
@@ -3746,7 +3818,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-excellent-white-titanium",
@@ -3755,7 +3827,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-good-white-titanium",
@@ -3764,7 +3836,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-brand-new-natural-titanium",
@@ -3773,7 +3845,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 1,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-premium-natural-titanium",
@@ -3782,7 +3854,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-excellent-natural-titanium",
@@ -3791,7 +3863,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-good-natural-titanium",
@@ -3800,7 +3872,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-brand-new-desert-titanium",
@@ -3809,7 +3881,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 1,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-premium-desert-titanium",
@@ -3818,7 +3890,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-excellent-desert-titanium",
@@ -3827,7 +3899,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-good-desert-titanium",
@@ -3836,7 +3908,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-brand-new-black-titanium",
@@ -3845,7 +3917,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 1,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-premium-black-titanium",
@@ -3854,7 +3926,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-excellent-black-titanium",
@@ -3863,7 +3935,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-good-black-titanium",
@@ -3872,7 +3944,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-brand-new-white-titanium",
@@ -3881,7 +3953,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1234,
         originalPrice: 1299,
-        stock: 1,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-premium-white-titanium",
@@ -3890,7 +3962,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-excellent-white-titanium",
@@ -3899,7 +3971,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-16-pro-unlocked-512gb-good-white-titanium",
@@ -3908,7 +3980,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-brand-new-natural-titanium",
@@ -3917,7 +3989,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-premium-natural-titanium",
@@ -3926,7 +3998,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 10,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-excellent-natural-titanium",
@@ -3935,7 +4007,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 13,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-good-natural-titanium",
@@ -3944,7 +4016,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 5,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-brand-new-desert-titanium",
@@ -3953,7 +4025,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-premium-desert-titanium",
@@ -3962,7 +4034,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 10,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-excellent-desert-titanium",
@@ -3971,7 +4043,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 13,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-good-desert-titanium",
@@ -3980,7 +4052,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 5,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-brand-new-black-titanium",
@@ -3989,7 +4061,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-premium-black-titanium",
@@ -3998,7 +4070,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 10,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-excellent-black-titanium",
@@ -4007,7 +4079,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 13,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-good-black-titanium",
@@ -4016,7 +4088,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 5,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-brand-new-white-titanium",
@@ -4025,7 +4097,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1424,
         originalPrice: 1499,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-premium-white-titanium",
@@ -4034,7 +4106,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 10,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-excellent-white-titanium",
@@ -4043,7 +4115,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 13,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-1tb-good-white-titanium",
@@ -4052,7 +4124,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 824,
         originalPrice: 1499,
-        stock: 5,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-brand-new-natural-titanium",
@@ -4061,7 +4133,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-premium-natural-titanium",
@@ -4070,7 +4142,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-excellent-natural-titanium",
@@ -4079,7 +4151,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-good-natural-titanium",
@@ -4088,7 +4160,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-brand-new-desert-titanium",
@@ -4097,7 +4169,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-premium-desert-titanium",
@@ -4106,7 +4178,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-16-pro-unlocked-256gb-excellent-desert-titanium",
@@ -4115,7 +4187,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 14,
       }
     ],
   },
@@ -4131,9 +4203,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-16-plus-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Plus+Box"
+    ],
     isCertified: true,
-    stock: 375,
+    stock: 380,
     specs: {
       displaySize: "6.7 inches",
       display: "Super Retina XDR OLED",
@@ -4194,7 +4274,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-excellent-ultramarine",
@@ -4212,7 +4292,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-brand-new-white",
@@ -4221,7 +4301,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-premium-white",
@@ -4230,7 +4310,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-excellent-white",
@@ -4248,7 +4328,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-brand-new-black",
@@ -4257,7 +4337,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-premium-black",
@@ -4266,7 +4346,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-excellent-black",
@@ -4275,7 +4355,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-good-black",
@@ -4284,7 +4364,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-brand-new-pink",
@@ -4293,7 +4373,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-premium-pink",
@@ -4302,7 +4382,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-excellent-pink",
@@ -4311,7 +4391,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-good-pink",
@@ -4320,7 +4400,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-brand-new-teal",
@@ -4329,7 +4409,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-premium-teal",
@@ -4338,7 +4418,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-excellent-teal",
@@ -4347,7 +4427,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-good-teal",
@@ -4356,7 +4436,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-brand-new-ultramarine",
@@ -4365,7 +4445,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-premium-ultramarine",
@@ -4374,7 +4454,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-excellent-ultramarine",
@@ -4383,7 +4463,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-good-ultramarine",
@@ -4392,7 +4472,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-brand-new-white",
@@ -4401,7 +4481,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1139,
         originalPrice: 1199,
-        stock: 5,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-premium-white",
@@ -4410,7 +4490,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-excellent-white",
@@ -4419,7 +4499,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 4,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-512gb-good-white",
@@ -4428,7 +4508,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-brand-new-black",
@@ -4437,7 +4517,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-premium-black",
@@ -4446,7 +4526,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-excellent-black",
@@ -4455,7 +4535,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-good-black",
@@ -4464,7 +4544,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-brand-new-pink",
@@ -4473,7 +4553,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-premium-pink",
@@ -4482,7 +4562,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-excellent-pink",
@@ -4491,7 +4571,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-good-pink",
@@ -4500,7 +4580,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-brand-new-teal",
@@ -4509,7 +4589,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-premium-teal",
@@ -4518,7 +4598,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-excellent-teal",
@@ -4527,7 +4607,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-good-teal",
@@ -4536,7 +4616,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-brand-new-ultramarine",
@@ -4545,7 +4625,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-premium-ultramarine",
@@ -4554,7 +4634,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-excellent-ultramarine",
@@ -4563,7 +4643,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-good-ultramarine",
@@ -4572,7 +4652,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-brand-new-white",
@@ -4581,7 +4661,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 8,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-premium-white",
@@ -4590,7 +4670,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-excellent-white",
@@ -4599,7 +4679,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 6,
       },
 {
         id: "apple-iphone-16-plus-unlocked-128gb-good-white",
@@ -4608,7 +4688,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-brand-new-black",
@@ -4617,7 +4697,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-premium-black",
@@ -4626,7 +4706,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-excellent-black",
@@ -4644,7 +4724,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-brand-new-pink",
@@ -4653,7 +4733,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-premium-pink",
@@ -4662,7 +4742,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-excellent-pink",
@@ -4680,7 +4760,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-brand-new-teal",
@@ -4689,7 +4769,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 14,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-premium-teal",
@@ -4698,7 +4778,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-excellent-teal",
@@ -4716,7 +4796,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-plus-unlocked-256gb-brand-new-ultramarine",
@@ -4725,7 +4805,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 949,
         originalPrice: 999,
-        stock: 2,
+        stock: 14,
       }
     ],
   },
@@ -4741,9 +4821,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-16-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+16+Box"
+    ],
     isCertified: true,
-    stock: 645,
+    stock: 560,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -4804,7 +4892,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-brand-new-pink",
@@ -4813,7 +4901,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-premium-pink",
@@ -4822,7 +4910,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-excellent-pink",
@@ -4831,7 +4919,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-good-pink",
@@ -4840,7 +4928,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-brand-new-teal",
@@ -4849,7 +4937,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-premium-teal",
@@ -4858,7 +4946,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-excellent-teal",
@@ -4867,7 +4955,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-good-teal",
@@ -4876,7 +4964,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-brand-new-ultramarine",
@@ -4885,7 +4973,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-premium-ultramarine",
@@ -4894,7 +4982,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-excellent-ultramarine",
@@ -4903,7 +4991,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-good-ultramarine",
@@ -4912,7 +5000,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-brand-new-white",
@@ -4921,7 +5009,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-premium-white",
@@ -4930,7 +5018,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-excellent-white",
@@ -4939,7 +5027,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-good-white",
@@ -4948,7 +5036,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-brand-new-black",
@@ -4957,7 +5045,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-premium-black",
@@ -4966,7 +5054,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-excellent-black",
@@ -4975,7 +5063,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-good-black",
@@ -4984,7 +5072,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-brand-new-pink",
@@ -4993,7 +5081,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-premium-pink",
@@ -5002,7 +5090,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-excellent-pink",
@@ -5011,7 +5099,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-good-pink",
@@ -5020,7 +5108,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-brand-new-teal",
@@ -5029,7 +5117,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-premium-teal",
@@ -5038,7 +5126,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-excellent-teal",
@@ -5047,7 +5135,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-good-teal",
@@ -5056,7 +5144,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-brand-new-ultramarine",
@@ -5065,7 +5153,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-premium-ultramarine",
@@ -5074,7 +5162,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-excellent-ultramarine",
@@ -5083,7 +5171,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-good-ultramarine",
@@ -5092,7 +5180,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-brand-new-white",
@@ -5101,7 +5189,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 759,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-premium-white",
@@ -5110,7 +5198,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-excellent-white",
@@ -5119,7 +5207,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-16-unlocked-128gb-good-white",
@@ -5128,7 +5216,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 12,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-brand-new-black",
@@ -5137,7 +5225,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-premium-black",
@@ -5146,7 +5234,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-excellent-black",
@@ -5155,7 +5243,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-good-black",
@@ -5164,7 +5252,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-brand-new-pink",
@@ -5173,7 +5261,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-premium-pink",
@@ -5182,7 +5270,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-excellent-pink",
@@ -5191,7 +5279,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-good-pink",
@@ -5200,7 +5288,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-brand-new-teal",
@@ -5209,7 +5297,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-premium-teal",
@@ -5218,7 +5306,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-excellent-teal",
@@ -5227,7 +5315,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-good-teal",
@@ -5236,7 +5324,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-brand-new-ultramarine",
@@ -5245,7 +5333,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-premium-ultramarine",
@@ -5254,7 +5342,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-excellent-ultramarine",
@@ -5263,7 +5351,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-good-ultramarine",
@@ -5272,7 +5360,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-brand-new-white",
@@ -5281,7 +5369,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 854,
         originalPrice: 899,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-premium-white",
@@ -5290,7 +5378,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 9,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-excellent-white",
@@ -5299,7 +5387,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 12,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-256gb-good-white",
@@ -5308,7 +5396,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 15,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-brand-new-black",
@@ -5317,7 +5405,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "New",
         price: 1044,
         originalPrice: 1099,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-premium-black",
@@ -5326,7 +5414,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-16-unlocked-512gb-excellent-black",
@@ -5335,7 +5423,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 6,
+        stock: 11,
       }
     ],
   },
@@ -5351,9 +5439,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-12-mini-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Mini+Box"
+    ],
     isCertified: true,
-    stock: 450,
+    stock: 384,
     specs: {
       displaySize: "5.4 inches",
       display: "Super Retina XDR OLED",
@@ -5414,7 +5510,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-good-red",
@@ -5423,7 +5519,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-excellent-red",
@@ -5441,7 +5537,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-good-white",
@@ -5450,7 +5546,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-excellent-white",
@@ -5468,7 +5564,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-good-black",
@@ -5477,7 +5573,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-excellent-black",
@@ -5495,7 +5591,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-good-blue",
@@ -5504,7 +5600,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-excellent-blue",
@@ -5522,7 +5618,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-good-green",
@@ -5531,7 +5627,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-excellent-green",
@@ -5549,7 +5645,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-good-purple",
@@ -5558,7 +5654,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-mini-unlocked-256gb-excellent-purple",
@@ -5576,7 +5672,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 11,
+        stock: 4,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-excellent-black",
@@ -5585,7 +5681,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 8,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-premium-black",
@@ -5594,7 +5690,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-good-black",
@@ -5603,7 +5699,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 412,
         originalPrice: 749,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-excellent-black",
@@ -5612,7 +5708,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 524,
         originalPrice: 749,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-premium-black",
@@ -5621,7 +5717,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 614,
         originalPrice: 749,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-good-blue",
@@ -5630,7 +5726,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 11,
+        stock: 4,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-excellent-blue",
@@ -5639,7 +5735,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 8,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-premium-blue",
@@ -5648,7 +5744,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-good-blue",
@@ -5657,7 +5753,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 412,
         originalPrice: 749,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-excellent-blue",
@@ -5666,7 +5762,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 524,
         originalPrice: 749,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-premium-blue",
@@ -5675,7 +5771,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 614,
         originalPrice: 749,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-good-green",
@@ -5684,7 +5780,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 11,
+        stock: 4,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-excellent-green",
@@ -5693,7 +5789,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 8,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-premium-green",
@@ -5702,7 +5798,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-good-green",
@@ -5711,7 +5807,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 412,
         originalPrice: 749,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-excellent-green",
@@ -5720,7 +5816,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 524,
         originalPrice: 749,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-premium-green",
@@ -5729,7 +5825,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 614,
         originalPrice: 749,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-good-purple",
@@ -5738,7 +5834,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 11,
+        stock: 4,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-excellent-purple",
@@ -5747,7 +5843,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 8,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-premium-purple",
@@ -5756,7 +5852,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-good-purple",
@@ -5765,7 +5861,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 412,
         originalPrice: 749,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-excellent-purple",
@@ -5774,7 +5870,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 524,
         originalPrice: 749,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-premium-purple",
@@ -5783,7 +5879,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 614,
         originalPrice: 749,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-good-red",
@@ -5792,7 +5888,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 11,
+        stock: 4,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-excellent-red",
@@ -5801,7 +5897,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 8,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-premium-red",
@@ -5810,7 +5906,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-good-red",
@@ -5819,7 +5915,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 412,
         originalPrice: 749,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-excellent-red",
@@ -5828,7 +5924,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 524,
         originalPrice: 749,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-premium-red",
@@ -5837,7 +5933,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 614,
         originalPrice: 749,
-        stock: 7,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-good-white",
@@ -5846,7 +5942,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 11,
+        stock: 4,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-excellent-white",
@@ -5855,7 +5951,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 489,
         originalPrice: 699,
-        stock: 8,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-mini-unlocked-64gb-premium-white",
@@ -5864,7 +5960,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-good-white",
@@ -5873,7 +5969,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 412,
         originalPrice: 749,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-excellent-white",
@@ -5882,7 +5978,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 524,
         originalPrice: 749,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-12-mini-unlocked-128gb-premium-white",
@@ -5891,7 +5987,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 614,
         originalPrice: 749,
-        stock: 7,
+        stock: 15,
       }
     ],
   },
@@ -5907,9 +6003,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-13-mini-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Mini+Box"
+    ],
     isCertified: true,
-    stock: 600,
+    stock: 402,
     specs: {
       displaySize: "5.4 inches",
       display: "Super Retina XDR OLED",
@@ -5970,7 +6074,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-excellent-green",
@@ -5979,7 +6083,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-premium-green",
@@ -5988,7 +6092,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-good-pink",
@@ -5997,7 +6101,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-excellent-pink",
@@ -6006,7 +6110,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-premium-pink",
@@ -6015,7 +6119,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-good-blue",
@@ -6024,7 +6128,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-excellent-blue",
@@ -6033,7 +6137,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-premium-blue",
@@ -6042,7 +6146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-good-red",
@@ -6051,7 +6155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-excellent-red",
@@ -6060,7 +6164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-premium-red",
@@ -6069,7 +6173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-good-midnight",
@@ -6078,7 +6182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-excellent-midnight",
@@ -6087,7 +6191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-premium-midnight",
@@ -6096,7 +6200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-good-starlight",
@@ -6105,7 +6209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-excellent-starlight",
@@ -6114,7 +6218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-512gb-premium-starlight",
@@ -6123,7 +6227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-good-midnight",
@@ -6132,7 +6236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-excellent-midnight",
@@ -6150,7 +6254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-good-starlight",
@@ -6159,7 +6263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-excellent-starlight",
@@ -6177,7 +6281,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 12,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-good-starlight",
@@ -6186,7 +6290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-excellent-starlight",
@@ -6204,7 +6308,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-good-green",
@@ -6213,7 +6317,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-excellent-green",
@@ -6231,7 +6335,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 12,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-good-green",
@@ -6240,7 +6344,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-excellent-green",
@@ -6258,7 +6362,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-good-pink",
@@ -6267,7 +6371,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-excellent-pink",
@@ -6285,7 +6389,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 12,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-good-pink",
@@ -6294,7 +6398,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-excellent-pink",
@@ -6312,7 +6416,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-good-blue",
@@ -6321,7 +6425,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-excellent-blue",
@@ -6339,7 +6443,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 12,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-good-blue",
@@ -6348,7 +6452,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-excellent-blue",
@@ -6366,7 +6470,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-good-red",
@@ -6375,7 +6479,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-excellent-red",
@@ -6393,7 +6497,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 12,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-good-red",
@@ -6402,7 +6506,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-mini-unlocked-256gb-excellent-red",
@@ -6420,7 +6524,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 15,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-good-midnight",
@@ -6429,7 +6533,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 384,
         originalPrice: 699,
-        stock: 3,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-128gb-excellent-midnight",
@@ -6447,7 +6551,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 573,
         originalPrice: 699,
-        stock: 12,
+        stock: 5,
       }
     ],
   },
@@ -6463,9 +6567,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-12-pro-max-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 332,
+    stock: 192,
     specs: {
       displaySize: "6.7 inches",
       display: "Super Retina XDR OLED",
@@ -6524,7 +6636,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-excellent-graphite",
@@ -6533,7 +6645,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-premium-graphite",
@@ -6542,7 +6654,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 3,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-good-pacific-blue",
@@ -6551,7 +6663,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-excellent-pacific-blue",
@@ -6560,7 +6672,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-premium-pacific-blue",
@@ -6569,7 +6681,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 3,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-good-gold",
@@ -6578,7 +6690,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-excellent-gold",
@@ -6587,7 +6699,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-premium-gold",
@@ -6596,7 +6708,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 3,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-good-silver",
@@ -6605,7 +6717,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-excellent-silver",
@@ -6614,7 +6726,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 11,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-512gb-premium-silver",
@@ -6623,7 +6735,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 3,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-good-graphite",
@@ -6632,7 +6744,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-excellent-graphite",
@@ -6641,7 +6753,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-premium-graphite",
@@ -6650,7 +6762,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 4,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-good-graphite",
@@ -6659,7 +6771,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-excellent-graphite",
@@ -6668,7 +6780,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-premium-graphite",
@@ -6677,7 +6789,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-good-pacific-blue",
@@ -6686,7 +6798,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-excellent-pacific-blue",
@@ -6695,7 +6807,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-premium-pacific-blue",
@@ -6704,7 +6816,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 4,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-good-pacific-blue",
@@ -6713,7 +6825,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-excellent-pacific-blue",
@@ -6722,7 +6834,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-premium-pacific-blue",
@@ -6731,7 +6843,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-good-gold",
@@ -6740,7 +6852,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-excellent-gold",
@@ -6749,7 +6861,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-premium-gold",
@@ -6758,7 +6870,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 4,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-good-gold",
@@ -6767,7 +6879,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-excellent-gold",
@@ -6776,7 +6888,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-premium-gold",
@@ -6785,7 +6897,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 12,
+        stock: 8,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-good-silver",
@@ -6794,7 +6906,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 13,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-excellent-silver",
@@ -6803,7 +6915,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 14,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-128gb-premium-silver",
@@ -6812,7 +6924,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 4,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-good-silver",
@@ -6821,7 +6933,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 4,
+        stock: 1,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-excellent-silver",
@@ -6830,7 +6942,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-max-unlocked-256gb-premium-silver",
@@ -6839,7 +6951,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 12,
+        stock: 8,
       }
     ],
   },
@@ -6855,9 +6967,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-12-pro.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Pro+Box"
+    ],
     isCertified: true,
-    stock: 232,
+    stock: 392,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -6916,7 +7036,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-512gb-excellent-graphite",
@@ -6925,7 +7045,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-12-pro-512gb-premium-graphite",
@@ -6934,7 +7054,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-512gb-good-gold",
@@ -6943,7 +7063,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-512gb-excellent-gold",
@@ -6952,7 +7072,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-12-pro-512gb-premium-gold",
@@ -6961,7 +7081,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-512gb-good-pacific-blue",
@@ -6970,7 +7090,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-512gb-excellent-pacific-blue",
@@ -6979,7 +7099,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-12-pro-512gb-premium-pacific-blue",
@@ -6988,7 +7108,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-512gb-good-silver",
@@ -6997,7 +7117,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-512gb-excellent-silver",
@@ -7006,7 +7126,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-12-pro-512gb-premium-silver",
@@ -7015,7 +7135,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-pro-128gb-excellent-silver",
@@ -7024,7 +7144,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-128gb-premium-silver",
@@ -7033,7 +7153,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-good-silver",
@@ -7042,7 +7162,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-excellent-silver",
@@ -7051,7 +7171,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-256gb-premium-silver",
@@ -7069,7 +7189,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-128gb-excellent-graphite",
@@ -7078,7 +7198,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-128gb-premium-graphite",
@@ -7087,7 +7207,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-good-graphite",
@@ -7096,7 +7216,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-excellent-graphite",
@@ -7105,7 +7225,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-256gb-premium-graphite",
@@ -7123,7 +7243,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-128gb-excellent-gold",
@@ -7132,7 +7252,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-128gb-premium-gold",
@@ -7141,7 +7261,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-good-gold",
@@ -7150,7 +7270,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-excellent-gold",
@@ -7159,7 +7279,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-256gb-premium-gold",
@@ -7177,7 +7297,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-128gb-excellent-pacific-blue",
@@ -7186,7 +7306,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-pro-128gb-premium-pacific-blue",
@@ -7195,7 +7315,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-good-pacific-blue",
@@ -7204,7 +7324,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 2,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-pro-256gb-excellent-pacific-blue",
@@ -7213,7 +7333,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-12-pro-256gb-premium-pacific-blue",
@@ -7231,7 +7351,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 5,
+        stock: 15,
       }
     ],
   },
@@ -7246,9 +7366,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-x-portable-heavy-metal-bass-tws-150w-party-.png",
+    imageUrl: "https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Front",
+    galleryImages: [
+"https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Front",
+"https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Back",
+"https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Side",
+"https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Camera",
+"https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Display",
+"https://placehold.co/800x800/0081fb/ffffff?text=VIDVIE+X+Portable+Heavy+Metal+Bass+TWS+150W+Party+Wireless+Speaker+Box"
+    ],
     isCertified: true,
-    stock: 19,
+    stock: 9,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -7269,9 +7397,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-bluetooth-patio-speakers-home-audio-speaker.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Patio+Speakers+Home+Audio+Speakers+Tested+150W+Box"
+    ],
     isCertified: true,
-    stock: 8,
+    stock: 21,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -7292,9 +7428,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/playstation-5-digital-edition-console-disc-free.png",
+    imageUrl: "https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Front",
+    galleryImages: [
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Front",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Back",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Side",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Camera",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Display",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Digital+Edition+Console+(Disc+Free)+Box"
+    ],
     isCertified: true,
-    stock: 14,
+    stock: 12,
     specs: {
       type: "Gaming Console",
       processor: "Custom AMD APU",
@@ -7313,9 +7457,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/playstation-5.png",
+    imageUrl: "/assets/ps5.svg",
+    galleryImages: [
+"/assets/ps5.svg",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Back",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Side",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Camera",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Display",
+"https://placehold.co/800x800/00439c/ffffff?text=Playstation+5+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 12,
     specs: {
       type: "Gaming Console",
       processor: "Custom AMD APU",
@@ -7334,9 +7486,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/nintendo-nintendo-switch-neon-oled-model.png",
+    imageUrl: "https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Front",
+    galleryImages: [
+"https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Front",
+"https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Back",
+"https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Side",
+"https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Camera",
+"https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Display",
+"https://placehold.co/800x800/e60012/ffffff?text=Nintendo+Nintendo+Switch+-+Neon+(OLED+Model)+Box"
+    ],
     isCertified: true,
-    stock: 20,
+    stock: 12,
     specs: {
       type: "Gaming Console",
       processor: "Custom AMD APU",
@@ -7355,9 +7515,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/meta-quest-3s-128gb-all-in-one-mixed-reality-heads.png",
+    imageUrl: "/assets/meta-quest.svg",
+    galleryImages: [
+"/assets/meta-quest.svg",
+"https://placehold.co/800x800/0081fb/ffffff?text=Meta+Quest+3S+128GB+All-In-One+Mixed+Reality+Headset+Back",
+"https://placehold.co/800x800/0081fb/ffffff?text=Meta+Quest+3S+128GB+All-In-One+Mixed+Reality+Headset+Side",
+"https://placehold.co/800x800/0081fb/ffffff?text=Meta+Quest+3S+128GB+All-In-One+Mixed+Reality+Headset+Camera",
+"https://placehold.co/800x800/0081fb/ffffff?text=Meta+Quest+3S+128GB+All-In-One+Mixed+Reality+Headset+Display",
+"https://placehold.co/800x800/0081fb/ffffff?text=Meta+Quest+3S+128GB+All-In-One+Mixed+Reality+Headset+Box"
+    ],
     isCertified: true,
-    stock: 21,
+    stock: 3,
     specs: {
       type: "VR Headset",
       display: "LCD / OLED",
@@ -7376,9 +7544,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-amoled-screen-round-shape-relojes-inteligen.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Wireless+Call+Smart+Watch+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 4,
     specs: {
       type: "Smartwatch",
       display: "AMOLED Touch",
@@ -7398,9 +7574,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-fashion-square-shape-relojes-inteligente-sm.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Fashion+Square+Shape+Relojes+Inteligente+Smart+Watch+High+Resolution+Smartwatch+With+Call+Function+Box"
+    ],
     isCertified: true,
-    stock: 22,
+    stock: 5,
     specs: {
       type: "Smartwatch",
       display: "AMOLED Touch",
@@ -7420,9 +7604,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-powerbank-5000mah-wireless-15w-pd20w.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+POWERBANK+5000mAh+wireless+15W+PD20W+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 16,
     specs: {
       type: "Power Bank",
       batteryCharging: "USB-C, Wireless",
@@ -7440,9 +7632,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-10000mah-pd20w-15w-magnetic-wireless-chargi.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000MAH+PD20W+15W+Magnetic+Wireless+Charging+Powerbank+Box"
+    ],
     isCertified: true,
-    stock: 13,
+    stock: 6,
     specs: {
       type: "Power Bank",
       batteryCharging: "USB-C, Wireless",
@@ -7460,9 +7660,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-5000mah-mini-pocket-portable-powerbank-with.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+5000MAH+Mini+Pocket+portable+powerbank+with+Type+C+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 5,
     specs: {
       type: "Power Bank",
       batteryCharging: "USB-C, Wireless",
@@ -7480,9 +7688,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-10000mah-15w-pd20w-wireless-powerbank-with-.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+10000mAh+15W+PD20W+Wireless+Powerbank+With+Fast+Charge+Box"
+    ],
     isCertified: true,
-    stock: 22,
+    stock: 12,
     specs: {
       type: "Power Bank",
       batteryCharging: "USB-C, Wireless",
@@ -7500,9 +7716,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-magnetic-wireless-charging-station-for-appl.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Magnetic+Wireless+Charging+Station+For+Apple+Series+Box"
+    ],
     isCertified: true,
-    stock: 4,
+    stock: 10,
     specs: {
       type: "Wireless Charger",
       batteryCharging: "Wireless + USB-C",
@@ -7520,7 +7744,15 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-15w-portable-bluetooth-speaker-with-wireles.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+15W+Portable+Bluetooth+Speaker+with+Wireless+Charger+Stand+Box"
+    ],
     isCertified: true,
     stock: 22,
     specs: {
@@ -7543,9 +7775,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-wireless-charging-pads-stands-mounts-3-in-1.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Charging+Pads,+Stands+&+Mounts+3-in-1+Box"
+    ],
     isCertified: true,
-    stock: 12,
+    stock: 15,
     specs: {
       type: "Wireless Charger",
       batteryCharging: "Wireless + USB-C",
@@ -7564,9 +7804,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-wireless-charger-iphone-service.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+Service+Box"
+    ],
     isCertified: true,
-    stock: 13,
+    stock: 15,
     specs: {
 
     },
@@ -7578,7 +7826,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       }
     ],
   },
@@ -7593,9 +7841,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/playstation-5-dualsense-wireless-controller.png",
+    imageUrl: "https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Front",
+    galleryImages: [
+"https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Front",
+"https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Back",
+"https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Side",
+"https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Camera",
+"https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Display",
+"https://placehold.co/800x800/00439c/ffffff?text=PlayStation+5+DualSense+Wireless+Controller+Box"
+    ],
     isCertified: true,
-    stock: 5,
+    stock: 20,
     specs: {
       type: "Gaming Console",
       processor: "Custom AMD APU",
@@ -7615,9 +7871,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-13-mini-unlocked-copy.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Box"
+    ],
     isCertified: true,
-    stock: 396,
+    stock: 516,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -7678,7 +7942,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-excellent-starlight",
@@ -7687,7 +7951,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-premium-starlight",
@@ -7696,7 +7960,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-good-green",
@@ -7705,7 +7969,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-excellent-green",
@@ -7714,7 +7978,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-premium-green",
@@ -7723,7 +7987,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-good-pink",
@@ -7732,7 +7996,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-excellent-pink",
@@ -7741,7 +8005,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-premium-pink",
@@ -7750,7 +8014,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-good-blue",
@@ -7759,7 +8023,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-excellent-blue",
@@ -7768,7 +8032,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-premium-blue",
@@ -7777,7 +8041,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-good-red",
@@ -7786,7 +8050,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-excellent-red",
@@ -7795,7 +8059,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-premium-red",
@@ -7804,7 +8068,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-good-midnight",
@@ -7813,7 +8077,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-excellent-midnight",
@@ -7822,7 +8086,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-512gb-premium-midnight",
@@ -7831,7 +8095,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-good-starlight",
@@ -7840,7 +8104,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-excellent-starlight",
@@ -7849,7 +8113,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-premium-starlight",
@@ -7858,7 +8122,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 4,
+        stock: 10,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-good-starlight",
@@ -7867,7 +8131,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-excellent-starlight",
@@ -7885,7 +8149,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-good-green",
@@ -7894,7 +8158,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-excellent-green",
@@ -7903,7 +8167,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-premium-green",
@@ -7912,7 +8176,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 4,
+        stock: 10,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-good-green",
@@ -7921,7 +8185,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-excellent-green",
@@ -7939,7 +8203,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-good-pink",
@@ -7948,7 +8212,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-excellent-pink",
@@ -7957,7 +8221,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-premium-pink",
@@ -7966,7 +8230,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 4,
+        stock: 10,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-good-pink",
@@ -7975,7 +8239,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-excellent-pink",
@@ -7993,7 +8257,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-good-blue",
@@ -8002,7 +8266,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-excellent-blue",
@@ -8011,7 +8275,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-premium-blue",
@@ -8020,7 +8284,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 4,
+        stock: 10,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-good-blue",
@@ -8029,7 +8293,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-excellent-blue",
@@ -8047,7 +8311,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-good-red",
@@ -8056,7 +8320,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-excellent-red",
@@ -8065,7 +8329,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-premium-red",
@@ -8074,7 +8338,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 4,
+        stock: 10,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-good-red",
@@ -8083,7 +8347,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-excellent-red",
@@ -8101,7 +8365,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 1,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-good-midnight",
@@ -8110,7 +8374,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-excellent-midnight",
@@ -8119,7 +8383,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-128gb-premium-midnight",
@@ -8128,7 +8392,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 4,
+        stock: 10,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-good-midnight",
@@ -8137,7 +8401,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-13-mini-unlocked-copy-256gb-excellent-midnight",
@@ -8155,7 +8419,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 1,
+        stock: 14,
       }
     ],
   },
@@ -8170,9 +8434,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-tab-s7-lte.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+LTE+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8193,9 +8465,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-tab-s7-1.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 22,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8216,9 +8496,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-wireless-noise-cancelling-headphones-over-e.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Noise+Cancelling+Headphones+Box"
+    ],
     isCertified: true,
-    stock: 12,
+    stock: 10,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8239,9 +8527,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-magnetic-sports-hanging-neck-wireless-heads.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Silicone+Neckband+Wireless+Earphone+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8262,9 +8558,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-wireless-earphones-neck-bluetooth-sports-ho.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Neckband+Wireless+Earphones+Box"
+    ],
     isCertified: true,
-    stock: 20,
+    stock: 4,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8285,9 +8589,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-white-square-design-half-in-ear-tws-fone-de.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wireless+Earbuds+Box"
+    ],
     isCertified: true,
-    stock: 14,
+    stock: 16,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8308,7 +8620,15 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-black-metal-in-ear-wired-earphone-3-5-mm-ja.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Wired+Earphone+Box"
+    ],
     isCertified: true,
     stock: 18,
     specs: {
@@ -8331,9 +8651,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-headphone-bluetooth-foldable-extra-bass-wit.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Bluetooth+Foldable+Bass+Headphones+Box"
+    ],
     isCertified: true,
-    stock: 3,
+    stock: 7,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8354,9 +8682,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-ipx7-waterproof-24w-portable-wireless-bluet.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+IPX7+Waterproof+24W+Portable+Wireless+Bluetooth+Speaker+Box"
+    ],
     isCertified: true,
-    stock: 12,
+    stock: 13,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8377,9 +8713,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-x-10w-portable-bluetooth-wireless-speaker-1.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+X+10W+Portable+Bluetooth+Wireless+Speaker+1800mAh+Box"
+    ],
     isCertified: true,
-    stock: 19,
+    stock: 15,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8400,9 +8744,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-portable-waterproof-power-sound-party-wirel.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Portable+Waterproof+Power+Sound+Party+Wireless+Speaker+Box"
+    ],
     isCertified: true,
-    stock: 19,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8423,9 +8775,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/vidvie-waterproof-bluetooth-portable-speaker-outdo.png",
+    imageUrl: "https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Front",
+    galleryImages: [
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Front",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Back",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Side",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Camera",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Display",
+"https://placehold.co/800x800/222222/ffffff?text=VIDVIE+Waterproof+Bluetooth+Portable+Speaker+Outdoor+With+Long+Battery+Life+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 8,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8446,7 +8806,15 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-tab-s7.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++Box"
+    ],
     isCertified: true,
     stock: 5,
     specs: {
@@ -8469,9 +8837,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-tab-s7-5g.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S7++5G+Box"
+    ],
     isCertified: true,
-    stock: 16,
+    stock: 3,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8492,9 +8868,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-mini-2019-5th-gen-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2019+5th+Gen+Wifi+Box"
+    ],
     isCertified: true,
-    stock: 15,
+    stock: 11,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8515,9 +8899,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-tab-s8.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8++Box"
+    ],
     isCertified: true,
-    stock: 4,
+    stock: 9,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8538,9 +8930,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-tab-s8-1.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Tab+S8+Box"
+    ],
     isCertified: true,
-    stock: 8,
+    stock: 16,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8561,9 +8961,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-pro-2017-2nd-gen-10-5-inch-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2017+2nd+Gen+10.5-inch+WiFi+Box"
+    ],
     isCertified: true,
-    stock: 18,
+    stock: 4,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8584,9 +8992,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-mini-2021-6th-gen-wifi-cellular.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Mini+2021+6th+Gen+Wifi+++Cellular+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8607,9 +9023,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-pro-2021-5th-gen-12-9-inch-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2021+5th+Gen+12.9-inch+WiFi+Box"
+    ],
     isCertified: true,
-    stock: 8,
+    stock: 15,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8630,9 +9054,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-pro-2020-2nd-gen-11-inch-wifi-cellular.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2020+2nd+Gen+11-inch+WiFi+Cellular+Box"
+    ],
     isCertified: true,
-    stock: 18,
+    stock: 6,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8653,9 +9085,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-pro-2018-12-9-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2018+12.9\"+WiFi+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8676,9 +9116,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-2021-9th-gen-wifi-1.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2019+7th+Gen+Wifi+++Cellular+Box"
+    ],
     isCertified: true,
-    stock: 19,
+    stock: 12,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8699,9 +9147,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-2018-7th-gen-wifi-cellular.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2018+7th+Gen+Wifi+++Cellular+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 3,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8722,9 +9178,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-2017-5th-gen-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2017+5th+Gen+Wifi+Box"
+    ],
     isCertified: true,
-    stock: 13,
+    stock: 6,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8745,9 +9209,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-pro-2022-6th-gen-12-9-inch-wifi-cellula.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Pro+2022+6th+Gen+12.9-inch+WiFi+++Cellular+Box"
+    ],
     isCertified: true,
-    stock: 9,
+    stock: 16,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8768,9 +9240,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-2022-10th-gen-wifi-cellular.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2022+10th+Gen+Wifi+++Cellular+Box"
+    ],
     isCertified: true,
-    stock: 13,
+    stock: 22,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8791,9 +9271,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-2021-9th-gen-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2021+9th+Gen+Wifi+Box"
+    ],
     isCertified: true,
-    stock: 4,
+    stock: 12,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8814,9 +9302,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-2020-8th-gen-wifi-cellular.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+2020+8th+Gen+Wifi+++Cellular+Box"
+    ],
     isCertified: true,
-    stock: 5,
+    stock: 13,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8837,9 +9333,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-air-2020-4th-gen-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2020+4th+Gen+Wifi+Box"
+    ],
     isCertified: true,
-    stock: 3,
+    stock: 18,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8860,9 +9364,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-air-2019-3rd-gen-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2019+3rd+Gen+Wifi+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 14,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8883,9 +9395,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-4xa-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4a++-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 13,
+    stock: 9,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8906,9 +9426,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-ipad-air-2022-5th-gen-wifi.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=Apple+iPad+Air+2022+5th+Gen+Wifi+Box"
+    ],
     isCertified: true,
-    stock: 18,
+    stock: 15,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8929,9 +9457,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-7-unlocked-copy.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6+Pro+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 16,
+    stock: 11,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8952,9 +9488,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-6-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+6++-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 3,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8975,9 +9519,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-5-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+5++-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 19,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -8998,9 +9550,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-4xl-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+4XL++-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 4,
+    stock: 18,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9021,9 +9581,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-7-pro-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+Pro+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 5,
+    stock: 21,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9044,9 +9612,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-7-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 10,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9067,9 +9643,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/google-pixel-7a-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Front",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Back",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Side",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Camera",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Display",
+"https://placehold.co/800x800/4285f4/ffffff?text=Google+Pixel+7a+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 5,
+    stock: 21,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9090,9 +9674,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a12-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A12+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 18,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9113,9 +9705,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a32-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A32+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 10,
+    stock: 20,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9136,9 +9736,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a21s-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A21s+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 22,
+    stock: 9,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9159,9 +9767,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a20e-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A20e+-+Unlocked+(Collection+Not+Available)+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 19,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9182,9 +9798,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a13-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A13+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 16,
+    stock: 13,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9205,7 +9829,15 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a52-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
     stock: 12,
     specs: {
@@ -9228,9 +9860,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a51-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 9,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9251,9 +9891,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a51-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A51+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 22,
+    stock: 6,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9274,9 +9922,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a50-unlocked-collection-not-availab.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A50+-+Unlocked+(Collection+not+available)+Box"
+    ],
     isCertified: true,
-    stock: 15,
+    stock: 4,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9297,9 +9953,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a71-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A71+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 12,
+    stock: 6,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9320,9 +9984,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a53-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A53+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 18,
+    stock: 7,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9343,9 +10015,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-a52s-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+A52s+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 14,
+    stock: 11,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9366,9 +10046,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-z-flip3-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip3+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 12,
+    stock: 13,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9389,9 +10077,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-z-fold3-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold3+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 7,
+    stock: 13,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9412,9 +10108,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-z-flip4-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Flip4+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 13,
+    stock: 21,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9435,9 +10139,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-note-20-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 4,
+    stock: 12,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9458,9 +10170,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-note-10-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+10++5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 17,
+    stock: 19,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9481,9 +10201,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-z-fold4-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Z+Fold4+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 15,
+    stock: 14,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9504,9 +10232,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s10-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 21,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9527,9 +10263,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-note-20-ultra-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+Note+20+Ultra+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 15,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9550,9 +10294,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s10-plus-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Plus+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 20,
+    stock: 10,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9573,9 +10325,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s10-lite-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+Lite+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 16,
+    stock: 5,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9596,9 +10356,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-fe-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+-++Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 4,
+    stock: 22,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9619,7 +10387,15 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s10-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S10+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
     stock: 13,
     specs: {
@@ -9642,9 +10418,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-fe-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+FE+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 6,
+    stock: 20,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9665,9 +10449,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-5g-unlocked-1.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 14,
+    stock: 20,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9688,9 +10480,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+-++Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 14,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9711,9 +10511,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+++5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 9,
+    stock: 12,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9734,9 +10542,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-plus-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20++++Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 22,
+    stock: 9,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9757,9 +10573,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s21-5g-unlocked-1.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 17,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9780,9 +10604,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-ultra-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 10,
+    stock: 18,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9803,9 +10635,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s20-ultra-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S20+Ultra+-+Unlocked+(Collection+not+available)+Box"
+    ],
     isCertified: true,
-    stock: 5,
+    stock: 15,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9826,9 +10666,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s21-ultra-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+Ultra+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 9,
+    stock: 6,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9849,9 +10697,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s22-5g-unlocked-1.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 15,
+    stock: 18,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9872,9 +10728,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s21-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S21+++5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 10,
+    stock: 17,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9895,9 +10759,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s22-ultra-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22+Ultra+5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 11,
+    stock: 19,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9918,9 +10790,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s22-5g-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S22++5G+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 9,
+    stock: 22,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9941,9 +10821,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s23.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+++Box"
+    ],
     isCertified: true,
-    stock: 10,
+    stock: 11,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9964,9 +10852,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s23-1.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+-+Unlocked+Box"
+    ],
     isCertified: true,
-    stock: 17,
+    stock: 7,
     specs: {
       type: "Bluetooth Speaker",
       soundLoudspeaker: "Yes, stereo",
@@ -9987,7 +10883,15 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/samsung-galaxy-s23-ultra-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Front",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Back",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Side",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Camera",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Display",
+"https://placehold.co/800x800/1428a0/ffffff?text=Samsung+Galaxy+S23+Ultra+-+Unlocked+Box"
+    ],
     isCertified: true,
     stock: 21,
     specs: {
@@ -10011,9 +10915,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-8-plus-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+8+Plus+Box"
+    ],
     isCertified: true,
-    stock: 150,
+    stock: 129,
     specs: {
 
     },
@@ -10039,7 +10951,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-excellent-gold",
@@ -10048,7 +10960,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 1,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-premium-gold",
@@ -10057,7 +10969,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 11,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-good-silver",
@@ -10066,7 +10978,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-excellent-silver",
@@ -10075,7 +10987,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 1,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-premium-silver",
@@ -10084,7 +10996,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 11,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-good-space-grey",
@@ -10093,7 +11005,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-excellent-space-grey",
@@ -10102,7 +11014,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 1,
       },
 {
         id: "apple-iphone-8-plus-unlocked-64gb-premium-space-grey",
@@ -10111,7 +11023,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 1,
+        stock: 11,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-good-gold",
@@ -10120,7 +11032,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-excellent-gold",
@@ -10129,7 +11041,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-premium-gold",
@@ -10138,7 +11050,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 3,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-good-silver",
@@ -10147,7 +11059,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-excellent-silver",
@@ -10156,7 +11068,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-premium-silver",
@@ -10165,7 +11077,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 3,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-good-space-grey",
@@ -10174,7 +11086,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-excellent-space-grey",
@@ -10183,7 +11095,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-8-plus-unlocked-256gb-premium-space-grey",
@@ -10192,7 +11104,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 3,
       }
     ],
   },
@@ -10208,9 +11120,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-xr-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XR+Box"
+    ],
     isCertified: true,
-    stock: 342,
+    stock: 258,
     specs: {
 
     },
@@ -10239,7 +11159,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-good-red",
@@ -10248,7 +11168,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-good-red",
@@ -10257,7 +11177,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 7,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-good-white",
@@ -10266,7 +11186,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-good-white",
@@ -10275,7 +11195,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 7,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-good-coral",
@@ -10284,7 +11204,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-good-coral",
@@ -10293,7 +11213,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 7,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-good-black",
@@ -10302,7 +11222,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-good-black",
@@ -10311,7 +11231,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 7,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-good-blue",
@@ -10320,7 +11240,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-good-blue",
@@ -10329,7 +11249,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 7,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-good-yellow",
@@ -10338,7 +11258,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 13,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-good-yellow",
@@ -10347,7 +11267,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 7,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-excellent-black",
@@ -10365,7 +11285,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-excellent-black",
@@ -10374,7 +11294,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 8,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-premium-black",
@@ -10383,7 +11303,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-excellent-blue",
@@ -10401,7 +11321,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-excellent-blue",
@@ -10410,7 +11330,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 8,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-premium-blue",
@@ -10419,7 +11339,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-excellent-coral",
@@ -10437,7 +11357,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-excellent-coral",
@@ -10446,7 +11366,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 8,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-premium-coral",
@@ -10455,7 +11375,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-excellent-red",
@@ -10473,7 +11393,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-excellent-red",
@@ -10482,7 +11402,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 8,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-premium-red",
@@ -10491,7 +11411,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-excellent-yellow",
@@ -10509,7 +11429,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-excellent-yellow",
@@ -10518,7 +11438,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 8,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-premium-yellow",
@@ -10527,7 +11447,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 2,
       },
 {
         id: "apple-iphone-xr-unlocked-64gb-excellent-white",
@@ -10545,7 +11465,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 4,
       },
 {
         id: "apple-iphone-xr-unlocked-128gb-excellent-white",
@@ -10554,7 +11474,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 8,
       }
     ],
   },
@@ -10570,9 +11490,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-xs-max-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Max+Box"
+    ],
     isCertified: true,
-    stock: 144,
+    stock: 147,
     specs: {
 
     },
@@ -10598,7 +11526,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 10,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-excellent-gold",
@@ -10607,7 +11535,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 1,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-premium-gold",
@@ -10616,7 +11544,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-good-gold",
@@ -10625,7 +11553,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 8,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-excellent-gold",
@@ -10634,7 +11562,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-premium-gold",
@@ -10643,7 +11571,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 14,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-good-silver",
@@ -10652,7 +11580,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 10,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-excellent-silver",
@@ -10661,7 +11589,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 1,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-premium-silver",
@@ -10670,7 +11598,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-good-silver",
@@ -10679,7 +11607,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 8,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-excellent-silver",
@@ -10688,7 +11616,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-premium-silver",
@@ -10697,7 +11625,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 14,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-good-space-grey",
@@ -10706,7 +11634,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 10,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-excellent-space-grey",
@@ -10715,7 +11643,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 1,
       },
 {
         id: "apple-iphone-xs-max-unlocked-64gb-premium-space-grey",
@@ -10724,7 +11652,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-good-space-grey",
@@ -10733,7 +11661,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 8,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-excellent-space-grey",
@@ -10742,7 +11670,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 2,
+        stock: 3,
       },
 {
         id: "apple-iphone-xs-max-unlocked-256gb-premium-space-grey",
@@ -10751,7 +11679,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 11,
+        stock: 14,
       }
     ],
   },
@@ -10767,9 +11695,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-xs-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+XS+Box"
+    ],
     isCertified: true,
-    stock: 102,
+    stock: 156,
     specs: {
 
     },
@@ -10795,7 +11731,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 11,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-excellent-gold",
@@ -10804,7 +11740,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-premium-gold",
@@ -10813,7 +11749,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 12,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-good-gold",
@@ -10822,7 +11758,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-excellent-gold",
@@ -10831,7 +11767,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 1,
+        stock: 7,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-premium-gold",
@@ -10840,7 +11776,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-good-silver",
@@ -10849,7 +11785,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 11,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-excellent-silver",
@@ -10858,7 +11794,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-premium-silver",
@@ -10867,7 +11803,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 12,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-good-silver",
@@ -10876,7 +11812,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-excellent-silver",
@@ -10885,7 +11821,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 1,
+        stock: 7,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-premium-silver",
@@ -10894,7 +11830,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-good-space-grey",
@@ -10903,7 +11839,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 11,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-excellent-space-grey",
@@ -10912,7 +11848,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 5,
+        stock: 6,
       },
 {
         id: "apple-iphone-xs-unlocked-64gb-premium-space-grey",
@@ -10921,7 +11857,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 12,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-good-space-grey",
@@ -10930,7 +11866,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-excellent-space-grey",
@@ -10939,7 +11875,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 1,
+        stock: 7,
       },
 {
         id: "apple-iphone-xs-unlocked-256gb-premium-space-grey",
@@ -10948,7 +11884,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 10,
       }
     ],
   },
@@ -10964,9 +11900,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-x-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+X+Box"
+    ],
     isCertified: true,
-    stock: 82,
+    stock: 86,
     specs: {
 
     },
@@ -11000,7 +11944,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 2,
       },
 {
         id: "apple-iphone-x-unlocked-64gb-premium-space-grey",
@@ -11009,7 +11953,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-x-unlocked-256gb-good-space-grey",
@@ -11018,7 +11962,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 11,
       },
 {
         id: "apple-iphone-x-unlocked-256gb-excellent-space-grey",
@@ -11027,7 +11971,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 11,
+        stock: 10,
       },
 {
         id: "apple-iphone-x-unlocked-256gb-premium-space-grey",
@@ -11036,7 +11980,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 5,
       },
 {
         id: "apple-iphone-x-unlocked-64gb-good-silver",
@@ -11054,7 +11998,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 2,
       },
 {
         id: "apple-iphone-x-unlocked-64gb-premium-silver",
@@ -11063,7 +12007,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-x-unlocked-256gb-good-silver",
@@ -11072,7 +12016,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 12,
+        stock: 11,
       },
 {
         id: "apple-iphone-x-unlocked-256gb-excellent-silver",
@@ -11081,7 +12025,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 11,
+        stock: 10,
       },
 {
         id: "apple-iphone-x-unlocked-256gb-premium-silver",
@@ -11090,7 +12034,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 7,
+        stock: 5,
       }
     ],
   },
@@ -11106,9 +12050,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-se-2020-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2020+Box"
+    ],
     isCertified: true,
-    stock: 141,
+    stock: 162,
     specs: {
 
     },
@@ -11134,7 +12086,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-excellent-red",
@@ -11143,7 +12095,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-premium-red",
@@ -11152,7 +12104,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-good-black",
@@ -11161,7 +12113,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-excellent-black",
@@ -11170,7 +12122,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-premium-black",
@@ -11179,7 +12131,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-good-black",
@@ -11188,7 +12140,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-excellent-black",
@@ -11197,7 +12149,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-premium-black",
@@ -11206,7 +12158,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-good-white",
@@ -11215,7 +12167,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-excellent-white",
@@ -11224,7 +12176,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-premium-white",
@@ -11233,7 +12185,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-good-white",
@@ -11242,7 +12194,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 6,
+        stock: 15,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-excellent-white",
@@ -11251,7 +12203,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 15,
       },
 {
         id: "apple-iphone-se-2020-unlocked-128gb-premium-white",
@@ -11260,7 +12212,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 9,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-good-red",
@@ -11269,7 +12221,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 1,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-excellent-red",
@@ -11278,7 +12230,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 13,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2020-unlocked-64gb-premium-red",
@@ -11287,7 +12239,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 1,
       }
     ],
   },
@@ -11303,9 +12255,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-11-unlocked.png",
+    imageUrl: "/assets/iphone-11.png",
+    galleryImages: [
+"/assets/iphone-11.png",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Box"
+    ],
     isCertified: true,
-    stock: 444,
+    stock: 540,
     specs: {
 
     },
@@ -11335,7 +12295,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 3,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-premium-yellow",
@@ -11344,7 +12304,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-good-purple",
@@ -11353,7 +12313,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-excellent-purple",
@@ -11362,7 +12322,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 10,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-premium-purple",
@@ -11371,7 +12331,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-good-purple",
@@ -11380,7 +12340,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-excellent-purple",
@@ -11398,7 +12358,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-good-purple",
@@ -11407,7 +12367,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-excellent-purple",
@@ -11416,7 +12376,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 3,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-premium-purple",
@@ -11425,7 +12385,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-good-green",
@@ -11434,7 +12394,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-excellent-green",
@@ -11443,7 +12403,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 10,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-premium-green",
@@ -11452,7 +12412,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-good-green",
@@ -11461,7 +12421,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-excellent-green",
@@ -11479,7 +12439,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-good-green",
@@ -11488,7 +12448,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-excellent-green",
@@ -11497,7 +12457,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 3,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-premium-green",
@@ -11506,7 +12466,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-good-red",
@@ -11515,7 +12475,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-excellent-red",
@@ -11524,7 +12484,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 10,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-premium-red",
@@ -11533,7 +12493,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-good-red",
@@ -11542,7 +12502,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-excellent-red",
@@ -11560,7 +12520,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-good-red",
@@ -11569,7 +12529,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-excellent-red",
@@ -11578,7 +12538,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 3,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-premium-red",
@@ -11587,7 +12547,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-good-white",
@@ -11596,7 +12556,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-excellent-white",
@@ -11605,7 +12565,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 10,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-premium-white",
@@ -11614,7 +12574,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-good-white",
@@ -11623,7 +12583,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-excellent-white",
@@ -11641,7 +12601,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-good-white",
@@ -11650,7 +12610,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-excellent-white",
@@ -11659,7 +12619,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 3,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-premium-white",
@@ -11668,7 +12628,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-good-black",
@@ -11677,7 +12637,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-excellent-black",
@@ -11686,7 +12646,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 10,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-premium-black",
@@ -11695,7 +12655,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-good-black",
@@ -11704,7 +12664,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-excellent-black",
@@ -11722,7 +12682,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-good-black",
@@ -11731,7 +12691,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-excellent-black",
@@ -11740,7 +12700,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 12,
+        stock: 3,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-premium-black",
@@ -11749,7 +12709,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-good-yellow",
@@ -11758,7 +12718,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 8,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-excellent-yellow",
@@ -11767,7 +12727,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 10,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-unlocked-64gb-premium-yellow",
@@ -11776,7 +12736,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-good-yellow",
@@ -11785,7 +12745,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 11,
+        stock: 13,
       },
 {
         id: "apple-iphone-11-unlocked-128gb-excellent-yellow",
@@ -11803,7 +12763,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 13,
+        stock: 15,
       },
 {
         id: "apple-iphone-11-unlocked-256gb-good-yellow",
@@ -11812,7 +12772,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 12,
       }
     ],
   },
@@ -11828,9 +12788,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-11-pro-max-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 212,
+    stock: 192,
     specs: {
 
     },
@@ -11857,7 +12825,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-good-silver",
@@ -11866,7 +12834,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-good-silver",
@@ -11875,7 +12843,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-excellent-midnight-green",
@@ -11884,7 +12852,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-excellent-midnight-green",
@@ -11893,7 +12861,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-excellent-space-grey",
@@ -11902,7 +12870,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-excellent-space-grey",
@@ -11911,7 +12879,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-excellent-gold",
@@ -11920,7 +12888,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-excellent-gold",
@@ -11929,7 +12897,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-excellent-silver",
@@ -11938,7 +12906,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-excellent-silver",
@@ -11947,7 +12915,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-premium-midnight-green",
@@ -11956,7 +12924,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-premium-midnight-green",
@@ -11965,7 +12933,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-premium-space-grey",
@@ -11974,7 +12942,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-premium-space-grey",
@@ -11983,7 +12951,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-premium-gold",
@@ -11992,7 +12960,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-premium-gold",
@@ -12001,7 +12969,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-premium-silver",
@@ -12010,7 +12978,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-premium-silver",
@@ -12019,7 +12987,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 15,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-good-midnight-green",
@@ -12028,7 +12996,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-good-midnight-green",
@@ -12037,7 +13005,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-good-space-grey",
@@ -12046,7 +13014,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-256gb-good-space-grey",
@@ -12055,7 +13023,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 13,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-max-unlocked-64gb-good-gold",
@@ -12064,7 +13032,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       }
     ],
   },
@@ -12080,9 +13048,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-11-pro-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+11+Pro+Box"
+    ],
     isCertified: true,
-    stock: 188,
+    stock: 168,
     specs: {
 
     },
@@ -12109,7 +13085,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 14,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-excellent-midnight-green",
@@ -12118,7 +13094,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-premium-midnight-green",
@@ -12136,7 +13112,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-excellent-midnight-green",
@@ -12145,7 +13121,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-premium-midnight-green",
@@ -12154,7 +13130,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-good-space-grey",
@@ -12163,7 +13139,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 14,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-excellent-space-grey",
@@ -12172,7 +13148,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-premium-space-grey",
@@ -12190,7 +13166,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-excellent-space-grey",
@@ -12199,7 +13175,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-premium-space-grey",
@@ -12208,7 +13184,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-good-gold",
@@ -12217,7 +13193,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 14,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-excellent-gold",
@@ -12226,7 +13202,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-premium-gold",
@@ -12244,7 +13220,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-excellent-gold",
@@ -12253,7 +13229,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-premium-gold",
@@ -12262,7 +13238,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-good-silver",
@@ -12271,7 +13247,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 14,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-excellent-silver",
@@ -12280,7 +13256,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 6,
       },
 {
         id: "apple-iphone-11-pro-unlocked-64gb-premium-silver",
@@ -12298,7 +13274,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-excellent-silver",
@@ -12307,7 +13283,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 14,
+        stock: 11,
       },
 {
         id: "apple-iphone-11-pro-unlocked-256gb-premium-silver",
@@ -12316,7 +13292,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 7,
       }
     ],
   },
@@ -12332,9 +13308,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-12-unlocked.png",
+    imageUrl: "/assets/iphone-12.png",
+    galleryImages: [
+"/assets/iphone-12.png",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+12+Box"
+    ],
     isCertified: true,
-    stock: 480,
+    stock: 528,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -12395,7 +13379,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-excellent-white",
@@ -12413,7 +13397,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-good-white",
@@ -12422,7 +13406,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-excellent-white",
@@ -12431,7 +13415,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 594,
         originalPrice: 849,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-premium-white",
@@ -12440,7 +13424,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 1,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-good-white",
@@ -12449,7 +13433,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 522,
         originalPrice: 949,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-excellent-white",
@@ -12458,7 +13442,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 664,
         originalPrice: 949,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-premium-white",
@@ -12467,7 +13451,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 778,
         originalPrice: 949,
-        stock: 14,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-good-black",
@@ -12476,7 +13460,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-excellent-black",
@@ -12494,7 +13478,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-good-black",
@@ -12503,7 +13487,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-excellent-black",
@@ -12512,7 +13496,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 594,
         originalPrice: 849,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-premium-black",
@@ -12521,7 +13505,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 1,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-good-black",
@@ -12530,7 +13514,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 522,
         originalPrice: 949,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-excellent-black",
@@ -12539,7 +13523,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 664,
         originalPrice: 949,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-premium-black",
@@ -12548,7 +13532,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 778,
         originalPrice: 949,
-        stock: 14,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-good-blue",
@@ -12557,7 +13541,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-excellent-blue",
@@ -12575,7 +13559,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-good-blue",
@@ -12584,7 +13568,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-excellent-blue",
@@ -12593,7 +13577,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 594,
         originalPrice: 849,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-premium-blue",
@@ -12602,7 +13586,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 1,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-good-blue",
@@ -12611,7 +13595,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 522,
         originalPrice: 949,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-excellent-blue",
@@ -12620,7 +13604,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 664,
         originalPrice: 949,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-premium-blue",
@@ -12629,7 +13613,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 778,
         originalPrice: 949,
-        stock: 14,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-good-green",
@@ -12638,7 +13622,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-excellent-green",
@@ -12656,7 +13640,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-good-green",
@@ -12665,7 +13649,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-excellent-green",
@@ -12674,7 +13658,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 594,
         originalPrice: 849,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-premium-green",
@@ -12683,7 +13667,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 1,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-good-green",
@@ -12692,7 +13676,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 522,
         originalPrice: 949,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-excellent-green",
@@ -12701,7 +13685,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 664,
         originalPrice: 949,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-premium-green",
@@ -12710,7 +13694,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 778,
         originalPrice: 949,
-        stock: 14,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-good-purple",
@@ -12719,7 +13703,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-excellent-purple",
@@ -12737,7 +13721,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-good-purple",
@@ -12746,7 +13730,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-excellent-purple",
@@ -12755,7 +13739,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 594,
         originalPrice: 849,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-premium-purple",
@@ -12764,7 +13748,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 1,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-good-purple",
@@ -12773,7 +13757,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 522,
         originalPrice: 949,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-excellent-purple",
@@ -12782,7 +13766,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 664,
         originalPrice: 949,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-premium-purple",
@@ -12791,7 +13775,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 778,
         originalPrice: 949,
-        stock: 14,
+        stock: 5,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-good-red",
@@ -12800,7 +13784,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-12-unlocked-64gb-excellent-red",
@@ -12818,7 +13802,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 13,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-good-red",
@@ -12827,7 +13811,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 467,
         originalPrice: 849,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-excellent-red",
@@ -12836,7 +13820,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 594,
         originalPrice: 849,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-12-unlocked-128gb-premium-red",
@@ -12845,7 +13829,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 696,
         originalPrice: 849,
-        stock: 1,
+        stock: 10,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-good-red",
@@ -12854,7 +13838,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 522,
         originalPrice: 949,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-excellent-red",
@@ -12863,7 +13847,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 664,
         originalPrice: 949,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-12-unlocked-256gb-premium-red",
@@ -12872,7 +13856,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 778,
         originalPrice: 949,
-        stock: 14,
+        stock: 5,
       }
     ],
   },
@@ -12888,9 +13872,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-se-2022-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+SE+2022+Box"
+    ],
     isCertified: true,
-    stock: 90,
+    stock: 135,
     specs: {
 
     },
@@ -12916,7 +13908,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 2,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-good-midnight",
@@ -12925,7 +13917,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-excellent-midnight",
@@ -12934,7 +13926,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-premium-midnight",
@@ -12943,7 +13935,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-128gb-good-midnight",
@@ -12952,7 +13944,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 2,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-128gb-excellent-midnight",
@@ -12970,7 +13962,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 2,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-good-starlight",
@@ -12979,7 +13971,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-excellent-starlight",
@@ -12988,7 +13980,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-premium-starlight",
@@ -12997,7 +13989,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-128gb-good-starlight",
@@ -13006,7 +13998,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 2,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-128gb-excellent-starlight",
@@ -13024,7 +14016,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 3,
+        stock: 2,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-good-red",
@@ -13033,7 +14025,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 10,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-excellent-red",
@@ -13042,7 +14034,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 5,
       },
 {
         id: "apple-iphone-se-2022-unlocked-64gb-premium-red",
@@ -13051,7 +14043,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-128gb-good-red",
@@ -13060,7 +14052,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 2,
+        stock: 11,
       },
 {
         id: "apple-iphone-se-2022-unlocked-128gb-excellent-red",
@@ -13085,9 +14077,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-13-pro-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Box"
+    ],
     isCertified: true,
-    stock: 225,
+    stock: 140,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -13146,7 +14146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-premium-sierra-blue",
@@ -13155,7 +14155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-good-sierra-blue",
@@ -13164,7 +14164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-excellent-sierra-blue",
@@ -13173,7 +14173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-premium-sierra-blue",
@@ -13182,7 +14182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-good-gold",
@@ -13191,7 +14191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-excellent-gold",
@@ -13200,7 +14200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-premium-gold",
@@ -13209,7 +14209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-good-gold",
@@ -13218,7 +14218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-excellent-gold",
@@ -13227,7 +14227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-premium-gold",
@@ -13236,7 +14236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-good-silver",
@@ -13245,7 +14245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-excellent-silver",
@@ -13254,7 +14254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-premium-silver",
@@ -13263,7 +14263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-good-silver",
@@ -13272,7 +14272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-excellent-silver",
@@ -13281,7 +14281,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-premium-silver",
@@ -13290,7 +14290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-good-graphite",
@@ -13299,7 +14299,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-excellent-graphite",
@@ -13308,7 +14308,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-premium-graphite",
@@ -13317,7 +14317,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-good-graphite",
@@ -13326,7 +14326,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-excellent-graphite",
@@ -13335,7 +14335,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-premium-graphite",
@@ -13344,7 +14344,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-good-alpine-green",
@@ -13353,7 +14353,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-excellent-alpine-green",
@@ -13362,7 +14362,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 9,
+        stock: 4,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-premium-alpine-green",
@@ -13371,7 +14371,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 8,
+        stock: 3,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-good-alpine-green",
@@ -13380,7 +14380,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 5,
+        stock: 14,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-excellent-alpine-green",
@@ -13389,7 +14389,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 1,
+        stock: 5,
       },
 {
         id: "apple-iphone-13-pro-unlocked-256gb-premium-alpine-green",
@@ -13398,7 +14398,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-13-pro-unlocked-128gb-good-sierra-blue",
@@ -13407,7 +14407,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       }
     ],
   },
@@ -13423,9 +14423,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-14-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Box"
+    ],
     isCertified: true,
-    stock: 468,
+    stock: 342,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -13486,7 +14494,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 10,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-good-yellow",
@@ -13495,7 +14503,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-excellent-yellow",
@@ -13504,7 +14512,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-premium-yellow",
@@ -13513,7 +14521,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-good-yellow",
@@ -13522,7 +14530,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-excellent-yellow",
@@ -13531,7 +14539,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-premium-yellow",
@@ -13540,7 +14548,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-good-blue",
@@ -13549,7 +14557,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-excellent-blue",
@@ -13558,7 +14566,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-premium-blue",
@@ -13567,7 +14575,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 10,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-good-blue",
@@ -13576,7 +14584,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-excellent-blue",
@@ -13585,7 +14593,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-premium-blue",
@@ -13594,7 +14602,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-good-blue",
@@ -13603,7 +14611,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-excellent-blue",
@@ -13612,7 +14620,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-premium-blue",
@@ -13621,7 +14629,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-good-midnight",
@@ -13630,7 +14638,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-excellent-midnight",
@@ -13639,7 +14647,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-premium-midnight",
@@ -13648,7 +14656,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 10,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-good-midnight",
@@ -13657,7 +14665,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-excellent-midnight",
@@ -13666,7 +14674,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-premium-midnight",
@@ -13675,7 +14683,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-good-midnight",
@@ -13684,7 +14692,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-excellent-midnight",
@@ -13693,7 +14701,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-premium-midnight",
@@ -13702,7 +14710,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-good-red",
@@ -13711,7 +14719,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-excellent-red",
@@ -13720,7 +14728,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-premium-red",
@@ -13729,7 +14737,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 10,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-good-red",
@@ -13738,7 +14746,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-excellent-red",
@@ -13747,7 +14755,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-premium-red",
@@ -13756,7 +14764,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-good-red",
@@ -13765,7 +14773,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-excellent-red",
@@ -13774,7 +14782,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-premium-red",
@@ -13783,7 +14791,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-good-starlight",
@@ -13792,7 +14800,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-excellent-starlight",
@@ -13801,7 +14809,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-premium-starlight",
@@ -13810,7 +14818,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 10,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-good-starlight",
@@ -13819,7 +14827,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-excellent-starlight",
@@ -13828,7 +14836,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-premium-starlight",
@@ -13837,7 +14845,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-good-starlight",
@@ -13846,7 +14854,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-excellent-starlight",
@@ -13855,7 +14863,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-premium-starlight",
@@ -13864,7 +14872,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-good-purple",
@@ -13873,7 +14881,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-excellent-purple",
@@ -13882,7 +14890,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-premium-purple",
@@ -13891,7 +14899,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 10,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-good-purple",
@@ -13900,7 +14908,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 14,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-excellent-purple",
@@ -13909,7 +14917,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 2,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-unlocked-256gb-premium-purple",
@@ -13918,7 +14926,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 15,
+        stock: 6,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-good-purple",
@@ -13927,7 +14935,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-excellent-purple",
@@ -13936,7 +14944,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 8,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-unlocked-512gb-premium-purple",
@@ -13945,7 +14953,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-good-yellow",
@@ -13954,7 +14962,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 5,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-unlocked-128gb-excellent-yellow",
@@ -13963,7 +14971,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 2,
+        stock: 8,
       }
     ],
   },
@@ -13979,9 +14987,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-13-pro-max-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+13+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 160,
+    stock: 250,
     specs: {
       displaySize: "6.7 inches",
       display: "Super Retina XDR OLED",
@@ -14040,7 +15056,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-premium-alpine-green",
@@ -14058,7 +15074,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 2,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-good-alpine-green",
@@ -14067,7 +15083,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-premium-alpine-green",
@@ -14076,7 +15092,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-excellent-alpine-green",
@@ -14085,7 +15101,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-good-sierra-blue",
@@ -14094,7 +15110,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-premium-sierra-blue",
@@ -14112,7 +15128,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 2,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-good-sierra-blue",
@@ -14121,7 +15137,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-premium-sierra-blue",
@@ -14130,7 +15146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-excellent-sierra-blue",
@@ -14139,7 +15155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-good-gold",
@@ -14148,7 +15164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-premium-gold",
@@ -14166,7 +15182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 2,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-good-gold",
@@ -14175,7 +15191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-premium-gold",
@@ -14184,7 +15200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-excellent-gold",
@@ -14193,7 +15209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-good-silver",
@@ -14202,7 +15218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-premium-silver",
@@ -14220,7 +15236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 2,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-good-silver",
@@ -14229,7 +15245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-premium-silver",
@@ -14238,7 +15254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-excellent-silver",
@@ -14247,7 +15263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-good-graphite",
@@ -14256,7 +15272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-128gb-premium-graphite",
@@ -14274,7 +15290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 2,
+        stock: 6,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-good-graphite",
@@ -14283,7 +15299,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-premium-graphite",
@@ -14292,7 +15308,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 13,
+        stock: 12,
       },
 {
         id: "apple-iphone-13-pro-max-unlocked-256gb-excellent-graphite",
@@ -14301,7 +15317,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 12,
       }
     ],
   },
@@ -14317,9 +15333,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-14-plus-refurbished-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Plus+Box"
+    ],
     isCertified: true,
-    stock: 295,
+    stock: 405,
     specs: {
       displaySize: "6.7 inches",
       display: "Super Retina XDR OLED",
@@ -14388,7 +15412,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-premium-blue",
@@ -14406,7 +15430,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 14,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-good-midnight",
@@ -14415,7 +15439,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-good-midnight",
@@ -14424,7 +15448,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-good-starlight",
@@ -14433,7 +15457,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 14,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-good-starlight",
@@ -14442,7 +15466,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-good-starlight",
@@ -14451,7 +15475,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-good-red",
@@ -14460,7 +15484,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 14,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-good-red",
@@ -14469,7 +15493,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-good-red",
@@ -14478,7 +15502,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-good-purple",
@@ -14487,7 +15511,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 14,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-good-purple",
@@ -14496,7 +15520,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-good-purple",
@@ -14505,7 +15529,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-good-blue",
@@ -14514,7 +15538,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 9,
+        stock: 14,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-good-blue",
@@ -14523,7 +15547,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 3,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-good-blue",
@@ -14532,7 +15556,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-excellent-midnight",
@@ -14541,7 +15565,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-excellent-midnight",
@@ -14550,7 +15574,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-excellent-midnight",
@@ -14559,7 +15583,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-excellent-starlight",
@@ -14568,7 +15592,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-excellent-starlight",
@@ -14577,7 +15601,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-excellent-starlight",
@@ -14586,7 +15610,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-excellent-red",
@@ -14595,7 +15619,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-excellent-red",
@@ -14604,7 +15628,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-excellent-red",
@@ -14613,7 +15637,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-excellent-purple",
@@ -14622,7 +15646,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-excellent-purple",
@@ -14631,7 +15655,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-excellent-purple",
@@ -14640,7 +15664,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-excellent-blue",
@@ -14649,7 +15673,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 5,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-256gb-excellent-blue",
@@ -14658,7 +15682,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 4,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-excellent-blue",
@@ -14667,7 +15691,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-128gb-premium-midnight",
@@ -14685,7 +15709,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-premium-midnight",
@@ -14712,7 +15736,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-premium-starlight",
@@ -14739,7 +15763,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-premium-red",
@@ -14766,7 +15790,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 6,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-plus-refurbished-unlocked-512gb-premium-purple",
@@ -14791,9 +15815,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-14-pro-unlocked.png",
+    imageUrl: "/assets/iphone-14-pro.png",
+    galleryImages: [
+"/assets/iphone-14-pro.png",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Box"
+    ],
     isCertified: true,
-    stock: 404,
+    stock: 468,
     specs: {
       displaySize: "6.1 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -14853,7 +15885,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 6,
+        stock: 12,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-premium-deep-purple",
@@ -14862,7 +15894,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 11,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-good-gold",
@@ -14880,7 +15912,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 6,
+        stock: 12,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-premium-gold",
@@ -14889,7 +15921,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 11,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-good-silver",
@@ -14907,7 +15939,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 6,
+        stock: 12,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-premium-silver",
@@ -14916,7 +15948,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 11,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-good-space-black",
@@ -14925,7 +15957,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-excellent-space-black",
@@ -14934,7 +15966,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-premium-space-black",
@@ -14943,7 +15975,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-good-space-black",
@@ -14952,7 +15984,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-excellent-space-black",
@@ -14961,7 +15993,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-premium-space-black",
@@ -14970,7 +16002,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-good-deep-purple",
@@ -14979,7 +16011,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-excellent-deep-purple",
@@ -14988,7 +16020,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-premium-deep-purple",
@@ -14997,7 +16029,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-good-deep-purple",
@@ -15006,7 +16038,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-excellent-deep-purple",
@@ -15015,7 +16047,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-premium-deep-purple",
@@ -15024,7 +16056,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-good-gold",
@@ -15033,7 +16065,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-excellent-gold",
@@ -15042,7 +16074,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-premium-gold",
@@ -15051,7 +16083,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-good-gold",
@@ -15060,7 +16092,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-excellent-gold",
@@ -15069,7 +16101,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-premium-gold",
@@ -15078,7 +16110,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-good-silver",
@@ -15087,7 +16119,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 7,
+        stock: 1,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-excellent-silver",
@@ -15096,7 +16128,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-unlocked-128gb-premium-silver",
@@ -15105,7 +16137,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 5,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-good-silver",
@@ -15114,7 +16146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 8,
+        stock: 15,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-excellent-silver",
@@ -15123,7 +16155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 13,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-unlocked-256gb-premium-silver",
@@ -15132,7 +16164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 3,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-good-space-black",
@@ -15141,7 +16173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 12,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-excellent-space-black",
@@ -15150,7 +16182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 11,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-premium-space-black",
@@ -15159,7 +16191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 7,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-good-deep-purple",
@@ -15168,7 +16200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 12,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-excellent-deep-purple",
@@ -15177,7 +16209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 11,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-premium-deep-purple",
@@ -15186,7 +16218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 7,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-good-gold",
@@ -15195,7 +16227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 12,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-excellent-gold",
@@ -15204,7 +16236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 11,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-premium-gold",
@@ -15213,7 +16245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 7,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-good-silver",
@@ -15222,7 +16254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 714,
         originalPrice: 1299,
-        stock: 12,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-excellent-silver",
@@ -15231,7 +16263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 909,
         originalPrice: 1299,
-        stock: 11,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-unlocked-512gb-premium-silver",
@@ -15240,7 +16272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1065,
         originalPrice: 1299,
-        stock: 7,
+        stock: 13,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-good-space-black",
@@ -15258,7 +16290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1049,
         originalPrice: 1499,
-        stock: 6,
+        stock: 12,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-premium-space-black",
@@ -15267,7 +16299,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1229,
         originalPrice: 1499,
-        stock: 11,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-unlocked-1tb-good-deep-purple",
@@ -15292,9 +16324,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-14-pro-max-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+14+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 404,
+    stock: 364,
     specs: {
       displaySize: "6.7 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -15354,7 +16394,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-good-silver",
@@ -15363,7 +16403,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-premium-silver",
@@ -15372,7 +16412,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-excellent-silver",
@@ -15381,7 +16421,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-good-silver",
@@ -15390,7 +16430,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-premium-silver",
@@ -15399,7 +16439,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-excellent-silver",
@@ -15408,7 +16448,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-good-silver",
@@ -15417,7 +16457,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-premium-silver",
@@ -15426,7 +16466,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-excellent-silver",
@@ -15435,7 +16475,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-good-space-black",
@@ -15444,7 +16484,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-premium-space-black",
@@ -15462,7 +16502,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-good-space-black",
@@ -15471,7 +16511,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-premium-space-black",
@@ -15480,7 +16520,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-excellent-space-black",
@@ -15489,7 +16529,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-good-space-black",
@@ -15498,7 +16538,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-premium-space-black",
@@ -15507,7 +16547,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-excellent-space-black",
@@ -15516,7 +16556,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-good-space-black",
@@ -15525,7 +16565,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-premium-space-black",
@@ -15534,7 +16574,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-excellent-space-black",
@@ -15543,7 +16583,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-good-deep-purple",
@@ -15552,7 +16592,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-premium-deep-purple",
@@ -15570,7 +16610,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-good-deep-purple",
@@ -15579,7 +16619,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-premium-deep-purple",
@@ -15588,7 +16628,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-excellent-deep-purple",
@@ -15597,7 +16637,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-good-deep-purple",
@@ -15606,7 +16646,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-premium-deep-purple",
@@ -15615,7 +16655,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-excellent-deep-purple",
@@ -15624,7 +16664,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-good-deep-purple",
@@ -15633,7 +16673,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-premium-deep-purple",
@@ -15642,7 +16682,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-excellent-deep-purple",
@@ -15651,7 +16691,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-good-gold",
@@ -15660,7 +16700,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-premium-gold",
@@ -15678,7 +16718,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 15,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-good-gold",
@@ -15687,7 +16727,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 6,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-premium-gold",
@@ -15696,7 +16736,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-256gb-excellent-gold",
@@ -15705,7 +16745,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 2,
+        stock: 10,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-good-gold",
@@ -15714,7 +16754,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 15,
+        stock: 2,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-premium-gold",
@@ -15723,7 +16763,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 10,
+        stock: 9,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-512gb-excellent-gold",
@@ -15732,7 +16772,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 2,
+        stock: 5,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-good-gold",
@@ -15741,7 +16781,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 3,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-premium-gold",
@@ -15750,7 +16790,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 14,
+        stock: 8,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-1tb-excellent-gold",
@@ -15759,7 +16799,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-good-silver",
@@ -15768,7 +16808,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-14-pro-max-unlocked-128gb-premium-silver",
@@ -15793,9 +16833,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-15-unlocked.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Box"
+    ],
     isCertified: true,
-    stock: 235,
+    stock: 240,
     specs: {
       displaySize: "6.1 inches",
       display: "Super Retina XDR OLED",
@@ -15855,7 +16903,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-premium-green",
@@ -15864,7 +16912,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-excellent-green",
@@ -15873,7 +16921,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-good-yellow",
@@ -15882,7 +16930,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-premium-yellow",
@@ -15891,7 +16939,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-excellent-yellow",
@@ -15900,7 +16948,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-good-yellow",
@@ -15909,7 +16957,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-premium-yellow",
@@ -15918,7 +16966,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-excellent-yellow",
@@ -15927,7 +16975,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 1,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-good-yellow",
@@ -15936,7 +16984,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-premium-yellow",
@@ -15945,7 +16993,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-excellent-yellow",
@@ -15954,7 +17002,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-good-black",
@@ -15963,7 +17011,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-premium-black",
@@ -15972,7 +17020,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-excellent-black",
@@ -15981,7 +17029,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-good-black",
@@ -15990,7 +17038,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-premium-black",
@@ -15999,7 +17047,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-excellent-black",
@@ -16008,7 +17056,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 1,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-good-black",
@@ -16017,7 +17065,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-premium-black",
@@ -16026,7 +17074,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-excellent-black",
@@ -16035,7 +17083,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-good-blue",
@@ -16044,7 +17092,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-premium-blue",
@@ -16053,7 +17101,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-excellent-blue",
@@ -16062,7 +17110,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-good-blue",
@@ -16071,7 +17119,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-premium-blue",
@@ -16080,7 +17128,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-excellent-blue",
@@ -16089,7 +17137,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 1,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-good-blue",
@@ -16098,7 +17146,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-premium-blue",
@@ -16107,7 +17155,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-excellent-blue",
@@ -16116,7 +17164,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-good-pink",
@@ -16125,7 +17173,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-premium-pink",
@@ -16134,7 +17182,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-excellent-pink",
@@ -16143,7 +17191,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-good-pink",
@@ -16152,7 +17200,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-premium-pink",
@@ -16161,7 +17209,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-excellent-pink",
@@ -16170,7 +17218,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 1,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-good-pink",
@@ -16179,7 +17227,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 604,
         originalPrice: 1099,
-        stock: 3,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-premium-pink",
@@ -16188,7 +17236,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 901,
         originalPrice: 1099,
-        stock: 2,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-unlocked-512gb-excellent-pink",
@@ -16197,7 +17245,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 769,
         originalPrice: 1099,
-        stock: 7,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-good-green",
@@ -16206,7 +17254,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 439,
         originalPrice: 799,
-        stock: 10,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-premium-green",
@@ -16215,7 +17263,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 655,
         originalPrice: 799,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-unlocked-128gb-excellent-green",
@@ -16224,7 +17272,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 559,
         originalPrice: 799,
-        stock: 1,
+        stock: 6,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-good-green",
@@ -16233,7 +17281,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 494,
         originalPrice: 899,
-        stock: 2,
+        stock: 4,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-premium-green",
@@ -16242,7 +17290,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 14,
+        stock: 7,
       },
 {
         id: "apple-iphone-15-unlocked-256gb-excellent-green",
@@ -16251,7 +17299,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 1,
+        stock: 4,
       }
     ],
   },
@@ -16267,9 +17315,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/apple-iphone-15-plus.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Plus+Box"
+    ],
     isCertified: true,
-    stock: 400,
+    stock: 340,
     specs: {
       displaySize: "6.7 inches",
       display: "Super Retina XDR OLED",
@@ -16329,7 +17385,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-plus-128gb-excellent-green",
@@ -16338,7 +17394,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-good-green",
@@ -16347,7 +17403,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-premium-green",
@@ -16356,7 +17412,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-256gb-excellent-green",
@@ -16365,7 +17421,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-plus-512gb-good-green",
@@ -16383,7 +17439,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-512gb-excellent-green",
@@ -16392,7 +17448,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-128gb-good-yellow",
@@ -16410,7 +17466,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-plus-128gb-excellent-yellow",
@@ -16419,7 +17475,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-good-yellow",
@@ -16428,7 +17484,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-premium-yellow",
@@ -16437,7 +17493,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-256gb-excellent-yellow",
@@ -16446,7 +17502,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-plus-512gb-good-yellow",
@@ -16464,7 +17520,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-512gb-excellent-yellow",
@@ -16473,7 +17529,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-128gb-good-black",
@@ -16491,7 +17547,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-plus-128gb-excellent-black",
@@ -16500,7 +17556,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-good-black",
@@ -16509,7 +17565,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-premium-black",
@@ -16518,7 +17574,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-256gb-excellent-black",
@@ -16527,7 +17583,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-plus-512gb-good-black",
@@ -16545,7 +17601,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-512gb-excellent-black",
@@ -16554,7 +17610,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-128gb-good-blue",
@@ -16572,7 +17628,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-plus-128gb-excellent-blue",
@@ -16581,7 +17637,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-good-blue",
@@ -16590,7 +17646,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-premium-blue",
@@ -16599,7 +17655,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-256gb-excellent-blue",
@@ -16608,7 +17664,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-plus-512gb-good-blue",
@@ -16626,7 +17682,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-512gb-excellent-blue",
@@ -16635,7 +17691,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-128gb-good-pink",
@@ -16653,7 +17709,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 737,
         originalPrice: 899,
-        stock: 4,
+        stock: 12,
       },
 {
         id: "apple-iphone-15-plus-128gb-excellent-pink",
@@ -16662,7 +17718,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 629,
         originalPrice: 899,
-        stock: 11,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-good-pink",
@@ -16671,7 +17727,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 549,
         originalPrice: 999,
-        stock: 15,
+        stock: 5,
       },
 {
         id: "apple-iphone-15-plus-256gb-premium-pink",
@@ -16680,7 +17736,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 819,
         originalPrice: 999,
-        stock: 4,
+        stock: 11,
       },
 {
         id: "apple-iphone-15-plus-256gb-excellent-pink",
@@ -16689,7 +17745,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 699,
         originalPrice: 999,
-        stock: 15,
+        stock: 1,
       },
 {
         id: "apple-iphone-15-plus-512gb-good-pink",
@@ -16707,7 +17763,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 7,
+        stock: 9,
       },
 {
         id: "apple-iphone-15-plus-512gb-excellent-pink",
@@ -16716,7 +17772,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 1,
+        stock: 2,
       },
 {
         id: "apple-iphone-15-plus-128gb-good-green",
@@ -16741,9 +17797,17 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/mobile-phone-iphone.png",
+    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Front",
+    galleryImages: [
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Front",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Back",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Side",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Camera",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Display",
+"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+15+Pro+Max+Box"
+    ],
     isCertified: true,
-    stock: 240,
+    stock: 324,
     specs: {
       displaySize: "6.7 inches",
       display: "LTPO Super Retina XDR OLED",
@@ -16802,7 +17866,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "mobile-phone-iphone-256gb-premium-white-titanium",
@@ -16811,7 +17875,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "mobile-phone-iphone-512gb-good-white-titanium",
@@ -16820,7 +17884,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "mobile-phone-iphone-512gb-excellent-white-titanium",
@@ -16829,7 +17893,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "mobile-phone-iphone-512gb-premium-white-titanium",
@@ -16838,7 +17902,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 5,
+        stock: 2,
       },
 {
         id: "mobile-phone-iphone-1tb-good-white-titanium",
@@ -16847,7 +17911,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-1tb-excellent-white-titanium",
@@ -16856,7 +17920,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 3,
+        stock: 12,
       },
 {
         id: "mobile-phone-iphone-1tb-premium-white-titanium",
@@ -16865,7 +17929,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "mobile-phone-iphone-256gb-excellent-natural-titanium",
@@ -16874,7 +17938,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "mobile-phone-iphone-256gb-premium-natural-titanium",
@@ -16883,7 +17947,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "mobile-phone-iphone-512gb-good-natural-titanium",
@@ -16892,7 +17956,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "mobile-phone-iphone-512gb-excellent-natural-titanium",
@@ -16901,7 +17965,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "mobile-phone-iphone-512gb-premium-natural-titanium",
@@ -16910,7 +17974,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 5,
+        stock: 2,
       },
 {
         id: "mobile-phone-iphone-1tb-good-natural-titanium",
@@ -16919,7 +17983,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-1tb-excellent-natural-titanium",
@@ -16928,7 +17992,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 3,
+        stock: 12,
       },
 {
         id: "mobile-phone-iphone-1tb-premium-natural-titanium",
@@ -16937,7 +18001,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "mobile-phone-iphone-256gb-excellent-blue-titanium",
@@ -16946,7 +18010,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "mobile-phone-iphone-256gb-premium-blue-titanium",
@@ -16955,7 +18019,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "mobile-phone-iphone-512gb-good-blue-titanium",
@@ -16964,7 +18028,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "mobile-phone-iphone-512gb-excellent-blue-titanium",
@@ -16973,7 +18037,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "mobile-phone-iphone-512gb-premium-blue-titanium",
@@ -16982,7 +18046,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 5,
+        stock: 2,
       },
 {
         id: "mobile-phone-iphone-1tb-good-blue-titanium",
@@ -16991,7 +18055,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-1tb-excellent-blue-titanium",
@@ -17000,7 +18064,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 3,
+        stock: 12,
       },
 {
         id: "mobile-phone-iphone-1tb-premium-blue-titanium",
@@ -17009,7 +18073,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 7,
+        stock: 10,
       },
 {
         id: "mobile-phone-iphone-256gb-good-black-titanium",
@@ -17018,7 +18082,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-256gb-good-white-titanium",
@@ -17027,7 +18091,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-256gb-good-natural-titanium",
@@ -17036,7 +18100,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-256gb-good-blue-titanium",
@@ -17045,7 +18109,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 659,
         originalPrice: 1199,
-        stock: 7,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-256gb-excellent-black-titanium",
@@ -17054,7 +18118,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 839,
         originalPrice: 1199,
-        stock: 12,
+        stock: 4,
       },
 {
         id: "mobile-phone-iphone-256gb-premium-black-titanium",
@@ -17063,7 +18127,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 983,
         originalPrice: 1199,
-        stock: 1,
+        stock: 15,
       },
 {
         id: "mobile-phone-iphone-512gb-good-black-titanium",
@@ -17072,7 +18136,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 769,
         originalPrice: 1399,
-        stock: 14,
+        stock: 9,
       },
 {
         id: "mobile-phone-iphone-512gb-excellent-black-titanium",
@@ -17081,7 +18145,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 979,
         originalPrice: 1399,
-        stock: 5,
+        stock: 7,
       },
 {
         id: "mobile-phone-iphone-512gb-premium-black-titanium",
@@ -17090,7 +18154,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1147,
         originalPrice: 1399,
-        stock: 5,
+        stock: 2,
       },
 {
         id: "mobile-phone-iphone-1tb-good-black-titanium",
@@ -17099,7 +18163,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Good",
         price: 879,
         originalPrice: 1599,
-        stock: 6,
+        stock: 11,
       },
 {
         id: "mobile-phone-iphone-1tb-excellent-black-titanium",
@@ -17108,7 +18172,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Excellent",
         price: 1119,
         originalPrice: 1599,
-        stock: 3,
+        stock: 12,
       },
 {
         id: "mobile-phone-iphone-1tb-premium-black-titanium",
@@ -17117,7 +18181,7 @@ export const MOCK_PHONES: Product[] = [
         condition: "Pristine",
         price: 1311,
         originalPrice: 1599,
-        stock: 7,
+        stock: 10,
       }
     ],
   },

@@ -906,6 +906,52 @@ IPHONE_SPECS = {
     },
 }
 
+# Existing real photos in public/assets that can be mapped to products
+REAL_PHOTO_MAP = {
+    'apple-iphone-15-pro-max-unlocked': '/assets/iphone-15-pro-max.png',
+    'apple-iphone-14-pro-unlocked': '/assets/iphone-14-pro.png',
+    'apple-iphone-13-unlocked': '/assets/iphone-13.png',
+    'apple-iphone-12-pro-unlocked': '/assets/iphone-12-pro.png',
+    'apple-iphone-12-unlocked': '/assets/iphone-12.png',
+    'apple-iphone-11-unlocked': '/assets/iphone-11.png',
+    'meta-quest-3s-128gb-all-in-one-mixed-reality-headset': '/assets/meta-quest.svg',
+    'playstation-5': '/assets/ps5.svg',
+}
+
+# Brand colors for placeholder backgrounds
+BRAND_COLORS = {
+    'Apple': ('1a1a1a', 'ffffff'),
+    'Samsung': ('1428a0', 'ffffff'),
+    'Google': ('4285f4', 'ffffff'),
+    'Sony': ('00439c', 'ffffff'),
+    'Nintendo': ('e60012', 'ffffff'),
+    'Meta': ('0081fb', 'ffffff'),
+    'VIDVIE': ('222222', 'ffffff'),
+}
+
+
+def generate_gallery_images(handle, model, brand, category):
+    """Generate 6 deterministic image URLs for a product."""
+    bg, fg = BRAND_COLORS.get(brand, ('1a1a1a', 'ffffff'))
+    encoded_model = model.replace(' ', '+')
+    
+    # If we have a real photo, use it as the first image
+    real_photo = REAL_PHOTO_MAP.get(handle)
+    
+    images = []
+    views = ['Front', 'Back', 'Side', 'Camera', 'Display', 'Box']
+    
+    for i, view in enumerate(views):
+        if i == 0 and real_photo:
+            images.append(real_photo)
+        else:
+            # Use placehold.co for clean, professional placeholders
+            text = f"{encoded_model}+{view}"
+            images.append(f"https://placehold.co/800x800/{bg}/{fg}?text={text}")
+    
+    return images
+
+
 # Generic accessory specs
 ACCESSORY_SPECS = {
     'speaker': {
@@ -1122,6 +1168,7 @@ def main():
             # Use first available color for image
             base_color = colors[0] if colors else 'Black'
 
+            gallery = generate_gallery_images(handle, model_name, brand, category)
             product = {
                 'id': handle,
                 'model': model_name,
@@ -1134,7 +1181,8 @@ def main():
                 'batteryHealth': 90,
                 'warrantyMonths': 12,
                 'returnDays': 30,
-                'imageUrl': f'/assets/{slugify(handle)}.png',
+                'imageUrl': gallery[0],
+                'galleryImages': gallery,
                 'isCertified': True,
                 'stock': sum(v['stock'] for v in product_variants),
                 'specs': specs_template,
@@ -1182,6 +1230,7 @@ def main():
             elif 'charger' in title.lower() or 'charging' in title.lower():
                 price, original = 35, 59
 
+            gallery = generate_gallery_images(handle, title, brand, category)
             product = {
                 'id': handle,
                 'model': title,
@@ -1193,7 +1242,8 @@ def main():
                 'batteryHealth': 100,
                 'warrantyMonths': 12,
                 'returnDays': 30,
-                'imageUrl': f'/assets/{slugify(handle)}.png',
+                'imageUrl': gallery[0],
+                'galleryImages': gallery,
                 'isCertified': True,
                 'stock': max(3, hash(handle) % 20 + 3),
                 'specs': specs,
