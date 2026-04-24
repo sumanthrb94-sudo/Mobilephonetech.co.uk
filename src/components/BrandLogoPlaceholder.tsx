@@ -1,17 +1,21 @@
+import { useState } from 'react';
+import CategoryIllustration from './CategoryIllustration';
+
 /**
  * BrandLogoPlaceholder — renders the official brand logo on a tinted
  * background when no real product photograph is available. Uses the
  * simpleicons.org CDN (https://cdn.simpleicons.org/{slug}/{hex}) so
- * every logo is the vendor's exact SVG, not a knockoff. A tiny model
- * badge is rendered underneath for context so the card still reads
- * as a specific product and not just a generic brand tile.
+ * every logo is the vendor's exact SVG, not a knockoff. If the CDN
+ * is unreachable or the slug is unknown the <img> onError flips to
+ * the CategoryIllustration fallback so the card never shows a broken
+ * image glyph.
  */
 
 interface BrandStyle {
   slug: string;
-  logoHex: string;     // colour of the SVG logo itself (as hex, no '#')
-  bgFrom: string;      // panel gradient start
-  bgTo: string;        // panel gradient end
+  logoHex: string;
+  bgFrom: string;
+  bgTo: string;
   textColor: string;
 }
 
@@ -32,21 +36,31 @@ const BRANDS: Record<string, BrandStyle> = {
 };
 
 function lookupBrand(brand: string): BrandStyle {
-  const key = brand.trim().toLowerCase();
-  return BRANDS[key] ?? BRANDS.default;
+  return BRANDS[brand.trim().toLowerCase()] ?? BRANDS.default;
 }
 
 export default function BrandLogoPlaceholder({
   brand,
   model,
+  category,
   alt,
 }: {
   brand: string;
   model: string;
+  category?: string;
   alt?: string;
 }) {
   const b = lookupBrand(brand);
+  const [logoFailed, setLogoFailed] = useState(false);
   const logoUrl = `https://cdn.simpleicons.org/${b.slug}/${b.logoHex}`;
+
+  if (logoFailed) {
+    return (
+      <div aria-label={alt ?? `${brand} ${model}`} style={{ width: '100%', height: '100%' }}>
+        <CategoryIllustration category={category || 'phones'} rounded={false} />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -70,11 +84,8 @@ export default function BrandLogoPlaceholder({
         alt=""
         loading="lazy"
         decoding="async"
-        style={{
-          width: '46%',
-          height: '46%',
-          objectFit: 'contain',
-        }}
+        onError={() => setLogoFailed(true)}
+        style={{ width: '46%', height: '46%', objectFit: 'contain' }}
       />
       <div
         style={{

@@ -221,6 +221,8 @@ export default function Hero() {
                 src={slide.image}
                 alt={slide.imageAlt}
                 loading={current === 0 ? 'eager' : 'lazy'}
+                fetchPriority={current === 0 ? 'high' : 'auto'}
+                decoding="async"
                 style={{
                   height: '100%',
                   width: '100%',

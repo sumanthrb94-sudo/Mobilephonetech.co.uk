@@ -828,7 +828,7 @@ export default function CheckoutFlow() {
                   </form>
                 )}
                 {couponError && <p style={errorStyle}>{couponError}</p>}
-                {!appliedCoupon && <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--grey-40)', marginTop: '8px' }}>Try "SAVE10" or "WELCOME20"</p>}
+                {!appliedCoupon && <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--grey-40)', marginTop: '8px' }}>Got a promo code from our newsletter? Paste it above.</p>}
               </div>
 
               {/* Totals */}

@@ -199,6 +199,31 @@ function AppContent() {
         </>
       )}
 
+      {/* Skip link — WCAG 2.4.1. Visible only on keyboard focus. */}
+      <a
+        href="#main-content"
+        style={{
+          position: 'absolute',
+          left: '50%',
+          top: '8px',
+          transform: 'translate(-50%, -120%)',
+          padding: '10px 18px',
+          background: 'var(--black)',
+          color: 'var(--grey-0)',
+          borderRadius: 'var(--radius-md)',
+          fontFamily: 'var(--font-sans)',
+          fontWeight: 700,
+          fontSize: '14px',
+          zIndex: 200,
+          textDecoration: 'none',
+          transition: 'transform var(--duration-fast) var(--ease-default)',
+        }}
+        onFocus={(e) => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translate(-50%, 0)'; }}
+        onBlur={(e) => { (e.currentTarget as HTMLAnchorElement).style.transform = 'translate(-50%, -120%)'; }}
+      >
+        Skip to main content
+      </a>
+
       {/*
         Main content — offset by nav height.
         Hero already handles its own padding-top via CSS var(--nav-total).

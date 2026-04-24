@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { resolveImageUrl, fallbackCategoryKey } from '../utils/productImagery';
 import CategoryIllustration from './CategoryIllustration';
 import BrandLogoPlaceholder from './BrandLogoPlaceholder';
@@ -39,8 +40,9 @@ const PLACEHOLDER_HOST_RE = /^https?:\/\/(placehold\.co|placeholder\.com|via\.pl
 
 export function ProductImage({ imageUrl, alt, brand, model, category, variant }: ProductImageProps) {
   const isPlaceholderUrl = typeof imageUrl === 'string' && PLACEHOLDER_HOST_RE.test(imageUrl);
+  const [photoFailed, setPhotoFailed] = useState(false);
   const resolved =
-    variant === 'synthetic' || isPlaceholderUrl
+    variant === 'synthetic' || isPlaceholderUrl || photoFailed
       ? null
       : resolveImageUrl(imageUrl);
 
@@ -51,6 +53,7 @@ export function ProductImage({ imageUrl, alt, brand, model, category, variant }:
         alt={alt ?? ''}
         loading="lazy"
         decoding="async"
+        onError={() => setPhotoFailed(true)}
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
     );
@@ -59,7 +62,14 @@ export function ProductImage({ imageUrl, alt, brand, model, category, variant }:
   // Tier 2 — branded fallback for vendor-identifiable products.
   const brandKey = (brand || '').trim().toLowerCase();
   if (BRANDED_BRANDS.has(brandKey)) {
-    return <BrandLogoPlaceholder brand={brand} model={model} alt={alt} />;
+    return (
+      <BrandLogoPlaceholder
+        brand={brand}
+        model={model}
+        category={fallbackCategoryKey(category, model)}
+        alt={alt}
+      />
+    );
   }
 
   // Tier 3 — category illustration for everything else.
