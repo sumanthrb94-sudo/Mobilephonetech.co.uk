@@ -49,6 +49,7 @@ const AboutPage = lazy(() => import('./components/content/AboutPage'));
 const SustainabilityPage = lazy(() => import('./components/content/SustainabilityPage'));
 const BuyingGuidesPage = lazy(() => import('./components/content/BuyingGuidesPage'));
 const FaqPage = lazy(() => import('./components/content/FaqPage'));
+const NotFound = lazy(() => import('./components/NotFound'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
 
 // Loading state component — on-brand skeleton
@@ -282,6 +283,14 @@ function AppContent() {
               <Route path="/help" element={
                 <AnimatedPage paddingTop="var(--nav-total)">
                   <FaqPage />
+                </AnimatedPage>
+              } />
+
+              {/* Wildcard — catches every unmatched URL so a typo
+                  never lands on a blank body. Emits noindex via useSeo. */}
+              <Route path="*" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <NotFound />
                 </AnimatedPage>
               } />
             </Routes>

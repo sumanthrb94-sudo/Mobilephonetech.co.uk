@@ -215,11 +215,20 @@ export default function ProductsPage() {
     brandCategory?.brand ?? selectedDepartment?.brand ?? (brandParam || null);
   const seoCategory =
     brandCategory?.category ?? selectedDepartment?.label ?? null;
+  // Canonical path mirrors brand + department but intentionally drops
+  // sort, filter and price-range query parameters so every filter
+  // permutation collapses to a single canonical URL for Google. A page
+  // with active filters self-identifies as a variant of the base
+  // department page — not a duplicate in the crawl budget.
+  const canonicalPath =
+    brandParam && !categoryParam ? `/products?brand=${encodeURIComponent(brandParam)}` :
+    categoryParam                 ? `/products?category=${encodeURIComponent(categoryParam)}` :
+                                    '/products';
   useSeo(productsPageSeo({
     brand: seoBrand,
     category: seoCategory,
     count: sortedProducts.length,
-    canonicalPath: `/products${location.search}`,
+    canonicalPath,
   }));
 
   const handleBrandToggle = (brand: string) =>

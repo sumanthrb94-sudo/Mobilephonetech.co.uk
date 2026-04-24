@@ -55,7 +55,6 @@ export default function ProductDetail() {
   const [isPrimaryCtaInView, setIsPrimaryCtaInView] = React.useState(true);
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
   const { track: trackRecent } = useRecentlyViewed();
-  const [imageLoaded, setImageLoaded] = React.useState<boolean[]>([]);
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
 
@@ -207,28 +206,23 @@ export default function ProductDetail() {
                 touchAction: 'pan-y',
               }}
             >
-              <img
+              <div
                 key={activeGallery[selectedImageIndex]}
-                src={activeGallery[selectedImageIndex]}
-                alt={`${phone.model} — view ${selectedImageIndex + 1}`}
-                loading="eager"
-                decoding="async"
-                onLoad={() => setImageLoaded(prev => { const next = [...prev]; next[selectedImageIndex] = true; return next; })}
                 style={{
                   width: '100%',
                   height: '100%',
-                  objectFit: 'contain',
                   padding: '24px',
-                  opacity: imageLoaded[selectedImageIndex] ? 1 : 0,
-                  transition: 'opacity 0.3s ease',
+                  boxSizing: 'border-box',
                 }}
-              />
-              {!imageLoaded[selectedImageIndex] && (
-                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: '40px', height: '40px', border: '3px solid var(--grey-10)', borderTopColor: 'var(--brand-cyan)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                </div>
-              )}
+              >
+                <ProductImage
+                  brand={phone.brand}
+                  model={phone.model}
+                  category={phone.category}
+                  imageUrl={activeGallery[selectedImageIndex]}
+                  alt={`${phone.model} — view ${selectedImageIndex + 1}`}
+                />
+              </div>
 
               {savings > 0 && (
                 <span
@@ -287,19 +281,22 @@ export default function ProductDetail() {
                       transition: 'all var(--duration-fast) var(--ease-default)',
                     }}
                   >
-                    <img
-                      src={src}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
+                    <div
                       style={{
                         width: '100%',
                         height: '100%',
-                        objectFit: 'contain',
                         opacity: isActive ? 1 : 0.65,
                         transition: 'opacity 0.2s',
                       }}
-                    />
+                    >
+                      <ProductImage
+                        brand={phone.brand}
+                        model={phone.model}
+                        category={phone.category}
+                        imageUrl={src}
+                        alt=""
+                      />
+                    </div>
                   </button>
                 );
               })}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
+import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import { useNavigate } from 'react-router-dom';
@@ -18,6 +19,12 @@ import ProductImage from './ProductImage';
  */
 
 export default function CartPage() {
+  useSeo({
+    title: 'Your basket | MobileTech',
+    description: 'Review the refurbished devices in your basket before checkout.',
+    canonical: `${SITE_ORIGIN}/cart`,
+    noindex: true,
+  });
   const { items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
   const { setCurrentStep } = useCheckout();
   const { addToWishlist } = useWishlist();

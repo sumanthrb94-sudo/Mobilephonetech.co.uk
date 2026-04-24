@@ -1,6 +1,7 @@
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useUI } from '../context/UIContext';
+import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import ProductCard from './ProductCard';
 import { Heart, ArrowLeft, Bell, BellRing, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +24,12 @@ function saveAlerts(map: Record<string, boolean>) {
  * localStorage (mocks a notification subscription).
  */
 export default function WishlistPage() {
+  useSeo({
+    title: 'Your wishlist | MobileTech',
+    description: 'Saved devices to buy later — price alerts included.',
+    canonical: `${SITE_ORIGIN}/wishlist`,
+    noindex: true,
+  });
   const { items, clearWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { showToast } = useUI();

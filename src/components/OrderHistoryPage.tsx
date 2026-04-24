@@ -4,8 +4,15 @@ import { ArrowLeft, Package, Truck, CheckCircle2, Clock, RotateCcw } from 'lucid
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import ReturnFlowModal from './ReturnFlowModal';
+import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 
 export default function OrderHistoryPage() {
+  useSeo({
+    title: 'Your orders | MobileTech',
+    description: 'Track deliveries and manage returns.',
+    canonical: `${SITE_ORIGIN}/orders`,
+    noindex: true,
+  });
   const { orders } = useCheckout();
   const navigate = useNavigate();
   const [returnOrderId, setReturnOrderId] = useState<string | null>(null);

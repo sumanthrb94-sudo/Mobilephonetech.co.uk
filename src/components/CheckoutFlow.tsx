@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 import ExpressPayRow from './ExpressPayRow';
 import ProductImage from './ProductImage';
+import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -15,6 +16,12 @@ import ProductImage from './ProductImage';
  */
 
 export default function CheckoutFlow() {
+  useSeo({
+    title: 'Checkout | MobileTech',
+    description: 'Complete your purchase securely — free next-day UK delivery, 12-month warranty, 30-day returns.',
+    canonical: `${SITE_ORIGIN}/checkout`,
+    noindex: true,
+  });
   const { items, cartTotal, clearCart } = useCart();
   const { 
     currentStep, setCurrentStep, shippingAddress, setShippingAddress,
