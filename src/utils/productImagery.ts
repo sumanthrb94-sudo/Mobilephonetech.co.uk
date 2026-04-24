@@ -71,10 +71,14 @@ const KNOWN_ASSETS = new Set<string>([
  * Accepts absolute http(s) URLs too — those pass through untouched on
  * the assumption an external image service has its own availability
  * guarantees.
+ *
+ * Any path under /assets/ is also allowed through so the inventory can
+ * reference product photography without maintaining a hardcoded manifest.
  */
 export function resolveImageUrl(url: string | undefined | null): string | null {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  if (url.startsWith('/assets/')) return url;
   if (KNOWN_ASSETS.has(url)) return url;
   return null;
 }
