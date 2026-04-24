@@ -360,7 +360,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
         <button
           onClick={handleAddToCart}
-          className="btn btn-primary btn-md btn-full"
+          className="btn btn-primary btn-lg btn-full"
           style={{ fontFamily: 'var(--font-sans)' }}
           aria-label={added ? 'Added to cart' : `Add ${phone.model} to cart`}
         >

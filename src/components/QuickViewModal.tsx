@@ -119,13 +119,13 @@ export default function QuickViewModal({
           <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
             <button
               onClick={onAddToCart}
-              className="btn btn-primary btn-md"
+              className="btn btn-primary btn-lg"
               style={{ flex: 1 }}
               disabled={phone.stock <= 0}
             >
               {phone.stock > 0 ? 'Add to cart' : 'Out of stock'}
             </button>
-            <button onClick={onViewFull} className="btn btn-secondary btn-md">
+            <button onClick={onViewFull} className="btn btn-secondary btn-lg">
               Full details <ArrowRight size={14} />
             </button>
           </div>

@@ -442,7 +442,7 @@ export default function ProductDetail() {
             <button
               onClick={handleAddToCart}
               disabled={displayStock === 0}
-              className="btn btn-primary btn-md"
+              className="btn btn-primary btn-lg"
               style={{ flexShrink: 0 }}
               aria-label={displayStock > 0 ? `Add ${phone.model} to cart` : 'Out of stock'}
             >
