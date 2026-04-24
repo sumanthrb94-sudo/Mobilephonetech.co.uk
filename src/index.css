@@ -259,6 +259,22 @@
   }
 }
 
+/* AI Assistant FAB — lifts above the 64px mobile bottom-nav so it
+   doesn't collide with the Account / Cart tabs. On checkout routes
+   the bottom nav is hidden, so the FAB drops back to its normal
+   edge offset. Desktop (≥1024px) has no bottom nav either. */
+.ai-fab {
+  bottom: calc(64px + 16px + env(safe-area-inset-bottom, 0px));
+}
+html.is-checkout .ai-fab {
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 1024px) {
+  .ai-fab {
+    bottom: 32px;
+  }
+}
+
 /* Cart pill: compact on mobile, comfortable on tablet+ */
 .navbar-cart {
   height: 40px;

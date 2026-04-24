@@ -104,12 +104,12 @@ export default function AIAssistant() {
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Open Tech Advisor"
+        className={`ai-fab ${isOpen ? 'hidden' : ''}`}
         style={{
           position: 'fixed',
-          bottom: isMobile ? '20px' : '32px',
-          right: isMobile ? '20px' : '32px',
-          width: isMobile ? '56px' : '64px',
-          height: isMobile ? '56px' : '64px',
+          right: isMobile ? '16px' : '32px',
+          width: isMobile ? '52px' : '64px',
+          height: isMobile ? '52px' : '64px',
           background: 'var(--brand-header)', color: 'white', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: 'var(--shadow-lg)', cursor: 'pointer', zIndex: 50, border: 'none',
@@ -117,9 +117,8 @@ export default function AIAssistant() {
         }}
         onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
         onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        className={isOpen ? 'hidden' : ''}
       >
-        <Bot size={28} />
+        <Bot size={isMobile ? 24 : 28} />
         <div style={{ position: 'absolute', top: 0, right: 0, width: '18px', height: '18px', background: 'var(--brand-cyan)', borderRadius: '50%', border: '2px solid white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Sparkles size={10} color="white" />
         </div>
