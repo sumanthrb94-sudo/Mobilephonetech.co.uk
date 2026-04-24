@@ -294,10 +294,9 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Variants */}
-            {phone.variants && phone.variants.length > 0 && (
-              <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
-            )}
+            {/* Variants — always render; VariantSelector derives sensible
+                options when the product has no explicit variants[] matrix. */}
+            <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
 
             {/* Delivery */}
             <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
