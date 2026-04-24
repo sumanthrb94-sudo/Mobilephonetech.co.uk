@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod, Order } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 import ExpressPayRow from './ExpressPayRow';
@@ -39,20 +39,23 @@ export default function CheckoutFlow() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'selection' | 'shipping'>(isAuthenticated || user?.isGuest ? 'shipping' : 'selection');
 
-  // Amazon-style: if user is authenticated and we have their info, pre-fill shipping
+  // Demo seed: checkout starts with a plausible UK address pre-selected
+  // so a demo walk-through goes straight from cart -> payment. Uses the
+  // authenticated user's name/email when available, otherwise a generic
+  // demo profile. The user can still edit any field before continuing.
   useEffect(() => {
-    if (isAuthenticated && user && !shippingAddress) {
-      setShippingAddress({
-        fullName: user.fullName || '',
-        email: user.email || '',
-        phone: '',
-        addressLine1: '',
-        city: '',
-        postalCode: '',
-        country: 'United Kingdom',
-      });
-    }
-  }, [isAuthenticated, user, shippingAddress, setShippingAddress]);
+    if (shippingAddress) return;
+    setShippingAddress({
+      fullName:    user?.fullName || 'Alex Morgan',
+      email:       user?.email    || 'alex@mobiletech.co.uk',
+      phone:       '07700 900123',
+      addressLine1:'221B Baker Street',
+      addressLine2:'Flat 2',
+      city:        'London',
+      postalCode:  'NW1 6XE',
+      country:     'United Kingdom',
+    });
+  }, [user, shippingAddress, setShippingAddress]);
 
   const shippingCost = shippingOption?.cost || 0;
   const subtotal = cartTotal;
@@ -360,6 +363,70 @@ export default function CheckoutFlow() {
               {/* Shipping Form */}
               {currentStep === 'shipping' && checkoutMode === 'shipping' && (
                 <motion.form key="shipping" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handleShippingSubmit} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
+                  {/* Selected-address preview — demo-seeded, shown pre-filled so the
+                      walk-through flows straight through; still editable below. */}
+                  {shippingAddress?.addressLine1 && (
+                    <div
+                      role="status"
+                      aria-label="Delivering to"
+                      style={{
+                        display: 'flex', alignItems: 'flex-start', gap: '14px',
+                        padding: '14px 16px',
+                        borderRadius: 'var(--radius-lg)',
+                        background: 'var(--color-brand-subtle)',
+                        border: '1px solid rgba(0,186,219,0.25)',
+                        marginBottom: 'var(--spacing-24)',
+                      }}
+                    >
+                      <MapPin size={18} style={{ color: 'var(--brand-cyan-hover)', flexShrink: 0, marginTop: '2px' }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            letterSpacing: '0.08em',
+                            textTransform: 'uppercase',
+                            color: 'var(--brand-cyan-hover)',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          Delivering to
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', marginBottom: '2px' }}>
+                          {shippingAddress.fullName}
+                        </div>
+                        <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)', lineHeight: 1.5 }}>
+                          {shippingAddress.addressLine1}
+                          {shippingAddress.addressLine2 ? `, ${shippingAddress.addressLine2}` : ''}
+                          {' · '}{shippingAddress.city}{' '}{shippingAddress.postalCode}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const el = document.querySelector<HTMLInputElement>('input[name="addressLine1"]');
+                          el?.focus();
+                          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: 'var(--brand-cyan-hover)',
+                          fontFamily: 'var(--font-body)',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          letterSpacing: '0.04em',
+                          textTransform: 'uppercase',
+                          cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: 'var(--spacing-24)', flexWrap: 'wrap' }}>
                     <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.15 }}>
                       Shipping address
