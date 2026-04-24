@@ -5,6 +5,10 @@ import Sidebar from './components/Sidebar';
 import Hero from './components/Hero';
 import TrustBanner from './components/TrustBanner';
 import BrandShowcase from './components/BrandShowcase';
+import QualityPromise from './components/QualityPromise';
+import EcoImpactBlock from './components/EcoImpactBlock';
+import HomeFaq from './components/HomeFaq';
+import NewsletterSignup from './components/NewsletterSignup';
 import CategoryGrid from './components/CategoryGrid';
 import TrustSection from './components/TrustSection';
 import TestimonialsSection from './components/TestimonialsSection';
@@ -99,13 +103,19 @@ function HomePage() {
       {/* Section 3: Hero Carousel */}
       <Hero />
 
-      {/* Section 4: Category Grid */}
+      {/* Section 4: MPM-signature Inspected / Tested / Cleaned strip */}
+      <QualityPromise />
+
+      {/* Section 5: Category Grid */}
       <CategoryGrid />
 
-      {/* Section 5: Featured Products */}
+      {/* Section 6: Brand-showcase hero panels (iPhone 17, Galaxy S, Fold, Pixel) */}
       <BrandShowcase />
 
-      {/* Section 5: Value Proposition / Trust */}
+      {/* Section 7: Sustainability / eco narrative — refurb differentiator */}
+      <EcoImpactBlock />
+
+      {/* Section 8: Value Proposition / Trust */}
       <TrustSection />
 
       {/* Press coverage strip */}
@@ -114,11 +124,17 @@ function HomePage() {
       {/* Customer testimonials */}
       <TestimonialsSection />
 
-      {/* Section 6: Trade-In Programme */}
+      {/* Section 9: Trade-In Programme */}
       <TradeInProgram />
 
       {/* Warranty & Returns */}
       <WarrantyAndReturns />
+
+      {/* FAQ accordion — reduces refurb skepticism right above the footer */}
+      <HomeFaq />
+
+      {/* Newsletter lead-capture */}
+      <NewsletterSignup />
     </>
   );
 }
