@@ -9,7 +9,6 @@ import QualityPromise from './components/QualityPromise';
 import EcoImpactBlock from './components/EcoImpactBlock';
 import HomeFaq from './components/HomeFaq';
 import NewsletterSignup from './components/NewsletterSignup';
-import CategoryGrid from './components/CategoryGrid';
 import TrustSection from './components/TrustSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import PressLogosStrip from './components/PressLogosStrip';
@@ -106,10 +105,9 @@ function HomePage() {
       {/* Section 4: MPM-signature Inspected / Tested / Cleaned strip */}
       <QualityPromise />
 
-      {/* Section 5: Category Grid */}
-      <CategoryGrid />
-
-      {/* Section 6: Brand-showcase hero panels (iPhone 17, Galaxy S, Fold, Pixel) */}
+      {/* Brand-showcase hero panels (iPhone 17, Galaxy S, Fold, Pixel).
+          CategoryGrid removed — the top category nav + its dropdowns already
+          expose every department, so the grid was duplicate navigation. */}
       <BrandShowcase />
 
       {/* Section 7: Sustainability / eco narrative — refurb differentiator */}
