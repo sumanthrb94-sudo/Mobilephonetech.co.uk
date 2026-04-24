@@ -15,6 +15,9 @@ interface CartContextType {
   cartCount: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
+  lastAddedItem: CartItem | null;
+  lastAddedQuantity: number;
+  clearLastAdded: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -22,6 +25,8 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [lastAddedItem, setLastAddedItem] = useState<CartItem | null>(null);
+  const [lastAddedQuantity, setLastAddedQuantity] = useState(0);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -44,16 +49,19 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.id === product.id);
       if (existingItem) {
-        return prevItems.map((item) =>
+        const updated = prevItems.map((item) =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
+        setLastAddedItem({ ...product, quantity: existingItem.quantity + quantity });
+        return updated;
       }
+      setLastAddedItem({ ...product, quantity });
       return [...prevItems, { ...product, quantity }];
     });
-    // Open cart drawer when item is added
-    setIsCartOpen(true);
+    setLastAddedQuantity(quantity);
+    // Don't auto-open drawer — the AddedToCartModal handles the UX
   };
 
   const removeFromCart = (productId: string) => {
@@ -76,6 +84,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems([]);
   };
 
+  const clearLastAdded = () => {
+    setLastAddedItem(null);
+    setLastAddedQuantity(0);
+  };
+
   const cartTotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
   const cartCount = items.reduce((count, item) => count + item.quantity, 0);
 
@@ -89,7 +102,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       cartTotal, 
       cartCount,
       isCartOpen,
-      setIsCartOpen
+      setIsCartOpen,
+      lastAddedItem,
+      lastAddedQuantity,
+      clearLastAdded,
     }}>
       {children}
     </CartContext.Provider>

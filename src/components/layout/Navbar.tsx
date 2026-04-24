@@ -43,7 +43,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const catNavRef   = useRef<HTMLDivElement>(null);
 
-  const { cartCount }                 = useCart();
+  const { cartCount } = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -321,7 +321,7 @@ export default function Navbar({ onCartClick }: NavbarProps) {
               {/* Cart */}
               <button
                 id="navbar-cart-btn"
-                onClick={onCartClick}
+                onClick={() => navigate('/cart')}
                 className="navbar-cart"
                 style={{
                   display: 'flex',

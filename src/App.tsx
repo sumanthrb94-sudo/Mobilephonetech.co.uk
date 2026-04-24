@@ -11,6 +11,8 @@ import TestimonialsSection from './components/TestimonialsSection';
 import PressLogosStrip from './components/PressLogosStrip';
 import ComparisonTool from './components/ComparisonTool';
 import CartDrawer from './components/CartDrawer';
+import AddedToCartModal from './components/AddedToCartModal';
+import CartPage from './components/CartPage';
 import TradeInProgram from './components/TradeInProgram';
 import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
@@ -154,7 +156,7 @@ function AppContent() {
       </div>
 
       {isCheckoutRoute ? (
-        <CheckoutHeader onBackToCart={() => setIsCartOpen(true)} />
+        <CheckoutHeader />
       ) : (
         <>
           {/* Fixed header (64px) + Category nav (48px) = 112px */}
@@ -187,6 +189,11 @@ function AppContent() {
             <Route path="/compare"  element={
               <div style={{ paddingTop: 'var(--nav-total)' }}>
                 <ComparisonTool />
+              </div>
+            } />
+            <Route path="/cart" element={
+              <div style={{ paddingTop: 'var(--nav-total)' }}>
+                <CartPage />
               </div>
             } />
             <Route path="/checkout" element={
@@ -250,6 +257,7 @@ function AppContent() {
       </main>
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <AddedToCartModal />
       <Suspense fallback={null}>
         <AIAssistant />
       </Suspense>

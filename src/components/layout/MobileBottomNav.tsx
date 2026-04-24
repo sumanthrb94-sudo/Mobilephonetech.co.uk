@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Store, Heart, ShoppingBag, UserCircle } from 'lucide-react';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { useCart } from '../../context/CartContext';
@@ -12,6 +12,7 @@ import { useCart } from '../../context/CartContext';
 export default function MobileBottomNav({ onCartClick }: { onCartClick: () => void }) {
   const { isDesktop } = useBreakpoint();
   const { cartCount } = useCart();
+  const navigate = useNavigate();
   if (isDesktop) return null;
 
   return (
@@ -41,7 +42,7 @@ export default function MobileBottomNav({ onCartClick }: { onCartClick: () => vo
         <Item to="/wishlist" label="Wishlist" icon={Heart} />
         <li>
           <button
-            onClick={onCartClick}
+            onClick={() => navigate('/cart')}
             aria-label={`Cart (${cartCount} items)`}
             style={cellStyle}
           >

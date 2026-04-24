@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Lock, RefreshCw, ArrowLeft } from 'lucide-react';
 
 /**
@@ -16,7 +16,8 @@ import { Lock, RefreshCw, ArrowLeft } from 'lucide-react';
  * - Left-side "Cart" ghost-link lets them back out to the cart drawer
  *   without having to hunt for a hamburger that isn't there
  */
-export default function CheckoutHeader({ onBackToCart }: { onBackToCart?: () => void }) {
+export default function CheckoutHeader() {
+  const navigate = useNavigate();
   return (
     <header
       style={{
@@ -43,49 +44,27 @@ export default function CheckoutHeader({ onBackToCart }: { onBackToCart?: () => 
         }}
       >
         {/* Back-to-cart link — ghost on mobile, labelled on tablet+ */}
-        {onBackToCart ? (
-          <button
-            onClick={onBackToCart}
-            aria-label="Back to cart"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              height: '40px',
-              padding: '0 10px',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'rgba(255,255,255,0.85)',
-              fontFamily: 'var(--font-body)',
-              fontSize: '13px',
-              fontWeight: 600,
-            }}
-          >
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline">Back to cart</span>
-          </button>
-        ) : (
-          <Link
-            to="/"
-            aria-label="Back to home"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              height: '40px',
-              padding: '0 10px',
-              color: 'rgba(255,255,255,0.85)',
-              fontFamily: 'var(--font-body)',
-              fontSize: '13px',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline">Back to shop</span>
-          </Link>
-        )}
+        <button
+          onClick={() => navigate('/cart')}
+          aria-label="Back to cart"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            height: '40px',
+            padding: '0 10px',
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: 'rgba(255,255,255,0.85)',
+            fontFamily: 'var(--font-body)',
+            fontSize: '13px',
+            fontWeight: 600,
+          }}
+        >
+          <ArrowLeft size={18} />
+          <span className="hidden sm:inline">Back to cart</span>
+        </button>
 
         {/* Logo — centred */}
         <Link
