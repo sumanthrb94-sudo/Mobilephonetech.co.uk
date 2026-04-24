@@ -23,62 +23,78 @@ const GRADE_ORDER: Record<string, number> = {
  * Motion: 250ms ease-out filter transitions, 70ms stagger on product grid
  */
 
-const CATEGORY_DEPARTMENTS = [
+/**
+ * A department is either brand-scoped (Apple / Samsung / Google — shows
+ * every category for that brand) or category-scoped (Tablets, Accessories
+ * etc. — shows every brand within those categories). `categories` accepts
+ * multiple values so "Tablets" can match both `category: 'Tablets'` and
+ * the legacy `category: 'Ipads & Tabs'` products in the catalogue.
+ */
+type Department = {
+  id: string;
+  label: string;
+  intro: string;
+  matches: string[];
+  brand?: string;
+  categories?: string[];
+};
+
+const CATEGORY_DEPARTMENTS: Department[] = [
   {
     id: 'apple',
     label: 'Apple',
     intro: 'Latest iPhones and refurbished Apple devices.',
     matches: ['apple', 'iphone', 'ios'],
-    category: 'Apple',
+    brand: 'Apple',
   },
   {
     id: 'samsung',
     label: 'Samsung',
     intro: 'Samsung Galaxy smartphones and accessories.',
     matches: ['samsung', 'galaxy', 'android'],
-    category: 'Samsung',
+    brand: 'Samsung',
   },
   {
     id: 'google',
     label: 'Google',
     intro: 'Google Pixel phones and smart technology.',
     matches: ['google', 'pixel'],
-    category: 'Google',
+    brand: 'Google',
   },
   {
     id: 'tablets',
     label: 'Ipads & Tabs',
     intro: 'iPads and Android tablets for work and play.',
     matches: ['tablets', 'tablet', 'ipad'],
-    category: 'Ipads & Tabs',
+    categories: ['Tablets', 'Ipads & Tabs'],
   },
   {
     id: 'accessories',
     label: 'Accessories',
     intro: 'Cases, chargers, and essential mobile add-ons.',
     matches: ['accessories', 'accessory'],
-    category: 'Accessories',
+    categories: ['Accessories'],
   },
   {
     id: 'speakers',
     label: 'Speakers',
     intro: 'Bluetooth and portable speakers for every occasion.',
     matches: ['speakers', 'speaker', 'audio'],
-    category: 'Speakers',
+    categories: ['Speakers'],
   },
   {
     id: 'hearables',
     label: 'Hearables',
     intro: 'High-quality headphones and wireless earbuds.',
     matches: ['hearables', 'hearable', 'headphones', 'earbuds'],
-    category: 'Hearables',
+    categories: ['Hearables'],
   },
   {
     id: 'playables',
     label: 'Playables',
     intro: 'Gaming consoles, VR headsets, and interactive gear.',
     matches: ['playables', 'playable', 'gaming', 'console', 'ps5', 'xbox', 'nintendo'],
-    category: 'Playables',
+    categories: ['Playables', 'Gaming'],
   },
 ];
 
@@ -133,7 +149,13 @@ export default function ProductsPage() {
         return product.category === brandCategory.category && product.brand === brandCategory.brand;
       }
       if (selectedDepartment) {
-        return product.category === selectedDepartment.category;
+        if (selectedDepartment.brand) {
+          return product.brand === selectedDepartment.brand;
+        }
+        if (selectedDepartment.categories) {
+          return selectedDepartment.categories.includes(product.category);
+        }
+        return false;
       }
       if (brandParam) {
         return product.brand.toLowerCase() === brandParam.toLowerCase();
