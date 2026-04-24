@@ -24,6 +24,8 @@ import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useSeo } from '../hooks/useSeo';
+import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
@@ -98,6 +100,16 @@ export default function ProductDetail() {
   const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone.batteryHealth;
   const displayStock = selectedVariant?.stock ?? phone.stock;
   const savings = displayOriginalPrice - displayPrice;
+
+  const seoTags = productSeo({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth });
+  const productLd = productJsonLd({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth });
+  const breadcrumbLd = breadcrumbJsonLd([
+    { name: 'Home', url: '/' },
+    { name: 'All devices', url: '/products' },
+    { name: phone.brand, url: `/products?brand=${encodeURIComponent(phone.brand)}` },
+    { name: phone.model, url: `/product/${phone.id}` },
+  ]);
+  useSeo({ ...seoTags, jsonLd: [productLd, breadcrumbLd] });
 
 
   const galleryImages = phone.galleryImages || [phone.imageUrl];

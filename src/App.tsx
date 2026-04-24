@@ -32,6 +32,8 @@ import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
 import { UIProvider } from './context/UIContext';
 import Toast from './components/Toast';
+import { useSeo } from './hooks/useSeo';
+import { homeSeo } from './utils/seo';
 
 // Lazy load pages for performance
 const ProductDetail = lazy(() => import('./components/ProductDetail'));
@@ -88,6 +90,7 @@ const PageLoader = () => (
  * (Footer is rendered in AppContent below main)
  */
 function HomePage() {
+  useSeo(homeSeo());
   return (
     <>
       {/* Section 2: Trust Banner — scrollable green strip */}

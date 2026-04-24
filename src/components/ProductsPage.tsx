@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import Breadcrumbs from './ui/Breadcrumbs';
 import BottomSheet from './ui/BottomSheet';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { useSeo } from '../hooks/useSeo';
+import { productsPageSeo } from '../utils/seo';
 
 type SortKey = 'price-asc' | 'price-desc' | 'condition' | null;
 
@@ -201,6 +203,17 @@ export default function ProductsPage() {
     if (sortBy === 'condition')  copy.sort((a, b) => (GRADE_ORDER[a.grade] ?? 99) - (GRADE_ORDER[b.grade] ?? 99));
     return copy;
   }, [filteredProducts, sortBy]);
+
+  const seoBrand =
+    brandCategory?.brand ?? selectedDepartment?.brand ?? (brandParam || null);
+  const seoCategory =
+    brandCategory?.category ?? selectedDepartment?.label ?? null;
+  useSeo(productsPageSeo({
+    brand: seoBrand,
+    category: seoCategory,
+    count: sortedProducts.length,
+    canonicalPath: `/products${location.search}`,
+  }));
 
   const handleBrandToggle = (brand: string) =>
     setFilters({ ...filters, brand: filters.brand.includes(brand) ? filters.brand.filter(b => b !== brand) : [...filters.brand, brand] });
