@@ -144,8 +144,15 @@ export default function ProductsPage() {
   const scopedProducts = useMemo(() => {
     return MOCK_PHONES.filter(product => {
       if (brandParam && modelParam) {
-        return product.brand.toLowerCase() === brandParam.toLowerCase()
-          && product.model.toLowerCase() === modelParam.toLowerCase();
+        // Prefix match: lets series-level "See all" links (model=iPhone 17
+        // -> 17/17 Pro/17 Pro Max, model=Galaxy S -> S10/S22/S23 Ultra,
+        // model=Pixel -> 6/7/7 Pro/7a) surface the whole family, while
+        // full-model links from the tablets mega-menu still resolve to
+        // one SKU because the full name is a valid prefix of itself.
+        const bp = brandParam.toLowerCase();
+        const mp = modelParam.toLowerCase();
+        const pm = product.model.toLowerCase();
+        return product.brand.toLowerCase() === bp && pm.startsWith(mp);
       }
       if (brandCategory) {
         return product.category === brandCategory.category && product.brand === brandCategory.brand;
