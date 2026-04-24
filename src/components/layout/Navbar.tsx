@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useMotionValue, useTransform, useSpring, motion } from 'motion/react';
+import { useMotionValue, useTransform, useSpring, motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Search, ShoppingBag, Heart, User,
-  HelpCircle, ShieldCheck, Menu, MoreHorizontal, X,
+  HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
@@ -12,8 +12,6 @@ import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
-import { ChevronDown } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
   onCartClick: () => void;

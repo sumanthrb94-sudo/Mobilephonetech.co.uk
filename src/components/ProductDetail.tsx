@@ -2,12 +2,11 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
-  Heart, Share2, ChevronLeft, ChevronRight, Star
+  Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
 import { useCart } from '../context/CartContext';
-import { motion, AnimatePresence } from 'motion/react';
 import ReviewsSection from './ReviewsSection';
 import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
@@ -55,6 +54,8 @@ export default function ProductDetail() {
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
   const { track: trackRecent } = useRecentlyViewed();
   const [imageLoaded, setImageLoaded] = React.useState<boolean[]>([]);
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const touchStartX = React.useRef<number | null>(null);
 
   const phone = MOCK_PHONES.find(p => p.id === id);
 
@@ -121,6 +122,22 @@ export default function ProductDetail() {
   const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % activeGallery.length);
   const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + activeGallery.length) % activeGallery.length);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current == null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 40) {
+      if (delta < 0) nextImage(); else prevImage();
+    }
+    touchStartX.current = null;
+  };
+  const handleGalleryKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); nextImage(); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); prevImage(); }
+  };
+
   return (
     <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
@@ -158,16 +175,24 @@ export default function ProductDetail() {
         >
           
           {/* ── Left Column: Claude-designed 6-frame gallery ─ */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}
+            tabIndex={0}
+            onKeyDown={handleGalleryKeyDown}
+            aria-label="Product gallery — use arrow keys to navigate"
+          >
             {/* ── 6-Image Gallery ─────────────────────────────── */}
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
               style={{
                 position: 'relative',
                 borderRadius: 'var(--radius-xl)',
                 aspectRatio: '1/1',
                 overflow: 'hidden',
                 background: 'var(--grey-5)',
+                touchAction: 'pan-y',
               }}
             >
               <img
@@ -201,6 +226,15 @@ export default function ProductDetail() {
                   Save {Math.round((savings / phone.originalPrice) * 100)}%
                 </span>
               )}
+
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                aria-label="View image full-screen"
+                style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 3 }}
+              >
+                <Expand size={16} />
+              </button>
 
               <button
                 onClick={prevImage}
@@ -535,6 +569,57 @@ export default function ProductDetail() {
       </AnimatePresence>
 
       <GradeExplainer isOpen={gradeExplainerOpen} onClose={() => setGradeExplainerOpen(false)} />
+
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setLightboxOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${phone.model} — full-screen view`}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(0,0,0,0.96)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '24px',
+            }}
+          >
+            <motion.img
+              key={activeGallery[selectedImageIndex]}
+              src={activeGallery[selectedImageIndex]}
+              alt={`${phone.model} — view ${selectedImageIndex + 1}`}
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '90vmin', height: '90vmin', maxWidth: '100%', maxHeight: '100%',
+                objectFit: 'contain',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              aria-label="Close full-screen view"
+              style={{
+                position: 'absolute', top: '20px', right: '20px',
+                width: '40px', height: '40px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.14)',
+                border: '1px solid rgba(255,255,255,0.22)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', color: 'white',
+              }}
+            >
+              <X size={20} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
