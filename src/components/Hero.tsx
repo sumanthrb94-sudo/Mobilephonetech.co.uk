@@ -82,7 +82,7 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: 'clamp(460px, 60vw, 520px)',
+        minHeight: 'clamp(230px, 30vw, 260px)',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 55%)`,
@@ -131,9 +131,9 @@ export default function Hero() {
             style={{
               display: 'grid',
               gridTemplateColumns: isDesktop ? 'repeat(2, 1fr)' : '1fr',
-              gap: isDesktop ? '32px' : '20px',
+              gap: isDesktop ? '24px' : '12px',
               alignItems: 'center',
-              padding: isDesktop ? '48px 0 24px' : '24px 0 16px',
+              padding: isDesktop ? '20px 0 12px' : '12px 0 8px',
               flex: 1,
               minHeight: 0,
             }}
@@ -142,19 +142,19 @@ export default function Hero() {
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: isDesktop ? 'flex-start' : 'center', textAlign: isDesktop ? 'left' : 'center' }}>
               <div
                 className="overline"
-                style={{ marginBottom: '12px', color: 'var(--brand-header)' }}
+                style={{ marginBottom: '6px', color: 'var(--brand-header)' }}
               >
                 {slide.eyebrow}
               </div>
               <h1
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: 'clamp(32px, 5vw, 48px)',
+                  fontSize: 'clamp(20px, 3vw, 28px)',
                   fontWeight: 800,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.1,
                   color: 'var(--brand-header)',
-                  marginBottom: '16px',
+                  marginBottom: '8px',
                   whiteSpace: 'pre-line',
                 }}
               >
@@ -163,11 +163,11 @@ export default function Hero() {
               <p
                 style={{
                   fontFamily: 'var(--font-body)',
-                  fontSize: '15px',
+                  fontSize: '13px',
                   color: 'var(--grey-70)',
                   maxWidth: '420px',
-                  marginBottom: '28px',
-                  lineHeight: 1.55,
+                  marginBottom: '12px',
+                  lineHeight: 1.45,
                 }}
               >
                 {slide.subline}
@@ -175,7 +175,7 @@ export default function Hero() {
 
               <Link
                 to={slide.ctaHref}
-                className="btn btn-primary btn-lg"
+                className="btn btn-primary btn-md"
                 id={`hero-cta-${current}`}
                 style={{
                   textDecoration: 'none',
@@ -201,10 +201,10 @@ export default function Hero() {
                 alt={slide.imageAlt}
                 loading={current === 0 ? 'eager' : 'lazy'}
                 style={{
-                  maxHeight: isDesktop ? '320px' : '180px',
+                  maxHeight: isDesktop ? '160px' : '90px',
                   maxWidth: '100%',
                   objectFit: 'contain',
-                  filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
+                  filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.15))',
                 }}
               />
             </div>
@@ -220,8 +220,8 @@ export default function Hero() {
           marginRight: 'auto',
           paddingLeft: '16px',
           paddingRight: '16px',
-          paddingBottom: '20px',
-          paddingTop: '8px',
+          paddingBottom: '10px',
+          paddingTop: '4px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
