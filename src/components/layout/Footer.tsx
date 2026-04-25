@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 /**
  * Footer — BM spec Section 6
  * Dark background (grey-95/black), multi-column links,
- * newsletter signup, social links, legal strip
+ * social links, legal strip. Newsletter signup lives on the
+ * homepage in NewsletterSignup.tsx — single source of capture.
  * Your DNA: Blue brand accent, Playfair + DM Sans
  */
 
