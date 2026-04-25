@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Instagram, Youtube, ArrowRight, RefreshCw, Star } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, RefreshCw, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 /**
@@ -60,66 +60,10 @@ export default function Footer() {
   return (
     <footer style={{ background: 'var(--color-surface-inverse)', color: 'rgba(255,255,255,0.85)' }}>
 
-      {/* ── Newsletter strip ─────────────────── */}
-      <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-        <div
-          className="container-bm py-12 md:py-16"
-          style={{ maxWidth: 'var(--container-max)' }}
-        >
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 800,
-                  fontSize: '22px',
-                  letterSpacing: '-0.025em',
-                  color: 'white',
-                  marginBottom: '6px',
-                }}
-              >
-                Get the best deals first.
-              </h3>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'rgba(255,255,255,0.4)' }}>
-                Flash sales, new arrivals, and certified picks — straight to your inbox.
-              </p>
-            </div>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              id="footer-newsletter-form"
-              style={{ display: 'flex', gap: '8px' }}
-            >
-              <input
-                type="email"
-                placeholder="your@email.com"
-                aria-label="Email address for newsletter"
-                style={{
-                  flexGrow: 1,
-                  height: '44px',
-                  padding: '0 16px',
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '1.5px solid rgba(255,255,255,0.12)',
-                  borderRadius: 'var(--radius-md)',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '14px',
-                  color: 'white',
-                  outline: 'none',
-                }}
-                onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'var(--brand-cyan)'; }}
-                onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.borderColor = 'rgba(255,255,255,0.12)'; }}
-              />
-              <button
-                type="submit"
-                className="btn btn-primary btn-md"
-                id="footer-subscribe-btn"
-                style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', fontFamily: 'var(--font-sans)' }}
-              >
-                Subscribe <ArrowRight size={15} />
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+      {/* Newsletter strip removed — homepage NewsletterSignup component
+          owns lead capture now. Keeping a duplicate here meant users
+          saw two near-identical email forms back-to-back at the bottom
+          of every page. */}
 
       {/* ── Main link columns ────────────────── */}
       <div
