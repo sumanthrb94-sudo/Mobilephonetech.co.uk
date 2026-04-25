@@ -17,7 +17,6 @@ import { ProductVariant, ProductGrade } from '../types';
 import Breadcrumbs from './ui/Breadcrumbs';
 import FinanceOptions from './FinanceOptions';
 import GradeExplainer from './GradeExplainer';
-import PriceHistoryChart from './PriceHistoryChart';
 import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
@@ -340,9 +339,6 @@ export default function ProductDetail() {
 
             {/* Finance split-payment breakdown */}
             <FinanceOptions price={displayPrice} />
-
-            {/* 90-day price history */}
-            <PriceHistoryChart productId={phone.id} currentPrice={displayPrice} />
 
             {/* Key Value Props Strip */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
