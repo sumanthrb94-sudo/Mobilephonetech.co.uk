@@ -10,28 +10,22 @@ import ProductImage from './ProductImage';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode } from '../utils/postcodeLookup';
 
-// ── Card helpers (module-scope; demo-grade validation only) ─────────
-function luhnValid(cardNumber: string): boolean {
-  let sum = 0;
-  let alternate = false;
-  for (let i = cardNumber.length - 1; i >= 0; i--) {
-    let n = parseInt(cardNumber.charAt(i), 10);
-    if (alternate) { n *= 2; if (n > 9) n -= 9; }
-    sum += n;
-    alternate = !alternate;
-  }
-  return sum % 10 === 0;
-}
+// Demo-mode payment helpers. Real card tokenisation happens through
+// a PSP widget (Stripe / Adyen) in production — until then the form
+// accepts whatever the user types and falls back to a Visa 4242 stub
+// when fields are blank, so a walkthrough is never blocked by an
+// unfilled card form.
 
-function isFutureExpiry(mmYY: string): boolean {
-  const [mStr, yStr] = mmYY.replace(/\s+/g, '').split('/');
-  const month = parseInt(mStr, 10);
-  const year  = parseInt(yStr, 10);
-  if (isNaN(month) || isNaN(year) || month < 1 || month > 12) return false;
-  const now = new Date();
-  const cardDate = new Date(2000 + year, month, 0); // last day of that month
-  return cardDate >= new Date(now.getFullYear(), now.getMonth(), 1);
-}
+type PaymentTypeKey = 'card' | 'klarna' | 'clearpay' | 'apple_pay' | 'google_pay' | 'paypal';
+
+const PAYMENT_METHOD_LABELS: Record<PaymentTypeKey, { brand: string; last4: string; display: string }> = {
+  card:       { brand: 'Visa',       last4: '4242', display: 'Credit or debit card' },
+  klarna:     { brand: 'Klarna',     last4: 'PAY3', display: 'Klarna · Pay in 3'    },
+  clearpay:   { brand: 'Clearpay',   last4: 'PAY4', display: 'Clearpay · Pay in 4'  },
+  apple_pay:  { brand: 'Apple Pay',  last4: 'WLLT', display: 'Apple Pay'            },
+  google_pay: { brand: 'Google Pay', last4: 'WLLT', display: 'Google Pay'           },
+  paypal:     { brand: 'PayPal',     last4: 'PYPL', display: 'PayPal'               },
+};
 
 function detectCardBrand(cardNumber: string): string {
   if (/^4/.test(cardNumber)) return 'Visa';
@@ -77,6 +71,7 @@ export default function CheckoutFlow() {
   const [couponError, setCouponError] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'selection' | 'shipping'>(isAuthenticated || user?.isGuest ? 'shipping' : 'selection');
+  const [paymentType, setPaymentType] = useState<PaymentTypeKey>('card');
 
   // Demo seed: checkout starts with a plausible UK address pre-selected
   // so a demo walk-through goes straight from cart -> payment. Uses the
@@ -167,32 +162,35 @@ export default function CheckoutFlow() {
   const handlePaymentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const cardNumber = String(formData.get('cardNumber') ?? '').replace(/\s+/g, '');
-    const cardExpiry = String(formData.get('cardExpiry') ?? '').trim();
-    const cardCvv    = String(formData.get('cardCvv') ?? '').trim();
 
-    // Luhn check + basic format validation. Real card tokenisation
-    // runs through a PSP widget (Stripe/Adyen) in production; this
-    // just stops an obviously empty / malformed form from submitting.
-    const errors: Record<string, string> = {};
-    if (!/^\d{13,19}$/.test(cardNumber)) errors.cardNumber = 'Enter a valid card number';
-    else if (!luhnValid(cardNumber)) errors.cardNumber = 'Card number check digit failed';
-    if (!/^\d{2}\s*\/\s*\d{2}$/.test(cardExpiry)) errors.cardExpiry = 'Use MM/YY';
-    else if (!isFutureExpiry(cardExpiry)) errors.cardExpiry = 'Card has expired';
-    if (!/^\d{3,4}$/.test(cardCvv)) errors.cardCvv = 'CVV is 3 or 4 digits';
+    // Demo mode: pick whatever method the user selected. If they
+    // bothered to type a card number, we use it — otherwise we ship
+    // a sensible placeholder so the mock order goes through. No
+    // payment method is ever blocking.
+    const cardNumberRaw = String(formData.get('cardNumber') ?? '').replace(/\s+/g, '');
 
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
+    let method: PaymentMethod;
+    if (paymentType === 'card') {
+      const last4 = cardNumberRaw.length >= 4 ? cardNumberRaw.slice(-4) : '4242';
+      const brand = cardNumberRaw.length >= 4 ? detectCardBrand(cardNumberRaw) : 'Visa';
+      method = {
+        id: Math.random().toString(36).slice(2, 11),
+        type: 'card',
+        last4,
+        brand,
+      };
+    } else {
+      method = {
+        id: Math.random().toString(36).slice(2, 11),
+        type: paymentType === 'apple_pay' || paymentType === 'google_pay' || paymentType === 'paypal'
+          ? paymentType
+          : 'card',
+        last4: PAYMENT_METHOD_LABELS[paymentType].last4,
+        brand: PAYMENT_METHOD_LABELS[paymentType].brand,
+      };
     }
 
     setFormErrors({});
-    const method: PaymentMethod = {
-      id: Math.random().toString(36).slice(2, 11),
-      type: 'card',
-      last4: cardNumber.slice(-4),
-      brand: detectCardBrand(cardNumber),
-    };
     setPaymentMethod(method);
     setCurrentStep('review');
   };
@@ -623,40 +621,36 @@ export default function CheckoutFlow() {
                     </h2>
                   </div>
 
-                  <ExpressPayRow />
+                  <ExpressPayRow
+                    selected={paymentType === 'apple_pay' ? 'apple' : paymentType === 'google_pay' ? 'google' : paymentType === 'paypal' ? 'paypal' : null}
+                    onSelect={(p) => setPaymentType(p === 'apple' ? 'apple_pay' : p === 'google' ? 'google_pay' : 'paypal')}
+                  />
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: 'var(--spacing-32)' }}>
-                    {/* Card — selected by default */}
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '2px solid var(--brand-cyan)', background: 'var(--color-brand-subtle)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
-                      <span aria-hidden style={{ width: '18px', height: '18px', borderRadius: '50%', border: '2px solid var(--brand-cyan)', background: 'var(--grey-0)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-cyan)' }} />
-                      </span>
-                      <CreditCard size={20} style={{ color: 'var(--black)', flexShrink: 0 }} />
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Credit or debit card</span>
-                    </label>
-
-                    {/* Klarna */}
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
-                      <span aria-hidden style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid var(--grey-30)', background: 'var(--grey-0)', flexShrink: 0 }} />
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#ffa8c5', background: '#000', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Klarna</span>
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Pay in 3 — 0% interest</span>
-                      </span>
-                    </label>
-
-                    {/* Clearpay */}
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer' }}>
-                      <span aria-hidden style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid var(--grey-30)', background: 'var(--grey-0)', flexShrink: 0 }} />
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#000', background: '#b6ffda', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Clearpay</span>
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>Pay in 4 — every 2 weeks</span>
-                      </span>
-                    </label>
+                    <PaymentRadio
+                      checked={paymentType === 'card'}
+                      onChange={() => setPaymentType('card')}
+                      icon={<CreditCard size={20} style={{ color: 'var(--black)', flexShrink: 0 }} />}
+                      label="Credit or debit card"
+                    />
+                    <PaymentRadio
+                      checked={paymentType === 'klarna'}
+                      onChange={() => setPaymentType('klarna')}
+                      icon={<span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#ffa8c5', background: '#000', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Klarna</span>}
+                      label="Pay in 3 — 0% interest"
+                    />
+                    <PaymentRadio
+                      checked={paymentType === 'clearpay'}
+                      onChange={() => setPaymentType('clearpay')}
+                      icon={<span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#000', background: '#b6ffda', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Clearpay</span>}
+                      label="Pay in 4 — every 2 weeks"
+                    />
                   </div>
 
+                  {paymentType === 'card' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={labelStyle} htmlFor="checkout-card-number">Card Number</label>
+                      <label style={labelStyle} htmlFor="checkout-card-number">Card Number <span style={{ color: 'var(--grey-40)', fontWeight: 500 }}>(optional for demo)</span></label>
                       <input
                         id="checkout-card-number"
                         name="cardNumber"
@@ -665,7 +659,6 @@ export default function CheckoutFlow() {
                         autoComplete="cc-number"
                         placeholder="0000 0000 0000 0000"
                         maxLength={23}
-                        required
                         style={{ ...inputStyle, borderColor: formErrors.cardNumber ? 'var(--color-sale)' : inputStyle.border as string }}
                         aria-invalid={!!formErrors.cardNumber}
                         aria-describedby={formErrors.cardNumber ? 'err-cardNumber' : undefined}
@@ -682,7 +675,6 @@ export default function CheckoutFlow() {
                         autoComplete="cc-exp"
                         placeholder="MM/YY"
                         maxLength={5}
-                        required
                         style={{ ...inputStyle, borderColor: formErrors.cardExpiry ? 'var(--color-sale)' : inputStyle.border as string }}
                         aria-invalid={!!formErrors.cardExpiry}
                         aria-describedby={formErrors.cardExpiry ? 'err-cardExpiry' : undefined}
@@ -699,7 +691,6 @@ export default function CheckoutFlow() {
                         autoComplete="cc-csc"
                         placeholder="123"
                         maxLength={4}
-                        required
                         style={{ ...inputStyle, borderColor: formErrors.cardCvv ? 'var(--color-sale)' : inputStyle.border as string }}
                         aria-invalid={!!formErrors.cardCvv}
                         aria-describedby={formErrors.cardCvv ? 'err-cardCvv' : undefined}
@@ -707,6 +698,25 @@ export default function CheckoutFlow() {
                       {formErrors.cardCvv && <p id="err-cardCvv" style={errorStyle}>{formErrors.cardCvv}</p>}
                     </div>
                   </div>
+                  )}
+
+                  {paymentType !== 'card' && (
+                    <div
+                      style={{
+                        padding: '14px 16px',
+                        background: 'var(--color-brand-subtle)',
+                        border: '1px solid rgba(0,186,219,0.25)',
+                        borderRadius: 'var(--radius-md)',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '13px',
+                        color: 'var(--brand-cyan-hover)',
+                        marginTop: 'var(--spacing-16)',
+                      }}
+                    >
+                      <strong style={{ fontWeight: 700, marginRight: '4px' }}>{PAYMENT_METHOD_LABELS[paymentType].display}</strong>
+                      selected — you'll be redirected to confirm on the next step.
+                    </div>
+                  )}
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
                     Review Order <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
@@ -890,5 +900,53 @@ function Row({ label, value, accent, trust }: { label: string; value: string; ac
         {value}
       </span>
     </div>
+  );
+}
+
+function PaymentRadio({
+  checked, onChange, icon, label,
+}: { checked: boolean; onChange: () => void; icon: React.ReactNode; label: string }) {
+  return (
+    <label
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '14px',
+        padding: '14px 16px',
+        border: checked ? '2px solid var(--brand-cyan)' : '1px solid var(--grey-20)',
+        background: checked ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+        borderRadius: 'var(--radius-lg)',
+        cursor: 'pointer',
+        transition: 'background var(--duration-fast), border-color var(--duration-fast)',
+      }}
+    >
+      <input
+        type="radio"
+        name="paymentType"
+        checked={checked}
+        onChange={onChange}
+        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
+      />
+      <span
+        aria-hidden
+        style={{
+          width: '18px',
+          height: '18px',
+          borderRadius: '50%',
+          border: checked ? '2px solid var(--brand-cyan)' : '1.5px solid var(--grey-30)',
+          background: 'var(--grey-0)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}
+      >
+        {checked && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-cyan)' }} />}
+      </span>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+        {icon}
+        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>{label}</span>
+      </span>
+    </label>
   );
 }

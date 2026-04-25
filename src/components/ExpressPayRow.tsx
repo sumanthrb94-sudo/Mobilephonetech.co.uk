@@ -15,12 +15,20 @@ type Provider = 'apple' | 'google' | 'paypal';
 
 export default function ExpressPayRow({
   onClick,
+  selected,
+  onSelect,
 }: {
   onClick?: (provider: Provider) => void;
+  /** Currently selected provider — when set, the matching button gets a ring. */
+  selected?: Provider | null;
+  /** Selection callback — when supplied, takes precedence over the legacy
+   *  onClick toast behaviour and treats taps as method selection. */
+  onSelect?: (provider: Provider) => void;
 }) {
   const { showToast } = useUI();
 
   const handle = (provider: Provider) => {
+    if (onSelect) { onSelect(provider); return; }
     onClick?.(provider);
     showToast(`${label(provider)} express checkout coming soon — please use the form below.`, 'info');
   };
@@ -44,9 +52,9 @@ export default function ExpressPayRow({
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }} className="sm:grid-cols-3">
-        <ExpressButton provider="apple" onClick={() => handle('apple')} />
-        <ExpressButton provider="google" onClick={() => handle('google')} />
-        <ExpressButton provider="paypal" onClick={() => handle('paypal')} />
+        <ExpressButton provider="apple"  onClick={() => handle('apple')}  selected={selected === 'apple'} />
+        <ExpressButton provider="google" onClick={() => handle('google')} selected={selected === 'google'} />
+        <ExpressButton provider="paypal" onClick={() => handle('paypal')} selected={selected === 'paypal'} />
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0 0 0' }}>
@@ -66,7 +74,7 @@ function label(p: Provider): string {
   return 'PayPal';
 }
 
-function ExpressButton({ provider, onClick }: { provider: Provider; onClick: () => void }) {
+function ExpressButton({ provider, onClick, selected }: { provider: Provider; onClick: () => void; selected?: boolean }) {
   const styles: Record<Provider, React.CSSProperties> = {
     apple:  { background: '#000', color: '#fff' },
     google: { background: '#000', color: '#fff' },
@@ -78,6 +86,7 @@ function ExpressButton({ provider, onClick }: { provider: Provider; onClick: () 
       onClick={onClick}
       aria-label={`Pay with ${label(provider)}`}
       className="express-pay-btn"
+      aria-pressed={selected}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -91,7 +100,9 @@ function ExpressButton({ provider, onClick }: { provider: Provider; onClick: () 
         fontWeight: 700,
         fontSize: '14px',
         letterSpacing: '-0.005em',
-        transition: 'filter var(--duration-fast) var(--ease-default)',
+        outline: selected ? '2.5px solid var(--brand-cyan)' : 'none',
+        outlineOffset: '2px',
+        transition: 'filter var(--duration-fast) var(--ease-default), outline var(--duration-fast)',
         ...styles[provider],
       }}
       onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.92)')}

@@ -1,4 +1,14 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+
+const ADDRESS_KEY = 'mt_shipping_address';
+
+function readSavedAddress(): ShippingAddress | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(ADDRESS_KEY);
+    return raw ? (JSON.parse(raw) as ShippingAddress) : null;
+  } catch { return null; }
+}
 
 export interface ShippingAddress {
   fullName: string;
@@ -21,7 +31,7 @@ export interface ShippingOption {
 
 export interface PaymentMethod {
   id: string;
-  type: 'card' | 'paypal' | 'apple_pay';
+  type: 'card' | 'paypal' | 'apple_pay' | 'google_pay' | 'klarna' | 'clearpay';
   last4?: string;
   brand?: string;
 }
@@ -91,11 +101,21 @@ const SHIPPING_OPTIONS: ShippingOption[] = [
 
 export function CheckoutProvider({ children }: { children: React.ReactNode }) {
   const [currentStep, setCurrentStep] = useState<'cart' | 'shipping' | 'payment' | 'review' | 'confirmation'>('cart');
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null);
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(() => readSavedAddress());
   const [shippingOption, setShippingOption] = useState<ShippingOption | null>(SHIPPING_OPTIONS[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
+
+  // Persist the shipping address so the user never has to re-enter
+  // it once accepted/edited. Demo seed in CheckoutFlow only fires
+  // if this is null on mount, so a real edit always sticks.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (shippingAddress) window.localStorage.setItem(ADDRESS_KEY, JSON.stringify(shippingAddress));
+    } catch { /* quota / private mode — ignore */ }
+  }, [shippingAddress]);
 
   const MOCK_COUPONS: Coupon[] = [
     { code: 'SAVE10', discountType: 'percentage', value: 10 },
