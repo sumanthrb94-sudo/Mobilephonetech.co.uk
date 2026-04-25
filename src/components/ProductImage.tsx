@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { resolveImageUrl, fallbackCategoryKey } from '../utils/productImagery';
+import { resolveAppleImage } from '../utils/appleImagery';
 import CategoryIllustration from './CategoryIllustration';
 import BrandLogoPlaceholder from './BrandLogoPlaceholder';
 
@@ -16,16 +17,17 @@ export interface ProductImageProps {
 }
 
 /**
- * ProductImage — resolves a product's artwork in three tiers:
+ * ProductImage — resolves a product's artwork in four tiers:
  *   1. a real photo on disk or a trusted CDN (the Shopify product shot),
- *   2. the vendor's official brand logo via simpleicons.org — used for
- *      phones / tablets / laptops / consoles / foldables where brand
- *      identity is the primary visual cue even when a bespoke photo
- *      isn't available,
- *   3. the Claude-designed category silhouette for generic accessories
- *      and other non-branded items.
+ *   2. a curated brand-CDN render (Apple's marketing CDN for every
+ *      iPhone / iPad model in the catalogue — see appleImagery.ts),
+ *   3. the vendor's official brand logo via simpleicons.org for
+ *      phones / tablets / consoles / foldables without a bespoke shot,
+ *   4. the Claude-designed category silhouette for generic accessories.
  *
- * Never renders a broken <img>.
+ * Each tier swaps to the next via <img onError>, so a broken asset
+ * path, a CDN outage, or a missing simpleicons slug always degrades
+ * gracefully instead of leaving a broken-image glyph on the page.
  */
 
 const BRANDED_BRANDS = new Set([
@@ -41,6 +43,12 @@ const PLACEHOLDER_HOST_RE = /^https?:\/\/(placehold\.co|placeholder\.com|via\.pl
 export function ProductImage({ imageUrl, alt, brand, model, category, variant }: ProductImageProps) {
   const isPlaceholderUrl = typeof imageUrl === 'string' && PLACEHOLDER_HOST_RE.test(imageUrl);
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [brandFailed, setBrandFailed] = useState(false);
+
+  // Tier 1 — real product shot already on disk / trusted CDN. Only
+  // takes precedence when the imageUrl isn't a known placeholder host;
+  // those text "Apple iPhone 15 Front" boxes rendered as ugly black
+  // tiles on every catalogue surface.
   const resolved =
     variant === 'synthetic' || isPlaceholderUrl || photoFailed
       ? null
@@ -59,7 +67,23 @@ export function ProductImage({ imageUrl, alt, brand, model, category, variant }:
     );
   }
 
-  // Tier 2 — branded fallback for vendor-identifiable products.
+  // Tier 2 — curated Apple CDN render (iPhone + iPad). Skip if the
+  // remote URL has already 404'd in this session.
+  const appleUrl = !brandFailed ? resolveAppleImage(brand, model) : null;
+  if (appleUrl) {
+    return (
+      <img
+        src={appleUrl}
+        alt={alt ?? `${brand} ${model}`}
+        loading="lazy"
+        decoding="async"
+        onError={() => setBrandFailed(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    );
+  }
+
+  // Tier 3 — branded logo placeholder for vendor-identifiable products.
   const brandKey = (brand || '').trim().toLowerCase();
   if (BRANDED_BRANDS.has(brandKey)) {
     return (
@@ -72,7 +96,7 @@ export function ProductImage({ imageUrl, alt, brand, model, category, variant }:
     );
   }
 
-  // Tier 3 — category illustration for everything else.
+  // Tier 4 — category illustration for everything else.
   return (
     <div aria-label={alt} style={{ width: '100%', height: '100%' }}>
       <CategoryIllustration category={fallbackCategoryKey(category, model)} rounded={false} />
