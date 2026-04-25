@@ -1,62 +1,53 @@
 import { useState } from 'react';
 import { resolveImageUrl, fallbackCategoryKey } from '../utils/productImagery';
-import { resolveAmazonImage, amazonSrcSet } from '../utils/amazonImagery';
-import { resolveAppleImage } from '../utils/appleImagery';
-import { resolveSamsungImage } from '../utils/samsungImagery';
-import { resolveGoogleImage } from '../utils/googleImagery';
 import CategoryIllustration from './CategoryIllustration';
-import BrandLogoPlaceholder from './BrandLogoPlaceholder';
+import DeviceMock from './DeviceMock';
 
 export interface ProductImageProps {
   brand: string;
   model: string;
   storage?: string;
   imageUrl: string;
-  /** Optional — when present, the Amazon resolver picks the colour-matched ASIN. */
+  /** Optional — DeviceMock paints the body in this colour. */
   color?: string;
   /** Optional — improves the synthetic fallback's category matching. */
   category?: string;
   alt?: string;
   /** Forces the synthetic fallback even when a real asset exists. */
   variant?: 'primary' | 'synthetic';
-  /** Optional render hint — defaults to 'card' (smaller srcset upper bound). */
+  /** Render hint — currently only forwarded to DeviceMock for sizing. */
   context?: 'card' | 'hero';
 }
 
 /**
- * ProductImage — five-tier resolution with graceful onError handoff:
+ * ProductImage — three-tier resolution with graceful onError handoff:
  *
- *   1. Real photo on disk / trusted CDN (Shopify product shot).
- *   2. Amazon-CDN ASIN render — colour-matched per variant when a
- *      colour is provided, falls back to `_default` otherwise.
- *      Includes srcset for responsive loading.
- *   3. Per-brand fallback resolver (Apple marketing CDN, Samsung +
- *      Google routed to local /assets/ via family rules).
- *   4. Brand-logo placeholder (simpleicons.org).
- *   5. Category silhouette (Claude SVG).
+ *   1. Real photo on disk (Shopify product shot or one we ship in
+ *      /public/assets/) — only when the URL isn't a known text-only
+ *      placeholder host.
+ *   2. DeviceMock — programmatic SVG render that knows the right form
+ *      factor for every brand + model in the catalogue (iPhone modern,
+ *      classic, foldable, tablet, console, audio, etc.) and paints the
+ *      body in the user's selected colour. Inline SVG → zero network,
+ *      sharp at every DPR, accurate per-colour without committing 130
+ *      raster files.
+ *   3. CategoryIllustration silhouette — the existing Claude-designed
+ *      SVG keyed to the product's category. Final fallback for items
+ *      DeviceMock doesn't classify.
  *
- * Each tier swaps to the next via <img onError>, so a CDN outage,
- * a missing slug or a corporate-network block always degrades into
- * a clean fallback instead of a broken-image glyph.
+ * Each tier swaps to the next via <img onError>, so a 404 never lands
+ * a broken-image glyph on the page.
  */
-
-const BRANDED_BRANDS = new Set([
-  'apple', 'samsung', 'google', 'oneplus', 'motorola',
-  'sony', 'microsoft', 'nintendo', 'meta',
-  'xiaomi', 'huawei', 'nothing',
-]);
 
 const PLACEHOLDER_HOST_RE = /^https?:\/\/(placehold\.co|placeholder\.com|via\.placeholder\.com|dummyimage\.com)/i;
 
 export function ProductImage({
-  imageUrl, alt, brand, model, color, category, variant, context = 'card',
+  imageUrl, alt, brand, model, color, category, variant, context: _ctx,
 }: ProductImageProps) {
   const isPlaceholderUrl = typeof imageUrl === 'string' && PLACEHOLDER_HOST_RE.test(imageUrl);
   const [photoFailed, setPhotoFailed] = useState(false);
-  const [amazonFailed, setAmazonFailed] = useState(false);
-  const [brandFailed, setBrandFailed] = useState(false);
 
-  // Tier 1 — real product shot already on disk / trusted CDN.
+  // Tier 1 — real product photo we already control on disk / trusted CDN.
   const resolved =
     variant === 'synthetic' || isPlaceholderUrl || photoFailed
       ? null
@@ -75,59 +66,22 @@ export function ProductImage({
     );
   }
 
-  // Tier 2 — Amazon ASIN render, colour-matched.
-  const amazonSize = context === 'hero' ? 1500 : 600;
-  const amazonUrl = !amazonFailed
-    ? resolveAmazonImage(brand, model, color, amazonSize)
-    : null;
-  if (amazonUrl) {
+  // Tier 2 — DeviceMock SVG, exact form factor + variant colour.
+  // This is the dominant path for ~125 of 133 catalogue products
+  // since most ship with placehold.co URLs from the inventory import.
+  if (brand && model) {
     return (
-      <img
-        src={amazonUrl}
-        srcSet={amazonSrcSet(brand, model, color)}
-        sizes={context === 'hero' ? '(min-width: 1024px) 600px, 100vw' : '(min-width: 1024px) 280px, 50vw'}
-        alt={alt ?? `${brand} ${model}${color ? ` in ${color}` : ''}`}
-        loading="lazy"
-        decoding="async"
-        onError={() => setAmazonFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-      />
-    );
-  }
-
-  // Tier 3 — per-brand resolver (Apple CDN / local family fallback).
-  const brandUrl = !brandFailed
-    ? (resolveAppleImage(brand, model)
-       ?? resolveSamsungImage(brand, model)
-       ?? resolveGoogleImage(brand, model))
-    : null;
-  if (brandUrl) {
-    return (
-      <img
-        src={brandUrl}
-        alt={alt ?? `${brand} ${model}`}
-        loading="lazy"
-        decoding="async"
-        onError={() => setBrandFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-      />
-    );
-  }
-
-  // Tier 4 — brand-logo placeholder for vendor-identifiable products.
-  const brandKey = (brand || '').trim().toLowerCase();
-  if (BRANDED_BRANDS.has(brandKey)) {
-    return (
-      <BrandLogoPlaceholder
+      <DeviceMock
         brand={brand}
         model={model}
-        category={fallbackCategoryKey(category, model)}
+        color={color}
+        category={category}
         alt={alt}
       />
     );
   }
 
-  // Tier 5 — category illustration for everything else.
+  // Tier 3 — generic category silhouette for anything left over.
   return (
     <div aria-label={alt} style={{ width: '100%', height: '100%' }}>
       <CategoryIllustration category={fallbackCategoryKey(category, model)} rounded={false} />
