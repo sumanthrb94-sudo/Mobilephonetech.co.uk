@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { resolveImageUrl, fallbackCategoryKey } from '../utils/productImagery';
 import { resolveAppleImage } from '../utils/appleImagery';
+import { resolveSamsungImage } from '../utils/samsungImagery';
+import { resolveGoogleImage } from '../utils/googleImagery';
 import CategoryIllustration from './CategoryIllustration';
 import BrandLogoPlaceholder from './BrandLogoPlaceholder';
 
@@ -67,13 +69,19 @@ export function ProductImage({ imageUrl, alt, brand, model, category, variant }:
     );
   }
 
-  // Tier 2 — curated Apple CDN render (iPhone + iPad). Skip if the
-  // remote URL has already 404'd in this session.
-  const appleUrl = !brandFailed ? resolveAppleImage(brand, model) : null;
-  if (appleUrl) {
+  // Tier 2 — curated brand-CDN / local-asset render. Apple ships
+  // marketing-CDN URLs; Samsung + Google route to the committed
+  // /public/assets/ photos via family-fallback rules. Skip if the
+  // resolved URL has already 404'd in this session.
+  const brandUrl = !brandFailed
+    ? (resolveAppleImage(brand, model)
+       ?? resolveSamsungImage(brand, model)
+       ?? resolveGoogleImage(brand, model))
+    : null;
+  if (brandUrl) {
     return (
       <img
-        src={appleUrl}
+        src={brandUrl}
         alt={alt ?? `${brand} ${model}`}
         loading="lazy"
         decoding="async"
