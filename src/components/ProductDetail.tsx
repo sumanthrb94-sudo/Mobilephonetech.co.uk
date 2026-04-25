@@ -13,6 +13,7 @@ import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
 import TechnicalSpecs from './TechnicalSpecs';
+import { enrichSpecs } from '../utils/deviceSpecs';
 import { ProductVariant, ProductGrade } from '../types';
 import Breadcrumbs from './ui/Breadcrumbs';
 import FinanceOptions from './FinanceOptions';
@@ -483,7 +484,7 @@ export default function ProductDetail() {
         </div>
 
         {/* ── Specs Section ────────────────── */}
-        <TechnicalSpecs specs={phone.specs} />
+        <TechnicalSpecs specs={enrichSpecs(phone.brand, phone.model, phone.specs)} />
 
         <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
         <RelatedProductsSection currentProduct={phone} />
