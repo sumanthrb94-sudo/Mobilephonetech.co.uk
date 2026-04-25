@@ -142,7 +142,15 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           padding: '24px'
         }}
       >
-        <ProductImage brand={phone.brand} model={phone.model} storage={phone.storage} category={phone.category} imageUrl={phone.imageUrl} alt={phone.model} />
+        <ProductImage
+          brand={phone.brand}
+          model={phone.model}
+          color={phone.colorOptions?.[0] ?? phone.variants?.[0]?.color}
+          storage={phone.storage}
+          category={phone.category}
+          imageUrl={phone.imageUrl}
+          alt={phone.model}
+        />
 
         {/* Quick-view button — appears on hover (desktop) or always on touch */}
         <AnimatePresence>

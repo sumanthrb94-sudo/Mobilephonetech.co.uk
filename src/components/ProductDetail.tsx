@@ -218,9 +218,11 @@ export default function ProductDetail() {
                 <ProductImage
                   brand={phone.brand}
                   model={phone.model}
+                  color={selectedVariant?.color}
                   category={phone.category}
+                  context="hero"
                   imageUrl={activeGallery[selectedImageIndex]}
-                  alt={`${phone.model} — view ${selectedImageIndex + 1}`}
+                  alt={`${phone.model}${selectedVariant?.color ? ` in ${selectedVariant.color}` : ''} — view ${selectedImageIndex + 1}`}
                 />
               </div>
 
@@ -292,6 +294,7 @@ export default function ProductDetail() {
                       <ProductImage
                         brand={phone.brand}
                         model={phone.model}
+                        color={selectedVariant?.color}
                         category={phone.category}
                         imageUrl={src}
                         alt=""
