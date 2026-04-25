@@ -8,6 +8,7 @@ import BrandShowcase from './components/BrandShowcase';
 import QualityPromise from './components/QualityPromise';
 import EcoImpactBlock from './components/EcoImpactBlock';
 import HomeFaq from './components/HomeFaq';
+import HomeBlog from './components/HomeBlog';
 import NewsletterSignup from './components/NewsletterSignup';
 import TrustSection from './components/TrustSection';
 import TestimonialsSection from './components/TestimonialsSection';
@@ -127,6 +128,11 @@ function HomePage() {
 
       {/* FAQ accordion — reduces refurb skepticism right above the footer */}
       <HomeFaq />
+
+      {/* Workshop blog — 10 storytelling posts about refurbished tech.
+          Sits between the trust questions (FAQ) and the trust badges
+          (QualityPromise) so readers who want depth can dive in. */}
+      <HomeBlog />
 
       {/* MPM-signature Inspected / Tested / Cleaned strip — moved down from
           just-below-hero to footer-adjacent so product content takes the
