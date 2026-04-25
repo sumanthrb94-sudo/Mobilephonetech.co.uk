@@ -1,14 +1,12 @@
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Star, Eye, Plus } from 'lucide-react';
+import { Heart, Star, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product, ProductGrade } from '../types';
-import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import ProductImage from './ProductImage';
 import QuickViewModal from './QuickViewModal';
-import { haptic } from '../utils/haptics';
 import { useHoverPrefetch } from '../hooks/useHoverPrefetch';
 
 const GRADE_CLASS: Record<ProductGrade, string> = {
@@ -55,10 +53,8 @@ interface ProductCardProps {
 
 const ProductCard = memo(({ phone }: ProductCardProps) => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { showToast } = useUI();
-  const [added, setAdded] = React.useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const inWishlist = isInWishlist(phone.id);
@@ -79,25 +75,12 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   };
 
   // A product has multiple buyer choices if it exposes more than one
-  // variant, colour OR storage — any of those means the CTA should
-  // route to the PDP so the buyer can actually pick, not silently
-  // bind to an arbitrary default.
-  const hasChoices =
-    (phone.variants?.length ?? 0) > 1 ||
-    (phone.colorOptions?.length ?? 0) > 1 ||
-    (phone.storageOptions?.length ?? 0) > 1;
-
-  const handleAddToCart = (e: React.MouseEvent) => {
+  // Amazon-style: every product card routes to the PDP. Direct
+  // add-to-cart only happens on the product detail page where the
+  // user can confirm colour / storage / condition before committing.
+  const handleViewProduct = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (hasChoices) {
-      navigate(`/product/${phone.id}`);
-      return;
-    }
-    addToCart(phone, 1);
-    setAdded(true);
-    haptic('success');
-    showToast(`${phone.model} added to cart`, 'success');
-    setTimeout(() => setAdded(false), 1200);
+    navigate(`/product/${phone.id}`);
   };
 
   const rating = 3.8 + (parseInt(phone.id.slice(-1), 16) % 12) * 0.1;
@@ -387,22 +370,12 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
         </div>
 
         <button
-          onClick={handleAddToCart}
+          onClick={handleViewProduct}
           className="btn btn-primary btn-lg btn-full"
           style={{ fontFamily: 'var(--font-sans)' }}
-          aria-label={
-            added ? 'Added to cart' :
-            hasChoices ? `Choose options for ${phone.model}` :
-            `Add ${phone.model} to cart`
-          }
+          aria-label={`View ${phone.model} details`}
         >
-          {added ? (
-            <><Plus size={16} style={{ opacity: 0.9 }} /> Added</>
-          ) : hasChoices ? (
-            <>Choose options</>
-          ) : (
-            <>Add to cart</>
-          )}
+          See details
         </button>
       </div>
     </motion.div>
@@ -412,9 +385,10 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
       isOpen={quickViewOpen}
       onClose={() => setQuickViewOpen(false)}
       onAddToCart={() => {
-        addToCart(phone, 1);
-        showToast(`${phone.model} added to cart`, 'success');
+        // Quick view never auto-adds — Amazon-style: route to PDP so
+        // the user picks colour / storage / condition before commit.
         setQuickViewOpen(false);
+        navigate(`/product/${phone.id}`);
       }}
       onViewFull={() => {
         setQuickViewOpen(false);
