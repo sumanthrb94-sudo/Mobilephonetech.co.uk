@@ -26,7 +26,7 @@ import CheckoutFooter from './components/layout/CheckoutFooter';
 import AnnouncementBar from './components/layout/AnnouncementBar';
 import ScrollToTop from './components/ScrollToTop';
 import { Suspense, lazy, useEffect } from 'react';
-import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+import { AnimatePresence, motion, MotionConfig, useReducedMotion } from 'motion/react';
 import { CartProvider, useCart } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
 import { CheckoutProvider } from './context/CheckoutContext';
@@ -142,14 +142,17 @@ function HomePage() {
 /**
  * AnimatedPage — page-level fade/slide transition wrapper.
  * Applied to every route so route changes feel coordinated, not abrupt.
+ * Respects prefers-reduced-motion via motion's useReducedMotion: when
+ * set, the page just appears in place instead of sliding.
  */
 function AnimatedPage({ children, paddingTop }: { children: React.ReactNode; paddingTop?: string }) {
+  const reduceMotion = useReducedMotion();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.3, ease: [0.2, 0, 0, 1] }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
+      transition={{ duration: reduceMotion ? 0 : 0.3, ease: [0.2, 0, 0, 1] }}
       style={{ paddingTop }}
     >
       {children}

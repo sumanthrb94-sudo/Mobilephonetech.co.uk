@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
@@ -20,6 +20,25 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  // Focus management: remember the trigger, focus the first field on
+  // open, restore focus on close. Esc closes from anywhere in the modal.
+  useEffect(() => {
+    if (!isOpen) return;
+    lastFocusedRef.current = (document.activeElement as HTMLElement) ?? null;
+    const t = window.setTimeout(() => firstFieldRef.current?.focus(), 30);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      window.clearTimeout(t);
+      document.removeEventListener('keydown', onKey);
+      lastFocusedRef.current?.focus?.();
+    };
+  }, [isOpen, onClose]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { login, signup } = useAuth();
@@ -104,7 +123,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 )}
                 <div style={{ position: 'relative' }}>
                   <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                  <input type="email" required placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  <input ref={firstFieldRef} type="email" required placeholder="Email Address" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                 </div>
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />

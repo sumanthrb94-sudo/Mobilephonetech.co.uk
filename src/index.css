@@ -479,15 +479,44 @@ html.is-checkout .ai-fab {
   .series-rail::-webkit-scrollbar { display: none; }
   .series-rail { -ms-overflow-style: none; }
 
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
+  /* ── Focus visibility ─────────────────────────────────────────
+     Global :focus-visible ring tuned to the brand cyan. Sits on
+     top of every interactive element regardless of background, so
+     keyboard users always know where they are. Mouse focus is left
+     alone (browsers omit :focus-visible for pointer interactions). */
+  :focus { outline: none; }
+  :focus-visible {
+    outline: 2px solid var(--brand-cyan);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  /* Round the focus ring on inputs/buttons that have their own radius */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="menuitem"]:focus-visible {
+    outline-offset: 3px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 4px rgba(0, 186, 219, 0.18);
+  }
 
+  /* Reduced motion — respect the OS-level "reduce motion" preference
+     across every animation, transition, scroll-behaviour and motion-
+     sensitive component. Spinners shrink to zero rather than spin. */
+  @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
+    .series-rail { scroll-behavior: auto !important; }
   }
 }
 
