@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
-import { SlidersHorizontal, ChevronDown, SearchX } from 'lucide-react';
+import { SlidersHorizontal, ChevronDown, SearchX, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Breadcrumbs from './ui/Breadcrumbs';
 import BottomSheet from './ui/BottomSheet';
@@ -546,6 +546,62 @@ export default function ProductsPage() {
                 </div>
               </div>
 
+              {/* Active-filter chips — one tap to remove a single filter
+                  rather than the all-or-nothing "Clear all" button. Hidden
+                  when no filters are active to keep the toolbar quiet. */}
+              {hasActiveFilters && (
+                <div
+                  role="group"
+                  aria-label="Active filters"
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                    gap: '6px',
+                    margin: '0 0 var(--spacing-16) 0',
+                  }}
+                >
+                  {filters.brand.map((b) => (
+                    <FilterChip key={`b-${b}`} label={`Brand: ${b}`} onClear={() => setFilters({ ...filters, brand: filters.brand.filter(x => x !== b) })} />
+                  ))}
+                  {(filters.category ?? []).map((c) => (
+                    <FilterChip key={`c-${c}`} label={`Category: ${c}`} onClear={() => setFilters({ ...filters, category: (filters.category ?? []).filter(x => x !== c) })} />
+                  ))}
+                  {filters.grade.map((g) => (
+                    <FilterChip key={`g-${g}`} label={`Grade: ${g}`} onClear={() => setFilters({ ...filters, grade: filters.grade.filter(x => x !== g) })} />
+                  ))}
+                  {filters.storage.map((s) => (
+                    <FilterChip key={`s-${s}`} label={`Storage: ${s}`} onClear={() => setFilters({ ...filters, storage: filters.storage.filter(x => x !== s) })} />
+                  ))}
+                  {(filters.priceRange[0] !== 0 || filters.priceRange[1] !== priceCap) && (
+                    <FilterChip
+                      label={`£${filters.priceRange[0]} – £${filters.priceRange[1] === priceCap ? `${priceCap}+` : filters.priceRange[1]}`}
+                      onClear={() => setFilters({ ...filters, priceRange: [0, priceCap] })}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => resetFilters()}
+                    style={{
+                      marginLeft: '4px',
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--grey-60)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      letterSpacing: '0.02em',
+                      textDecoration: 'underline',
+                      textUnderlineOffset: '3px',
+                      cursor: 'pointer',
+                      padding: '4px 6px',
+                    }}
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
+
               <AnimatePresence mode="popLayout">
                 {sortedProducts.length === 0 ? (
                   <motion.div
@@ -637,5 +693,48 @@ function FilterCheckbox({ label, checked, onChange }: { label: string; checked: 
         {label}
       </span>
     </label>
+  );
+}
+
+function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '6px',
+        padding: '4px 6px 4px 10px',
+        background: 'var(--color-brand-subtle)',
+        color: 'var(--brand-cyan-hover)',
+        border: '1px solid rgba(0,186,219,0.25)',
+        borderRadius: 'var(--radius-full)',
+        fontFamily: 'var(--font-body)',
+        fontSize: '12px',
+        fontWeight: 600,
+        lineHeight: 1.2,
+      }}
+    >
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        aria-label={`Remove filter ${label}`}
+        style={{
+          width: '20px',
+          height: '20px',
+          padding: 0,
+          background: 'rgba(0,186,219,0.18)',
+          border: 'none',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          color: 'var(--brand-cyan-hover)',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <X size={12} strokeWidth={2.5} />
+      </button>
+    </span>
   );
 }

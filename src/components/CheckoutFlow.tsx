@@ -8,6 +8,7 @@ import AuthModal from './AuthModal';
 import ExpressPayRow from './ExpressPayRow';
 import ProductImage from './ProductImage';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
+import { lookupPostcode } from '../utils/postcodeLookup';
 
 // ── Card helpers (module-scope; demo-grade validation only) ─────────
 function luhnValid(cardNumber: string): boolean {
@@ -532,17 +533,18 @@ export default function CheckoutFlow() {
                       type="button"
                       onClick={() => {
                         const el = document.getElementById('postcode-lookup') as HTMLInputElement | null;
-                        const pc = el?.value?.trim().toUpperCase() || '';
+                        const pc = el?.value?.trim() || '';
                         if (!pc) return;
-                        // Mock lookup: populate plausible defaults so the user only
-                        // has to type their house number + surname.
-                        const line1El = document.querySelector('input[name="addressLine1"]') as HTMLInputElement | null;
-                        const cityEl  = document.querySelector('input[name="city"]') as HTMLInputElement | null;
-                        const pcEl    = document.querySelector('input[name="postalCode"]') as HTMLInputElement | null;
-                        if (pcEl) pcEl.value = pc;
-                        if (cityEl && !cityEl.value) cityEl.value = 'London';
-                        if (line1El && !line1El.value) line1El.value = '';
+                        const resolved = lookupPostcode(pc);
+                        if (!resolved) return;
+                        const line1El = document.querySelector<HTMLInputElement>('input[name="addressLine1"]');
+                        const cityEl  = document.querySelector<HTMLInputElement>('input[name="city"]');
+                        const pcEl    = document.querySelector<HTMLInputElement>('input[name="postalCode"]');
+                        if (pcEl) pcEl.value = resolved.postcode;
+                        if (cityEl) cityEl.value = resolved.city || cityEl.value;
+                        if (line1El && !line1El.value) line1El.value = `1 ${resolved.street}`;
                         line1El?.focus();
+                        line1El?.setSelectionRange(0, 1);
                       }}
                       className="btn btn-secondary btn-md"
                     >
