@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MOCK_PHONES } from '../data';
+import { useProducts } from '../hooks/useShopify';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
 import { SlidersHorizontal, ChevronDown, SearchX, X } from 'lucide-react';
@@ -141,8 +141,11 @@ export default function ProductsPage() {
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
+  const { products: shopifyProducts, loading: productsLoading } = useProducts();
+
   const scopedProducts = useMemo(() => {
-    return MOCK_PHONES.filter(product => {
+    const productsToFilter = shopifyProducts.length > 0 ? shopifyProducts : [];
+    return productsToFilter.filter(product => {
       if (brandParam && modelParam) {
         // Prefix match: lets series-level "See all" links (model=iPhone 17
         // -> 17/17 Pro/17 Pro Max, model=Galaxy S -> S10/S22/S23 Ultra,
@@ -178,7 +181,7 @@ export default function ProductsPage() {
 
   const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
   const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
-  const categories = Array.from(new Set(MOCK_PHONES.map(p => p.category)));
+  const categories = Array.from(new Set(shopifyProducts.map(p => p.category)));
 
   const filteredProducts = useMemo(() => {
     return scopedProducts.filter(phone => {
