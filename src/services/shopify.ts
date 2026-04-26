@@ -280,20 +280,11 @@ export const shopifyService = {
     }
   },
 
-  // Create checkout
-  async createCheckout(variantId: string, quantity: number = 1) {
+  // Create checkout from one or more cart line items
+  async createCheckout(lineItems: { variantId: string; quantity: number }[]) {
     try {
       const response = await client.request(CREATE_CHECKOUT, {
-        variables: {
-          input: {
-            lineItems: [
-              {
-                variantId,
-                quantity,
-              },
-            ],
-          },
-        },
+        variables: { input: { lineItems } },
       });
 
       if (response.errors) {
@@ -301,7 +292,7 @@ export const shopifyService = {
         throw new Error('Failed to create checkout');
       }
 
-      return response.data?.checkoutCreate?.checkout;
+      return response.data?.checkoutCreate?.checkout as { webUrl: string } | null;
     } catch (error) {
       console.error('Error creating checkout:', error);
       throw error;
