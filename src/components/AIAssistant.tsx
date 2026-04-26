@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
 import { Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MOCK_PHONES } from '../data';
@@ -20,10 +19,6 @@ const loadGsmarena = (): Promise<GsmarenaEntry[]> => {
   return gsmarenaPromise;
 };
 
-const ai = process.env.GEMINI_API_KEY
-  ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-  : null;
-
 export default function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
@@ -43,11 +38,6 @@ export default function AIAssistant() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    if (!ai) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'AI Assistant is not configured. Please set the GEMINI_API_KEY environment variable.' }]);
-      return;
-    }
-
     const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
@@ -63,18 +53,18 @@ export default function AIAssistant() {
       const prompt = `
         You are the Shopping Assistant for "MobileTech", a global retail store for refurbished mobile technology.
         Your goal is to help users navigate our catalog of smartphones, chargers, and accessories.
-        
+
         CATALOG HIGHLIGHTS (OUR INVENTORY):
         ${MOCK_PHONES.map(p => `${p.model} (${p.brand}): £${p.price}, Grade: ${p.grade}`).join('\n')}
-        
+
         DEEP TECHNICAL KNOWLEDGE (FROM GSMARENA):
-        ${relevantData.length > 0 
+        ${relevantData.length > 0
           ? relevantData.map(d => `MODEL: ${d.model}\nSPECS: ${JSON.stringify(d.specs)}`).join('\n---\n')
           : "Use your general knowledge for technical specs if not listed above."
         }
 
         USER QUESTION: ${userMessage}
-        
+
         INSTRUCTIONS:
         1. Act like an expert tech advisor from a leading retail brand.
         2. Use the GSMArena data to provide highly accurate technical details (e.g., sensor sizes, battery chemistry, precise weights).
@@ -83,12 +73,22 @@ export default function AIAssistant() {
         5. Keep responses concise, professional, and helpful. Do not use markdown styling unless necessary.
       `;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: prompt,
+      const res = await fetch('/api/gemini-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
       });
 
-      const assistantContent = response.text || "I'm sorry, I'm having trouble thinking right now. How else can I help?";
+      if (!res.ok) {
+        const msg = res.status === 503
+          ? 'AI Assistant is not configured. Please set the GEMINI_API_KEY environment variable.'
+          : "Sorry, I encountered a technical glitch. Please try again!";
+        setMessages(prev => [...prev, { role: 'assistant', content: msg }]);
+        return;
+      }
+
+      const data = await res.json() as { text?: string };
+      const assistantContent = data.text || "I'm sorry, I'm having trouble thinking right now. How else can I help?";
       setMessages(prev => [...prev, { role: 'assistant', content: assistantContent }]);
     } catch (error) {
       console.error("AI Error:", error);
