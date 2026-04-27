@@ -85,7 +85,7 @@ export default function CheckoutHeader() {
               lineHeight: 1,
             }}
           >
-            mobile<span style={{ color: 'var(--grey-0)' }}>tech</span>
+            mobile<span style={{ color: 'var(--grey-0)' }}>phonemarket</span>
           </span>
         </Link>
 
