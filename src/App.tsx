@@ -202,7 +202,7 @@ function AppContent() {
       ) : (
         <>
           {/* Fixed header (64px) + Category nav (48px) = 112px */}
-          <Navbar onCartClick={() => setIsCartOpen(true)} />
+          <Navbar />
           {/* Sidebar (mobile alternative to category nav) */}
           <Sidebar />
         </>

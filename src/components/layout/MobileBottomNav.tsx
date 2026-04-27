@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Store, Heart, ShoppingBag, UserCircle } from 'lucide-react';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { useCart } from '../../context/CartContext';
@@ -12,6 +12,8 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
   const { isDesktop } = useBreakpoint();
   const { cartCount } = useCart();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const isCartActive = pathname === '/cart';
   if (isDesktop) return null;
 
   return (
@@ -43,7 +45,7 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
           <button
             onClick={() => navigate('/cart')}
             aria-label={`Cart (${cartCount} items)`}
-            style={cellStyle}
+            style={{ ...cellStyle, color: isCartActive ? 'var(--brand-cyan-hover)' : 'var(--grey-60)' }}
           >
             <span style={{ position: 'relative', display: 'inline-flex' }}>
               <ShoppingBag size={20} />

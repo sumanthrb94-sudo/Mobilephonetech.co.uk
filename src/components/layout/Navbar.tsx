@@ -2,11 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useMotionValue, useTransform, useSpring, motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Search, ShoppingBag, Heart, User,
+  Search, Heart, User,
   HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2
 } from 'lucide-react';
-import { useCart } from '../../context/CartContext';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
 import AuthModal from '../AuthModal';
@@ -15,7 +14,6 @@ import BrandMegaMenu from '../BrandMegaMenu';
 import TabletMegaMenu from '../TabletMegaMenu';
 
 interface NavbarProps {
-  onCartClick: () => void;
   onMenuClick?: () => void;
 }
 
@@ -43,7 +41,6 @@ export default function Navbar(_: NavbarProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const catNavRef   = useRef<HTMLDivElement>(null);
 
-  const { cartCount } = useCart();
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -328,34 +325,6 @@ export default function Navbar(_: NavbarProps) {
                 <IconBtn icon={Heart} label="Wishlist" />
               </Link>
 
-              {/* Cart */}
-              <button
-                id="navbar-cart-btn"
-                onClick={() => navigate('/cart')}
-                className="navbar-cart"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '8px 12px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  backgroundColor: 'var(--brand-cyan)',
-                  color: 'var(--grey-0)',
-                  fontFamily: 'var(--font-sans)',
-                  fontWeight: 700,
-                  fontSize: '14px',
-                  transition: 'background-color var(--duration-fast) var(--ease-default)',
-                  flexShrink: 0,
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--brand-cyan-hover)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--brand-cyan)'; }}
-                aria-label={`Cart (${cartCount} items)`}
-              >
-                <ShoppingBag size={18} />
-                <span>{cartCount}</span>
-              </button>
             </div>
           </div>
         </header>
