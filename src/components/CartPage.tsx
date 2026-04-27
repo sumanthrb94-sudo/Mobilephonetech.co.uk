@@ -383,10 +383,10 @@ export default function CartPage() {
             {/* Trust strip below items */}
             <div
               style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: '16px',
-                padding: 'var(--spacing-20)',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+                padding: '12px',
                 background: 'var(--grey-5)',
                 borderRadius: 'var(--radius-lg)',
                 marginTop: '8px',
@@ -538,10 +538,10 @@ function TrustPill({ icon: Icon, label }: { icon: React.ElementType; label: stri
   return (
     <div
       style={{
-        display: 'inline-flex',
+        display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        padding: '8px 12px',
+        gap: '6px',
+        padding: '8px 10px',
         background: 'var(--grey-0)',
         borderRadius: 'var(--radius-full)',
         border: '1px solid var(--grey-10)',
