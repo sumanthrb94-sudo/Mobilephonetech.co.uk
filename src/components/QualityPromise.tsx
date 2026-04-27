@@ -41,7 +41,7 @@ export default function QualityPromise() {
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         <div style={{ maxWidth: '620px', marginBottom: 'var(--spacing-32)' }}>
           <div className="overline" style={{ marginBottom: '8px' }}>
-            The MobileTech promise
+            The MobilePhoneMarket promise
           </div>
           <h2
             style={{

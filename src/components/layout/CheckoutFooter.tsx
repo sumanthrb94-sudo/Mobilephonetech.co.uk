@@ -50,7 +50,7 @@ export default function CheckoutFooter() {
             color: 'var(--grey-50)',
           }}
         >
-          © 2026 MobileTech.co.uk Ltd · Registered in England &amp; Wales
+          © 2026 MobilePhoneMarket.co.uk Ltd · Registered in England &amp; Wales
         </div>
         <nav style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px' }}>
           {[

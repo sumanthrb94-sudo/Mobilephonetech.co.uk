@@ -8,7 +8,7 @@ import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 
 export default function OrderHistoryPage() {
   useSeo({
-    title: 'Your orders | MobileTech',
+    title: 'Your orders | MobilePhoneMarket',
     description: 'Track deliveries and manage returns.',
     canonical: `${SITE_ORIGIN}/orders`,
     noindex: true,

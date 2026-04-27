@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const KEY = 'mobiletech:recently-viewed';
+const KEY = 'mobilephonemarket:recently-viewed';
 const MAX = 12;
 
 export function useRecentlyViewed() {

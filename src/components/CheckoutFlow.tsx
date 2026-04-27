@@ -43,7 +43,7 @@ function detectCardBrand(cardNumber: string): string {
 
 export default function CheckoutFlow() {
   useSeo({
-    title: 'Checkout | MobileTech',
+    title: 'Checkout | MobilePhoneMarket',
     description: 'Complete your purchase securely — free next-day UK delivery, 12-month warranty, 30-day returns.',
     canonical: `${SITE_ORIGIN}/checkout`,
     noindex: true,
@@ -81,7 +81,7 @@ export default function CheckoutFlow() {
     if (shippingAddress) return;
     setShippingAddress({
       fullName:    user?.fullName || 'Alex Morgan',
-      email:       user?.email    || 'alex@mobiletech.co.uk',
+      email:       user?.email    || 'alex@mobilephonemarket.co.uk',
       phone:       '07700 900123',
       addressLine1:'221B Baker Street',
       addressLine2:'Flat 2',

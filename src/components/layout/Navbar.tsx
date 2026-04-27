@@ -210,7 +210,7 @@ export default function Navbar(_: NavbarProps) {
                   lineHeight: 1,
                 }}
               >
-                mobile<span style={{ color: 'var(--grey-0)' }}>tech</span>
+                mobilephonemarket
                 <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
               </span>
             </Link>
@@ -563,7 +563,7 @@ export default function Navbar(_: NavbarProps) {
                 style={{ borderBottom: '1px solid var(--grey-10)', height: '64px' }}
               >
                 <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: 'var(--black)' }}>
-                  mobile<span style={{ color: 'var(--brand-cyan)' }}>tech</span>
+                  mobile<span style={{ color: 'var(--brand-cyan)' }}>phonemarket</span>
                   <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
                 </span>
                 <button

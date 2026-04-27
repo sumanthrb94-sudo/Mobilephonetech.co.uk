@@ -6,7 +6,7 @@ import { MOCK_PHONES } from '../data';
 import { useSearch } from '../context/SearchContext';
 import ProductImage from './ProductImage';
 
-const RECENT_KEY = 'mobiletech:recent-searches';
+const RECENT_KEY = 'mobilephonemarket:recent-searches';
 const MAX_RECENT = 6;
 
 function loadRecent(): string[] {

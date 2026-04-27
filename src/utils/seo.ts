@@ -10,7 +10,7 @@ import { SITE_NAME, SITE_ORIGIN } from '../hooks/useSeo';
 
 export function homeSeo() {
   return {
-    title: 'Refurbished Phones UK — Unlocked iPhone, Samsung, Pixel | MobileTech',
+    title: 'Refurbished Phones UK — Unlocked iPhone, Samsung, Pixel | MobilePhoneMarket',
     description:
       'Certified refurbished phones, tablets and tech with 12-month warranty, free next-day delivery and 30-day returns. Unlocked iPhone, Samsung Galaxy, Google Pixel and iPad at UK refurb prices.',
     canonical: `${SITE_ORIGIN}/`,
@@ -34,11 +34,11 @@ export function productsPageSeo(params: {
     brand && category ? `Refurbished ${brand} ${category} | ${SITE_NAME}` :
     brand ? `Refurbished ${brand} — iPhones, Galaxy, Pixel | ${SITE_NAME}` :
     category ? `Refurbished ${category} | ${SITE_NAME}` :
-    'Shop Refurbished Phones, Tablets & Tech | MobileTech UK';
+    'Shop Refurbished Phones, Tablets & Tech | MobilePhoneMarket UK';
 
   const description =
     `${count > 0 ? `${count} refurbished ${subject.toLowerCase()}` : `Refurbished ${subject.toLowerCase()}`} ` +
-    `with 12-month warranty, free next-day delivery and 30-day returns. Certified, unlocked, and graded by MobileTech UK.`;
+    `with 12-month warranty, free next-day delivery and 30-day returns. Certified, unlocked, and graded by MobilePhoneMarket UK.`;
 
   return {
     title,

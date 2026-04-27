@@ -346,7 +346,7 @@ export default function Footer() {
                 color: 'rgba(255,255,255,0.25)',
               }}
             >
-              © 2026 MobileTech.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
+              © 2026 MobilePhoneMarket.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
               {LEGAL.map((item) => (

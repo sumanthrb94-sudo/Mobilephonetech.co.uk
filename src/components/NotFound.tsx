@@ -11,9 +11,9 @@ import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 
 export default function NotFound() {
   useSeo({
-    title: '404 — Page not found | MobileTech',
+    title: '404 — Page not found | MobilePhoneMarket',
     description:
-      'The page you tried to reach doesn\'t exist anymore. Browse refurbished phones, tablets and tech from MobileTech UK.',
+      'The page you tried to reach doesn\'t exist anymore. Browse refurbished phones, tablets and tech from MobilePhoneMarket UK.',
     canonical: `${SITE_ORIGIN}/`,
     noindex: true,
   });

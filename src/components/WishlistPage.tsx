@@ -9,7 +9,7 @@ import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import Breadcrumbs from './ui/Breadcrumbs';
 
-const ALERTS_KEY = 'mobiletech:price-alerts';
+const ALERTS_KEY = 'mobilephonemarket:price-alerts';
 
 function loadAlerts(): Record<string, boolean> {
   try { return JSON.parse(localStorage.getItem(ALERTS_KEY) || '{}'); } catch { return {}; }
@@ -25,7 +25,7 @@ function saveAlerts(map: Record<string, boolean>) {
  */
 export default function WishlistPage() {
   useSeo({
-    title: 'Your wishlist | MobileTech',
+    title: 'Your wishlist | MobilePhoneMarket',
     description: 'Saved devices to buy later — price alerts included.',
     canonical: `${SITE_ORIGIN}/wishlist`,
     noindex: true,

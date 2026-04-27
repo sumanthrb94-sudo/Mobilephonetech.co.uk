@@ -63,7 +63,7 @@ export default function AboutPage() {
             How we got here
           </h2>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.7, margin: '0 0 14px 0' }}>
-            Mobiletech.co.uk started in 2018 with a simple premise: the best phone for most people is a slightly older one, inspected properly and sold at a fair price. Seven years later, we've shipped more than 1.2 million devices across the UK, built one of the largest in-house refurbishment labs in the country, and planted our flag as the most-trusted refurbisher on Trustpilot.
+            MobilePhoneMarket.co.uk started in 2018 with a simple premise: the best phone for most people is a slightly older one, inspected properly and sold at a fair price. Seven years later, we've shipped more than 1.2 million devices across the UK, built one of the largest in-house refurbishment labs in the country, and planted our flag as the most-trusted refurbisher on Trustpilot.
           </p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.7, margin: 0 }}>
             We're independent, we don't lock you into contracts, and every device ships with the same 12-month warranty — no matter the grade. That's the deal.

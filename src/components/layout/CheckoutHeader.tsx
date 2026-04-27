@@ -68,7 +68,7 @@ export default function CheckoutHeader() {
         {/* Logo — centred */}
         <Link
           to="/"
-          aria-label="mobiletech.co.uk home"
+          aria-label="mobilephonemarket.co.uk home"
           className="navbar-logo flex items-center min-w-0"
           style={{ textDecoration: 'none', margin: '0 auto' }}
         >

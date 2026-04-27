@@ -12,7 +12,7 @@ import { useEffect } from 'react';
  */
 
 export const SITE_ORIGIN = 'https://mobilephonetech.co.uk';
-export const SITE_NAME = 'MobileTech';
+export const SITE_NAME = 'MobilePhoneMarket';
 
 type JsonLd = Record<string, unknown> | Record<string, unknown>[];
 

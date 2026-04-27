@@ -37,7 +37,7 @@ export default function TermsOfService() {
           <section>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>1. Introduction</h2>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6, marginBottom: '12px' }}>
-              These terms and conditions outline the rules and regulations for the use of MobileTech.co.uk's Website. By accessing this website we assume you accept these terms and conditions. Do not continue to use MobileTech.co.uk if you do not agree to take all of the terms and conditions stated on this page.
+              These terms and conditions outline the rules and regulations for the use of MobilePhoneMarket.co.uk's Website. By accessing this website we assume you accept these terms and conditions. Do not continue to use MobilePhoneMarket.co.uk if you do not agree to take all of the terms and conditions stated on this page.
             </p>
           </section>
 
@@ -66,7 +66,7 @@ export default function TermsOfService() {
           <section>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>4. Limitation of Liability</h2>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
-              In no event shall MobileTech.co.uk, nor any of its officers, directors and employees, be held liable for anything arising out of or in any way connected with your use of this Website whether such liability is under contract. MobileTech.co.uk, including its officers, directors and employees shall not be held liable for any indirect, consequential or special liability arising out of or in any way related to your use of this Website.
+              In no event shall MobilePhoneMarket.co.uk, nor any of its officers, directors and employees, be held liable for anything arising out of or in any way connected with your use of this Website whether such liability is under contract. MobilePhoneMarket.co.uk, including its officers, directors and employees shall not be held liable for any indirect, consequential or special liability arising out of or in any way related to your use of this Website.
             </p>
           </section>
 

@@ -37,7 +37,7 @@ export default function PrivacyPolicy() {
           <section>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>1. Introduction</h2>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6, marginBottom: '12px' }}>
-              At MobileTech.co.uk ("we", "our", or "us"), we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.
+              At MobilePhoneMarket.co.uk ("we", "our", or "us"), we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.
             </p>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
               We are registered with the Information Commissioner's Office (ICO) under registration number: <strong>ZA123456</strong> (Mock Registration).
@@ -95,11 +95,11 @@ export default function PrivacyPolicy() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Mail size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>dpo@mobiletech.co.uk</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>dpo@mobilephonemarket.co.uk</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <MapPin size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>MobileTech Ltd, 124 Tech Hub, London, EC1A 1BB, United Kingdom</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>MobilePhoneMarket Ltd, 124 Tech Hub, London, EC1A 1BB, United Kingdom</span>
               </div>
             </div>
           </section>
