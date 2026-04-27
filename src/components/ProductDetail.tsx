@@ -27,6 +27,107 @@ import { useSeo } from '../hooks/useSeo';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 
 
+import type { Product } from '../types';
+
+type Tab = 'overview' | 'specs' | 'reviews';
+
+function TabPanel({ phone }: { phone: Product }) {
+  const [tab, setTab] = React.useState<Tab>('overview');
+  const enrichedSpecs = enrichSpecs(phone.brand, phone.model, phone.specs);
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'specs',    label: 'Specifications' },
+    { id: 'reviews',  label: 'Reviews' },
+  ];
+
+  return (
+    <div style={{ marginTop: 'var(--spacing-48)', borderTop: '1px solid var(--grey-10)' }}>
+      {/* Tab bar */}
+      <div
+        role="tablist"
+        style={{
+          display: 'flex',
+          gap: 0,
+          borderBottom: '1px solid var(--grey-10)',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+        }}
+      >
+        {tabs.map(({ id, label }) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
+            style={{
+              padding: '14px 28px',
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              fontWeight: tab === id ? 700 : 500,
+              color: tab === id ? 'var(--black)' : 'var(--grey-50)',
+              background: 'none',
+              border: 'none',
+              borderBottom: tab === id ? '2px solid var(--black)' : '2px solid transparent',
+              marginBottom: '-1px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div style={{ padding: 'var(--spacing-32) 0' }}>
+        {tab === 'overview' && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
+            {/* Condition notes */}
+            {phone.conditionDescription && (
+              <div>
+                <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>Condition notes</h3>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.7 }}>{phone.conditionDescription}</p>
+              </div>
+            )}
+            {/* Key highlights */}
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>What's included</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  `${phone.warrantyMonths}-month warranty`,
+                  `${phone.returnDays}-day free returns`,
+                  'Independently tested & verified',
+                  'Unlocked — works with any UK network',
+                  'Charger & cable included',
+                ].map((item) => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                    <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Eco impact — compact row */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <EcoImpact productId={phone.id} />
+            </div>
+          </div>
+        )}
+
+        {tab === 'specs' && (
+          <TechnicalSpecs specs={enrichedSpecs} />
+        )}
+
+        {tab === 'reviews' && (
+          <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
+        )}
+      </div>
+    </div>
+  );
+}
+
 const GRADE_CLASS: Record<ProductGrade, string> = {
   Pristine: 'badge-pristine',
   Excellent: 'badge-excellent',
@@ -478,15 +579,9 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Environmental impact */}
-        <div style={{ marginTop: 'var(--spacing-32)' }}>
-          <EcoImpact productId={phone.id} />
-        </div>
+        {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
+        <TabPanel phone={phone} />
 
-        {/* ── Specs Section ────────────────── */}
-        <TechnicalSpecs specs={enrichSpecs(phone.brand, phone.model, phone.specs)} />
-
-        <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
         <RelatedProductsSection currentProduct={phone} />
         <RecentlyViewed excludeId={phone.id} />
       </div>
