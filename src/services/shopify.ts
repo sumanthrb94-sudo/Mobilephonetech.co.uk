@@ -1,11 +1,17 @@
 import { createStorefrontApiClient } from '@shopify/storefront-api-client';
 
-// Initialize Shopify Storefront API client
-const client = createStorefrontApiClient({
-  storeDomain: import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || '',
-  publicAccessToken: import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN || '',
-  apiVersion: '2024-01',
-});
+// Lazily initialized — avoids a hard throw at module load time when env
+// vars are not set (e.g. staging builds before Shopify is configured).
+let _client: ReturnType<typeof createStorefrontApiClient> | null = null;
+function getClient() {
+  if (!_client) {
+    const domain = import.meta.env.VITE_SHOPIFY_STORE_DOMAIN;
+    const token = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
+    if (!domain || !token) throw new Error('Shopify env vars not configured');
+    _client = createStorefrontApiClient({ storeDomain: domain, publicAccessToken: token, apiVersion: '2024-01' });
+  }
+  return _client;
+}
 
 // GraphQL query to get all products
 const GET_PRODUCTS = `
@@ -238,7 +244,7 @@ export const shopifyService = {
   // Get all products
   async getProducts(limit: number = 50) {
     try {
-      const response = await client.request(GET_PRODUCTS, {
+      const response = await getClient().request(GET_PRODUCTS, {
         variables: { first: limit },
       });
       
@@ -261,7 +267,7 @@ export const shopifyService = {
   // Get single product by handle
   async getProduct(handle: string) {
     try {
-      const response = await client.request(GET_PRODUCT_BY_HANDLE, {
+      const response = await getClient().request(GET_PRODUCT_BY_HANDLE, {
         variables: { handle },
       });
 
@@ -283,7 +289,7 @@ export const shopifyService = {
   // Create checkout from one or more cart line items
   async createCheckout(lineItems: { variantId: string; quantity: number }[]) {
     try {
-      const response = await client.request(CREATE_CHECKOUT, {
+      const response = await getClient().request(CREATE_CHECKOUT, {
         variables: { input: { lineItems } },
       });
 
