@@ -173,13 +173,14 @@ export default function Navbar(_: NavbarProps) {
               display: 'flex',
               alignItems: 'center',
               boxSizing: 'border-box',
+              position: 'relative',
             }}
             className="navbar-header"
           >
-            {/* ── Mobile hamburger ── */}
+            {/* ── Left: Mobile hamburger ── */}
             <button
               onClick={() => setIsMobileOpen(true)}
-              style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px' }}
+              style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', flexShrink: 0 }}
               aria-label="Open menu"
               id="navbar-hamburger"
               className="lg:hidden"
@@ -187,33 +188,41 @@ export default function Navbar(_: NavbarProps) {
               <Menu size={22} style={{ color: 'var(--grey-0)' }} />
             </button>
 
-            {/* ── Logo — BM wordmark style ── */}
+            {/* ── Centre: Logo — absolutely centred so it ignores left/right widths ── */}
             <Link
               to="/"
               id="navbar-logo"
-              className="navbar-logo flex items-center min-w-0"
-              style={{ flexShrink: 1, minWidth: 0, textDecoration: 'none' }}
+              className="navbar-logo flex items-center"
+              style={{
+                position: 'absolute',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                textDecoration: 'none',
+                pointerEvents: 'auto',
+              }}
             >
               <span className="navbar-logo-tile flex-shrink-0">
                 <RefreshCw className="navbar-logo-icon" color="white" strokeWidth={2.5} />
               </span>
               <span
-                className="navbar-logo-wordmark truncate"
+                className="navbar-logo-wordmark"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
                   color: 'var(--brand-cyan)',
                   lineHeight: 1,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 mobilephonemarket
-                <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.45)', fontWeight: 400, fontSize: '14px' }}>.co.uk</span>
               </span>
             </Link>
 
-            {/* ── Search — navbar autocomplete ── */}
-            <SearchAutocomplete />
+            {/* ── Search hidden on mobile, shown desktop ── */}
+            <div className="hidden lg:block" style={{ flex: 1, maxWidth: '480px', margin: '0 auto' }}>
+              <SearchAutocomplete />
+            </div>
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>

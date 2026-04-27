@@ -350,22 +350,18 @@ html.is-checkout .ai-fab {
 }
 
 .navbar-logo-wordmark {
-  font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 160px;
+  font-size: 17px;
 }
 
 @media (min-width: 640px) {
   .navbar-logo { gap: 10px; }
   .navbar-logo-tile { width: 32px; height: 32px; }
   .navbar-logo-icon { width: 16px; height: 16px; }
-  .navbar-logo-wordmark { font-size: 18px; max-width: none; }
+  .navbar-logo-wordmark { font-size: 20px; }
 }
 
 @media (min-width: 1024px) {
-  .navbar-logo-wordmark { font-size: 20px; max-width: none; }
+  .navbar-logo-wordmark { font-size: 22px; }
 }
 
 @media (min-width: 640px) {
