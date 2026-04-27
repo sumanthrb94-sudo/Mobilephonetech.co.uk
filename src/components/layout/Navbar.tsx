@@ -194,8 +194,8 @@ export default function Navbar(_: NavbarProps) {
             <Link
               to="/"
               id="navbar-logo"
-              className="navbar-logo flex-shrink-0 flex items-center min-w-0"
-              style={{ textDecoration: 'none' }}
+              className="navbar-logo flex items-center min-w-0"
+              style={{ flexShrink: 1, minWidth: 0, textDecoration: 'none' }}
             >
               <span className="navbar-logo-tile flex-shrink-0">
                 <RefreshCw className="navbar-logo-icon" color="white" strokeWidth={2.5} />
@@ -337,6 +337,7 @@ export default function Navbar(_: NavbarProps) {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
+                  padding: '8px 12px',
                   borderRadius: '8px',
                   cursor: 'pointer',
                   border: 'none',
