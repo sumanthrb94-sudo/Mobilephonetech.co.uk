@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useProducts } from '../hooks/useShopify';
+import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
 import { SlidersHorizontal, ChevronDown, SearchX, X } from 'lucide-react';
@@ -141,10 +142,10 @@ export default function ProductsPage() {
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
-  const { products: shopifyProducts, loading: productsLoading } = useProducts();
+  const { products: shopifyProducts } = useProducts();
 
   const scopedProducts = useMemo(() => {
-    const productsToFilter = shopifyProducts.length > 0 ? shopifyProducts : [];
+    const productsToFilter = shopifyProducts.length > 0 ? shopifyProducts : MOCK_PHONES;
     return productsToFilter.filter(product => {
       if (brandParam && modelParam) {
         // Prefix match: lets series-level "See all" links (model=iPhone 17
@@ -181,7 +182,8 @@ export default function ProductsPage() {
 
   const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
   const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
-  const categories = Array.from(new Set(shopifyProducts.map(p => p.category)));
+  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : MOCK_PHONES;
+  const categories = Array.from(new Set(allProducts.map(p => p.category)));
 
   const filteredProducts = useMemo(() => {
     return scopedProducts.filter(phone => {
@@ -252,14 +254,15 @@ export default function ProductsPage() {
     filters.storage.length > 0;
 
   const brandTitle = brandParam ? brandParam.charAt(0).toUpperCase() + brandParam.slice(1).toLowerCase() : '';
-  const modelTitle = modelParam;
+  // Strip leading brand name from modelParam to avoid "Samsung Samsung Galaxy Z"
+  const modelTitle = modelParam.replace(new RegExp(`^${brandParam}\\s+`, 'i'), '');
   const pageTitle = modelParam
-    ? `${brandTitle} ${modelTitle}`.trim()
+    ? modelTitle || `${brandTitle} devices`
     : brandCategory?.label
       || selectedDepartment?.label
       || (brandParam ? `${brandTitle} devices` : (dealOnly ? 'Good deals' : 'Certified refurbished devices'));
   const pageIntro = modelParam
-    ? `Every grade of the ${brandTitle} ${modelTitle} — tested, certified and warranty-backed.`
+    ? `Every grade of the ${modelTitle} — tested, certified and warranty-backed.`
     : brandCategory?.intro
       || selectedDepartment?.intro
       || (brandParam
