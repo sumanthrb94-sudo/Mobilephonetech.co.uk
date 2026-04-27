@@ -932,14 +932,14 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 90,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Front",
+    imageUrl: "/assets/iphone-17-pro-max-orange.jpg",
     galleryImages: [
-"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Front",
-"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Back",
-"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Side",
-"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Camera",
-"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Display",
-"https://placehold.co/800x800/1a1a1a/ffffff?text=iPhone+17+Pro+Max+Box"
+"/assets/iphone-17-pro-max-orange.jpg",
+"/assets/iphone-17-pro-max-navy.jpg",
+"/assets/iphone-17-pro-max-trio.jpg",
+"/assets/iphone-17-pro-max-orange-case.jpg",
+"/assets/iphone-17-pro-max-navy.jpg",
+"/assets/iphone-17-pro-max-orange.jpg"
     ],
     isCertified: true,
     stock: 369,

@@ -28,6 +28,7 @@ interface SeriesPanel {
   bgAccent: string;
   headlineColor: string;
   bodyColor: string;
+  heroImage?: string;
   match: (p: Product) => boolean;
   sortHint?: (a: Product, b: Product) => number;
 }
@@ -50,6 +51,7 @@ const PANELS: SeriesPanel[] = [
     bgAccent: '#c7d2fe',
     headlineColor: 'var(--brand-header)',
     bodyColor: 'var(--grey-70)',
+    heroImage: '/assets/iphone-17-pro-max-trio.jpg',
     match: (p) => p.brand === 'Apple' && /iPhone\s*17/i.test(p.model),
     sortHint: (a, b) => proRank(b.model) - proRank(a.model),
   },
@@ -257,7 +259,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
                 brand={hero.brand}
                 model={hero.model}
                 category={hero.category}
-                imageUrl={hero.imageUrl}
+                imageUrl={panel.heroImage ?? hero.imageUrl}
                 alt={hero.model}
               />
             </div>
