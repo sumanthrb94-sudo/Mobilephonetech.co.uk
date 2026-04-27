@@ -25,7 +25,7 @@ import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useSeo } from '../hooks/useSeo';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
-
+import { generateProductDescription } from '../utils/productDescription';
 
 import type { Product } from '../types';
 
@@ -84,6 +84,12 @@ function TabPanel({ phone }: { phone: Product }) {
       <div style={{ padding: 'var(--spacing-32) 0' }}>
         {tab === 'overview' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
+            {/* Product description — always shown */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-70)', lineHeight: 1.75, margin: 0 }}>
+                {phone.description || generateProductDescription(phone)}
+              </p>
+            </div>
             {/* Condition notes */}
             {phone.conditionDescription && (
               <div>
