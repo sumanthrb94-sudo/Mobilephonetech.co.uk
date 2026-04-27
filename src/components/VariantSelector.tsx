@@ -1,27 +1,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Product, ProductVariant, ProductGrade } from '../types';
-import { motion } from 'motion/react';
-import { Check } from 'lucide-react';
 
 interface VariantSelectorProps {
   product: Product;
   onVariantSelect: (variant: ProductVariant) => void;
   selectedVariant: ProductVariant | null;
 }
-
-/**
- * VariantSelector — colour / storage / condition picker.
- *
- * Uses the product's real `variants[]` matrix when the catalogue has one;
- * otherwise synthesises sensible options from whatever fields the product
- * does expose (`colorOptions`, `storageOptions`, `conditionOptions`, or a
- * single `storage` / `grade`). If none are present, falls back to category
- * + brand defaults so every phone / tablet product still gets a picker.
- *
- * The tile UI (cyan-bordered selected state, Check chip, disabled-dim
- * fallback) is identical across data paths — shoppers can't tell which
- * product had a real matrix and which was derived.
- */
 
 const DEFAULT_GRADES: ProductGrade[] = ['Pristine', 'Excellent', 'Good', 'Fair'];
 
@@ -61,98 +45,8 @@ const colorSwatches: Record<string, string> = {
   'Neptune Green':    '#3F6E57',
 };
 
-const labelStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-sans)',
-  fontSize: '11px',
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--grey-60)',
-  marginBottom: '12px',
-  display: 'block',
-};
-
-const selectedValueStyle: React.CSSProperties = {
-  color: 'var(--black)',
-  marginLeft: '6px',
-  textTransform: 'none',
-  fontWeight: 600,
-  fontSize: '13px',
-  letterSpacing: 0,
-};
-
-function OptionTile({
-  isSelected,
-  isAvailable,
-  onClick,
-  children,
-}: {
-  isSelected: boolean;
-  isAvailable: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <motion.button
-      type="button"
-      onClick={() => isAvailable && onClick()}
-      disabled={!isAvailable}
-      whileHover={isAvailable ? { scale: 1.02 } : undefined}
-      whileTap={isAvailable ? { scale: 0.98 } : undefined}
-      aria-pressed={isSelected}
-      style={{
-        position: 'relative',
-        padding: '14px 12px',
-        borderRadius: 'var(--radius-lg)',
-        border: `2px solid ${isSelected ? 'var(--brand-cyan)' : isAvailable ? 'var(--grey-20)' : 'var(--grey-10)'}`,
-        background: isSelected ? 'var(--color-brand-subtle)' : isAvailable ? 'var(--grey-0)' : 'var(--grey-5)',
-        color: isAvailable ? 'var(--black)' : 'var(--grey-40)',
-        cursor: isAvailable ? 'pointer' : 'not-allowed',
-        opacity: isAvailable ? 1 : 0.5,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '10px',
-        fontFamily: 'var(--font-sans)',
-        fontWeight: 600,
-        fontSize: '13px',
-        transition: 'border-color var(--duration-fast), background var(--duration-fast)',
-      }}
-    >
-      {children}
-      {isSelected && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            width: '22px',
-            height: '22px',
-            borderRadius: '50%',
-            background: 'var(--brand-cyan)',
-            color: 'var(--grey-0)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Check size={14} />
-        </motion.div>
-      )}
-    </motion.button>
-  );
-}
-
-/**
- * Given a single storage string like "256 GB", synthesise a sensible
- * ladder of options the product would plausibly ship in.
- */
 function deriveStorageLadder(single?: string): string[] {
   if (!single) return [];
-  // specs.storage is often a compound string like "256GB storage, no microSD"
-  // — pull the first capacity token we see.
   const m = single.match(/(\d+)\s*(GB|TB)/i);
   if (!m) return [];
   const val = parseInt(m[1], 10);
@@ -165,11 +59,6 @@ function deriveStorageLadder(single?: string): string[] {
   return ['512 GB', '1 TB', '2 TB'];
 }
 
-/**
- * Category-level default storage ladder for products whose data doesn't
- * expose storage on the product or in specs. Covers every SKU type we
- * stock that reasonably has storage capacity.
- */
 function defaultLadderForCategory(category?: string, model?: string): string[] {
   const c = (category || '').toLowerCase();
   const m = (model || '').toLowerCase();
@@ -184,6 +73,32 @@ function defaultLadderForCategory(category?: string, model?: string): string[] {
   return [];
 }
 
+const rowStyle: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap' as const,
+  gap: '8px',
+};
+
+const labelStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-sans)',
+  fontSize: '12px',
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase' as const,
+  color: 'var(--grey-60)',
+  marginBottom: '8px',
+  display: 'block',
+};
+
+const selectedValueStyle: React.CSSProperties = {
+  color: 'var(--black)',
+  marginLeft: '6px',
+  textTransform: 'none' as const,
+  fontWeight: 600,
+  fontSize: '12px',
+  letterSpacing: 0,
+};
+
 export default function VariantSelector({
   product,
   onVariantSelect,
@@ -191,7 +106,6 @@ export default function VariantSelector({
 }: VariantSelectorProps) {
   const hasRealVariants = (product.variants ?? []).length > 0;
 
-  // ── Option sources — real matrix first, then explicit arrays, then defaults
   const colourOptions = useMemo<string[]>(() => {
     if (hasRealVariants) {
       return Array.from(new Set((product.variants ?? []).map((v) => v.color).filter(Boolean) as string[]));
@@ -205,9 +119,6 @@ export default function VariantSelector({
       return Array.from(new Set((product.variants ?? []).map((v) => v.storage).filter(Boolean) as string[]));
     }
     if (product.storageOptions && product.storageOptions.length > 0) return product.storageOptions;
-
-    // Try the top-level storage first, then any capacity token inside
-    // specs.storage, then fall back to a category-level default ladder.
     const fromTopLevel = deriveStorageLadder(product.storage);
     if (fromTopLevel.length > 0) return fromTopLevel;
     const fromSpecs = deriveStorageLadder(product.specs?.storage);
@@ -223,22 +134,17 @@ export default function VariantSelector({
     return DEFAULT_GRADES;
   }, [product, hasRealVariants]);
 
-  // ── Local selection state (works even without a variants[] matrix)
-  const [selColour, setSelColour]     = useState<string | undefined>(selectedVariant?.color ?? colourOptions[0]);
-  const [selStorage, setSelStorage]   = useState<string | undefined>(selectedVariant?.storage ?? product.storage ?? storageOptions[0]);
+  const [selColour, setSelColour]       = useState<string | undefined>(selectedVariant?.color ?? colourOptions[0]);
+  const [selStorage, setSelStorage]     = useState<string | undefined>(selectedVariant?.storage ?? product.storage ?? storageOptions[0]);
   const [selCondition, setSelCondition] = useState<ProductGrade>((selectedVariant?.condition as ProductGrade | undefined) ?? product.grade ?? conditionOptions[0]);
 
-  // Keep parent's selectedVariant in sync whenever local picks change
   useEffect(() => {
     if (hasRealVariants) {
-      // Prefer an exact matrix match if one exists
       const match = (product.variants ?? []).find(
         (v) => v.color === selColour && v.storage === selStorage && v.condition === selCondition,
       );
       if (match) { onVariantSelect(match); return; }
     }
-    // Otherwise synthesise a variant so downstream code (price, stock,
-    // add-to-cart) still gets a concrete object to work with.
     onVariantSelect({
       id: `${product.id}-${selColour}-${selStorage}-${selCondition}`.replace(/\s+/g, '-').toLowerCase(),
       color: selColour,
@@ -253,88 +159,130 @@ export default function VariantSelector({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selColour, selStorage, selCondition]);
 
-  // Don't render at all if we genuinely have zero options across all three axes
   if (colourOptions.length === 0 && storageOptions.length === 0 && conditionOptions.length === 0) {
     return null;
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-32)', marginBottom: 'var(--spacing-32)', paddingTop: 'var(--spacing-32)', borderTop: '1px solid var(--grey-10)' }}>
-      {/* Colour */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px', paddingTop: '20px', borderTop: '1px solid var(--grey-10)' }}>
+
+      {/* Colour — circle swatches */}
       {colourOptions.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <div>
           <label style={labelStyle}>
             Colour
             {selColour && <span style={selectedValueStyle}>{selColour}</span>}
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', width: '100%' }}>
-            {colourOptions.map((color) => (
-              <OptionTile
-                key={color}
-                isSelected={selColour === color}
-                isAvailable={true}
-                onClick={() => setSelColour(color)}
-              >
-                <div
+          <div style={rowStyle}>
+            {colourOptions.map((color) => {
+              const isSelected = selColour === color;
+              const bg = colorSwatches[color] ?? color.toLowerCase();
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  title={color}
+                  aria-pressed={isSelected}
+                  onClick={() => setSelColour(color)}
                   style={{
-                    width: '32px',
-                    height: '32px',
+                    width: '36px',
+                    height: '36px',
                     borderRadius: '50%',
-                    border: '1px solid var(--grey-20)',
-                    boxShadow: 'var(--shadow-sm)',
-                    background: colorSwatches[color] ?? color.toLowerCase(),
+                    border: isSelected ? '2.5px solid var(--brand-cyan)' : '2px solid var(--grey-20)',
+                    background: bg,
+                    cursor: 'pointer',
+                    padding: 0,
+                    outline: isSelected ? '2px solid var(--brand-cyan)' : 'none',
+                    outlineOffset: '2px',
+                    flexShrink: 0,
+                    boxShadow: isSelected ? '0 0 0 1px var(--brand-cyan)' : 'none',
+                    transition: 'border-color 0.15s, box-shadow 0.15s',
                   }}
                 />
-                <span style={{ fontSize: '12px', textAlign: 'center', lineHeight: 1.3 }}>{color}</span>
-              </OptionTile>
-            ))}
+              );
+            })}
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* Storage */}
+      {/* Storage — compact pills */}
       {storageOptions.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+        <div>
           <label style={labelStyle}>
             Storage
             {selStorage && <span style={selectedValueStyle}>{selStorage}</span>}
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', width: '100%' }}>
-            {storageOptions.map((storage) => (
-              <OptionTile
-                key={storage}
-                isSelected={selStorage === storage}
-                isAvailable={true}
-                onClick={() => setSelStorage(storage)}
-              >
-                <span style={{ fontSize: '15px', fontWeight: 700 }}>{storage}</span>
-              </OptionTile>
-            ))}
+          <div style={rowStyle}>
+            {storageOptions.map((storage) => {
+              const isSelected = selStorage === storage;
+              return (
+                <button
+                  key={storage}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSelStorage(storage)}
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    borderRadius: '999px',
+                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                    background: isSelected ? 'var(--brand-cyan)' : 'var(--grey-0)',
+                    color: isSelected ? '#fff' : 'var(--black)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap' as const,
+                    transition: 'border-color 0.15s, background 0.15s, color 0.15s',
+                  }}
+                >
+                  {storage}
+                </button>
+              );
+            })}
           </div>
-        </motion.div>
+        </div>
       )}
 
-      {/* Condition */}
+      {/* Condition — compact pills */}
       {conditionOptions.length > 0 && (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <div>
           <label style={labelStyle}>
             Condition
             {selCondition && <span style={selectedValueStyle}>{selCondition}</span>}
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', width: '100%' }}>
-            {conditionOptions.map((condition) => (
-              <OptionTile
-                key={condition}
-                isSelected={selCondition === condition}
-                isAvailable={true}
-                onClick={() => setSelCondition(condition)}
-              >
-                <span style={{ fontSize: '14px', fontWeight: 700 }}>{condition}</span>
-              </OptionTile>
-            ))}
+          <div style={rowStyle}>
+            {conditionOptions.map((condition) => {
+              const isSelected = selCondition === condition;
+              return (
+                <button
+                  key={condition}
+                  type="button"
+                  aria-pressed={isSelected}
+                  onClick={() => setSelCondition(condition)}
+                  style={{
+                    height: '34px',
+                    padding: '0 14px',
+                    borderRadius: '999px',
+                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                    background: isSelected ? 'var(--brand-cyan)' : 'var(--grey-0)',
+                    color: isSelected ? '#fff' : 'var(--black)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap' as const,
+                    transition: 'border-color 0.15s, background 0.15s, color 0.15s',
+                  }}
+                >
+                  {condition}
+                </button>
+              );
+            })}
           </div>
-        </motion.div>
+        </div>
       )}
+
     </div>
   );
 }
