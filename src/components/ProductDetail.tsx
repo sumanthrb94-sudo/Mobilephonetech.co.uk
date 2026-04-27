@@ -232,7 +232,7 @@ export default function ProductDetail() {
   };
 
   return (
-    <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
+    <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)', overflowX: 'hidden' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         
         <Breadcrumbs

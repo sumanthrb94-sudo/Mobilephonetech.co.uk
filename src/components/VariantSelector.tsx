@@ -267,7 +267,7 @@ export default function VariantSelector({
             Colour
             {selColour && <span style={selectedValueStyle}>{selColour}</span>}
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', width: '100%' }}>
             {colourOptions.map((color) => (
               <OptionTile
                 key={color}
@@ -299,7 +299,7 @@ export default function VariantSelector({
             Storage
             {selStorage && <span style={selectedValueStyle}>{selStorage}</span>}
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', width: '100%' }}>
             {storageOptions.map((storage) => (
               <OptionTile
                 key={storage}
@@ -321,7 +321,7 @@ export default function VariantSelector({
             Condition
             {selCondition && <span style={selectedValueStyle}>{selCondition}</span>}
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px', width: '100%' }}>
             {conditionOptions.map((condition) => (
               <OptionTile
                 key={condition}

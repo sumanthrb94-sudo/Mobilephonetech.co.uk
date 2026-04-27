@@ -170,7 +170,7 @@ export default function TechnicalSpecs({ specs }: TechnicalSpecsProps) {
 
       {/* Spec Table */}
       <div style={{ background: 'var(--grey-5)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-20)', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '400px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
             {currentGroup.items.map((item) => {
               const value = cleanValue(specs[item.key]);
