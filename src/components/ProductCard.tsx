@@ -38,6 +38,21 @@ const SWATCHES: Record<string, string> = {
   'Snow':             '#FFFFFF',
   'Obsidian':         '#1F1F22',
   'Hazel':            '#A6907A',
+  'Black':            '#111111',
+  'White':            '#F5F5F5',
+  'Green':            '#3A7D44',
+  'Pink':             '#F4A7B9',
+  'Yellow':           '#F5D547',
+  'Purple':           '#7B2D8B',
+  'Red':              '#D32F2F',
+};
+
+const BRAND_COLOUR_DEFAULTS: Record<string, string[]> = {
+  Apple:    ['Natural Titanium', 'Blue Titanium', 'White Titanium', 'Black Titanium'],
+  Samsung:  ['Phantom Black', 'Phantom White', 'Lavender', 'Cream'],
+  Google:   ['Obsidian', 'Snow', 'Hazel'],
+  OnePlus:  ['Black', 'Green'],
+  Motorola: ['Black', 'Blue'],
 };
 
 /**
@@ -268,7 +283,12 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
         {/* Colour-options indicator — small swatch row + count */}
         {(() => {
-          const colours = phone.colorOptions ?? Array.from(new Set((phone.variants ?? []).map((v) => v.color).filter(Boolean) as string[]));
+          const fromVariants = Array.from(new Set((phone.variants ?? []).map((v) => v.color).filter(Boolean) as string[]));
+          const colours = phone.colorOptions?.length
+            ? phone.colorOptions
+            : fromVariants.length
+              ? fromVariants
+              : BRAND_COLOUR_DEFAULTS[phone.brand] ?? [];
           if (colours.length === 0) return null;
           const visible = colours.slice(0, 4);
           const overflow = colours.length - visible.length;
