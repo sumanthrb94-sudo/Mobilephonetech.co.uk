@@ -9085,14 +9085,14 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png"+WiFi+Front",
+    imageUrl: "/assets/cat-tablets.png",
     galleryImages: [
-"/assets/iphone-13.png"+WiFi+Front",
-"/assets/iphone-13.png"+WiFi+Back",
-"/assets/iphone-13.png"+WiFi+Side",
-"/assets/iphone-13.png"+WiFi+Camera",
-"/assets/iphone-13.png"+WiFi+Display",
-"/assets/iphone-13.png"+WiFi+Box"
+"/assets/cat-tablets.png",
+"/assets/cat-tablets.png",
+"/assets/cat-tablets.png",
+"/assets/cat-tablets.png",
+"/assets/cat-tablets.png",
+"/assets/cat-tablets.png"
     ],
     isCertified: true,
     stock: 5,
