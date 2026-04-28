@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { resolveImageUrl, fallbackCategoryKey } from '../utils/productImagery';
+import { resolveAppleImage } from '../utils/appleImagery';
+import { resolveSamsungImage } from '../utils/samsungImagery';
+import { resolveGoogleImage } from '../utils/googleImagery';
 import CategoryIllustration from './CategoryIllustration';
 import DeviceMock from './DeviceMock';
 
@@ -20,23 +23,17 @@ export interface ProductImageProps {
 }
 
 /**
- * ProductImage — three-tier resolution with graceful onError handoff:
+ * ProductImage — four-tier resolution with graceful onError handoff:
  *
- *   1. Real photo on disk (Shopify product shot or one we ship in
- *      /public/assets/) — only when the URL isn't a known text-only
- *      placeholder host.
- *   2. DeviceMock — programmatic SVG render that knows the right form
- *      factor for every brand + model in the catalogue (iPhone modern,
- *      classic, foldable, tablet, console, audio, etc.) and paints the
- *      body in the user's selected colour. Inline SVG → zero network,
- *      sharp at every DPR, accurate per-colour without committing 130
- *      raster files.
- *   3. CategoryIllustration silhouette — the existing Claude-designed
- *      SVG keyed to the product's category. Final fallback for items
+ *   1. Real photo on disk (committed asset or Shopify CDN shot).
+ *   2. Curated brand-CDN render — Apple marketing CDN for every
+ *      iPhone/iPad; committed /assets/ photos for Samsung + Google
+ *      via family-fallback rules. Always a real device photograph.
+ *   3. DeviceMock — inline SVG that draws the exact device form factor
+ *      and paints it in the selected colour. Zero network, sharp at
+ *      every DPR.
+ *   4. CategoryIllustration — generic category silhouette for anything
  *      DeviceMock doesn't classify.
- *
- * Each tier swaps to the next via <img onError>, so a 404 never lands
- * a broken-image glyph on the page.
  */
 
 const PLACEHOLDER_HOST_RE = /^https?:\/\/(placehold\.co|placeholder\.com|via\.placeholder\.com|dummyimage\.com)/i;
@@ -46,8 +43,9 @@ export function ProductImage({
 }: ProductImageProps) {
   const isPlaceholderUrl = typeof imageUrl === 'string' && PLACEHOLDER_HOST_RE.test(imageUrl);
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [brandFailed, setBrandFailed] = useState(false);
 
-  // Tier 1 — real product photo we already control on disk / trusted CDN.
+  // Tier 1 — real product photo on disk / trusted CDN.
   const resolved =
     variant === 'synthetic' || isPlaceholderUrl || photoFailed
       ? null
@@ -66,9 +64,27 @@ export function ProductImage({
     );
   }
 
-  // Tier 2 — DeviceMock SVG, exact form factor + variant colour.
-  // This is the dominant path for ~125 of 133 catalogue products
-  // since most ship with placehold.co URLs from the inventory import.
+  // Tier 2 — curated brand CDN / committed asset render.
+  const brandUrl = !brandFailed
+    ? (resolveAppleImage(brand, model)
+        ?? resolveSamsungImage(brand, model)
+        ?? resolveGoogleImage(brand, model))
+    : null;
+
+  if (brandUrl) {
+    return (
+      <img
+        src={brandUrl}
+        alt={alt ?? ''}
+        loading="lazy"
+        decoding="async"
+        onError={() => setBrandFailed(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    );
+  }
+
+  // Tier 3 — DeviceMock SVG, exact form factor + variant colour.
   if (brand && model) {
     return (
       <DeviceMock
@@ -81,7 +97,7 @@ export function ProductImage({
     );
   }
 
-  // Tier 3 — generic category silhouette for anything left over.
+  // Tier 4 — generic category silhouette.
   return (
     <div aria-label={alt} style={{ width: '100%', height: '100%' }}>
       <CategoryIllustration category={fallbackCategoryKey(category, model)} rounded={false} />
