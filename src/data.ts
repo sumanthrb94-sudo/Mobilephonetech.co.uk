@@ -934,12 +934,12 @@ export const MOCK_PHONES: Product[] = [
     returnDays: 30,
     imageUrl: "/assets/iphone-17-pro-max-orange.jpg",
     galleryImages: [
-"/assets/iphone-17-pro-max-orange.jpg",
-"/assets/iphone-17-pro-max-navy.jpg",
-"/assets/iphone-17-pro-max-trio.jpg",
-"/assets/iphone-17-pro-max-orange-case.jpg",
-"/assets/iphone-17-pro-max-navy.jpg",
-"/assets/iphone-17-pro-max-orange.jpg"
+    "/assets/iphone-17-pro-max-orange.jpg",
+    "/assets/iphone-17-pro-max-trio.jpg",
+    "/assets/iphone-17-pro-max-navy.jpg",
+    "/assets/iphone-17-pro-max-orange-case.jpg",
+    "/assets/iphone-17-pro-max-orange.jpg",
+    "/assets/iphone-17-pro-max-trio.jpg"
     ],
     isCertified: true,
     stock: 369,
@@ -8868,7 +8868,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -8961,7 +8961,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -8992,7 +8992,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9023,7 +9023,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9054,7 +9054,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9116,7 +9116,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9147,7 +9147,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9178,7 +9178,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9209,7 +9209,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9240,7 +9240,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9271,7 +9271,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9302,7 +9302,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9333,7 +9333,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9364,7 +9364,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
@@ -9426,7 +9426,7 @@ export const MOCK_PHONES: Product[] = [
     batteryHealth: 100,
     warrantyMonths: 12,
     returnDays: 30,
-    imageUrl: "/assets/iphone-13.png",
+    imageUrl: "/assets/ipad-pro.svg",
     galleryImages: [
 "/assets/iphone-13.png",
 "/assets/iphone-13.png",
