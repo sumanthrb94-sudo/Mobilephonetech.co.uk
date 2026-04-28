@@ -32,6 +32,15 @@
   --brand-header: #1a2a5e;
   --brand-header-dark: #121d42;
 
+  /* ── Extended accent palette ── */
+  --accent-amber: #d97706;
+  --accent-amber-bg: #fffbeb;
+  --accent-green: #059669;
+  --accent-green-bg: #f0fdf4;
+  --accent-premium: #7c3aed;
+  --accent-premium-bg: #f5f3ff;
+  --accent-warm-bg: #fff7ed;
+
   /* ── Brand Blue (identity accent — NOT primary CTA) ── */
   --blue-10: #eff6ff;
   --blue-20: #dbeafe;

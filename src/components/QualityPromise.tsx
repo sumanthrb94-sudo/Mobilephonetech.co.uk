@@ -1,29 +1,46 @@
 import { motion } from 'motion/react';
-import { Search, Wrench, Sparkles } from 'lucide-react';
-
-/**
- * QualityPromise — MobilePhoneMarket's signature triple-claim
- * (Inspected / Tested / Cleaned) translated into our tokens.
- * Sits directly under the Hero so it's the first content promise
- * a visitor reads after the billboard, reinforcing refurb trust
- * before they scroll into product.
- */
+import { ScanLine, BatteryCharging, ShieldCheck, Truck } from 'lucide-react';
 
 const STEPS = [
   {
-    icon: Search,
-    label: 'Inspected',
-    blurb: 'Every device passes a 30-point visual and functional check by a certified technician.',
+    icon: ScanLine,
+    number: '30',
+    unit: 'point',
+    label: 'Engineering Audit',
+    blurb: 'Every device passes a 30-point physical and functional inspection — screen, chassis, buttons, sensors.',
+    accent: '#f0fdf4',
+    accentBorder: '#bbf7d0',
+    iconColor: '#059669',
   },
   {
-    icon: Wrench,
-    label: 'Tested',
-    blurb: 'Battery health, speakers, cameras, biometrics and every port — verified on the bench.',
+    icon: BatteryCharging,
+    number: '85',
+    unit: '%+',
+    label: 'Battery Guarantee',
+    blurb: 'We only ship devices with 85%+ battery health. Verified under load, not just self-reported.',
+    accent: '#eff6ff',
+    accentBorder: '#bfdbfe',
+    iconColor: '#2563eb',
   },
   {
-    icon: Sparkles,
-    label: 'Cleaned',
-    blurb: 'Factory-reset, sanitised and re-packaged so your phone arrives looking and feeling new.',
+    icon: ShieldCheck,
+    number: '12',
+    unit: 'month',
+    label: 'Warranty Included',
+    blurb: 'Full 12-month warranty on every device. Biometrics, cameras, speakers — all covered, no asterisk.',
+    accent: '#f5f3ff',
+    accentBorder: '#ddd6fe',
+    iconColor: '#7c3aed',
+  },
+  {
+    icon: Truck,
+    number: '30',
+    unit: 'day',
+    label: 'Free Returns',
+    blurb: 'Changed your mind? Free returns within 30 days, no questions asked. We collect from your door.',
+    accent: '#fff7ed',
+    accentBorder: '#fed7aa',
+    iconColor: '#d97706',
   },
 ] as const;
 
@@ -39,22 +56,23 @@ export default function QualityPromise() {
       }}
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
-        <div style={{ maxWidth: '620px', marginBottom: 'var(--spacing-32)' }}>
+        <div style={{ maxWidth: '680px', marginBottom: 'var(--spacing-32)' }}>
           <div className="overline" style={{ marginBottom: '8px' }}>
-            The MobilePhoneMarket promise
+            The MPM Standard
           </div>
           <h2
             style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: 'clamp(22px, 2.6vw, 30px)',
-              fontWeight: 800,
+              fontFamily: 'var(--font-serif)',
+              fontSize: 'clamp(24px, 2.8vw, 34px)',
+              fontWeight: 700,
+              fontStyle: 'italic',
               letterSpacing: '-0.02em',
               color: 'var(--brand-header)',
               lineHeight: 1.15,
-              margin: '0 0 8px',
+              margin: '0 0 10px',
             }}
           >
-            Inspected. Tested. Cleaned.
+            Not just refurbished. Certified.
           </h2>
           <p
             style={{
@@ -62,97 +80,60 @@ export default function QualityPromise() {
               fontSize: '15px',
               color: 'var(--grey-60)',
               margin: 0,
-              lineHeight: 1.55,
+              lineHeight: 1.6,
             }}
           >
-            Three checks every device clears before it ships. Same reason your refurb arrives feeling like new.
+            Every MobilePhoneMarket device clears four engineering standards before it ships. This is what separates a certified refurb from a resell.
           </p>
         </div>
 
         <div
-          className="grid grid-cols-1 md:grid-cols-3"
-          style={{ gap: '14px' }}
+          className="grid grid-cols-2 md:grid-cols-4"
+          style={{ gap: '12px' }}
         >
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             return (
               <motion.div
                 key={s.label}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ delay: i * 0.06, duration: 0.35, ease: [0.2, 0, 0, 1] }}
+                transition={{ delay: i * 0.07, duration: 0.35, ease: [0.2, 0, 0, 1] }}
                 style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '14px',
-                  padding: '20px 18px',
-                  background: 'var(--grey-5)',
+                  padding: '20px 16px',
+                  background: s.accent,
                   borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--grey-10)',
+                  border: `1px solid ${s.accentBorder}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
                 }}
               >
-                <div
-                  aria-hidden
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: 'var(--color-brand-subtle)',
-                    color: 'var(--brand-cyan-hover)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Icon size={18} strokeWidth={2.2} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Icon size={16} strokeWidth={2.2} style={{ color: s.iconColor, flexShrink: 0 }} />
+                  <span style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: s.iconColor,
+                  }}>
+                    {s.label}
+                  </span>
                 </div>
-                <div style={{ minWidth: 0 }}>
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '16px',
-                        fontWeight: 800,
-                        color: 'var(--black)',
-                        letterSpacing: '-0.01em',
-                        margin: 0,
-                      }}
-                    >
-                      {s.label}
-                    </h3>
-                    <span
-                      style={{
-                        fontFamily: 'var(--font-sans)',
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        color: 'var(--grey-40)',
-                        letterSpacing: '0.02em',
-                      }}
-                    >
-                      0{i + 1}
-                    </span>
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '13px',
-                      color: 'var(--grey-60)',
-                      lineHeight: 1.55,
-                      margin: 0,
-                    }}
-                  >
-                    {s.blurb}
-                  </p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '36px', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--brand-header)', lineHeight: 1 }}>
+                    {s.number}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--grey-50)' }}>
+                    {s.unit}
+                  </span>
                 </div>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-60)', lineHeight: 1.55, margin: 0 }}>
+                  {s.blurb}
+                </p>
               </motion.div>
             );
           })}
