@@ -1,4 +1,4 @@
-# robots.txt — MobilePhoneMarket UK
+# robots.txt — MobileTech UK
 User-agent: *
 Allow: /
 Disallow: /checkout
