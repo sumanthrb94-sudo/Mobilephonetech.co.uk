@@ -11,7 +11,7 @@ export interface ProductImageProps {
   model: string;
   storage?: string;
   imageUrl: string;
-  /** Optional — DeviceMock paints the body in this colour. */
+  /** Optional — selects the color-specific marketing photo from brand CDN. */
   color?: string;
   /** Optional — improves the synthetic fallback's category matching. */
   category?: string;
@@ -25,15 +25,16 @@ export interface ProductImageProps {
 /**
  * ProductImage — four-tier resolution with graceful onError handoff:
  *
- *   1. Real photo on disk (committed asset or Shopify CDN shot).
- *   2. Curated brand-CDN render — Apple marketing CDN for every
- *      iPhone/iPad; committed /assets/ photos for Samsung + Google
- *      via family-fallback rules. Always a real device photograph.
- *   3. DeviceMock — inline SVG that draws the exact device form factor
- *      and paints it in the selected colour. Zero network, sharp at
- *      every DPR.
- *   4. CategoryIllustration — generic category silhouette for anything
- *      DeviceMock doesn't classify.
+ *   1. Brand CDN — color-specific marketing shot (Apple CDN per model+color,
+ *      Samsung/Google committed /assets/ photos). Always a real photograph.
+ *   2. Disk asset — the product's imageUrl if it's a real local/CDN photo.
+ *   3. DeviceMock — inline SVG drawing the exact device form factor in the
+ *      selected colour. Zero network, sharp at every DPR.
+ *   4. CategoryIllustration — generic category silhouette as last resort.
+ *
+ * Brand CDN is tried first so color-specific Apple marketing shots take
+ * priority over the shared generic /assets/ PNGs that data.ts carries as
+ * imageUrl — those are identical across many models and have no color info.
  */
 
 const PLACEHOLDER_HOST_RE = /^https?:\/\/(placehold\.co|placeholder\.com|via\.placeholder\.com|dummyimage\.com)/i;
@@ -42,30 +43,12 @@ export function ProductImage({
   imageUrl, alt, brand, model, color, category, variant, context: _ctx,
 }: ProductImageProps) {
   const isPlaceholderUrl = typeof imageUrl === 'string' && PLACEHOLDER_HOST_RE.test(imageUrl);
-  const [photoFailed, setPhotoFailed] = useState(false);
   const [brandFailed, setBrandFailed] = useState(false);
+  const [photoFailed, setPhotoFailed] = useState(false);
 
-  // Tier 1 — real product photo on disk / trusted CDN.
-  const resolved =
-    variant === 'synthetic' || isPlaceholderUrl || photoFailed
-      ? null
-      : resolveImageUrl(imageUrl);
-
-  if (resolved) {
-    return (
-      <img
-        src={resolved}
-        alt={alt ?? ''}
-        loading="lazy"
-        decoding="async"
-        onError={() => setPhotoFailed(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-      />
-    );
-  }
-
-  // Tier 2 — curated brand CDN / committed asset render.
-  const brandUrl = !brandFailed
+  // Tier 1 — color-specific brand CDN (Apple marketing CDN, Samsung/Google local assets).
+  // Tried before disk so color-accurate photos win over shared generic PNGs.
+  const brandUrl = variant !== 'synthetic' && !brandFailed
     ? (resolveAppleImage(brand, model, color)
         ?? resolveSamsungImage(brand, model, color)
         ?? resolveGoogleImage(brand, model, color))
@@ -79,6 +62,25 @@ export function ProductImage({
         loading="lazy"
         decoding="async"
         onError={() => setBrandFailed(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    );
+  }
+
+  // Tier 2 — real product photo on disk / trusted CDN.
+  const resolved =
+    variant === 'synthetic' || isPlaceholderUrl || photoFailed
+      ? null
+      : resolveImageUrl(imageUrl);
+
+  if (resolved) {
+    return (
+      <img
+        src={resolved}
+        alt={alt ?? ''}
+        loading="lazy"
+        decoding="async"
+        onError={() => setPhotoFailed(true)}
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
     );
