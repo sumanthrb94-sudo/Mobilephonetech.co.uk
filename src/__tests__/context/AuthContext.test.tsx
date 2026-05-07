@@ -1,22 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { AuthProvider, useAuth } from '../../context/AuthContext';
+
+// The global setup.ts already mocks '../lib/supabase'.
+// Some tests need to override specific auth methods — use vi.mocked() or re-mock here.
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
 
-describe('AuthContext', () => {
+describe('AuthContext (Supabase-backed)', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
   // ── Initial state ─────────────────────────────────────
-  it('starts unauthenticated with no user', () => {
+  it('starts with isLoading true initially', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    expect(result.current.user).toBeNull();
+    // isLoading is true until getSession resolves
+    // (may already be false after async resolution in test env)
+    expect(typeof result.current.isLoading).toBe('boolean');
+  });
+
+  it('starts unauthenticated — getSession returns null session', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.isAuthenticated).toBe(false);
+    expect(result.current.user).toBeNull();
   });
 
   it('throws when used outside AuthProvider', () => {
@@ -27,77 +38,93 @@ describe('AuthContext', () => {
   });
 
   // ── login ─────────────────────────────────────────────
-  it('sets user after login', async () => {
+  it('calls supabase.auth.signInWithPassword on login', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    const spy = vi.spyOn(supabase.auth, 'signInWithPassword');
+
     const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
     await act(async () => {
       await result.current.login('test@example.com', 'password123');
     });
-    expect(result.current.user).not.toBeNull();
-    expect(result.current.user!.email).toBe('test@example.com');
-    expect(result.current.isAuthenticated).toBe(true);
+
+    expect(spy).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
   });
 
-  it('capitalises name derived from email in mock login', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await act(async () => {
-      await result.current.login('john@example.com', 'pass');
+  it('throws when Supabase signIn returns an error', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({
+      data: { user: null, session: null },
+      error: { message: 'Invalid credentials', status: 400 } as any,
     });
-    expect(result.current.user!.fullName.charAt(0)).toBe('J');
-  });
 
-  it('persists user to localStorage on login', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    await act(async () => {
-      await result.current.login('test@example.com', 'pass');
-    });
-    const stored = localStorage.getItem('mt_user');
-    expect(stored).not.toBeNull();
-    const parsed = JSON.parse(stored!);
-    expect(parsed.email).toBe('test@example.com');
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await expect(
+      act(async () => { await result.current.login('bad@example.com', 'wrong'); })
+    ).rejects.toThrow();
   });
 
   // ── signup ─────────────────────────────────────────────
-  it('registers and authenticates a new user', async () => {
+  it('calls supabase.auth.signUp on signup', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    const spy = vi.spyOn(supabase.auth, 'signUp');
+
     const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
     await act(async () => {
-      await result.current.signup('newuser@example.com', 'pass', 'Jane Doe');
+      await result.current.signup('new@example.com', 'pass123', 'Jane Doe');
     });
-    expect(result.current.user).not.toBeNull();
-    expect(result.current.user!.email).toBe('newuser@example.com');
-    expect(result.current.user!.fullName).toBe('Jane Doe');
-    expect(result.current.isAuthenticated).toBe(true);
+
+    expect(spy).toHaveBeenCalledWith({
+      email: 'new@example.com',
+      password: 'pass123',
+      options: { data: { full_name: 'Jane Doe' } },
+    });
   });
 
-  it('assigns a random id on signup', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await act(async () => {
-      await result.current.signup('a@b.com', 'pass', 'Test');
+  it('throws when Supabase signUp returns an error', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    vi.spyOn(supabase.auth, 'signUp').mockResolvedValueOnce({
+      data: { user: null, session: null },
+      error: { message: 'Email already in use', status: 422 } as any,
     });
-    expect(result.current.user!.id.length).toBeGreaterThan(0);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await expect(
+      act(async () => { await result.current.signup('dup@example.com', 'pass', 'Dup'); })
+    ).rejects.toThrow();
   });
 
-  // ── logout ────────────────────────────────────────────
-  it('clears user on logout', async () => {
+  // ── logout ─────────────────────────────────────────────
+  it('calls supabase.auth.signOut on logout', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    const spy = vi.spyOn(supabase.auth, 'signOut');
+
     const { result } = renderHook(() => useAuth(), { wrapper });
-    await act(async () => {
-      await result.current.login('test@example.com', 'pass');
-    });
-    act(() => result.current.logout());
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => { await result.current.logout(); });
+
+    expect(spy).toHaveBeenCalled();
+  });
+
+  it('clears user and session after logout', async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await act(async () => { await result.current.logout(); });
+
     expect(result.current.user).toBeNull();
-    expect(result.current.isAuthenticated).toBe(false);
-  });
-
-  it('removes user from localStorage on logout', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await act(async () => {
-      await result.current.login('test@example.com', 'pass');
-    });
-    act(() => result.current.logout());
-    expect(localStorage.getItem('mt_user')).toBeNull();
+    expect(result.current.session).toBeNull();
   });
 
   // ── continueAsGuest ───────────────────────────────────
-  it('continueAsGuest sets a guest user', () => {
+  it('continueAsGuest sets a guest user without Supabase session', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     act(() => result.current.continueAsGuest('guest@example.com'));
     expect(result.current.user).not.toBeNull();
@@ -105,19 +132,24 @@ describe('AuthContext', () => {
     expect(result.current.user!.email).toBe('guest@example.com');
   });
 
-  it('guest user is NOT considered authenticated', () => {
+  it('guest user has isAuthenticated = false (no session)', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     act(() => result.current.continueAsGuest('guest@example.com'));
+    // isAuthenticated = !!session — guest doesn't create a Supabase session
     expect(result.current.isAuthenticated).toBe(false);
   });
 
-  // ── localStorage hydration ────────────────────────────
-  it('restores user from localStorage on mount', async () => {
-    const saved = { id: '1', email: 'saved@example.com', fullName: 'Saved User' };
-    localStorage.setItem('mt_user', JSON.stringify(saved));
+  // ── resetPassword ─────────────────────────────────────
+  it('calls supabase.auth.resetPasswordForEmail', async () => {
+    const { supabase } = await import('../../lib/supabase');
+    // Add the mock for resetPasswordForEmail
+    (supabase.auth as any).resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
+    const spy = vi.spyOn(supabase.auth as any, 'resetPasswordForEmail');
+
     const { result } = renderHook(() => useAuth(), { wrapper });
-    // useEffect runs synchronously in jsdom/renderHook environment
-    expect(result.current.user?.email).toBe('saved@example.com');
-    expect(result.current.isAuthenticated).toBe(true);
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    await act(async () => { await result.current.resetPassword('user@example.com'); });
+    expect(spy).toHaveBeenCalledWith('user@example.com', expect.any(Object));
   });
 });

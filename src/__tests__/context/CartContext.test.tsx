@@ -1,11 +1,15 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, act, renderHook } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 import { CartProvider, useCart } from '../../context/CartContext';
+import { AuthProvider } from '../../context/AuthContext';
 import type { Product } from '../../types';
 
+// CartProvider now depends on AuthProvider (uses useAuth() internally)
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <CartProvider>{children}</CartProvider>
+  <AuthProvider>
+    <CartProvider>{children}</CartProvider>
+  </AuthProvider>
 );
 
 const PRODUCT_A: Product = {
@@ -42,6 +46,8 @@ const PRODUCT_B: Product = {
   specs: {},
 };
 
+const CART_KEY = 'mpm_cart'; // new key used in main-branch CartContext
+
 describe('CartContext', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -61,7 +67,6 @@ describe('CartContext', () => {
   });
 
   it('throws when used outside CartProvider', () => {
-    // Suppress console.error for this test
     const consoleError = console.error;
     console.error = () => {};
     expect(() => renderHook(() => useCart())).toThrow('useCart must be used within CartProvider');
@@ -85,6 +90,13 @@ describe('CartContext', () => {
     expect(result.current.items[0].quantity).toBe(3);
   });
 
+  it('treats same product with different colors as separate line items', () => {
+    const { result } = renderHook(() => useCart(), { wrapper });
+    act(() => result.current.addToCart(PRODUCT_A, 1, { color: 'Black' }));
+    act(() => result.current.addToCart(PRODUCT_A, 1, { color: 'White' }));
+    expect(result.current.items).toHaveLength(2);
+  });
+
   it('adds multiple distinct products', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     act(() => result.current.addToCart(PRODUCT_A, 1));
@@ -92,19 +104,12 @@ describe('CartContext', () => {
     expect(result.current.items).toHaveLength(2);
   });
 
-  it('sets lastAddedItem on add', () => {
+  it('sets lastAddedItem and lastAddedQuantity on add', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     act(() => result.current.addToCart(PRODUCT_A, 2));
     expect(result.current.lastAddedItem).not.toBeNull();
     expect(result.current.lastAddedItem!.id).toBe('iphone-15-pro');
     expect(result.current.lastAddedQuantity).toBe(2);
-  });
-
-  it('defaults quantity to 1 when not provided', () => {
-    const { result } = renderHook(() => useCart(), { wrapper });
-    // addToCart has default quantity=1
-    act(() => result.current.addToCart(PRODUCT_A, 1));
-    expect(result.current.items[0].quantity).toBe(1);
   });
 
   // ── removeFromCart ────────────────────────────────────
@@ -154,11 +159,11 @@ describe('CartContext', () => {
   });
 
   // ── clearCart ─────────────────────────────────────────
-  it('clears all items from the cart', () => {
+  it('clears all items from the cart', async () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     act(() => result.current.addToCart(PRODUCT_A, 2));
     act(() => result.current.addToCart(PRODUCT_B, 1));
-    act(() => result.current.clearCart());
+    await act(async () => { await result.current.clearCart(); });
     expect(result.current.items).toHaveLength(0);
     expect(result.current.cartCount).toBe(0);
     expect(result.current.cartTotal).toBe(0);
@@ -190,14 +195,14 @@ describe('CartContext', () => {
   it('persists cart to localStorage when items change', () => {
     const { result } = renderHook(() => useCart(), { wrapper });
     act(() => result.current.addToCart(PRODUCT_A, 1));
-    const stored = JSON.parse(localStorage.getItem('cart') ?? '[]');
+    const stored = JSON.parse(localStorage.getItem(CART_KEY) ?? '[]');
     expect(stored).toHaveLength(1);
     expect(stored[0].id).toBe('iphone-15-pro');
   });
 
   it('loads cart from localStorage on mount', () => {
     const savedCart = [{ ...PRODUCT_A, quantity: 2 }];
-    localStorage.setItem('cart', JSON.stringify(savedCart));
+    localStorage.setItem(CART_KEY, JSON.stringify(savedCart));
     const { result } = renderHook(() => useCart(), { wrapper });
     expect(result.current.items).toHaveLength(1);
     expect(result.current.items[0].quantity).toBe(2);
