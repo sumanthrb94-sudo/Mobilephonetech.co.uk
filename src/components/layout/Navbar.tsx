@@ -206,7 +206,7 @@ export default function Navbar(_: NavbarProps) {
                 <RefreshCw className="navbar-logo-icon" color="white" strokeWidth={2.5} />
               </span>
               <span
-                className="navbar-logo-wordmark"
+                className="navbar-logo-wordmark hidden sm:inline"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
@@ -335,13 +335,14 @@ export default function Navbar(_: NavbarProps) {
                 <IconBtn icon={Heart} label="Wishlist" />
               </Link>
 
-              {/* Cart pill button */}
+              {/* Cart button — icon-only on mobile, pill on sm+ */}
               <Link
                 to="/cart"
                 id="navbar-cart-btn"
+                aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
-                  height: 40, padding: '0 16px',
+                  height: 40,
                   background: cartCount > 0 ? '#0f172a' : 'transparent',
                   color: cartCount > 0 ? 'white' : '#374151',
                   border: '1.5px solid',
@@ -350,10 +351,25 @@ export default function Navbar(_: NavbarProps) {
                   fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
                   textDecoration: 'none', whiteSpace: 'nowrap',
                   transition: 'all 0.2s',
+                  padding: '0 10px',
+                  position: 'relative',
                 }}
               >
                 <ShoppingCart size={16} />
-                {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
+                <span className="hidden sm:inline">
+                  {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
+                </span>
+                {cartCount > 0 && (
+                  <span className="sm:hidden" style={{
+                    position: 'absolute', top: -4, right: -4,
+                    width: 16, height: 16, borderRadius: '50%',
+                    background: 'var(--brand-cyan)', color: 'white',
+                    fontSize: '9px', fontWeight: 800,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
               </Link>
             </div>
           </div>
