@@ -32,7 +32,18 @@ export default function AnnouncementBar() {
   const Active = MESSAGES[index].icon;
 
   return (
-    <div className="announcement-bar" role="status" aria-live="polite">
+    <div
+      className="announcement-bar"
+      role="status"
+      aria-live="polite"
+      style={{
+        background: '#0f172a',
+        height: '36px',
+        fontSize: '12px',
+        fontWeight: 600,
+        letterSpacing: '0.03em',
+      }}
+    >
       {isMobile ? (
         <AnimatePresence mode="wait" initial={false}>
           <motion.span
@@ -48,13 +59,16 @@ export default function AnnouncementBar() {
           </motion.span>
         </AnimatePresence>
       ) : (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '14px' }}>
-          {MESSAGES.map((m) => {
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '20px' }}>
+          {MESSAGES.map((m, i) => {
             const Icon = m.icon;
             return (
               <span key={m.label} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                 <Icon size={13} style={{ flexShrink: 0, opacity: 0.85 }} />
                 {m.label}
+                {i < MESSAGES.length - 1 && (
+                  <span style={{ marginLeft: '20px', opacity: 0.35 }}>·</span>
+                )}
               </span>
             );
           })}

@@ -4,10 +4,12 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Search, Heart, User,
   HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown,
-  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2
+  Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2,
+  ShoppingCart
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
@@ -43,6 +45,7 @@ export default function Navbar(_: NavbarProps) {
 
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
+  const { cartCount } = useCart();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
 
@@ -52,9 +55,7 @@ export default function Navbar(_: NavbarProps) {
   const smoothShadowOpacity = useSpring(shadowOpacity, { stiffness: 300, damping: 30 });
   const boxShadow = useTransform(
     smoothShadowOpacity,
-    (v) => v > 0.01
-      ? `0 4px 6px -1px rgba(0,0,0,${0.07 * v}), 0 2px 4px -2px rgba(0,0,0,${0.06 * v})`
-      : 'none'
+    (v) => `0 4px 6px -1px rgba(0,0,0,${0.07 + 0.06 * v}), 0 2px 4px -2px rgba(0,0,0,${0.04 + 0.04 * v})`
   );
 
   useEffect(() => {
@@ -102,7 +103,7 @@ export default function Navbar(_: NavbarProps) {
         borderRadius: '8px',
         cursor: 'pointer',
         border: 'none',
-        backgroundColor: isHovered ? 'rgba(255,255,255,0.1)' : 'transparent',
+        backgroundColor: isHovered ? 'rgba(0,0,0,0.06)' : 'transparent',
         transition: 'background-color 0.2s',
         width: '40px',
         height: '40px',
@@ -111,19 +112,19 @@ export default function Navbar(_: NavbarProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div style={{ position: 'relative' }}>
-        <Icon size={22} style={{ color: 'var(--grey-0)' }} />
+        <Icon size={22} style={{ color: '#374151' }} />
         {badge !== undefined && badge > 0 && (
           <span
-            style={{ 
-              position: 'absolute', 
-              top: '-6px', 
-              right: '-6px', 
-              width: '18px', 
-              height: '18px', 
-              borderRadius: '50%', 
-              background: 'var(--brand-cyan)', 
-              color: 'var(--grey-0)',
-              fontSize: '10px', 
+            style={{
+              position: 'absolute',
+              top: '-6px',
+              right: '-6px',
+              width: '18px',
+              height: '18px',
+              borderRadius: '50%',
+              background: 'var(--brand-cyan)',
+              color: 'white',
+              fontSize: '10px',
               fontFamily: 'var(--font-sans)',
               fontWeight: 800,
               display: 'flex',
@@ -140,7 +141,7 @@ export default function Navbar(_: NavbarProps) {
         style={{
           fontFamily: 'var(--font-body)',
           fontSize: '10px',
-          color: 'rgba(255,255,255,0.75)',
+          color: '#6b7280',
           lineHeight: 1,
         }}
       >
@@ -158,7 +159,7 @@ export default function Navbar(_: NavbarProps) {
       <motion.div
         className="fixed top-0 left-0 right-0 z-[60]"
         style={{
-          backgroundColor: 'var(--brand-header)',
+          backgroundColor: 'white',
           boxShadow,
         }}
       >
@@ -185,7 +186,7 @@ export default function Navbar(_: NavbarProps) {
               id="navbar-hamburger"
               className="lg:hidden"
             >
-              <Menu size={22} style={{ color: 'var(--grey-0)' }} />
+              <Menu size={22} style={{ color: '#374151' }} />
             </button>
 
             {/* ── Centre: Logo — absolutely centred so it ignores left/right widths ── */}
@@ -210,7 +211,7 @@ export default function Navbar(_: NavbarProps) {
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
-                  color: 'var(--brand-cyan)',
+                  color: '#0f172a',
                   lineHeight: 1,
                   whiteSpace: 'nowrap',
                 }}
@@ -250,9 +251,9 @@ export default function Navbar(_: NavbarProps) {
                   }}
                 >
                   <div style={{ position: 'relative' }}>
-                    <MoreHorizontal size={22} style={{ color: 'var(--grey-0)' }} />
+                    <MoreHorizontal size={22} style={{ color: '#374151' }} />
                   </div>
-                  <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: 'rgba(255,255,255,0.75)', lineHeight: 1 }}>
+                  <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: '#6b7280', lineHeight: 1 }}>
                     More
                   </span>
                 </button>
@@ -264,18 +265,18 @@ export default function Navbar(_: NavbarProps) {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 6, scale: 0.97 }}
                       transition={{ duration: 0.15, ease: [0.2, 0, 0, 1] }}
-                      style={{ 
-                        position: 'absolute', 
-                        right: 0, 
+                      style={{
+                        position: 'absolute',
+                        right: 0,
                         top: '100%',
                         marginTop: '8px',
                         width: '220px',
-                        background: 'var(--grey-0)', 
+                        background: 'var(--grey-0)',
                         borderRadius: '12px',
-                        border: '1px solid var(--grey-20)', 
+                        border: '1px solid var(--grey-20)',
                         boxShadow: 'var(--shadow-lg)',
                         overflow: 'hidden',
-                        zIndex: 70 
+                        zIndex: 70
                       }}
                     >
                       <button
@@ -334,6 +335,26 @@ export default function Navbar(_: NavbarProps) {
                 <IconBtn icon={Heart} label="Wishlist" />
               </Link>
 
+              {/* Cart pill button */}
+              <Link
+                to="/cart"
+                id="navbar-cart-btn"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  height: 40, padding: '0 16px',
+                  background: cartCount > 0 ? '#0f172a' : 'transparent',
+                  color: cartCount > 0 ? 'white' : '#374151',
+                  border: '1.5px solid',
+                  borderColor: cartCount > 0 ? '#0f172a' : '#e5e7eb',
+                  borderRadius: '999px',
+                  fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
+                  textDecoration: 'none', whiteSpace: 'nowrap',
+                  transition: 'all 0.2s',
+                }}
+              >
+                <ShoppingCart size={16} />
+                {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
+              </Link>
             </div>
           </div>
         </header>
@@ -346,7 +367,7 @@ export default function Navbar(_: NavbarProps) {
           style={{
             height: 'var(--catnav-h)',
             borderTop: '1px solid var(--grey-10)',
-            background: 'var(--grey-0)',
+            background: 'white',
             overflowX: 'auto',
             scrollbarWidth: 'none',
           }}
@@ -380,10 +401,10 @@ export default function Navbar(_: NavbarProps) {
                       padding: '0 12px', height: '100%',
                       fontFamily: 'var(--font-body)', fontSize: '14px',
                       fontWeight: isOpen || isActive ? 700 : 500,
-                      color: isOpen || isActive ? 'var(--black)' : 'var(--grey-60)',
+                      color: isOpen || isActive ? '#0f172a' : 'var(--grey-60)',
                       background: 'transparent', border: 'none', cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      borderBottom: isOpen || isActive ? '2px solid var(--black)' : '2px solid transparent',
+                      borderBottom: isOpen || isActive ? '2px solid #0f172a' : '2px solid transparent',
                       borderRadius: 0,
                       transition: 'all var(--duration-fast)',
                     }}
@@ -419,12 +440,12 @@ export default function Navbar(_: NavbarProps) {
                       fontFamily: 'var(--font-body)',
                       fontSize: '14px',
                       fontWeight: isOpen || isActive ? 700 : 500,
-                      color: isOpen || isActive ? 'var(--black)' : 'var(--grey-60)',
+                      color: isOpen || isActive ? '#0f172a' : 'var(--grey-60)',
                       background: 'transparent',
                       border: 'none',
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      borderBottom: isOpen || isActive ? '2px solid var(--black)' : '2px solid transparent',
+                      borderBottom: isOpen || isActive ? '2px solid #0f172a' : '2px solid transparent',
                       borderRadius: 0,
                       transition: 'all var(--duration-fast)',
                     }}
@@ -451,11 +472,11 @@ export default function Navbar(_: NavbarProps) {
                     alignItems: 'center',
                     gap: '6px',
                     padding: '0 12px',
-                    borderBottom: isActive ? '2px solid var(--black)' : '2px solid transparent',
+                    borderBottom: isActive ? '2px solid #0f172a' : '2px solid transparent',
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
                     fontWeight: isActive ? 700 : 500,
-                    color: isActive ? 'var(--black)' : 'var(--grey-60)',
+                    color: isActive ? '#0f172a' : 'var(--grey-60)',
                     background: 'transparent',
                     textDecoration: 'none',
                     whiteSpace: 'nowrap',
@@ -480,15 +501,15 @@ export default function Navbar(_: NavbarProps) {
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
                     fontWeight: isActive ? 700 : 500,
-                    color: isActive ? 'var(--black)' : 'var(--grey-60)',
+                    color: isActive ? '#0f172a' : 'var(--grey-60)',
                     textDecoration: 'none',
                     whiteSpace: 'nowrap',
-                    borderBottom: isActive ? '2px solid var(--black)' : '2px solid transparent',
+                    borderBottom: isActive ? '2px solid #0f172a' : '2px solid transparent',
                     borderRadius: 0,
                     transition: 'all var(--duration-fast)',
                   }}
                   onMouseEnter={(e) => {
-                    if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = 'var(--black)';
+                    if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = '#0f172a';
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = 'var(--grey-60)';
@@ -541,7 +562,7 @@ export default function Navbar(_: NavbarProps) {
                 className="flex items-center justify-between px-5 py-4"
                 style={{ borderBottom: '1px solid var(--grey-10)', height: '64px' }}
               >
-                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: 'var(--black)' }}>
+                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: '#0f172a' }}>
                   mobile<span style={{ color: 'var(--brand-cyan)' }}>phonemarket</span>
                   <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
                 </span>
@@ -579,7 +600,7 @@ export default function Navbar(_: NavbarProps) {
                       href={cat.href}
                       onClick={() => setIsMobileOpen(false)}
                       className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-[var(--grey-5)]"
-                      style={{ fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: 500, color: 'var(--grey-80)', textDecoration: 'none' }}
+                      style={{ fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: 500, color: '#111827', textDecoration: 'none' }}
                     >
                       {cat.icon && <cat.icon size={18} style={{ color: 'var(--grey-40)' }} />}
                       {cat.label}
@@ -590,7 +611,7 @@ export default function Navbar(_: NavbarProps) {
                       to={cat.href}
                       onClick={() => setIsMobileOpen(false)}
                       className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-[var(--grey-5)]"
-                      style={{ fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: 500, color: 'var(--grey-80)', textDecoration: 'none' }}
+                      style={{ fontFamily: 'var(--font-body)', fontSize: '15px', fontWeight: 500, color: '#111827', textDecoration: 'none' }}
                     >
                       {cat.icon && <cat.icon size={18} style={{ color: 'var(--grey-40)' }} />}
                       {cat.label}

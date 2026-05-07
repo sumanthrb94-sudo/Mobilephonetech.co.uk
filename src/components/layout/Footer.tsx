@@ -59,7 +59,7 @@ const LEGAL = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: 'var(--color-surface-inverse)', color: 'rgba(255,255,255,0.85)' }}>
+    <footer style={{ background: '#0f172a', color: 'rgba(255,255,255,0.85)' }}>
 
       {/* Newsletter strip removed — homepage NewsletterSignup component
           owns lead capture now. Keeping a duplicate here meant users
@@ -83,8 +83,8 @@ export default function Footer() {
             >
               <div
                 style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '40px',
+                  height: '40px',
                   background: 'var(--brand-cyan)',
                   borderRadius: 'var(--radius-md)',
                   display: 'flex',
@@ -92,7 +92,7 @@ export default function Footer() {
                   justifyContent: 'center',
                 }}
               >
-                <RefreshCw size={15} color="white" strokeWidth={2.5} />
+                <RefreshCw size={19} color="white" strokeWidth={2.5} />
               </div>
               <span
                 style={{
@@ -112,7 +112,7 @@ export default function Footer() {
               style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: '13px',
-                color: 'rgba(255,255,255,0.35)',
+                color: 'rgba(255,255,255,0.45)',
                 lineHeight: 1.65,
                 marginBottom: 'var(--spacing-20)',
                 maxWidth: '240px',
@@ -187,9 +187,9 @@ export default function Footer() {
               <h4
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: 700,
-                  letterSpacing: '0.1em',
+                  letterSpacing: '0.12em',
                   textTransform: 'uppercase',
                   color: 'rgba(255,255,255,0.5)',
                   marginBottom: 'var(--spacing-16)',
@@ -343,7 +343,7 @@ export default function Footer() {
               style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: '12px',
-                color: 'rgba(255,255,255,0.25)',
+                color: 'rgba(255,255,255,0.35)',
               }}
             >
               © 2026 MobilePhoneMarket.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
@@ -356,12 +356,12 @@ export default function Footer() {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: '12px',
-                    color: 'rgba(255,255,255,0.25)',
+                    color: 'rgba(255,255,255,0.35)',
                     textDecoration: 'none',
                     transition: 'color var(--duration-fast)',
                   }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.6)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.25)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.35)'; }}
                 >
                   {item.label}
                 </Link>

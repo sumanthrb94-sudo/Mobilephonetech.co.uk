@@ -74,9 +74,9 @@ export default function TrustSection() {
           <div className="overline mb-4" style={{ display: 'block' }}>Why choose us</div>
           <h2
             style={{
-              fontFamily: 'var(--font-serif)',
+              fontFamily: 'var(--font-sans)',
               fontSize: 'clamp(32px, 4.5vw, 52px)',
-              fontWeight: 700,
+              fontWeight: 900,
               letterSpacing: '-0.02em',
               color: 'var(--black)',
               lineHeight: 1.1,
@@ -112,17 +112,18 @@ export default function TrustSection() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.4 }}
               style={{
-                background: 'var(--grey-5)',
+                background: 'white',
                 border: '1px solid var(--grey-10)',
                 borderRadius: 'var(--radius-lg)',
                 padding: 'var(--spacing-20) var(--spacing-24)',
                 textAlign: 'center',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
               }}
             >
               <div
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: 'clamp(28px, 3vw, 36px)',
+                  fontSize: 'clamp(30px, 3.5vw, 40px)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
                   color: 'var(--black)',
@@ -162,8 +163,8 @@ export default function TrustSection() {
               >
                 <div
                   style={{
-                    width: '44px',
-                    height: '44px',
+                    width: '48px',
+                    height: '48px',
                     borderRadius: 'var(--radius-md)',
                     background: p.accentBg,
                     display: 'flex',
@@ -172,7 +173,7 @@ export default function TrustSection() {
                     flexShrink: 0,
                   }}
                 >
-                  <p.icon size={20} style={{ color: p.accentColor }} />
+                  <p.icon size={22} style={{ color: p.accentColor }} />
                 </div>
                 <div>
                   <h3
@@ -215,7 +216,7 @@ export default function TrustSection() {
                 borderRadius: 'var(--radius-xl)',
                 overflow: 'hidden',
                 border: '1px solid var(--grey-20)',
-                boxShadow: 'var(--shadow-lg)',
+                boxShadow: '0 24px 60px rgba(0,0,0,0.15)',
                 aspectRatio: '4 / 3',
                 position: 'relative',
               }}
@@ -273,7 +274,7 @@ export default function TrustSection() {
                 background: 'var(--grey-0)',
                 border: '1px solid var(--grey-20)',
                 borderRadius: 'var(--radius-xl)',
-                padding: '16px 20px',
+                padding: '20px 24px',
                 boxShadow: 'var(--shadow-xl)',
                 zIndex: 10,
               }}

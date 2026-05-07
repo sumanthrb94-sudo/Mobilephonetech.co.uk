@@ -1,16 +1,16 @@
 import { ShieldCheck } from 'lucide-react';
 
 /**
- * TrustBanner — trust strip under the fixed header.
- * On-brand cyan tint with navy text — consistent with header identity.
+ * TrustBanner — clean green trust strip under the fixed header.
+ * Communicates warranty, returns and battery guarantee at a glance.
  */
 export default function TrustBanner() {
   return (
     <div
       role="banner"
       style={{
-        background: 'var(--color-brand-subtle)',
-        borderBottom: '1px solid rgba(0, 186, 219, 0.18)',
+        background: '#f0fdf4',
+        borderBottom: '1px solid #bbf7d0',
         width: '100%',
         minHeight: '40px',
         display: 'flex',
@@ -24,7 +24,7 @@ export default function TrustBanner() {
           fontFamily: 'var(--font-body)',
           fontSize: '14px',
           fontWeight: 500,
-          color: 'var(--brand-header)',
+          color: '#15803d',
           margin: 0,
           textAlign: 'center',
           lineHeight: 1.4,
@@ -33,19 +33,8 @@ export default function TrustBanner() {
           gap: '8px',
         }}
       >
-        <ShieldCheck size={15} style={{ color: 'var(--brand-cyan-hover)', flexShrink: 0 }} />
-        Best value or your money back — 30-day free returns guaranteed.{' '}
-        <a
-          href="/#why-us"
-          style={{
-            color: 'var(--brand-cyan-hover)',
-            fontWeight: 700,
-            textDecoration: 'underline',
-            textUnderlineOffset: '2px',
-          }}
-        >
-          Learn more
-        </a>
+        <ShieldCheck size={15} style={{ color: '#16a34a', flexShrink: 0 }} />
+        Every device backed by 12-month warranty, 30-day free returns &amp; 85%+ battery guarantee.
       </p>
     </div>
   );
