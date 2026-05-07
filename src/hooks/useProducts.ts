@@ -40,6 +40,8 @@ export interface UseProductsOptions {
 
 export function useProducts(opts: UseProductsOptions = {}) {
   const { filters, search, sort = 'newest', page = 1, pageSize = 24 } = opts;
+  // Stringify object deps so useCallback uses value equality, not reference equality
+  const filtersKey = JSON.stringify(filters ?? null);
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -107,7 +109,7 @@ export function useProducts(opts: UseProductsOptions = {}) {
     } finally {
       setIsLoading(false);
     }
-  }, [filters, search, sort, page, pageSize]);
+  }, [filtersKey, search, sort, page, pageSize]);
 
   useEffect(() => { fetch(); }, [fetch]);
 

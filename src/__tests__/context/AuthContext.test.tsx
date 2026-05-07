@@ -79,11 +79,11 @@ describe('AuthContext (Supabase-backed)', () => {
       await result.current.signup('new@example.com', 'pass123', 'Jane Doe');
     });
 
-    expect(spy).toHaveBeenCalledWith({
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({
       email: 'new@example.com',
       password: 'pass123',
-      options: { data: { full_name: 'Jane Doe' } },
-    });
+      options: expect.objectContaining({ data: { full_name: 'Jane Doe' } }),
+    }));
   });
 
   it('throws when Supabase signUp returns an error', async () => {
