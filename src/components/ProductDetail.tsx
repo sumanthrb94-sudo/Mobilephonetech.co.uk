@@ -250,6 +250,27 @@ export default function ProductDetail() {
     isWishlisted ? removeFromWishlist(phone.id) : addToWishlist(phone);
   };
 
+  // SEO — must be called every render (Rules of Hooks), so use safe fallbacks
+  const displayPrice = selectedVariant?.price ?? phone?.price ?? 0;
+  const displayOriginalPrice = selectedVariant?.originalPrice ?? phone?.originalPrice ?? 0;
+  const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone?.batteryHealth ?? 0;
+  const displayStock = selectedVariant?.stock ?? phone?.stock ?? 0;
+  const savings = displayOriginalPrice - displayPrice;
+  useSeo(phone
+    ? { ...productSeo({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth }),
+        jsonLd: [
+          productJsonLd({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth }),
+          breadcrumbJsonLd([
+            { name: 'Home', url: '/' },
+            { name: 'All devices', url: '/products' },
+            { name: phone.brand, url: `/products?brand=${encodeURIComponent(phone.brand)}` },
+            { name: phone.model, url: `/product/${phone.id}` },
+          ]),
+        ],
+      }
+    : { title: 'Product | Mobilephonetech.co.uk' }
+  );
+
   // Loading skeleton
   if (phone === undefined) {
     return (
@@ -284,23 +305,6 @@ export default function ProductDetail() {
       </div>
     );
   }
-
-  const displayPrice = selectedVariant?.price ?? phone.price;
-  const displayOriginalPrice = selectedVariant?.originalPrice ?? phone.originalPrice;
-  const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone.batteryHealth;
-  const displayStock = selectedVariant?.stock ?? phone.stock;
-  const savings = displayOriginalPrice - displayPrice;
-
-  const seoTags = productSeo({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth });
-  const productLd = productJsonLd({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth });
-  const breadcrumbLd = breadcrumbJsonLd([
-    { name: 'Home', url: '/' },
-    { name: 'All devices', url: '/products' },
-    { name: phone.brand, url: `/products?brand=${encodeURIComponent(phone.brand)}` },
-    { name: phone.model, url: `/product/${phone.id}` },
-  ]);
-  useSeo({ ...seoTags, jsonLd: [productLd, breadcrumbLd] });
-
 
   const galleryImages = phone.galleryImages || [phone.imageUrl];
   const activeGallery = galleryImages.length >= 6 ? galleryImages : [
