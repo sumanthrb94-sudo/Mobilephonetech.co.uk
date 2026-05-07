@@ -41,23 +41,35 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   }, [isOpen, onClose]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const { login, signup } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+    setInfo('');
 
     try {
       if (mode === 'login') {
         await login(email, password);
+        onSuccess?.();
+        onClose();
       } else {
         await signup(email, password, fullName);
+        // Supabase requires email confirmation by default — tell the user
+        setInfo(`We've sent a confirmation link to ${email}. Please check your inbox, then sign in.`);
+        setMode('login');
+        setPassword('');
       }
-      onSuccess?.();
-      onClose();
-    } catch (err) {
-      setError('Invalid credentials. Please try again.');
+    } catch (err: unknown) {
+      const msg = (err as { message?: string })?.message ?? '';
+      const lower = msg.toLowerCase();
+      if (lower.includes('email not confirmed') || lower.includes('confirm your email') || lower.includes('not confirmed')) {
+        setError('Please check your inbox and confirm your email address before signing in.');
+      } else {
+        setError(msg || 'Something went wrong. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -130,6 +142,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                 </div>
 
+                {info && (
+                  <p role="status" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: '#0a7c5c', background: '#e6f7f2', borderRadius: '6px', padding: '10px 12px', textAlign: 'center', margin: '4px 0 0 0' }}>{info}</p>
+                )}
                 {error && (
                   <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--color-sale)', textAlign: 'center', margin: '4px 0 0 0' }}>{error}</p>
                 )}
