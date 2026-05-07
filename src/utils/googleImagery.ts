@@ -25,7 +25,7 @@ const FAMILY_RULES: Array<[RegExp, string]> = [
   [/Pixel\s*Buds/i,          ASSETS.pixelBuds],
 ];
 
-export function resolveGoogleImage(brand: string, model: string): string | null {
+export function resolveGoogleImage(brand: string, model: string, _color?: string): string | null {
   if (brand !== 'Google') return null;
   if (!model) return null;
   if (EXACT[model]) return EXACT[model];

@@ -1,4 +1,5 @@
-const APPLE_CDN = 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is';
+const CDN = 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is';
+const Q = '?wid=470&hei=556&fmt=png&qlt=95';
 
 const LOCAL: Record<string, string> = {
   'iPhone 11':         '/assets/iphone-11.png',
@@ -10,88 +11,521 @@ const LOCAL: Record<string, string> = {
   'iPhone 17 Pro Max': '/assets/iphone-17-pro-max-orange.jpg',
 };
 
-const APPLE_REMOTE: Record<string, string> = {
-  // iPhone 17 family
-  'iPhone 17':         `${APPLE_CDN}/iphone-17-finish-select-202509-6-3inch-misterblue`,
-  'iPhone 17 Plus':    `${APPLE_CDN}/iphone-17-plus-finish-select-202509-6-7inch-misterblue`,
-  'iPhone 17 Pro':     `${APPLE_CDN}/iphone-17-pro-finish-select-202509-6-3inch-deepblue`,
-
-  // iPhone 16 family
-  'iPhone 16':         `${APPLE_CDN}/iphone-16-finish-select-202409-6-1inch-ultramarine`,
-  'iPhone 16 Plus':    `${APPLE_CDN}/iphone-16-plus-finish-select-202409-6-7inch-teal`,
-  'iPhone 16 Pro':     `${APPLE_CDN}/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium`,
-  'iPhone 16 Pro Max': `${APPLE_CDN}/iphone-16-pro-max-finish-select-202409-6-9inch-desert-titanium`,
-  'iPhone 16e':        `${APPLE_CDN}/iphone-16e-finish-select-202502-6-1inch-black`,
-
-  // iPhone 15 family
-  'iPhone 15':         `${APPLE_CDN}/iphone-15-finish-select-202309-6-1inch-blue`,
-  'iPhone 15 Plus':    `${APPLE_CDN}/iphone-15-plus-finish-select-202309-6-7inch-pink`,
-  'iPhone 15 Pro':     `${APPLE_CDN}/iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium`,
-
-  // iPhone 14 family
-  'iPhone 14':         `${APPLE_CDN}/iphone-14-finish-select-202209-6-1inch-blue`,
-  'iPhone 14 Plus':    `${APPLE_CDN}/iphone-14-plus-finish-select-202209-6-7inch-purple`,
-  'iPhone 14 Pro Max': `${APPLE_CDN}/iphone-14-pro-max-finish-select-202209-6-7inch-deeppurple`,
-
-  // iPhone 13 family
-  'iPhone 13 Mini':    `${APPLE_CDN}/iphone-13-mini-finish-select-202109-5-4inch-blue`,
-  'iPhone 13 Pro':     `${APPLE_CDN}/iphone-13-pro-finish-select-202109-6-1inch-sierrablue`,
-  'iPhone 13 Pro Max': `${APPLE_CDN}/iphone-13-pro-max-finish-select-202109-6-7inch-sierrablue`,
-
-  // iPhone 12 family
-  'iPhone 12 Mini':    `${APPLE_CDN}/iphone-12-mini-finish-select-202010-5-4inch-blue`,
-  'iPhone 12 Pro Max': `${APPLE_CDN}/iphone-12-pro-max-finish-select-202010-6-7inch-pacificblue`,
-
-  // iPhone 11 family
-  'iPhone 11 Pro':     `${APPLE_CDN}/iphone-11-pro-finish-select-201909-5-8inch-spacegray`,
-  'iPhone 11 Pro Max': `${APPLE_CDN}/iphone-11-pro-max-finish-select-201909-6-5inch-spacegray`,
-
-  // SE / older
-  'iPhone SE 2020':    `${APPLE_CDN}/iphone-se-finish-select-202004-black`,
-  'iPhone SE 2022':    `${APPLE_CDN}/iphone-se-finish-select-202203-midnight`,
-  'iPhone X':          `${APPLE_CDN}/iphone-x-finish-select-201709-5-8inch-spacegray`,
-  'iPhone XR':         `${APPLE_CDN}/iphone-xr-select-201809-6-1inch-coral`,
-  'iPhone XS':         `${APPLE_CDN}/iphone-xs-finish-select-201809-5-8inch-spacegray`,
-  'iPhone XS Max':     `${APPLE_CDN}/iphone-xs-max-finish-select-201809-6-5inch-gold`,
-  'iPhone 8':          `${APPLE_CDN}/iphone-8-finish-select-201709-spacegray`,
-  'iPhone 8 Plus':     `${APPLE_CDN}/iphone-8-plus-finish-select-201709-spacegray`,
-
-  // iPad family
-  'Apple iPad 2022 10th Gen Wifi + Cellular':              `${APPLE_CDN}/ipad-10gen-finish-select-202210-blue`,
-  'Apple iPad 2021 9th Gen Wifi':                          `${APPLE_CDN}/ipad-9gen-finish-select-202109-spacegray`,
-  'Apple iPad 2020 8th Gen Wifi + Cellular':               `${APPLE_CDN}/ipad-8gen-finish-select-202009-spacegray`,
-  'Apple iPad 2019 7th Gen Wifi + Cellular':               `${APPLE_CDN}/ipad-7gen-finish-select-201909-spacegray`,
-  'Apple iPad 2018 7th Gen Wifi + Cellular':               `${APPLE_CDN}/ipad-201803-finish-select-spacegray`,
-  'Apple iPad 2017 5th Gen Wifi':                          `${APPLE_CDN}/ipad-201703-finish-select-spacegray`,
-
-  'Apple iPad Air 2022 5th Gen Wifi':                      `${APPLE_CDN}/ipad-air-finish-select-202203-blue`,
-  'Apple iPad Air 2020 4th Gen Wifi':                      `${APPLE_CDN}/ipad-air-finish-select-202010-skyblue`,
-  'Apple iPad Air 2019 3rd Gen Wifi':                      `${APPLE_CDN}/ipad-air-201903-finish-select-spacegray`,
-
-  'Apple iPad Mini 2021 6th Gen Wifi + Cellular':          `${APPLE_CDN}/ipad-mini-finish-select-202109-purple`,
-  'Apple iPad Mini 2019 5th Gen Wifi':                     `${APPLE_CDN}/ipad-mini-finish-select-201903-spacegray`,
-
-  'Apple iPad Pro 2022 6th Gen 12.9-inch WiFi + Cellular': `${APPLE_CDN}/ipad-pro-12-finish-select-202210-spacegray`,
-  'Apple iPad Pro 2021 5th Gen 12.9-inch WiFi':            `${APPLE_CDN}/ipad-pro-12-finish-select-202104-spacegray`,
-  'Apple iPad Pro 2020 2nd Gen 11-inch WiFi Cellular':     `${APPLE_CDN}/ipad-pro-11-finish-select-202003-spacegray`,
-  'Apple iPad Pro 2018 12.9" WiFi':                        `${APPLE_CDN}/ipad-pro-12-finish-select-201810-spacegray`,
-  'Apple iPad Pro 2017 2nd Gen 10.5-inch WiFi':            `${APPLE_CDN}/ipad-pro-10-finish-select-201706-rosegold`,
+// Each entry: model regex, default CDN slug, optional color→slug map
+type ModelEntry = {
+  test: RegExp;
+  slug: string;
+  colors?: Record<string, string>;
 };
 
-function familyFallback(model: string): string | null {
-  if (/iPhone\s*(17)/.test(model))              return '/assets/iphone-17-pro-max-orange.jpg';
-  if (/iPhone\s*(15|16)/.test(model))           return '/assets/iphone-15-pro-max.png';
-  if (/iPhone\s*14/.test(model))                return '/assets/iphone-14-pro.png';
-  if (/iPhone\s*13/.test(model))                return '/assets/iphone-13.png';
-  if (/iPhone\s*12\s*Pro/i.test(model))         return '/assets/iphone-12-pro.png';
-  if (/iPhone\s*12/.test(model))                return '/assets/iphone-12.png';
-  if (/iPhone\s*11/.test(model))                return '/assets/iphone-11.png';
-  if (/iPad/.test(model))                       return '/assets/ipad-pro.svg';
-  return null;
+const MODELS: ModelEntry[] = [
+  // ── iPhone 17 ──────────────────────────────────────────────────
+  { test: /iPhone\s*17\s*Pro\s*Max/i,
+    slug: 'iphone-17-pro-max-finish-select-202509-6-9inch-deserttitanium',
+    colors: {
+      'desert titanium': 'iphone-17-pro-max-finish-select-202509-6-9inch-deserttitanium',
+      'natural titanium': 'iphone-17-pro-max-finish-select-202509-6-9inch-naturaltitanium',
+      'black titanium': 'iphone-17-pro-max-finish-select-202509-6-9inch-blacktitanium',
+      'white titanium': 'iphone-17-pro-max-finish-select-202509-6-9inch-whitetitanium',
+      'black': 'iphone-17-pro-max-finish-select-202509-6-9inch-blacktitanium',
+      'white': 'iphone-17-pro-max-finish-select-202509-6-9inch-whitetitanium',
+    },
+  },
+  { test: /iPhone\s*17\s*Pro/i,
+    slug: 'iphone-17-pro-finish-select-202509-6-3inch-deepblue',
+    colors: {
+      'deep blue': 'iphone-17-pro-finish-select-202509-6-3inch-deepblue',
+      'blue': 'iphone-17-pro-finish-select-202509-6-3inch-deepblue',
+      'natural titanium': 'iphone-17-pro-finish-select-202509-6-3inch-naturaltitanium',
+      'black titanium': 'iphone-17-pro-finish-select-202509-6-3inch-blacktitanium',
+      'white titanium': 'iphone-17-pro-finish-select-202509-6-3inch-whitetitanium',
+      'black': 'iphone-17-pro-finish-select-202509-6-3inch-blacktitanium',
+      'white': 'iphone-17-pro-finish-select-202509-6-3inch-whitetitanium',
+    },
+  },
+  { test: /iPhone\s*17\s*Plus/i,
+    slug: 'iphone-17-plus-finish-select-202509-6-7inch-misterblue',
+    colors: {
+      'mister blue': 'iphone-17-plus-finish-select-202509-6-7inch-misterblue',
+      'blue': 'iphone-17-plus-finish-select-202509-6-7inch-misterblue',
+      'teal': 'iphone-17-plus-finish-select-202509-6-7inch-teal',
+      'rose': 'iphone-17-plus-finish-select-202509-6-7inch-rose',
+      'pink': 'iphone-17-plus-finish-select-202509-6-7inch-rose',
+      'white': 'iphone-17-plus-finish-select-202509-6-7inch-white',
+      'black': 'iphone-17-plus-finish-select-202509-6-7inch-black',
+    },
+  },
+  { test: /iPhone\s*17(?!\s*(Pro|Plus|Max))/i,
+    slug: 'iphone-17-finish-select-202509-6-3inch-misterblue',
+    colors: {
+      'mister blue': 'iphone-17-finish-select-202509-6-3inch-misterblue',
+      'blue': 'iphone-17-finish-select-202509-6-3inch-misterblue',
+      'teal': 'iphone-17-finish-select-202509-6-3inch-teal',
+      'rose': 'iphone-17-finish-select-202509-6-3inch-rose',
+      'pink': 'iphone-17-finish-select-202509-6-3inch-rose',
+      'white': 'iphone-17-finish-select-202509-6-3inch-white',
+      'black': 'iphone-17-finish-select-202509-6-3inch-black',
+    },
+  },
+
+  // ── iPhone 16 ──────────────────────────────────────────────────
+  { test: /iPhone\s*16\s*Pro\s*Max/i,
+    slug: 'iphone-16-pro-max-finish-select-202409-6-9inch-desert-titanium',
+    colors: {
+      'desert titanium': 'iphone-16-pro-max-finish-select-202409-6-9inch-desert-titanium',
+      'natural titanium': 'iphone-16-pro-max-finish-select-202409-6-9inch-naturaltitanium',
+      'black titanium': 'iphone-16-pro-max-finish-select-202409-6-9inch-blacktitanium',
+      'white titanium': 'iphone-16-pro-max-finish-select-202409-6-9inch-whitetitanium',
+      'black': 'iphone-16-pro-max-finish-select-202409-6-9inch-blacktitanium',
+      'white': 'iphone-16-pro-max-finish-select-202409-6-9inch-whitetitanium',
+    },
+  },
+  { test: /iPhone\s*16\s*Pro/i,
+    slug: 'iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium',
+    colors: {
+      'natural titanium': 'iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium',
+      'desert titanium': 'iphone-16-pro-finish-select-202409-6-3inch-deserttitanium',
+      'black titanium': 'iphone-16-pro-finish-select-202409-6-3inch-blacktitanium',
+      'white titanium': 'iphone-16-pro-finish-select-202409-6-3inch-whitetitanium',
+      'black': 'iphone-16-pro-finish-select-202409-6-3inch-blacktitanium',
+      'white': 'iphone-16-pro-finish-select-202409-6-3inch-whitetitanium',
+    },
+  },
+  { test: /iPhone\s*16\s*Plus/i,
+    slug: 'iphone-16-plus-finish-select-202409-6-7inch-ultramarine',
+    colors: {
+      'ultramarine': 'iphone-16-plus-finish-select-202409-6-7inch-ultramarine',
+      'blue': 'iphone-16-plus-finish-select-202409-6-7inch-ultramarine',
+      'teal': 'iphone-16-plus-finish-select-202409-6-7inch-teal',
+      'pink': 'iphone-16-plus-finish-select-202409-6-7inch-pink',
+      'white': 'iphone-16-plus-finish-select-202409-6-7inch-white',
+      'black': 'iphone-16-plus-finish-select-202409-6-7inch-black',
+    },
+  },
+  { test: /iPhone\s*16e/i,
+    slug: 'iphone-16e-finish-select-202502-6-1inch-black',
+    colors: {
+      'black': 'iphone-16e-finish-select-202502-6-1inch-black',
+      'white': 'iphone-16e-finish-select-202502-6-1inch-white',
+    },
+  },
+  { test: /iPhone\s*16(?!\s*(Pro|Plus|Max|e))/i,
+    slug: 'iphone-16-finish-select-202409-6-1inch-ultramarine',
+    colors: {
+      'ultramarine': 'iphone-16-finish-select-202409-6-1inch-ultramarine',
+      'blue': 'iphone-16-finish-select-202409-6-1inch-ultramarine',
+      'teal': 'iphone-16-finish-select-202409-6-1inch-teal',
+      'pink': 'iphone-16-finish-select-202409-6-1inch-pink',
+      'white': 'iphone-16-finish-select-202409-6-1inch-white',
+      'black': 'iphone-16-finish-select-202409-6-1inch-black',
+    },
+  },
+
+  // ── iPhone 15 ──────────────────────────────────────────────────
+  { test: /iPhone\s*15\s*Pro\s*Max/i,
+    slug: 'iphone-15-pro-max-finish-select-202309-6-7inch-naturaltitanium',
+    colors: {
+      'natural titanium': 'iphone-15-pro-max-finish-select-202309-6-7inch-naturaltitanium',
+      'blue titanium': 'iphone-15-pro-max-finish-select-202309-6-7inch-bluetitanium',
+      'blue': 'iphone-15-pro-max-finish-select-202309-6-7inch-bluetitanium',
+      'white titanium': 'iphone-15-pro-max-finish-select-202309-6-7inch-whitetitanium',
+      'white': 'iphone-15-pro-max-finish-select-202309-6-7inch-whitetitanium',
+      'black titanium': 'iphone-15-pro-max-finish-select-202309-6-7inch-blacktitanium',
+      'black': 'iphone-15-pro-max-finish-select-202309-6-7inch-blacktitanium',
+    },
+  },
+  { test: /iPhone\s*15\s*Pro/i,
+    slug: 'iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium',
+    colors: {
+      'natural titanium': 'iphone-15-pro-finish-select-202309-6-1inch-naturaltitanium',
+      'blue titanium': 'iphone-15-pro-finish-select-202309-6-1inch-bluetitanium',
+      'blue': 'iphone-15-pro-finish-select-202309-6-1inch-bluetitanium',
+      'white titanium': 'iphone-15-pro-finish-select-202309-6-1inch-whitetitanium',
+      'white': 'iphone-15-pro-finish-select-202309-6-1inch-whitetitanium',
+      'black titanium': 'iphone-15-pro-finish-select-202309-6-1inch-blacktitanium',
+      'black': 'iphone-15-pro-finish-select-202309-6-1inch-blacktitanium',
+    },
+  },
+  { test: /iPhone\s*15\s*Plus/i,
+    slug: 'iphone-15-plus-finish-select-202309-6-7inch-pink',
+    colors: {
+      'blue': 'iphone-15-plus-finish-select-202309-6-7inch-blue',
+      'pink': 'iphone-15-plus-finish-select-202309-6-7inch-pink',
+      'green': 'iphone-15-plus-finish-select-202309-6-7inch-green',
+      'yellow': 'iphone-15-plus-finish-select-202309-6-7inch-yellow',
+      'black': 'iphone-15-plus-finish-select-202309-6-7inch-black',
+    },
+  },
+  { test: /iPhone\s*15(?!\s*(Pro|Plus|Max))/i,
+    slug: 'iphone-15-finish-select-202309-6-1inch-blue',
+    colors: {
+      'blue': 'iphone-15-finish-select-202309-6-1inch-blue',
+      'pink': 'iphone-15-finish-select-202309-6-1inch-pink',
+      'green': 'iphone-15-finish-select-202309-6-1inch-green',
+      'yellow': 'iphone-15-finish-select-202309-6-1inch-yellow',
+      'black': 'iphone-15-finish-select-202309-6-1inch-black',
+    },
+  },
+
+  // ── iPhone 14 ──────────────────────────────────────────────────
+  { test: /iPhone\s*14\s*Pro\s*Max/i,
+    slug: 'iphone-14-pro-max-finish-select-202209-6-7inch-deeppurple',
+    colors: {
+      'space black': 'iphone-14-pro-max-finish-select-202209-6-7inch-spaceblack',
+      'black': 'iphone-14-pro-max-finish-select-202209-6-7inch-spaceblack',
+      'deep purple': 'iphone-14-pro-max-finish-select-202209-6-7inch-deeppurple',
+      'purple': 'iphone-14-pro-max-finish-select-202209-6-7inch-deeppurple',
+      'gold': 'iphone-14-pro-max-finish-select-202209-6-7inch-gold',
+      'silver': 'iphone-14-pro-max-finish-select-202209-6-7inch-silver',
+      'white': 'iphone-14-pro-max-finish-select-202209-6-7inch-silver',
+    },
+  },
+  { test: /iPhone\s*14\s*Pro/i,
+    slug: 'iphone-14-pro-finish-select-202209-6-1inch-spaceblack',
+    colors: {
+      'space black': 'iphone-14-pro-finish-select-202209-6-1inch-spaceblack',
+      'black': 'iphone-14-pro-finish-select-202209-6-1inch-spaceblack',
+      'deep purple': 'iphone-14-pro-finish-select-202209-6-1inch-deeppurple',
+      'purple': 'iphone-14-pro-finish-select-202209-6-1inch-deeppurple',
+      'gold': 'iphone-14-pro-finish-select-202209-6-1inch-gold',
+      'silver': 'iphone-14-pro-finish-select-202209-6-1inch-silver',
+      'white': 'iphone-14-pro-finish-select-202209-6-1inch-silver',
+    },
+  },
+  { test: /iPhone\s*14\s*Plus/i,
+    slug: 'iphone-14-plus-finish-select-202209-6-7inch-purple',
+    colors: {
+      'midnight': 'iphone-14-plus-finish-select-202209-6-7inch-midnight',
+      'black': 'iphone-14-plus-finish-select-202209-6-7inch-midnight',
+      'starlight': 'iphone-14-plus-finish-select-202209-6-7inch-starlight',
+      'white': 'iphone-14-plus-finish-select-202209-6-7inch-starlight',
+      'blue': 'iphone-14-plus-finish-select-202209-6-7inch-blue',
+      'purple': 'iphone-14-plus-finish-select-202209-6-7inch-purple',
+      'red': 'iphone-14-plus-finish-select-202209-6-7inch-red',
+      'yellow': 'iphone-14-plus-finish-select-202209-6-7inch-yellow',
+    },
+  },
+  { test: /iPhone\s*14(?!\s*(Pro|Plus|Max))/i,
+    slug: 'iphone-14-finish-select-202209-6-1inch-midnight',
+    colors: {
+      'midnight': 'iphone-14-finish-select-202209-6-1inch-midnight',
+      'black': 'iphone-14-finish-select-202209-6-1inch-midnight',
+      'starlight': 'iphone-14-finish-select-202209-6-1inch-starlight',
+      'white': 'iphone-14-finish-select-202209-6-1inch-starlight',
+      'blue': 'iphone-14-finish-select-202209-6-1inch-blue',
+      'purple': 'iphone-14-finish-select-202209-6-1inch-purple',
+      'red': 'iphone-14-finish-select-202209-6-1inch-red',
+      'yellow': 'iphone-14-finish-select-202209-6-1inch-yellow',
+    },
+  },
+
+  // ── iPhone 13 ──────────────────────────────────────────────────
+  { test: /iPhone\s*13\s*Pro\s*Max/i,
+    slug: 'iphone-13-pro-max-finish-select-202109-6-7inch-sierrablue',
+    colors: {
+      'sierra blue': 'iphone-13-pro-max-finish-select-202109-6-7inch-sierrablue',
+      'blue': 'iphone-13-pro-max-finish-select-202109-6-7inch-sierrablue',
+      'graphite': 'iphone-13-pro-max-finish-select-202109-6-7inch-graphite',
+      'black': 'iphone-13-pro-max-finish-select-202109-6-7inch-graphite',
+      'silver': 'iphone-13-pro-max-finish-select-202109-6-7inch-silver',
+      'white': 'iphone-13-pro-max-finish-select-202109-6-7inch-silver',
+      'gold': 'iphone-13-pro-max-finish-select-202109-6-7inch-gold',
+      'alpine green': 'iphone-13-pro-max-finish-select-202109-6-7inch-alpinegreen',
+      'green': 'iphone-13-pro-max-finish-select-202109-6-7inch-alpinegreen',
+    },
+  },
+  { test: /iPhone\s*13\s*Pro/i,
+    slug: 'iphone-13-pro-finish-select-202109-6-1inch-sierrablue',
+    colors: {
+      'sierra blue': 'iphone-13-pro-finish-select-202109-6-1inch-sierrablue',
+      'blue': 'iphone-13-pro-finish-select-202109-6-1inch-sierrablue',
+      'graphite': 'iphone-13-pro-finish-select-202109-6-1inch-graphite',
+      'black': 'iphone-13-pro-finish-select-202109-6-1inch-graphite',
+      'silver': 'iphone-13-pro-finish-select-202109-6-1inch-silver',
+      'white': 'iphone-13-pro-finish-select-202109-6-1inch-silver',
+      'gold': 'iphone-13-pro-finish-select-202109-6-1inch-gold',
+      'alpine green': 'iphone-13-pro-finish-select-202109-6-1inch-alpinegreen',
+      'green': 'iphone-13-pro-finish-select-202109-6-1inch-alpinegreen',
+    },
+  },
+  { test: /iPhone\s*13\s*Mini/i,
+    slug: 'iphone-13-mini-finish-select-202109-5-4inch-blue',
+    colors: {
+      'midnight': 'iphone-13-mini-finish-select-202109-5-4inch-midnight',
+      'black': 'iphone-13-mini-finish-select-202109-5-4inch-midnight',
+      'starlight': 'iphone-13-mini-finish-select-202109-5-4inch-starlight',
+      'white': 'iphone-13-mini-finish-select-202109-5-4inch-starlight',
+      'blue': 'iphone-13-mini-finish-select-202109-5-4inch-blue',
+      'pink': 'iphone-13-mini-finish-select-202109-5-4inch-pink',
+      'green': 'iphone-13-mini-finish-select-202109-5-4inch-green',
+      'red': 'iphone-13-mini-finish-select-202109-5-4inch-red',
+    },
+  },
+  { test: /iPhone\s*13(?!\s*(Pro|Mini|Max))/i,
+    slug: 'iphone-13-finish-select-202109-6-1inch-midnight',
+    colors: {
+      'midnight': 'iphone-13-finish-select-202109-6-1inch-midnight',
+      'black': 'iphone-13-finish-select-202109-6-1inch-midnight',
+      'starlight': 'iphone-13-finish-select-202109-6-1inch-starlight',
+      'white': 'iphone-13-finish-select-202109-6-1inch-starlight',
+      'blue': 'iphone-13-finish-select-202109-6-1inch-blue',
+      'pink': 'iphone-13-finish-select-202109-6-1inch-pink',
+      'green': 'iphone-13-finish-select-202109-6-1inch-green',
+      'red': 'iphone-13-finish-select-202109-6-1inch-red',
+    },
+  },
+
+  // ── iPhone 12 ──────────────────────────────────────────────────
+  { test: /iPhone\s*12\s*Pro\s*Max/i,
+    slug: 'iphone-12-pro-max-finish-select-202010-6-7inch-pacificblue',
+    colors: {
+      'pacific blue': 'iphone-12-pro-max-finish-select-202010-6-7inch-pacificblue',
+      'blue': 'iphone-12-pro-max-finish-select-202010-6-7inch-pacificblue',
+      'graphite': 'iphone-12-pro-max-finish-select-202010-6-7inch-graphite',
+      'black': 'iphone-12-pro-max-finish-select-202010-6-7inch-graphite',
+      'silver': 'iphone-12-pro-max-finish-select-202010-6-7inch-silver',
+      'white': 'iphone-12-pro-max-finish-select-202010-6-7inch-silver',
+      'gold': 'iphone-12-pro-max-finish-select-202010-6-7inch-gold',
+    },
+  },
+  { test: /iPhone\s*12\s*Pro/i,
+    slug: 'iphone-12-pro-finish-select-202010-6-1inch-pacificblue',
+    colors: {
+      'pacific blue': 'iphone-12-pro-finish-select-202010-6-1inch-pacificblue',
+      'blue': 'iphone-12-pro-finish-select-202010-6-1inch-pacificblue',
+      'graphite': 'iphone-12-pro-finish-select-202010-6-1inch-graphite',
+      'black': 'iphone-12-pro-finish-select-202010-6-1inch-graphite',
+      'silver': 'iphone-12-pro-finish-select-202010-6-1inch-silver',
+      'white': 'iphone-12-pro-finish-select-202010-6-1inch-silver',
+      'gold': 'iphone-12-pro-finish-select-202010-6-1inch-gold',
+    },
+  },
+  { test: /iPhone\s*12\s*Mini/i,
+    slug: 'iphone-12-mini-finish-select-202010-5-4inch-blue',
+    colors: {
+      'blue': 'iphone-12-mini-finish-select-202010-5-4inch-blue',
+      'black': 'iphone-12-mini-finish-select-202010-5-4inch-black',
+      'white': 'iphone-12-mini-finish-select-202010-5-4inch-white',
+      'green': 'iphone-12-mini-finish-select-202010-5-4inch-green',
+      'purple': 'iphone-12-mini-finish-select-202010-5-4inch-purple',
+      'red': 'iphone-12-mini-finish-select-202010-5-4inch-red',
+      'yellow': 'iphone-12-mini-finish-select-202010-5-4inch-yellow',
+    },
+  },
+  { test: /iPhone\s*12(?!\s*(Pro|Mini|Max))/i,
+    slug: 'iphone-12-finish-select-202010-6-1inch-blue',
+    colors: {
+      'blue': 'iphone-12-finish-select-202010-6-1inch-blue',
+      'black': 'iphone-12-finish-select-202010-6-1inch-black',
+      'white': 'iphone-12-finish-select-202010-6-1inch-white',
+      'green': 'iphone-12-finish-select-202010-6-1inch-green',
+      'purple': 'iphone-12-finish-select-202010-6-1inch-purple',
+      'red': 'iphone-12-finish-select-202010-6-1inch-red',
+      'yellow': 'iphone-12-finish-select-202010-6-1inch-yellow',
+    },
+  },
+
+  // ── iPhone 11 ──────────────────────────────────────────────────
+  { test: /iPhone\s*11\s*Pro\s*Max/i,
+    slug: 'iphone-11-pro-max-finish-select-201909-6-5inch-spacegray',
+    colors: {
+      'space gray': 'iphone-11-pro-max-finish-select-201909-6-5inch-spacegray',
+      'space grey': 'iphone-11-pro-max-finish-select-201909-6-5inch-spacegray',
+      'grey': 'iphone-11-pro-max-finish-select-201909-6-5inch-spacegray',
+      'black': 'iphone-11-pro-max-finish-select-201909-6-5inch-spacegray',
+      'silver': 'iphone-11-pro-max-finish-select-201909-6-5inch-silver',
+      'white': 'iphone-11-pro-max-finish-select-201909-6-5inch-silver',
+      'gold': 'iphone-11-pro-max-finish-select-201909-6-5inch-gold',
+      'midnight green': 'iphone-11-pro-max-finish-select-201909-6-5inch-midnightgreen',
+      'green': 'iphone-11-pro-max-finish-select-201909-6-5inch-midnightgreen',
+    },
+  },
+  { test: /iPhone\s*11\s*Pro/i,
+    slug: 'iphone-11-pro-finish-select-201909-5-8inch-spacegray',
+    colors: {
+      'space gray': 'iphone-11-pro-finish-select-201909-5-8inch-spacegray',
+      'space grey': 'iphone-11-pro-finish-select-201909-5-8inch-spacegray',
+      'grey': 'iphone-11-pro-finish-select-201909-5-8inch-spacegray',
+      'black': 'iphone-11-pro-finish-select-201909-5-8inch-spacegray',
+      'silver': 'iphone-11-pro-finish-select-201909-5-8inch-silver',
+      'white': 'iphone-11-pro-finish-select-201909-5-8inch-silver',
+      'gold': 'iphone-11-pro-finish-select-201909-5-8inch-gold',
+      'midnight green': 'iphone-11-pro-finish-select-201909-5-8inch-midnightgreen',
+      'green': 'iphone-11-pro-finish-select-201909-5-8inch-midnightgreen',
+    },
+  },
+  { test: /iPhone\s*11(?!\s*(Pro|Max))/i,
+    slug: 'iphone-11-finish-select-201909-6-1inch-black',
+    colors: {
+      'black': 'iphone-11-finish-select-201909-6-1inch-black',
+      'white': 'iphone-11-finish-select-201909-6-1inch-white',
+      'red': 'iphone-11-finish-select-201909-6-1inch-red',
+      'yellow': 'iphone-11-finish-select-201909-6-1inch-yellow',
+      'purple': 'iphone-11-finish-select-201909-6-1inch-purple',
+      'green': 'iphone-11-finish-select-201909-6-1inch-green',
+    },
+  },
+
+  // ── SE / XR / XS ───────────────────────────────────────────────
+  { test: /iPhone\s*SE.*(2022|3rd|third)/i,
+    slug: 'iphone-se-finish-select-202203-midnight',
+    colors: {
+      'midnight': 'iphone-se-finish-select-202203-midnight',
+      'black': 'iphone-se-finish-select-202203-midnight',
+      'starlight': 'iphone-se-finish-select-202203-starlight',
+      'white': 'iphone-se-finish-select-202203-starlight',
+      'red': 'iphone-se-finish-select-202203-red',
+    },
+  },
+  { test: /iPhone\s*SE.*(2020|2nd|second)/i,
+    slug: 'iphone-se-finish-select-202004-black',
+    colors: {
+      'black': 'iphone-se-finish-select-202004-black',
+      'white': 'iphone-se-finish-select-202004-white',
+      'red': 'iphone-se-finish-select-202004-red',
+    },
+  },
+  { test: /iPhone\s*SE/i,
+    slug: 'iphone-se-finish-select-202203-midnight',
+    colors: {
+      'midnight': 'iphone-se-finish-select-202203-midnight',
+      'black': 'iphone-se-finish-select-202203-midnight',
+      'starlight': 'iphone-se-finish-select-202203-starlight',
+      'white': 'iphone-se-finish-select-202203-starlight',
+      'red': 'iphone-se-finish-select-202203-red',
+    },
+  },
+  { test: /iPhone\s*XS\s*Max/i,
+    slug: 'iphone-xs-max-finish-select-201809-6-5inch-gold',
+    colors: {
+      'space gray': 'iphone-xs-max-finish-select-201809-6-5inch-spacegray',
+      'space grey': 'iphone-xs-max-finish-select-201809-6-5inch-spacegray',
+      'grey': 'iphone-xs-max-finish-select-201809-6-5inch-spacegray',
+      'black': 'iphone-xs-max-finish-select-201809-6-5inch-spacegray',
+      'silver': 'iphone-xs-max-finish-select-201809-6-5inch-silver',
+      'white': 'iphone-xs-max-finish-select-201809-6-5inch-silver',
+      'gold': 'iphone-xs-max-finish-select-201809-6-5inch-gold',
+    },
+  },
+  { test: /iPhone\s*XS/i,
+    slug: 'iphone-xs-finish-select-201809-5-8inch-spacegray',
+    colors: {
+      'space gray': 'iphone-xs-finish-select-201809-5-8inch-spacegray',
+      'space grey': 'iphone-xs-finish-select-201809-5-8inch-spacegray',
+      'grey': 'iphone-xs-finish-select-201809-5-8inch-spacegray',
+      'black': 'iphone-xs-finish-select-201809-5-8inch-spacegray',
+      'silver': 'iphone-xs-finish-select-201809-5-8inch-silver',
+      'white': 'iphone-xs-finish-select-201809-5-8inch-silver',
+      'gold': 'iphone-xs-finish-select-201809-5-8inch-gold',
+    },
+  },
+  { test: /iPhone\s*XR/i,
+    slug: 'iphone-xr-finish-select-201809-6-1inch-blue',
+    colors: {
+      'coral': 'iphone-xr-finish-select-201809-6-1inch-coral',
+      'blue': 'iphone-xr-finish-select-201809-6-1inch-blue',
+      'yellow': 'iphone-xr-finish-select-201809-6-1inch-yellow',
+      'white': 'iphone-xr-finish-select-201809-6-1inch-white',
+      'black': 'iphone-xr-finish-select-201809-6-1inch-black',
+      'red': 'iphone-xr-finish-select-201809-6-1inch-red',
+      'purple': 'iphone-xr-finish-select-201809-6-1inch-purple',
+    },
+  },
+
+  // ── iPad ───────────────────────────────────────────────────────
+  { test: /iPad\s*Pro\s*12\.9/i,
+    slug: 'ipad-pro-12-finish-select-202210-spacegray',
+    colors: {
+      'space gray': 'ipad-pro-12-finish-select-202210-spacegray',
+      'grey': 'ipad-pro-12-finish-select-202210-spacegray',
+      'silver': 'ipad-pro-12-finish-select-202210-silver',
+      'white': 'ipad-pro-12-finish-select-202210-silver',
+    },
+  },
+  { test: /iPad\s*Pro/i,
+    slug: 'ipad-pro-11-finish-select-202210-spacegray',
+    colors: {
+      'space gray': 'ipad-pro-11-finish-select-202210-spacegray',
+      'grey': 'ipad-pro-11-finish-select-202210-spacegray',
+      'silver': 'ipad-pro-11-finish-select-202210-silver',
+      'white': 'ipad-pro-11-finish-select-202210-silver',
+      'rose gold': 'ipad-pro-10-finish-select-201706-rosegold',
+    },
+  },
+  { test: /iPad\s*Air/i,
+    slug: 'ipad-air-finish-select-202203-blue',
+    colors: {
+      'blue': 'ipad-air-finish-select-202203-blue',
+      'purple': 'ipad-air-finish-select-202203-purple',
+      'pink': 'ipad-air-finish-select-202203-pink',
+      'starlight': 'ipad-air-finish-select-202203-starlight',
+      'white': 'ipad-air-finish-select-202203-starlight',
+      'space gray': 'ipad-air-finish-select-202203-spacegray',
+      'grey': 'ipad-air-finish-select-202203-spacegray',
+    },
+  },
+  { test: /iPad\s*Mini/i,
+    slug: 'ipad-mini-finish-select-202109-purple',
+    colors: {
+      'purple': 'ipad-mini-finish-select-202109-purple',
+      'pink': 'ipad-mini-finish-select-202109-pink',
+      'starlight': 'ipad-mini-finish-select-202109-starlight',
+      'white': 'ipad-mini-finish-select-202109-starlight',
+      'space gray': 'ipad-mini-finish-select-202109-spacegray',
+      'grey': 'ipad-mini-finish-select-202109-spacegray',
+    },
+  },
+  { test: /iPad\s*(10th|10\s*gen|2022)/i,
+    slug: 'ipad-10gen-finish-select-202210-blue',
+    colors: {
+      'blue': 'ipad-10gen-finish-select-202210-blue',
+      'pink': 'ipad-10gen-finish-select-202210-pink',
+      'yellow': 'ipad-10gen-finish-select-202210-yellow',
+      'silver': 'ipad-10gen-finish-select-202210-silver',
+      'white': 'ipad-10gen-finish-select-202210-silver',
+    },
+  },
+  { test: /iPad\s*(9th|9\s*gen|2021)/i,
+    slug: 'ipad-9gen-finish-select-202109-spacegray',
+    colors: {
+      'space gray': 'ipad-9gen-finish-select-202109-spacegray',
+      'grey': 'ipad-9gen-finish-select-202109-spacegray',
+      'silver': 'ipad-9gen-finish-select-202109-silver',
+      'white': 'ipad-9gen-finish-select-202109-silver',
+    },
+  },
+  { test: /iPad/i,
+    slug: 'ipad-9gen-finish-select-202109-spacegray',
+    colors: {
+      'space gray': 'ipad-9gen-finish-select-202109-spacegray',
+      'grey': 'ipad-9gen-finish-select-202109-spacegray',
+      'silver': 'ipad-9gen-finish-select-202109-silver',
+      'white': 'ipad-9gen-finish-select-202109-silver',
+      'blue': 'ipad-10gen-finish-select-202210-blue',
+      'pink': 'ipad-10gen-finish-select-202210-pink',
+      'yellow': 'ipad-10gen-finish-select-202210-yellow',
+    },
+  },
+];
+
+function nc(color?: string): string {
+  return (color ?? '').toLowerCase().trim();
 }
 
-export function resolveAppleImage(brand: string, model: string): string | null {
-  if (brand !== 'Apple') return null;
-  if (!model) return null;
-  return LOCAL[model] ?? APPLE_REMOTE[model] ?? familyFallback(model);
+export function resolveAppleImage(brand: string, model: string, color?: string): string | null {
+  if (brand !== 'Apple' || !model) return null;
+
+  const colorKey = nc(color);
+
+  for (const entry of MODELS) {
+    if (!entry.test.test(model)) continue;
+    if (colorKey && entry.colors?.[colorKey]) {
+      return `${CDN}/${entry.colors[colorKey]}${Q}`;
+    }
+    return `${CDN}/${entry.slug}${Q}`;
+  }
+
+  // Legacy exact-name fallbacks
+  if (LOCAL[model]) return LOCAL[model];
+  return null;
 }

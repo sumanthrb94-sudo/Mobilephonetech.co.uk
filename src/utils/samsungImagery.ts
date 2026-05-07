@@ -30,7 +30,7 @@ const FAMILY_RULES: Array<[RegExp, string]> = [
   [/Galaxy\s*Tab\s*S/i,              ASSETS.tabS9],
 ];
 
-export function resolveSamsungImage(brand: string, model: string): string | null {
+export function resolveSamsungImage(brand: string, model: string, _color?: string): string | null {
   if (brand !== 'Samsung') return null;
   if (!model) return null;
   if (EXACT[model]) return EXACT[model];
