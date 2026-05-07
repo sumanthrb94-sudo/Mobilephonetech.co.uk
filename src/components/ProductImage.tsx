@@ -66,9 +66,9 @@ export function ProductImage({
 
   // Tier 2 — curated brand CDN / committed asset render.
   const brandUrl = !brandFailed
-    ? (resolveAppleImage(brand, model)
-        ?? resolveSamsungImage(brand, model)
-        ?? resolveGoogleImage(brand, model))
+    ? (resolveAppleImage(brand, model, color)
+        ?? resolveSamsungImage(brand, model, color)
+        ?? resolveGoogleImage(brand, model, color))
     : null;
 
   if (brandUrl) {
