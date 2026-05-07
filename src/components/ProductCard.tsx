@@ -103,7 +103,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   return (
     <>
       <motion.article
-        whileHover={{ y: -3 }}
+        whileHover={{ y: -4 }}
         transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
         onClick={() => navigate(`/product/${phone.id}`)}
         onMouseEnter={() => { setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
@@ -119,24 +119,24 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           flexDirection: 'column',
           height: '100%',
           background: '#fff',
-          borderRadius: '16px',
-          border: '1px solid #EAECF0',
+          borderRadius: '20px',
+          border: '1px solid #E5E7EB',
           overflow: 'hidden',
           transition: 'box-shadow 0.22s ease, border-color 0.22s ease',
           boxShadow: isHovering
-            ? '0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)'
+            ? '0 16px 48px rgba(0,0,0,0.12), 0 4px 12px rgba(0,0,0,0.06)'
             : '0 1px 4px rgba(0,0,0,0.05)',
         }}
       >
         {/* ── Image zone ── */}
         <div style={{
           position: 'relative',
-          background: 'linear-gradient(145deg, #F6F7FB 0%, #FAFBFF 100%)',
+          background: 'linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%)',
           aspectRatio: '1 / 1',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '28px',
+          padding: '32px',
           overflow: 'hidden',
         }}>
           <ProductImage
@@ -160,6 +160,22 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               lineHeight: 1,
             }}>
               SAVE {savingsPct}%
+            </span>
+          )}
+
+          {/* Grade badge — top right */}
+          {phone.grade && (
+            <span style={{
+              position: 'absolute', top: 12, right: 48,
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: GRADE_BG[phone.grade],
+              padding: '4px 9px', borderRadius: '999px',
+              fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: GRADE_DOT[phone.grade],
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: GRADE_DOT[phone.grade], flexShrink: 0 }} />
+              {phone.grade}
             </span>
           )}
 
@@ -230,33 +246,20 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           borderTop: '1px solid #F3F4F6',
         }}>
 
-          {/* Brand + grade row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          {/* Brand row */}
+          <div style={{ marginBottom: 6 }}>
             <span style={{
-              fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9CA3AF',
+              fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700,
+              letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF',
             }}>
               {phone.brand}
             </span>
-            {phone.grade && (
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                background: GRADE_BG[phone.grade],
-                padding: '3px 8px', borderRadius: '999px',
-                fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
-                letterSpacing: '0.06em', textTransform: 'uppercase',
-                color: GRADE_DOT[phone.grade],
-              }}>
-                <span style={{ width: 5, height: 5, borderRadius: '50%', background: GRADE_DOT[phone.grade], flexShrink: 0 }} />
-                {phone.grade}
-              </span>
-            )}
           </div>
 
           {/* Model name */}
           <h3 style={{
-            fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800,
-            letterSpacing: '-0.025em', color: '#111827',
+            fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 900,
+            letterSpacing: '-0.03em', color: '#111827',
             lineHeight: 1.25, marginBottom: 2,
           }}>
             {phone.model}
@@ -296,13 +299,13 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 10 }}>
             {[1,2,3,4,5].map(s => (
               <Star key={s} size={11} style={{
-                fill: s <= Math.round(rating) ? '#FBBF24' : 'transparent',
-                color: '#FBBF24',
+                fill: s <= Math.round(rating) ? '#F59E0B' : 'transparent',
+                color: '#F59E0B',
                 strokeWidth: 1.5,
               }} />
             ))}
             <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#9CA3AF', marginLeft: 3 }}>
-              ({Math.floor(rating * 10)})
+              ({Math.floor(rating * 10)} reviews)
             </span>
           </div>
 
@@ -311,8 +314,8 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           {/* Price row */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 3 }}>
             <span style={{
-              fontFamily: 'var(--font-sans)', fontSize: '22px', fontWeight: 900,
-              letterSpacing: '-0.03em', color: '#111827',
+              fontFamily: 'var(--font-sans)', fontSize: '26px', fontWeight: 900,
+              letterSpacing: '-0.04em', color: '#111827',
             }}>
               £{phone.price}
             </span>
@@ -326,28 +329,21 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Klarna */}
-          <p style={{
-            fontFamily: 'var(--font-body)', fontSize: '11px', color: '#9CA3AF', marginBottom: 12,
-          }}>
-            or 3 × £{Math.ceil(phone.price / 3)} with <span style={{ fontWeight: 700, color: '#6B7280' }}>Klarna</span>
-          </p>
-
           {/* Trust micro-row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontFamily: 'var(--font-body)', fontSize: '11px',
+              fontFamily: 'var(--font-body)', fontSize: '10px',
               fontWeight: 600, color: '#16a34a',
             }}>
-              <Truck size={12} strokeWidth={2} /> Free delivery
+              <Truck size={11} strokeWidth={2} /> Free delivery
             </span>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontFamily: 'var(--font-body)', fontSize: '11px',
+              fontFamily: 'var(--font-body)', fontSize: '10px',
               fontWeight: 600, color: '#6B7280',
             }}>
-              <ShieldCheck size={12} strokeWidth={2} /> 12m warranty
+              <ShieldCheck size={11} strokeWidth={2} /> 12m warranty
             </span>
           </div>
 
@@ -356,10 +352,10 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             onClick={handleViewProduct}
             aria-label={`View ${phone.model} details`}
             style={{
-              width: '100%', height: 44,
-              background: 'var(--brand-header)',
+              width: '100%', height: 48,
+              background: '#0f172a',
               color: '#fff',
-              fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700,
+              fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800,
               letterSpacing: '-0.01em',
               border: 'none', borderRadius: '999px',
               cursor: 'pointer',
@@ -367,10 +363,10 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               transition: 'background 0.18s, transform 0.12s',
               transform: 'translateZ(0)',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-header-dark)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-header)')}
+            onMouseEnter={e => (e.currentTarget.style.background = '#1e293b')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#0f172a')}
           >
-            View details
+            View device
           </button>
         </div>
       </motion.article>

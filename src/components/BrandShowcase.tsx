@@ -137,6 +137,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${panel.bgAccent} 0%, ${panel.bgFrom} 55%)`,
+        borderBottom: '1px solid #f1f5f9',
       }}
     >
       {/* subtle top-right glow, mirrors the Hero treatment */}
@@ -151,6 +152,12 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
           pointerEvents: 'none',
         }}
       />
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)',
+        backgroundSize: '24px 24px',
+        pointerEvents: 'none',
+      }} />
 
       <div
         className="container-bm"
@@ -197,8 +204,8 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
             <h2
               style={{
                 fontFamily: 'var(--font-sans)',
-                fontSize: 'clamp(18px, 3vw, 28px)',
-                fontWeight: 800,
+                fontSize: 'clamp(22px, 3.2vw, 34px)',
+                fontWeight: 900,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.15,
                 color: panel.headlineColor,
@@ -227,7 +234,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
             <Link
               to={panel.ctaHref}
               className="btn btn-primary btn-sm"
-              style={{ textDecoration: 'none' }}
+              style={{ textDecoration: 'none', background: '#0f172a', borderColor: '#0f172a' }}
             >
               {panel.ctaLabel} <ArrowRight size={14} />
             </Link>
@@ -249,7 +256,8 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
                 width: '100%',
                 maxWidth: isDesktop ? '220px' : '150px',
                 aspectRatio: '4 / 3',
-                background: 'rgba(255,255,255,0.55)',
+                background: 'rgba(255,255,255,0.72)',
+                backdropFilter: 'blur(4px)',
                 borderRadius: 'var(--radius-lg)',
                 padding: 'clamp(8px, 1.5vw, 14px)',
                 boxShadow: '0 12px 24px rgba(0,0,0,0.08)',
@@ -290,9 +298,9 @@ function ProductRail({
         <h3
           style={{
             fontFamily: 'var(--font-sans)',
-            fontSize: '14px',
+            fontSize: '11px',
             fontWeight: 800,
-            letterSpacing: '0.02em',
+            letterSpacing: '0.1em',
             textTransform: 'uppercase',
             color: 'var(--brand-header)',
             margin: 0,
@@ -310,10 +318,10 @@ function ProductRail({
               width: '34px', height: '34px',
               borderRadius: '50%',
               border: '1px solid rgba(0,0,0,0.12)',
-              background: 'rgba(255,255,255,0.75)',
+              background: 'white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', color: 'var(--black)',
-              backdropFilter: 'blur(6px)',
             }}
           >
             <ChevronLeft size={16} />
@@ -327,10 +335,10 @@ function ProductRail({
               width: '34px', height: '34px',
               borderRadius: '50%',
               border: '1px solid rgba(0,0,0,0.12)',
-              background: 'rgba(255,255,255,0.75)',
+              background: 'white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               cursor: 'pointer', color: 'var(--black)',
-              backdropFilter: 'blur(6px)',
             }}
           >
             <ChevronRight size={16} />
@@ -345,14 +353,14 @@ function ProductRail({
               height: '34px',
               borderRadius: 'var(--radius-full)',
               border: '1px solid rgba(0,0,0,0.12)',
-              background: 'rgba(255,255,255,0.75)',
+              background: 'white',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
               fontFamily: 'var(--font-body)',
               fontSize: '13px',
               fontWeight: 600,
               color: 'var(--black)',
               textDecoration: 'none',
               whiteSpace: 'nowrap',
-              backdropFilter: 'blur(6px)',
             }}
           >
             See all <ArrowRight size={13} />
@@ -387,7 +395,7 @@ function ProductRail({
             role="listitem"
             style={{
               flex: '0 0 auto',
-              width: 'clamp(220px, 62vw, 280px)',
+              width: 'clamp(200px, 56vw, 260px)',
               scrollSnapAlign: 'start',
               display: 'flex',
             }}

@@ -1,157 +1,55 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Smartphone, Tablet, Headphones, Monitor, Volume2, Gamepad2, Watch } from 'lucide-react';
 import { MOCK_CATEGORIES } from '../data';
 import CategoryIllustration from './CategoryIllustration';
 
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  smartphones: Smartphone,
+  tablets: Tablet,
+  accessories: Headphones,
+  computing: Monitor,
+  hearables: Headphones,
+  speakers: Volume2,
+  playables: Gamepad2,
+  wearables: Watch,
+};
+
 /**
- * CategoryGrid — BM spec Section 4
- * Layout: 2 large cards top row, 3 smaller cards bottom row
- * White bg, subtle border, product image (contained), heading-3, body-2, hover lift
+ * CategoryGrid — Redesigned with icon-chip scroll rail + clean card grid
  */
 export default function CategoryGrid() {
-  const topTwo   = MOCK_CATEGORIES.slice(0, 2);
-  const remainingCategories = MOCK_CATEGORIES.slice(2);
-
-  const LargeCard = ({ category, index }: { category: typeof MOCK_CATEGORIES[0]; index: number }) => (
-    <motion.a
-      href={`/products?category=${category.id}`}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-      className="card card-xl"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        textDecoration: 'none',
-        overflow: 'hidden',
-        cursor: 'pointer',
-      }}
-      id={`category-large-${category.id}`}
-    >
-      {/* Claude-designed SVG category illustration */}
-      <div
-        style={{
-          height: '220px',
-          overflow: 'hidden',
-          position: 'relative',
-        }}
-        className="category-img-wrap"
-      >
-        <CategoryIllustration category={category.id || category.name} rounded={false} />
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: 'var(--spacing-24)' }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '20px',
-                fontWeight: 700,
-                letterSpacing: '-0.02em',
-                color: 'var(--black)',
-                marginBottom: '4px',
-              }}
-            >
-              {category.name}
-            </h3>
-            <p
-              style={{
-                fontFamily: 'var(--font-body)',
-                fontSize: '14px',
-                color: 'var(--grey-50)',
-              }}
-            >
-              {category.productCount}+ models available
-            </p>
-          </div>
-          <div
-            style={{
-              width: '40px',
-              height: '40px',
-              background: 'var(--grey-5)',
-              border: '1px solid var(--grey-20)',
-              borderRadius: 'var(--radius-full)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all var(--duration-fast)',
-              flexShrink: 0,
-            }}
-            className="card-arrow"
-          >
-            <ArrowRight size={18} style={{ color: 'var(--black)' }} />
-          </div>
-        </div>
-      </div>
-    </motion.a>
-  );
-
-  const SmallCard = ({ category, index }: { category: typeof MOCK_CATEGORIES[0]; index: number }) => (
-    <motion.a
-      href={`/products?category=${category.id}`}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: 0.2 + index * 0.1, duration: 0.4, ease: [0.2, 0, 0, 1] }}
-      className="card"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        textDecoration: 'none',
-        overflow: 'hidden',
-        cursor: 'pointer',
-      }}
-      id={`category-small-${category.id}`}
-    >
-      {/* Claude-designed SVG category illustration */}
-      <div style={{ height: '160px', overflow: 'hidden' }}>
-        <CategoryIllustration category={category.id || category.name} rounded={false} />
-      </div>
-
-      {/* Body */}
-      <div style={{ padding: 'var(--spacing-16) var(--spacing-20)' }}>
-        <h3
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '16px',
-            fontWeight: 700,
-            letterSpacing: '-0.015em',
-            color: 'var(--black)',
-            marginBottom: '2px',
-          }}
-        >
-          {category.name}
-        </h3>
-        <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-          {category.productCount}+ devices
-        </p>
-      </div>
-    </motion.a>
-  );
+  const [hoveredChip, setHoveredChip] = useState<string | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const gridCategories = MOCK_CATEGORIES.slice(0, 6);
 
   return (
     <section
-      className="section-y"
-      style={{ background: 'var(--grey-0)' }}
+      style={{ background: '#ffffff', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-48)' }}
       id="categories"
     >
-      <div
-        className="container-bm"
-        style={{ maxWidth: 'var(--container-max)' }}
-      >
+      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
+
         {/* ── Section Header ──────────────────── */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
           <div>
             <div className="overline mb-3">Shop by department</div>
-            <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 3vw, 36px)', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--black)' }}>
+            <h2 style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'clamp(26px, 3vw, 36px)',
+              fontWeight: 800,
+              letterSpacing: '-0.025em',
+              color: 'var(--black)',
+            }}>
               What are you looking for?
             </h2>
-            <p
-              style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', marginTop: '6px', maxWidth: '480px' }}
-            >
+            <p style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: '15px',
+              color: 'var(--grey-50)',
+              marginTop: '6px',
+              maxWidth: '480px',
+            }}>
               Every device certified and priced below retail — discover your category.
             </p>
           </div>
@@ -177,31 +75,114 @@ export default function CategoryGrid() {
           </a>
         </div>
 
-        {/* ── Row 1: 2 large cards ─────────────── */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5"
-          style={{ marginBottom: '20px' }}
-        >
-          {topTwo.map((cat, i) => (
-            <LargeCard key={cat.id} category={cat} index={i} />
-          ))}
+        {/* ── Chip scroll rail ──────────────────── */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '10px',
+          marginBottom: '40px',
+          overflowX: 'auto',
+          paddingBottom: '4px',
+        }}>
+          {MOCK_CATEGORIES.map((cat) => {
+            const IconComponent = CATEGORY_ICONS[cat.id] ?? Smartphone;
+            const isActive = hoveredChip === cat.id;
+            return (
+              <a
+                key={cat.id}
+                href={`/products?category=${cat.id}`}
+                onMouseEnter={() => setHoveredChip(cat.id)}
+                onMouseLeave={() => setHoveredChip(null)}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  height: '44px',
+                  padding: '0 20px',
+                  borderRadius: '999px',
+                  border: isActive ? '1px solid #0f172a' : '1px solid #E5E7EB',
+                  background: isActive ? '#0f172a' : 'white',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: isActive ? 'white' : '#374151',
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'background 0.18s, color 0.18s, border-color 0.18s',
+                }}
+              >
+                <IconComponent size={16} />
+                {cat.name}
+              </a>
+            );
+          })}
         </div>
 
-        {/* ── Row 2: supporting departments ───────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
-          {remainingCategories.map((cat, i) => (
-            <SmallCard key={cat.id} category={cat} index={i} />
-          ))}
+        {/* ── Category card grid ──────────────────── */}
+        <div
+          className="grid grid-cols-2 lg:grid-cols-3"
+          style={{ gap: '20px' }}
+        >
+          {gridCategories.map((cat, i) => {
+            const isCardHovered = hoveredCard === cat.id;
+            return (
+              <motion.a
+                key={cat.id}
+                href={`/products?category=${cat.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+                onMouseEnter={() => setHoveredCard(cat.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                id={`category-card-${cat.id}`}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  textDecoration: 'none',
+                  overflow: 'hidden',
+                  background: 'white',
+                  borderRadius: '16px',
+                  border: '1px solid #E5E7EB',
+                  cursor: 'pointer',
+                  transition: 'box-shadow 0.22s ease, transform 0.22s ease',
+                  boxShadow: isCardHovered
+                    ? '0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)'
+                    : '0 1px 4px rgba(0,0,0,0.04)',
+                  transform: isCardHovered ? 'translateY(-4px)' : 'translateY(0)',
+                }}
+              >
+                {/* Illustration */}
+                <div style={{ height: '160px', overflow: 'hidden', position: 'relative' }}>
+                  <CategoryIllustration category={cat.id || cat.name} rounded={false} />
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: '16px 20px' }}>
+                  <h3 style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    letterSpacing: '-0.015em',
+                    color: 'var(--black)',
+                    marginBottom: '2px',
+                  }}>
+                    {cat.name}
+                  </h3>
+                  <p style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '13px',
+                    color: 'var(--grey-50)',
+                  }}>
+                    {cat.productCount}+ devices
+                  </p>
+                </div>
+              </motion.a>
+            );
+          })}
         </div>
       </div>
-
-      {/* Hover style via global */}
-      <style>{`
-        .category-img-wrap > div { transition: transform var(--duration-slow) var(--ease-default); }
-        a:hover .category-img-wrap > div { transform: scale(1.05); }
-        a:hover .card-arrow { background: var(--black) !important; border-color: var(--black) !important; }
-        a:hover .card-arrow svg { color: white !important; }
-      `}</style>
     </section>
   );
 }

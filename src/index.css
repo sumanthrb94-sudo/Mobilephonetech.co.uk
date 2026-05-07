@@ -29,7 +29,8 @@
   --brand-cyan: #00badb;
   --brand-cyan-hover: #00a0be;
   --brand-purple: #8b5cf6;
-  --brand-header: #1a2a5e;
+  --brand-header: #0f172a;
+  --brand-primary: #0f172a;
   --brand-header-dark: #121d42;
 
   /* ── Extended accent palette ── */
@@ -185,15 +186,15 @@
    covered. The announcement bar is 30px everywhere; the tab bar
    is 64px but hidden on ≥1024px and on /checkout. */
 body {
-  padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
 }
 @media (max-width: 1023px) {
   body {
-    padding-bottom: calc(30px + 64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(36px + 64px + env(safe-area-inset-bottom, 0px));
   }
   /* …but on /checkout there is no bottom nav, so reclaim that room. */
   html.is-checkout body {
-    padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -283,7 +284,7 @@ body {
   right: 0;
   bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   z-index: 40;
-  height: 30px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,17 +308,17 @@ html.is-checkout .announcement-bar {
 }
 
 /* AI Assistant FAB — must clear both the bottom-nav tab bar AND
-   the 30px announcement strip above it. On checkout the tab bar
+   the 36px announcement strip above it. On checkout the tab bar
    is hidden so we only clear the announcement strip. */
 .ai-fab {
-  bottom: calc(64px + 30px + 12px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(64px + 36px + 12px + env(safe-area-inset-bottom, 0px));
 }
 html.is-checkout .ai-fab {
-  bottom: calc(30px + 16px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(36px + 16px + env(safe-area-inset-bottom, 0px));
 }
 @media (min-width: 1024px) {
   .ai-fab {
-    bottom: calc(30px + 20px);
+    bottom: calc(36px + 20px);
   }
 }
 
@@ -661,17 +662,17 @@ html.is-checkout .ai-fab {
 
 /* Primary — Navy (brand authority, ur.co.uk / reboxed DNA) */
 .btn-primary {
-  background: var(--brand-header);
+  background: #0f172a;
   color: #ffffff;
-  border-color: var(--brand-header);
+  border-color: #0f172a;
   border-radius: 999px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .btn-primary:hover {
-  background: var(--brand-header-dark);
-  border-color: var(--brand-header-dark);
+  background: #1e293b;
+  border-color: #1e293b;
 }
 
 /* Secondary — White with border */
@@ -771,21 +772,15 @@ html.is-checkout .ai-fab {
    6. CARD SYSTEM
 ─────────────────────────────────────────────────────────────── */
 .card {
-  background: #ffffff;
-  border: 1px solid #EAECF0;
-  border-radius: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  overflow: hidden;
-  transition:
-    box-shadow 0.22s ease,
-    border-color 0.22s ease,
-    transform 0.22s ease;
+  background: var(--grey-0);
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  transition: box-shadow 0.22s ease, transform 0.22s ease;
 }
 
 .card:hover {
-  box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
-  border-color: #D1D5DB;
-  transform: translateY(-3px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.10), 0 4px 16px rgba(0,0,0,0.06);
+  transform: translateY(-2px);
 }
 
 .card-xl { border-radius: 20px; }
@@ -895,12 +890,13 @@ html.is-checkout .ai-fab {
   font-size: 15px;
   color: var(--black);
   background: var(--grey-5);
-  border: 1.5px solid transparent;
+  border: 1.5px solid #e2e8f0;
   border-radius: var(--radius-md);
   outline: none;
   transition:
     border-color var(--duration-fast) var(--ease-default),
-    background var(--duration-fast) var(--ease-default);
+    background var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default);
 }
 
 .search-input::placeholder {
@@ -909,7 +905,8 @@ html.is-checkout .ai-fab {
 
 .search-input:focus {
   background: var(--grey-0);
-  border-color: var(--black);
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(15,23,42,0.08);
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -937,10 +934,10 @@ html.is-checkout .ai-fab {
 .overline {
   font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.10em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--blue-60);
+  color: #06b6d4;  /* cyan */
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -989,8 +986,8 @@ html.is-checkout .ai-fab {
    12b. SECTION RHYTHM — standard vertical padding for landing sections
 ─────────────────────────────────────────────────────────────── */
 .section-y {
-  padding-top: var(--spacing-48);
-  padding-bottom: var(--spacing-48);
+  padding-top: var(--spacing-80);
+  padding-bottom: var(--spacing-80);
 }
 
 @media (min-width: 768px) {

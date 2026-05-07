@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, ArrowLeft, Pause, Play } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Pause, Play, ShieldCheck, Battery, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
@@ -14,48 +14,56 @@ const SLIDES = [
   {
     eyebrow: 'MPM Certified · 30-point audit',
     headline: 'Flagship iPhones.\nAuthentic quality.',
-    subline: 'Battery health verified. Biometrics tested. 12-month warranty included. Up to 70% less than new.',
+    subline: 'Battery 85%+ guaranteed. 12-month warranty. Up to 70% less than new.',
     ctaLabel: 'Shop iPhones',
     ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-17-pro-max-orange.jpg',
     imageAlt: 'Certified iPhone 17 Pro Max',
-    bgFrom: '#fdf2f8',
-    bgAccent: '#fce7f3',
+    gradientFrom: '#1e1b4b',
+    gradientTo: '#4338ca',
+    glowColor: 'rgba(139, 92, 246, 0.4)',
+    savings: 'Save up to £600',
   },
   {
     eyebrow: 'Samsung Galaxy · Unlocked',
     headline: 'Android flagship.\nNo compromise.',
-    subline: 'Galaxy S series — the full camera, the full display, the full experience. From £199.',
+    subline: 'Galaxy S series — full camera, full display, from £199.',
     ctaLabel: 'Shop Samsung',
     ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy S24 Ultra',
-    bgFrom: '#f0f9ff',
-    bgAccent: '#e0f2fe',
+    gradientFrom: '#0c1445',
+    gradientTo: '#1e40af',
+    glowColor: 'rgba(59, 130, 246, 0.4)',
+    savings: 'From £199',
   },
   {
     eyebrow: 'Google Pixel · Pure Android',
-    headline: 'Computational photography.\nRefurbished price.',
-    subline: "Pixel's AI camera, seven years of updates, and a clean Android experience — certified and unlocked.",
+    headline: 'AI photography.\nRefurbished price.',
+    subline: "Pixel's AI camera + 7 years of updates — certified and unlocked.",
     ctaLabel: 'Shop Pixel',
     ctaHref: '/products?brand=Google',
     image: '/assets/pixel-8-pro.png',
     imageAlt: 'Google Pixel 8 Pro',
-    bgFrom: '#f0fdf4',
-    bgAccent: '#dcfce7',
+    gradientFrom: '#064e3b',
+    gradientTo: '#065f46',
+    glowColor: 'rgba(16, 185, 129, 0.4)',
+    savings: 'From £249',
   },
   {
     eyebrow: 'Instant cash · Free collection',
-    headline: 'Sell your old phone.\nGet paid in 24 hrs.',
-    subline: 'Free postage, no hidden fees, instant quote. Payment within 24 hours of receipt.',
+    headline: 'Sell your phone.\nPaid in 24 hours.',
+    subline: 'Free postage, instant quote, payment within 24 hours of receipt.',
     ctaLabel: 'Get a free quote',
     ctaHref: '/#trade-in',
     image: '/assets/iphone-17-pro-max-trio.jpg',
     imageAlt: 'Trade in your phone',
-    bgFrom: '#fff7ed',
-    bgAccent: '#fed7aa',
+    gradientFrom: '#1c1917',
+    gradientTo: '#44403c',
+    glowColor: 'rgba(217, 119, 6, 0.4)',
+    savings: 'Best prices guaranteed',
   },
-];
+] as const;
 
 
 export default function Hero() {
@@ -65,7 +73,6 @@ export default function Hero() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const { isDesktop } = useBreakpoint();
   const total = SLIDES.length;
-  const cardRef = useRef<HTMLDivElement>(null);
 
   // Honour the OS-level reduced-motion preference so auto-advancing
   // slides stop for anyone who's asked to minimise animation.
@@ -97,21 +104,34 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: 'clamp(200px, 26vw, 260px)',
+        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : 'clamp(360px, 80vw, 480px)',
         position: 'relative',
         overflow: 'hidden',
-        background: `linear-gradient(140deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 60%)`,
+        background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
         transition: 'background 0.6s ease',
         paddingTop: 'var(--nav-total)',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      {/* subtle radial glow top-right */}
+      {/* Glow orb behind image */}
       <div style={{
-        position: 'absolute', top: 0, right: 0,
-        width: '55%', height: '100%',
-        background: 'radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.35) 0%, transparent 60%)',
+        position: 'absolute',
+        top: '50%',
+        right: isDesktop ? '10%' : '50%',
+        transform: isDesktop ? 'translateY(-50%)' : 'translate(50%, -40%)',
+        width: isDesktop ? '380px' : '260px',
+        height: isDesktop ? '380px' : '260px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle, ${slide.glowColor} 0%, transparent 70%)`,
+        pointerEvents: 'none',
+        transition: 'background 0.6s ease',
+      }} />
+
+      {/* Subtle noise overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(0,0,0,0.08)',
         pointerEvents: 'none',
       }} />
 
@@ -137,9 +157,9 @@ export default function Hero() {
             style={{
               display: 'grid',
               gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr',
-              gap: isDesktop ? '32px' : '12px',
+              gap: isDesktop ? '48px' : '24px',
               alignItems: 'center',
-              padding: isDesktop ? '20px 0 12px' : '10px 0 8px',
+              padding: isDesktop ? '48px 0 24px' : '28px 0 16px',
               flex: 1, minHeight: 0,
             }}
           >
@@ -150,64 +170,110 @@ export default function Hero() {
               alignItems: isDesktop ? 'flex-start' : 'center',
               textAlign: isDesktop ? 'left' : 'center',
             }}>
+              {/* Eyebrow pill */}
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,0.70)', backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.5)',
-                borderRadius: '999px', padding: '3px 10px',
-                fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
+                background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '999px', padding: '4px 12px',
+                fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: 'var(--brand-header)', marginBottom: 8,
+                color: 'rgba(255,255,255,0.85)', marginBottom: 16,
               }}>
                 {slide.eyebrow}
               </div>
+
+              {/* Savings badge */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center',
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                borderRadius: '6px', padding: '2px 10px',
+                fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700,
+                color: 'rgba(255,255,255,0.9)', marginBottom: 14,
+                letterSpacing: '0.02em',
+              }}>
+                {slide.savings}
+              </div>
+
               <h1 style={{
                 fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(24px, 3.8vw, 42px)',
-                fontWeight: 700, fontStyle: 'italic',
-                letterSpacing: '-0.025em', lineHeight: 1.08,
-                color: 'var(--brand-header)',
-                marginBottom: 10, whiteSpace: 'pre-line',
+                fontSize: 'clamp(38px, 5.2vw, 68px)',
+                fontWeight: 900, fontStyle: 'italic',
+                letterSpacing: '-0.03em', lineHeight: 1.05,
+                color: '#ffffff',
+                marginBottom: 16, whiteSpace: 'pre-line',
+                textShadow: '0 2px 20px rgba(0,0,0,0.3)',
               }}>
                 {slide.headline}
               </h1>
+
               <p style={{
-                fontFamily: 'var(--font-body)', fontSize: '13px',
-                color: 'var(--grey-70)', maxWidth: '380px',
-                marginBottom: 14, lineHeight: 1.5,
-                display: '-webkit-box', WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                fontFamily: 'var(--font-body)', fontSize: '15px',
+                color: 'rgba(255,255,255,0.72)', maxWidth: '400px',
+                marginBottom: 28, lineHeight: 1.6,
               }}>
                 {slide.subline}
               </p>
+
+              {/* White pill CTA */}
               <Link
                 to={slide.ctaHref}
                 id={`hero-cta-${current}`}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 8,
-                  height: 42, padding: '0 28px',
-                  background: 'var(--brand-header)', color: '#fff',
-                  fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700,
+                  height: 50, padding: '0 32px',
+                  background: '#ffffff', color: '#0f172a',
+                  fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700,
                   letterSpacing: '-0.01em', textDecoration: 'none',
                   borderRadius: '999px',
-                  boxShadow: '0 4px 14px rgba(26,42,94,0.25)',
-                  transition: 'background 0.2s, box-shadow 0.2s',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+                  transition: 'all 0.2s',
+                  alignSelf: isDesktop ? 'flex-start' : 'center',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--brand-header-dark)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--brand-header)'; }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.background = '#f1f5f9';
+                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 6px 32px rgba(0,0,0,0.35)';
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLAnchorElement).style.background = '#ffffff';
+                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.25)';
+                }}
               >
                 {slide.ctaLabel} <ArrowRight size={16} />
               </Link>
+
+              {/* Trust micro-badges */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: isDesktop ? 20 : 14,
+                marginTop: 24, flexWrap: 'wrap',
+                justifyContent: isDesktop ? 'flex-start' : 'center',
+              }}>
+                {[
+                  { Icon: ShieldCheck, text: '12-month warranty' },
+                  { Icon: Battery, text: '85%+ battery' },
+                  { Icon: RotateCcw, text: '30-day returns' },
+                ].map(({ Icon, text }) => (
+                  <div key={text} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    color: 'rgba(255,255,255,0.60)',
+                    fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 600,
+                  }}>
+                    <Icon size={14} style={{ flexShrink: 0, color: 'rgba(255,255,255,0.60)' }} />
+                    {text}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Image column */}
             <div
-              ref={cardRef}
               style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
                 order: isDesktop ? 0 : -1,
-                height: isDesktop ? '160px' : '90px',
+                height: isDesktop ? '360px' : '200px',
                 width: '100%',
+                position: 'relative',
               }}
             >
               <img
@@ -218,7 +284,8 @@ export default function Hero() {
                 decoding="async"
                 style={{
                   height: '100%', width: '100%', objectFit: 'contain',
-                  filter: 'drop-shadow(0 12px 20px rgba(0,0,0,0.16))',
+                  filter: 'drop-shadow(0 24px 40px rgba(0,0,0,0.45))',
+                  position: 'relative', zIndex: 1,
                 }}
               />
             </div>
@@ -231,13 +298,13 @@ export default function Hero() {
         width: '100%', maxWidth: '1280px',
         marginLeft: 'auto', marginRight: 'auto',
         paddingLeft: '20px', paddingRight: '20px',
-        paddingBottom: '12px', paddingTop: '4px',
+        paddingBottom: '20px', paddingTop: '8px',
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between', gap: '12px',
         zIndex: 2, boxSizing: 'border-box',
       }}>
-        {/* Dot indicators */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Progress bar indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -245,12 +312,12 @@ export default function Hero() {
               aria-label={`Go to slide ${i + 1}`}
               aria-current={i === current}
               style={{
-                width: i === current ? '24px' : '7px',
-                height: '7px',
+                width: i === current ? '32px' : '8px',
+                height: '4px',
                 borderRadius: '999px',
-                background: i === current ? 'var(--brand-header)' : 'rgba(0,0,0,0.2)',
+                background: i === current ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.30)',
                 border: 'none', cursor: 'pointer', padding: 0,
-                transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             />
           ))}
@@ -265,9 +332,9 @@ export default function Hero() {
             style={{
               width: 32, height: 32, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(0,0,0,0.10)', borderRadius: '50%', cursor: 'pointer',
-              color: 'var(--brand-header)',
+              background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.85)',
             }}
           >
             {isPaused || reducedMotion ? <Play size={13} /> : <Pause size={13} />}
@@ -278,9 +345,9 @@ export default function Hero() {
             style={{
               width: 36, height: 36, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(0,0,0,0.10)', borderRadius: '50%', cursor: 'pointer',
-              color: 'var(--brand-header)',
+              background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.2)', borderRadius: '50%', cursor: 'pointer',
+              color: 'rgba(255,255,255,0.85)',
             }}
           >
             <ArrowLeft size={16} />
@@ -291,9 +358,9 @@ export default function Hero() {
             style={{
               width: 36, height: 36, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              background: 'var(--brand-header)', borderRadius: '50%', cursor: 'pointer',
-              border: 'none', color: '#fff',
-              boxShadow: '0 2px 8px rgba(26,42,94,0.30)',
+              background: 'rgba(255,255,255,0.95)', borderRadius: '50%', cursor: 'pointer',
+              border: 'none', color: '#0f172a',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.30)',
             }}
           >
             <ArrowRight size={16} />
