@@ -310,21 +310,41 @@ export default function Navbar(_: NavbarProps) {
                         </span>
                       </button>
 
-                      <button
-                        onClick={() => setIsAuthModalOpen(true)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '12px',
-                          width: '100%', padding: '12px 16px',
-                          background: 'transparent', border: 'none',
-                          cursor: 'pointer', textAlign: 'left',
-                          borderTop: '1px solid var(--grey-10)'
-                        }}
-                      >
-                        <User size={18} style={{ color: 'var(--grey-50)' }} />
-                        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
-                          {isAuthenticated ? 'My Account' : 'Sign In'}
-                        </span>
-                      </button>
+                      {isAuthenticated ? (
+                        <Link
+                          to="/account"
+                          onClick={() => setIsAccountOpen(false)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '12px',
+                            width: '100%', padding: '12px 16px',
+                            background: 'transparent', border: 'none',
+                            cursor: 'pointer', textAlign: 'left',
+                            borderTop: '1px solid var(--grey-10)',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <User size={18} style={{ color: 'var(--grey-50)' }} />
+                          <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                            My Account
+                          </span>
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => { setIsAccountOpen(false); setIsAuthModalOpen(true); }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '12px',
+                            width: '100%', padding: '12px 16px',
+                            background: 'transparent', border: 'none',
+                            cursor: 'pointer', textAlign: 'left',
+                            borderTop: '1px solid var(--grey-10)'
+                          }}
+                        >
+                          <User size={18} style={{ color: 'var(--grey-50)' }} />
+                          <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                            Sign In
+                          </span>
+                        </button>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -638,13 +658,25 @@ export default function Navbar(_: NavbarProps) {
 
               {/* Auth */}
               <div className="p-4" style={{ borderTop: '1px solid var(--grey-10)' }}>
-                <button
-                  onClick={() => { setIsMobileOpen(false); setIsAuthModalOpen(true); }}
-                  className="btn btn-primary btn-md btn-full"
-                  id="mobile-menu-auth-btn"
-                >
-                  {isAuthenticated ? 'My Account' : 'Sign in / Register'}
-                </button>
+                {isAuthenticated ? (
+                  <Link
+                    to="/account"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="btn btn-primary btn-md btn-full"
+                    id="mobile-menu-auth-btn"
+                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    My Account
+                  </Link>
+                ) : (
+                  <button
+                    onClick={() => { setIsMobileOpen(false); setIsAuthModalOpen(true); }}
+                    className="btn btn-primary btn-md btn-full"
+                    id="mobile-menu-auth-btn"
+                  >
+                    Sign in / Register
+                  </button>
+                )}
               </div>
             </motion.div>
           </>

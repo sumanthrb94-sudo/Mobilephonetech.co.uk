@@ -52,6 +52,7 @@ const BuyingGuidesPage = lazy(() => import('./components/content/BuyingGuidesPag
 const FaqPage = lazy(() => import('./components/content/FaqPage'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
+const AccountPage = lazy(() => import('./components/AccountPage'));
 
 // Loading state component — on-brand skeleton
 const PageLoader = () => (
@@ -317,6 +318,11 @@ function AppContent() {
               <Route path="/help" element={
                 <AnimatedPage paddingTop="var(--nav-total)">
                   <FaqPage />
+                </AnimatedPage>
+              } />
+              <Route path="/account" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <AccountPage />
                 </AnimatedPage>
               } />
 

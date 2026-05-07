@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 
 const ADDRESS_KEY = 'mt_shipping_address';
 
@@ -44,12 +45,14 @@ export interface Coupon {
 
 export interface Order {
   id: string;
+  userId?: string;
   items: any[];
   shippingAddress: ShippingAddress;
   shippingOption: ShippingOption;
   paymentMethod: PaymentMethod;
   subtotal: number;
   shippingCost: number;
+  discount?: number;
   tax: number;
   total: number;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
@@ -69,7 +72,7 @@ interface CheckoutContextType {
   applyCoupon: (code: string) => boolean;
   removeCoupon: () => void;
   orders: Order[];
-  createOrder: (order: Order) => void;
+  createOrder: (order: Order) => Promise<void>;
   lastOrder: Order | null;
 }
 
@@ -136,10 +139,43 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     setAppliedCoupon(null);
   };
 
-  const createOrder = (order: Order) => {
-    setOrders((prev) => [...prev, order]);
-    setAppliedCoupon(null); // Reset coupon after order
-  };
+  const createOrder = useCallback(async (order: Order) => {
+    setOrders(prev => [...prev, order]);
+    setAppliedCoupon(null);
+    // Persist to Supabase — fire-and-forget, doesn't block confirmation screen
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: orderRow } = await (supabase.from('orders') as any).insert({
+        id: order.id,
+        user_id: order.userId ?? null,
+        guest_email: order.shippingAddress.email,
+        status: order.status,
+        subtotal: order.subtotal,
+        delivery_cost: order.shippingCost,
+        discount: order.discount ?? 0,
+        total: order.total,
+        delivery_address: order.shippingAddress,
+        payment_method: order.paymentMethod.brand,
+      }).select().single();
+      if (orderRow) {
+        const lineItems = order.items.map((item: any) => ({
+          order_id: orderRow.id,
+          product_id: item.id ?? null,
+          model: item.model,
+          brand: item.brand,
+          selected_color: item.selectedColor ?? null,
+          selected_storage: item.selectedStorage ?? item.storage ?? null,
+          selected_condition: item.selectedCondition ?? item.grade ?? null,
+          price: item.price,
+          original_price: item.originalPrice,
+          quantity: item.quantity,
+          image_url: item.imageUrl ?? null,
+        }));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase.from('order_items') as any).insert(lineItems);
+      }
+    } catch { /* non-fatal — order still confirmed locally */ }
+  }, []);
 
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;
 

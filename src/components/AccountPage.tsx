@@ -1,0 +1,457 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { User, Package, MapPin, Lock, ChevronRight, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
+import { useSeo } from '../hooks/useSeo';
+import ProductImage from './ProductImage';
+
+type Tab = 'profile' | 'orders' | 'addresses' | 'security';
+
+interface SupabaseOrder {
+  id: string;
+  status: string;
+  total: number;
+  subtotal: number;
+  delivery_cost: number;
+  created_at: string;
+  delivery_address: Record<string, string> | null;
+  payment_method: string | null;
+  order_items: {
+    id: string;
+    model: string;
+    brand: string;
+    price: number;
+    quantity: number;
+    image_url: string | null;
+    selected_color: string | null;
+    selected_storage: string | null;
+  }[];
+}
+
+const STATUS_COLOR: Record<string, string> = {
+  pending:    '#f59e0b',
+  confirmed:  '#3b82f6',
+  processing: '#8b5cf6',
+  shipped:    '#06b6d4',
+  delivered:  '#16a34a',
+  cancelled:  '#ef4444',
+  refunded:   '#6b7280',
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  pending:    'Order placed',
+  confirmed:  'Confirmed',
+  processing: 'Processing',
+  shipped:    'Shipped',
+  delivered:  'Delivered',
+  cancelled:  'Cancelled',
+  refunded:   'Refunded',
+};
+
+export default function AccountPage() {
+  useSeo({ title: 'My Account | MobilePhoneMarket', noindex: true });
+  const navigate = useNavigate();
+  const { user, session, logout } = useAuth();
+  const [tab, setTab] = useState<Tab>('profile');
+
+  // Profile state
+  const [fullName, setFullName] = useState(user?.fullName ?? '');
+  const [phone, setPhone] = useState('');
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSaved, setProfileSaved] = useState(false);
+
+  // Orders state
+  const [orders, setOrders] = useState<SupabaseOrder[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  // Address state
+  const [address, setAddress] = useState({ line1: '', line2: '', city: '', postcode: '', country: 'United Kingdom' });
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+
+  // Security state
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState('');
+  const [savingPw, setSavingPw] = useState(false);
+
+  useEffect(() => {
+    if (!user || user.isGuest) { navigate('/'); return; }
+    loadProfile();
+  }, [user]);
+
+  useEffect(() => {
+    if (tab === 'orders') loadOrders();
+  }, [tab]);
+
+  async function loadProfile() {
+    if (!session) return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from('profiles') as any)
+      .select('full_name, phone, address')
+      .eq('id', user!.id)
+      .single();
+    if (data) {
+      setFullName(data.full_name ?? user!.fullName);
+      setPhone(data.phone ?? '');
+      if (data.address) setAddress(data.address);
+    }
+  }
+
+  async function loadOrders() {
+    if (!session) return;
+    setOrdersLoading(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from('orders') as any)
+      .select('*, order_items(*)')
+      .eq('user_id', user!.id)
+      .order('created_at', { ascending: false });
+    setOrders(data ?? []);
+    setOrdersLoading(false);
+  }
+
+  async function saveProfile() {
+    if (!session) return;
+    setSavingProfile(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('profiles') as any)
+      .upsert({ id: user!.id, full_name: fullName, phone })
+      .eq('id', user!.id);
+    setSavingProfile(false);
+    setEditingProfile(false);
+    setProfileSaved(true);
+    setTimeout(() => setProfileSaved(false), 3000);
+  }
+
+  async function saveAddress() {
+    if (!session) return;
+    setSavingAddress(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('profiles') as any)
+      .upsert({ id: user!.id, address })
+      .eq('id', user!.id);
+    setSavingAddress(false);
+    setEditingAddress(false);
+  }
+
+  async function changePassword() {
+    setPwError(''); setPwSuccess('');
+    if (newPw.length < 8) { setPwError('Password must be at least 8 characters.'); return; }
+    if (newPw !== confirmPw) { setPwError('Passwords do not match.'); return; }
+    setSavingPw(true);
+    const { error } = await supabase.auth.updateUser({ password: newPw });
+    setSavingPw(false);
+    if (error) { setPwError(error.message); return; }
+    setPwSuccess('Password updated successfully.');
+    setCurrentPw(''); setNewPw(''); setConfirmPw('');
+  }
+
+  const handleLogout = async () => { await logout(); navigate('/'); };
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 14px', borderRadius: 10,
+    border: '1.5px solid #e5e7eb', fontFamily: 'var(--font-body)',
+    fontSize: '14px', color: '#111827', background: 'white',
+    boxSizing: 'border-box', outline: 'none',
+  };
+
+  const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
+    { id: 'profile',   label: 'My Profile',   icon: <User size={16} /> },
+    { id: 'orders',    label: 'Orders',        icon: <Package size={16} /> },
+    { id: 'addresses', label: 'Addresses',     icon: <MapPin size={16} /> },
+    { id: 'security',  label: 'Security',      icon: <Lock size={16} /> },
+  ];
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#f8fafc', paddingTop: 'var(--nav-total)', paddingBottom: 64 }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 20px', boxSizing: 'border-box' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+          <div>
+            <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 900, color: '#0f172a', margin: 0 }}>
+              Hello, {fullName || user?.fullName || 'there'} 👋
+            </h1>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: '#6b7280', margin: '4px 0 0' }}>{user?.email}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}
+          >
+            <LogOut size={14} /> Sign out
+          </button>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'clamp(180px,22%,240px) 1fr', gap: 24, alignItems: 'start' }}>
+          {/* Sidebar */}
+          <div style={{ background: 'white', borderRadius: 16, border: '1px solid #e5e7eb', overflow: 'hidden', position: 'sticky', top: 100 }}>
+            {TABS.map(t => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '14px 18px', border: 'none', background: tab === t.id ? '#f0f9ff' : 'white',
+                  borderLeft: `3px solid ${tab === t.id ? '#00badb' : 'transparent'}`,
+                  fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
+                  color: tab === t.id ? '#0f172a' : '#6b7280', cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {t.icon} {t.label}
+                {tab === t.id && <ChevronRight size={14} style={{ marginLeft: 'auto' }} />}
+              </button>
+            ))}
+            <div style={{ padding: '12px 18px', borderTop: '1px solid #f1f5f9' }}>
+              <Link to="/wishlist" style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none' }}>
+                <Heart size={16} /> Wishlist
+              </Link>
+            </div>
+          </div>
+
+          {/* Main panel */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.18 }}
+              style={{ background: 'white', borderRadius: 16, border: '1px solid #e5e7eb', padding: 32 }}
+            >
+
+              {/* ── Profile tab ── */}
+              {tab === 'profile' && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Personal details</h2>
+                    {!editingProfile ? (
+                      <button onClick={() => setEditingProfile(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
+                        <Edit3 size={13} /> Edit
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setEditingProfile(false)} style={{ padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={saveProfile} disabled={savingProfile} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: '#0f172a', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+                          {savingProfile ? 'Saving…' : 'Save changes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {profileSaved && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, marginBottom: 20, color: '#15803d', fontFamily: 'var(--font-body)', fontSize: 14 }}>
+                      <Check size={15} /> Profile saved successfully.
+                    </div>
+                  )}
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    {[
+                      { label: 'Full name', value: fullName, setter: setFullName, type: 'text' },
+                      { label: 'Email address', value: user?.email ?? '', setter: () => {}, type: 'email', disabled: true },
+                      { label: 'Phone number', value: phone, setter: setPhone, type: 'tel' },
+                    ].map(({ label, value, setter, type, disabled }) => (
+                      <div key={label} style={{ gridColumn: label === 'Full name' ? '1 / -1' : undefined }}>
+                        <label style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</label>
+                        {editingProfile && !disabled ? (
+                          <input type={type} value={value} onChange={e => setter(e.target.value)} style={inputStyle} />
+                        ) : (
+                          <div style={{ padding: '10px 14px', borderRadius: 10, background: '#f8fafc', fontFamily: 'var(--font-body)', fontSize: 14, color: disabled ? '#9ca3af' : '#111827' }}>
+                            {value || <span style={{ color: '#9ca3af' }}>Not set</span>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Orders tab ── */}
+              {tab === 'orders' && (
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 24px' }}>Order history</h2>
+                  {ordersLoading ? (
+                    <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af' }}>Loading orders…</div>
+                  ) : orders.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 48 }}>
+                      <ShoppingBag size={40} style={{ color: '#e5e7eb', marginBottom: 12 }} />
+                      <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: '#6b7280', margin: '0 0 16px' }}>No orders yet.</p>
+                      <Link to="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 999, background: '#0f172a', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+                        Browse devices
+                      </Link>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      {orders.map(order => (
+                        <div key={order.id} style={{ border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
+                          <button
+                            onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'white', border: 'none', cursor: 'pointer', gap: 12 }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1, minWidth: 0 }}>
+                              <div style={{ width: 10, height: 10, borderRadius: '50%', background: STATUS_COLOR[order.status] ?? '#9ca3af', flexShrink: 0 }} />
+                              <div style={{ textAlign: 'left', minWidth: 0 }}>
+                                <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
+                                  Order #{order.id.slice(0, 8).toUpperCase()}
+                                </div>
+                                <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#6b7280' }}>
+                                  {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  {' · '}{order.order_items?.length ?? 0} item{order.order_items?.length !== 1 ? 's' : ''}
+                                </div>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>£{Number(order.total).toFixed(2)}</span>
+                              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: STATUS_COLOR[order.status] + '20', color: STATUS_COLOR[order.status] }}>
+                                {STATUS_LABEL[order.status] ?? order.status}
+                              </span>
+                              <ChevronRight size={14} style={{ color: '#9ca3af', transform: expandedOrder === order.id ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }} />
+                            </div>
+                          </button>
+                          <AnimatePresence>
+                            {expandedOrder === order.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.22 }}
+                                style={{ overflow: 'hidden' }}
+                              >
+                                <div style={{ padding: '0 20px 20px', borderTop: '1px solid #f1f5f9' }}>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
+                                    {(order.order_items ?? []).map(item => (
+                                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <div style={{ width: 52, height: 52, borderRadius: 8, background: '#f8fafc', flexShrink: 0, overflow: 'hidden' }}>
+                                          <ProductImage brand={item.brand} model={item.model} imageUrl={item.image_url ?? ''} alt={item.model} color={item.selected_color ?? undefined} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.brand} {item.model}</div>
+                                          <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#6b7280' }}>
+                                            {[item.selected_storage, item.selected_color].filter(Boolean).join(' · ')}
+                                            {item.quantity > 1 ? ` × ${item.quantity}` : ''}
+                                          </div>
+                                        </div>
+                                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a', flexShrink: 0 }}>£{Number(item.price).toFixed(2)}</div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  {order.delivery_address && (
+                                    <div style={{ marginTop: 16, padding: '12px 14px', background: '#f8fafc', borderRadius: 10 }}>
+                                      <div style={{ fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Delivered to</div>
+                                      <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#374151', lineHeight: 1.5 }}>
+                                        {order.delivery_address.fullName}<br />
+                                        {order.delivery_address.addressLine1}{order.delivery_address.addressLine2 ? `, ${order.delivery_address.addressLine2}` : ''}<br />
+                                        {order.delivery_address.city}, {order.delivery_address.postalCode}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Addresses tab ── */}
+              {tab === 'addresses' && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Saved address</h2>
+                    {!editingAddress ? (
+                      <button onClick={() => setEditingAddress(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
+                        <Edit3 size={13} /> Edit
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setEditingAddress(false)} style={{ padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={saveAddress} disabled={savingAddress} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: '#0f172a', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+                          {savingAddress ? 'Saving…' : 'Save address'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    {[
+                      { label: 'Address line 1', key: 'line1' as const, col: '1 / -1' },
+                      { label: 'Address line 2 (optional)', key: 'line2' as const, col: '1 / -1' },
+                      { label: 'City', key: 'city' as const },
+                      { label: 'Postcode', key: 'postcode' as const },
+                    ].map(({ label, key, col }) => (
+                      <div key={key} style={{ gridColumn: col }}>
+                        <label style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</label>
+                        {editingAddress ? (
+                          <input value={address[key]} onChange={e => setAddress(a => ({ ...a, [key]: e.target.value }))} style={inputStyle} />
+                        ) : (
+                          <div style={{ padding: '10px 14px', borderRadius: 10, background: '#f8fafc', fontFamily: 'var(--font-body)', fontSize: 14, color: '#111827' }}>
+                            {address[key] || <span style={{ color: '#9ca3af' }}>Not set</span>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Security tab ── */}
+              {tab === 'security' && (
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 24px' }}>Change password</h2>
+                  {pwError && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, marginBottom: 16, color: '#dc2626', fontFamily: 'var(--font-body)', fontSize: 14 }}>
+                      <X size={14} /> {pwError}
+                    </div>
+                  )}
+                  {pwSuccess && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, marginBottom: 16, color: '#15803d', fontFamily: 'var(--font-body)', fontSize: 14 }}>
+                      <Check size={14} /> {pwSuccess}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 420 }}>
+                    {[
+                      { label: 'New password', value: newPw, setter: setNewPw },
+                      { label: 'Confirm new password', value: confirmPw, setter: setConfirmPw },
+                    ].map(({ label, value, setter }) => (
+                      <div key={label}>
+                        <label style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</label>
+                        <div style={{ position: 'relative' }}>
+                          <input
+                            type={showPw ? 'text' : 'password'}
+                            value={value}
+                            onChange={e => setter(e.target.value)}
+                            style={{ ...inputStyle, paddingRight: 40 }}
+                          />
+                          <button type="button" onClick={() => setShowPw(s => !s)} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}>
+                            {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={changePassword}
+                      disabled={savingPw || !newPw || !confirmPw}
+                      style={{ padding: '12px 24px', borderRadius: 999, border: 'none', background: '#0f172a', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 700, color: 'white', cursor: 'pointer', opacity: savingPw || !newPw || !confirmPw ? 0.5 : 1 }}
+                    >
+                      {savingPw ? 'Updating…' : 'Update password'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}

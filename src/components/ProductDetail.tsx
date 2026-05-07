@@ -22,7 +22,9 @@ import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
-import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
+import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../lib/supabase';
 import { useSeo } from '../hooks/useSeo';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 import { generateProductDescription } from '../utils/productDescription';
@@ -33,7 +35,27 @@ type Tab = 'overview' | 'specs' | 'reviews';
 
 function TabPanel({ phone }: { phone: Product }) {
   const [tab, setTab] = React.useState<Tab>('overview');
+  const [reviews, setReviews] = React.useState<import('../types').Review[]>(phone.reviews ?? []);
+  const { user } = useAuth();
   const enrichedSpecs = enrichSpecs(phone.brand, phone.model, phone.specs);
+
+  const handleAddReview = async (review: Omit<import('../types').Review, 'id' | 'date'>) => {
+    const newReview: import('../types').Review = {
+      ...review,
+      id: Math.random().toString(36).slice(2),
+      date: new Date().toISOString(),
+    };
+    setReviews(prev => [newReview, ...prev]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from('reviews') as any).insert({
+      product_id: phone.id,
+      user_id: user?.id ?? null,
+      rating: review.rating,
+      comment: review.comment,
+      user_name: review.userName,
+      is_verified: false,
+    });
+  };
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: 'Overview' },
@@ -127,7 +149,11 @@ function TabPanel({ phone }: { phone: Product }) {
         )}
 
         {tab === 'reviews' && (
-          <ReviewsSection productId={phone.id} reviews={phone.reviews || []} />
+          <ReviewsSection
+            productId={phone.id}
+            reviews={reviews}
+            onAddReview={handleAddReview}
+          />
         )}
       </div>
     </div>
@@ -155,7 +181,13 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = React.useState(1);
   const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
-  const [isWishlisted, setIsWishlisted] = React.useState(false);
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { user } = useAuth();
+  const isWishlisted = phone ? isInWishlist(phone.id) : false;
+  const toggleWishlist = () => {
+    if (!phone) return;
+    isWishlisted ? removeFromWishlist(phone.id) : addToWishlist(phone);
+  };
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
   const { track: trackRecent } = useRecentlyViewed();
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
@@ -524,7 +556,7 @@ export default function ProductDetail() {
                 </button>
 
                 <motion.button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
+                  onClick={toggleWishlist}
                   aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                   aria-pressed={isWishlisted}
                   whileTap={{ scale: 1.15 }}
