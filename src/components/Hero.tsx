@@ -157,9 +157,9 @@ export default function Hero() {
             style={{
               display: 'grid',
               gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr',
-              gap: isDesktop ? '48px' : '24px',
+              gap: isDesktop ? '48px' : '16px',
               alignItems: 'center',
-              padding: isDesktop ? '48px 0 24px' : '28px 0 16px',
+              padding: isDesktop ? '48px 0 24px' : '16px 0 8px',
               flex: 1, minHeight: 0,
             }}
           >
@@ -183,27 +183,13 @@ export default function Hero() {
                 {slide.eyebrow}
               </div>
 
-              {/* Savings badge */}
-              <div style={{
-                display: 'inline-flex', alignItems: 'center',
-                background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.25)',
-                borderRadius: '6px', padding: '2px 10px',
-                fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700,
-                color: 'rgba(255,255,255,0.9)', marginBottom: 14,
-                letterSpacing: '0.02em',
-              }}>
-                {slide.savings}
-              </div>
-
               <h1 style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 'clamp(38px, 5.2vw, 68px)',
-                fontWeight: 900, fontStyle: 'italic',
-                letterSpacing: '-0.03em', lineHeight: 1.05,
+                fontFamily: 'var(--font-sans)',
+                fontSize: 'clamp(36px, 5.2vw, 68px)',
+                fontWeight: 900,
+                letterSpacing: '-0.04em', lineHeight: 1.0,
                 color: '#ffffff',
                 marginBottom: 16, whiteSpace: 'pre-line',
-                textShadow: '0 2px 20px rgba(0,0,0,0.3)',
               }}>
                 {slide.headline}
               </h1>
@@ -216,32 +202,43 @@ export default function Hero() {
                 {slide.subline}
               </p>
 
-              {/* White pill CTA */}
-              <Link
-                to={slide.ctaHref}
-                id={`hero-cta-${current}`}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  height: 50, padding: '0 32px',
-                  background: '#ffffff', color: '#0f172a',
-                  fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700,
-                  letterSpacing: '-0.01em', textDecoration: 'none',
-                  borderRadius: '999px',
-                  boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
-                  transition: 'all 0.2s',
-                  alignSelf: isDesktop ? 'flex-start' : 'center',
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.background = '#f1f5f9';
-                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 6px 32px rgba(0,0,0,0.35)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLAnchorElement).style.background = '#ffffff';
-                  (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.25)';
-                }}
-              >
-                {slide.ctaLabel} <ArrowRight size={16} />
-              </Link>
+              {/* CTA row: pill button + savings text */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+                justifyContent: isDesktop ? 'flex-start' : 'center',
+              }}>
+                <Link
+                  to={slide.ctaHref}
+                  id={`hero-cta-${current}`}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    height: 50, padding: '0 28px',
+                    background: '#ffffff', color: '#0f172a',
+                    fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800,
+                    letterSpacing: '-0.01em', textDecoration: 'none',
+                    borderRadius: '999px',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
+                    transition: 'all 0.2s',
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLAnchorElement).style.transform = 'translateY(-1px)';
+                    (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 8px 32px rgba(0,0,0,0.35)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLAnchorElement).style.transform = 'none';
+                    (e.currentTarget as HTMLAnchorElement).style.boxShadow = '0 4px 24px rgba(0,0,0,0.25)';
+                  }}
+                >
+                  {slide.ctaLabel} <ArrowRight size={16} />
+                </Link>
+                <span style={{
+                  fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
+                  color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap',
+                }}>
+                  {slide.savings}
+                </span>
+              </div>
 
               {/* Trust micro-badges */}
               <div style={{
