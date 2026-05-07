@@ -96,42 +96,66 @@ export default function QualityPromise() {
             return (
               <motion.div
                 key={s.label}
-                initial={{ opacity: 0, y: 14 }}
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ delay: i * 0.07, duration: 0.35, ease: [0.2, 0, 0, 1] }}
+                transition={{ delay: i * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] }}
                 style={{
-                  padding: '20px 16px',
-                  background: s.accent,
-                  borderRadius: 'var(--radius-lg)',
+                  padding: '24px 20px',
+                  background: '#fff',
+                  borderRadius: '16px',
                   border: `1px solid ${s.accentBorder}`,
+                  boxShadow: `0 4px 24px ${s.accentBorder}60`,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '10px',
+                  gap: '12px',
+                  position: 'relative',
+                  overflow: 'hidden',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Icon size={16} strokeWidth={2.2} style={{ color: s.iconColor, flexShrink: 0 }} />
+                {/* Accent glow top-right */}
+                <div style={{
+                  position: 'absolute', top: -20, right: -20,
+                  width: 80, height: 80,
+                  borderRadius: '50%',
+                  background: s.accent,
+                  opacity: 0.8,
+                  pointerEvents: 'none',
+                }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '10px',
+                    background: s.accent, border: `1px solid ${s.accentBorder}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <Icon size={16} strokeWidth={2.2} style={{ color: s.iconColor }} />
+                  </div>
                   <span style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
-                    color: s.iconColor,
+                    fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 800,
+                    letterSpacing: '0.08em', textTransform: 'uppercase', color: s.iconColor,
                   }}>
                     {s.label}
                   </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '36px', fontWeight: 900, letterSpacing: '-0.03em', color: 'var(--brand-header)', lineHeight: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', position: 'relative' }}>
+                  <span style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '40px', fontWeight: 900,
+                    letterSpacing: '-0.04em', color: '#111827', lineHeight: 1,
+                  }}>
                     {s.number}
                   </span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--grey-50)' }}>
+                  <span style={{
+                    fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700,
+                    color: s.iconColor, lineHeight: 1,
+                  }}>
                     {s.unit}
                   </span>
                 </div>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-60)', lineHeight: 1.55, margin: 0 }}>
+                <p style={{
+                  fontFamily: 'var(--font-body)', fontSize: '12px',
+                  color: '#6B7280', lineHeight: 1.6, margin: 0, position: 'relative',
+                }}>
                   {s.blurb}
                 </p>
               </motion.div>

@@ -97,41 +97,32 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: 'clamp(170px, 22vw, 200px)',
+        minHeight: 'clamp(200px, 26vw, 260px)',
         position: 'relative',
         overflow: 'hidden',
-        background: `linear-gradient(135deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 55%)`,
-        transition: `background var(--duration-slow) var(--ease-default)`,
+        background: `linear-gradient(140deg, ${slide.bgAccent} 0%, ${slide.bgFrom} 60%)`,
+        transition: 'background 0.6s ease',
         paddingTop: 'var(--nav-total)',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: 0, right: 0,
-          width: '50%',
-          height: '100%',
-          background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.25) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* subtle radial glow top-right */}
+      <div style={{
+        position: 'absolute', top: 0, right: 0,
+        width: '55%', height: '100%',
+        background: 'radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.35) 0%, transparent 60%)',
+        pointerEvents: 'none',
+      }} />
 
       <div
         style={{
-          width: '100%',
-          maxWidth: '1280px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          paddingLeft: '16px',
-          paddingRight: '16px',
-          position: 'relative',
-          zIndex: 2,
-          boxSizing: 'border-box',
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
+          width: '100%', maxWidth: '1280px',
+          marginLeft: 'auto', marginRight: 'auto',
+          paddingLeft: '20px', paddingRight: '20px',
+          position: 'relative', zIndex: 2,
+          boxSizing: 'border-box', flex: 1,
+          display: 'flex', flexDirection: 'column',
         }}
         className="hero-container"
       >
@@ -139,82 +130,83 @@ export default function Hero() {
           <motion.div
             key={current}
             custom={direction}
-            initial={{ opacity: 0, x: direction * 40 }}
+            initial={{ opacity: 0, x: direction * 32 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -direction * 40 }}
-            transition={{ duration: 0.45, ease: [0.2, 0, 0, 1] }}
+            exit={{ opacity: 0, x: -direction * 32 }}
+            transition={{ duration: 0.42, ease: [0.2, 0, 0, 1] }}
             style={{
               display: 'grid',
-              gridTemplateColumns: isDesktop ? 'repeat(2, 1fr)' : '1fr',
-              gap: isDesktop ? '20px' : '10px',
+              gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr',
+              gap: isDesktop ? '32px' : '12px',
               alignItems: 'center',
-              padding: isDesktop ? '14px 0 8px' : '8px 0 6px',
-              flex: 1,
-              minHeight: 0,
+              padding: isDesktop ? '20px 0 12px' : '10px 0 8px',
+              flex: 1, minHeight: 0,
             }}
           >
-            {/* ── Left (mobile: bottom): Text block ──────────────── */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: isDesktop ? 'flex-start' : 'center', textAlign: isDesktop ? 'left' : 'center' }}>
-              <div
-                className="overline"
-                style={{ marginBottom: '4px', color: 'var(--brand-header)', fontSize: '10px' }}
-              >
+            {/* Text column */}
+            <div style={{
+              display: 'flex', flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: isDesktop ? 'flex-start' : 'center',
+              textAlign: isDesktop ? 'left' : 'center',
+            }}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'rgba(255,255,255,0.70)', backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.5)',
+                borderRadius: '999px', padding: '3px 10px',
+                fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--brand-header)', marginBottom: 8,
+              }}>
                 {slide.eyebrow}
               </div>
-              <h1
-                style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 'clamp(22px, 3.5vw, 38px)',
-                  fontWeight: 700,
-                  fontStyle: 'italic',
-                  letterSpacing: '-0.02em',
-                  lineHeight: 1.1,
-                  color: 'var(--brand-header)',
-                  marginBottom: '8px',
-                  whiteSpace: 'pre-line',
-                }}
-              >
+              <h1 style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 'clamp(24px, 3.8vw, 42px)',
+                fontWeight: 700, fontStyle: 'italic',
+                letterSpacing: '-0.025em', lineHeight: 1.08,
+                color: 'var(--brand-header)',
+                marginBottom: 10, whiteSpace: 'pre-line',
+              }}>
                 {slide.headline}
               </h1>
-              <p
-                style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: '12px',
-                  color: 'var(--grey-70)',
-                  maxWidth: '360px',
-                  marginBottom: '8px',
-                  lineHeight: 1.4,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                }}
-              >
+              <p style={{
+                fontFamily: 'var(--font-body)', fontSize: '13px',
+                color: 'var(--grey-70)', maxWidth: '380px',
+                marginBottom: 14, lineHeight: 1.5,
+                display: '-webkit-box', WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              }}>
                 {slide.subline}
               </p>
-
               <Link
                 to={slide.ctaHref}
-                className="btn btn-primary btn-sm"
                 id={`hero-cta-${current}`}
                 style={{
-                  textDecoration: 'none',
-                  padding: '0 32px',
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  height: 42, padding: '0 28px',
+                  background: 'var(--brand-header)', color: '#fff',
+                  fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700,
+                  letterSpacing: '-0.01em', textDecoration: 'none',
+                  borderRadius: '999px',
+                  boxShadow: '0 4px 14px rgba(26,42,94,0.25)',
+                  transition: 'background 0.2s, box-shadow 0.2s',
                 }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--brand-header-dark)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'var(--brand-header)'; }}
               >
-                {slide.ctaLabel} <ArrowRight size={18} />
+                {slide.ctaLabel} <ArrowRight size={16} />
               </Link>
             </div>
 
-            {/* ── Right (mobile: top): Product Image ───────────── */}
+            {/* Image column */}
             <div
               ref={cardRef}
               style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
                 order: isDesktop ? 0 : -1,
-                height: isDesktop ? '120px' : '70px',
+                height: isDesktop ? '160px' : '90px',
                 width: '100%',
               }}
             >
@@ -225,10 +217,8 @@ export default function Hero() {
                 fetchPriority={current === 0 ? 'high' : 'auto'}
                 decoding="async"
                 style={{
-                  height: '100%',
-                  width: '100%',
-                  objectFit: 'contain',
-                  filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.15))',
+                  height: '100%', width: '100%', objectFit: 'contain',
+                  filter: 'drop-shadow(0 12px 20px rgba(0,0,0,0.16))',
                 }}
               />
             </div>
@@ -236,25 +226,18 @@ export default function Hero() {
         </AnimatePresence>
       </div>
 
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '1280px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          paddingLeft: '16px',
-          paddingRight: '16px',
-          paddingBottom: '10px',
-          paddingTop: '4px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-          zIndex: 2,
-          boxSizing: 'border-box',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      {/* Controls bar */}
+      <div style={{
+        width: '100%', maxWidth: '1280px',
+        marginLeft: 'auto', marginRight: 'auto',
+        paddingLeft: '20px', paddingRight: '20px',
+        paddingBottom: '12px', paddingTop: '4px',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between', gap: '12px',
+        zIndex: 2, boxSizing: 'border-box',
+      }}>
+        {/* Dot indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -262,46 +245,58 @@ export default function Hero() {
               aria-label={`Go to slide ${i + 1}`}
               aria-current={i === current}
               style={{
-                width: i === current ? '28px' : '8px',
-                height: '8px',
-                borderRadius: 'var(--radius-full)',
-                background: i === current ? 'var(--black)' : 'var(--grey-30)',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
+                width: i === current ? '24px' : '7px',
+                height: '7px',
+                borderRadius: '999px',
+                background: i === current ? 'var(--brand-header)' : 'rgba(0,0,0,0.2)',
+                border: 'none', cursor: 'pointer', padding: 0,
                 transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
               }}
             />
           ))}
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <button
             onClick={() => setIsPaused(p => !p)}
-            aria-label={isPaused || reducedMotion ? 'Resume carousel auto-play' : 'Pause carousel auto-play'}
+            aria-label={isPaused || reducedMotion ? 'Resume' : 'Pause'}
             aria-pressed={isPaused || reducedMotion}
-            className="btn btn-secondary"
-            style={{ width: '36px', height: '36px', padding: 0, borderRadius: 'var(--radius-full)' }}
             disabled={reducedMotion}
-            title={reducedMotion ? 'Auto-play disabled by your system preferences' : undefined}
+            style={{
+              width: 32, height: 32, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(0,0,0,0.10)', borderRadius: '50%', cursor: 'pointer',
+              color: 'var(--brand-header)',
+            }}
           >
-            {isPaused || reducedMotion ? <Play size={15} /> : <Pause size={15} />}
+            {isPaused || reducedMotion ? <Play size={13} /> : <Pause size={13} />}
           </button>
           <button
             onClick={() => goTo(current - 1, -1)}
             aria-label="Previous slide"
-            className="btn btn-secondary"
-            style={{ width: '40px', height: '40px', padding: 0, borderRadius: 'var(--radius-full)' }}
+            style={{
+              width: 36, height: 36, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(0,0,0,0.10)', borderRadius: '50%', cursor: 'pointer',
+              color: 'var(--brand-header)',
+            }}
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </button>
           <button
             onClick={() => goTo(current + 1, 1)}
             aria-label="Next slide"
-            className="btn btn-primary"
-            style={{ width: '40px', height: '40px', padding: 0, borderRadius: 'var(--radius-full)' }}
+            style={{
+              width: 36, height: 36, display: 'flex',
+              alignItems: 'center', justifyContent: 'center',
+              background: 'var(--brand-header)', borderRadius: '50%', cursor: 'pointer',
+              border: 'none', color: '#fff',
+              boxShadow: '0 2px 8px rgba(26,42,94,0.30)',
+            }}
           >
-            <ArrowRight size={18} />
+            <ArrowRight size={16} />
           </button>
         </div>
       </div>

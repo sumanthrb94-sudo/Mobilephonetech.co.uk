@@ -659,15 +659,19 @@ html.is-checkout .ai-fab {
   transform: scale(0.98);
 }
 
-/* Primary — Cyan Accent */
+/* Primary — Navy (brand authority, ur.co.uk / reboxed DNA) */
 .btn-primary {
-  background: var(--brand-cyan);
-  color: var(--grey-0);
-  border-color: var(--brand-cyan);
+  background: var(--brand-header);
+  color: #ffffff;
+  border-color: var(--brand-header);
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .btn-primary:hover {
-  background: var(--brand-cyan-hover);
+  background: var(--brand-header-dark);
+  border-color: var(--brand-header-dark);
 }
 
 /* Secondary — White with border */
@@ -764,88 +768,86 @@ html.is-checkout .ai-fab {
 }
 
 /* ───────────────────────────────────────────────────────────────
-   6. CARD SYSTEM (BM spec)
+   6. CARD SYSTEM
 ─────────────────────────────────────────────────────────────── */
 .card {
-  background: var(--grey-0);
-  border: 1px solid var(--grey-20);
-  border-radius: var(--radius-lg);
-  /* 12px */
-  box-shadow: var(--shadow-sm);
+  background: #ffffff;
+  border: 1px solid #EAECF0;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   overflow: hidden;
   transition:
-    box-shadow var(--duration-normal) var(--ease-default),
-    transform var(--duration-normal) var(--ease-default),
-    border-color var(--duration-normal) var(--ease-default);
+    box-shadow 0.22s ease,
+    border-color 0.22s ease,
+    transform 0.22s ease;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: #D1D5DB;
+  transform: translateY(-3px);
 }
 
-.card-xl {
-  border-radius: var(--radius-xl);
-}
-
-/* 16px for large cards/modals */
+.card-xl { border-radius: 20px; }
 
 /* ───────────────────────────────────────────────────────────────
-   7. BADGE / PILL (BM spec — fully rounded)
+   7. BADGE / PILL
 ─────────────────────────────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
+  gap: 4px;
   font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
+  padding: 3px 9px;
+  border-radius: 999px;
   border: 1px solid transparent;
   line-height: 1;
 }
 
 .badge-pristine {
-  background: var(--color-grade-pristine-bg);
-  color: var(--color-grade-pristine-text);
-  border-color: var(--blue-30);
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
 }
 
 .badge-excellent {
-  background: var(--color-grade-excellent-bg);
-  color: var(--color-grade-excellent-text);
-  border-color: #a7f3d0;
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
 }
 
 .badge-good {
-  background: var(--color-grade-good-bg);
-  color: var(--color-grade-good-text);
+  background: #fffbeb;
+  color: #b45309;
   border-color: #fde68a;
 }
 
 .badge-fair {
-  background: var(--color-grade-fair-bg);
-  color: var(--color-grade-fair-text);
+  background: #fef2f2;
+  color: #b91c1c;
   border-color: #fecaca;
 }
 
 .badge-new {
-  background: var(--color-grade-new-bg);
-  color: var(--color-grade-new-text);
-  border-color: var(--blue-20);
+  background: #eef2ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
 }
 
 .badge-tag {
-  background: var(--grey-5);
-  color: var(--grey-70);
-  border-color: var(--grey-10);
+  background: #F9FAFB;
+  color: #6B7280;
+  border-color: #E5E7EB;
 }
 
 .badge-savings {
-  background: var(--black);
-  color: var(--grey-0);
+  background: #16a34a;
+  color: #ffffff;
+  border-color: transparent;
 }
 
 /* ───────────────────────────────────────────────────────────────
