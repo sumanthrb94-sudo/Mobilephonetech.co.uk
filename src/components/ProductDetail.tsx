@@ -22,6 +22,7 @@ import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
 import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
+import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -182,18 +183,58 @@ export default function ProductDetail() {
   const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = React.useState(0);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { user } = useAuth();
-  const isWishlisted = phone ? isInWishlist(phone.id) : false;
-  const toggleWishlist = () => {
-    if (!phone) return;
-    isWishlisted ? removeFromWishlist(phone.id) : addToWishlist(phone);
-  };
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
   const { track: trackRecent } = useRecentlyViewed();
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
 
-  const phone = MOCK_PHONES.find(p => p.id === id);
+  // Load product: Supabase first, fall back to mock data
+  const [phone, setPhone] = React.useState<Product | null | undefined>(undefined); // undefined = loading
+  const [loadError, setLoadError] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!id) { setPhone(null); return; }
+    setPhone(undefined);
+    setLoadError(false);
+
+    (async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase.from('products') as any)
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (!error && data) {
+          const row = data as Record<string, unknown>;
+          setPhone({
+            id: row.id as string,
+            model: row.model as string,
+            brand: row.brand as string,
+            category: row.category as Product['category'],
+            storage: (row.storage as string) ?? undefined,
+            price: row.price as number,
+            originalPrice: (row.original_price as number) ?? (row.price as number),
+            grade: row.grade as Product['grade'],
+            batteryHealth: (row.battery_health as number) ?? 100,
+            warrantyMonths: (row.warranty_months as number) ?? 12,
+            returnDays: (row.return_days as number) ?? 30,
+            imageUrl: (row.image_url as string) ?? '',
+            isCertified: (row.is_certified as boolean) ?? false,
+            stock: (row.stock as number) ?? 0,
+            specs: (row.specs as Product['specs']) ?? {},
+          });
+          return;
+        }
+      } catch {
+        // Supabase unavailable — fall through to mock data
+      }
+
+      // Fallback: mock data
+      const mock = MOCK_PHONES.find(p => p.id === id);
+      setPhone(mock ?? null);
+    })();
+  }, [id]);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
@@ -203,12 +244,42 @@ export default function ProductDetail() {
     if (phone?.id) trackRecent(phone.id);
   }, [phone?.id]);
 
-  if (!phone) {
+  const isWishlisted = phone ? isInWishlist(phone.id) : false;
+  const toggleWishlist = () => {
+    if (!phone) return;
+    isWishlisted ? removeFromWishlist(phone.id) : addToWishlist(phone);
+  };
+
+  // Loading skeleton
+  if (phone === undefined) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--grey-0)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>Product not found</h2>
-          <button onClick={() => navigate('/')} className="btn btn-secondary">Back to Home</button>
+      <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
+        <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-32)' }} className="lg:grid-cols-2">
+            <div style={{ aspectRatio: '1/1', borderRadius: 'var(--radius-xl)', background: 'var(--grey-10)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {[80, 50, 40, 100, 60].map((w, i) => (
+                <div key={i} style={{ height: '20px', width: `${w}%`, borderRadius: '8px', background: 'var(--grey-10)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Not found
+  if (!phone || loadError) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--grey-0)', padding: '24px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+          <div style={{ fontSize: '64px', marginBottom: '24px' }}>📦</div>
+          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '12px' }}>This product is no longer available</h2>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', marginBottom: '32px', lineHeight: 1.6 }}>It may have been sold, removed, or the link might be incorrect.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => navigate(-1)} className="btn btn-secondary">Go back</button>
+            <button onClick={() => navigate('/products')} className="btn btn-primary">Browse all devices</button>
+          </div>
         </div>
       </div>
     );
