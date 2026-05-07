@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 
 const ADDRESS_KEY = 'mt_shipping_address';
 
@@ -103,6 +104,7 @@ const SHIPPING_OPTIONS: ShippingOption[] = [
 ];
 
 export function CheckoutProvider({ children }: { children: React.ReactNode }) {
+  const { user, session } = useAuth();
   const [currentStep, setCurrentStep] = useState<'cart' | 'shipping' | 'payment' | 'review' | 'confirmation'>('cart');
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(() => readSavedAddress());
   const [shippingOption, setShippingOption] = useState<ShippingOption | null>(SHIPPING_OPTIONS[0]);
@@ -119,6 +121,48 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       if (shippingAddress) window.localStorage.setItem(ADDRESS_KEY, JSON.stringify(shippingAddress));
     } catch { /* quota / private mode — ignore */ }
   }, [shippingAddress]);
+
+  // Fetch order history from Supabase when user logs in
+  useEffect(() => {
+    if (!session || !user || user.isGuest) return;
+    (async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (supabase.from('orders') as any)
+          .select('*, order_items(*)')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (error || !data) return;
+        const fetched: Order[] = (data as Record<string, unknown>[]).map(row => ({
+          id: row.id as string,
+          userId: row.user_id as string,
+          items: ((row.order_items as Record<string, unknown>[]) ?? []).map(item => ({
+            id: item.product_id,
+            model: item.model,
+            brand: item.brand,
+            price: item.price,
+            originalPrice: item.original_price,
+            quantity: item.quantity,
+            imageUrl: item.image_url,
+            selectedColor: item.selected_color,
+            selectedStorage: item.selected_storage,
+            selectedCondition: item.selected_condition,
+          })),
+          shippingAddress: row.delivery_address as ShippingAddress,
+          shippingOption: SHIPPING_OPTIONS[0],
+          paymentMethod: { id: 'restored', type: 'card', brand: row.payment_method as string },
+          subtotal: row.subtotal as number,
+          shippingCost: row.delivery_cost as number,
+          discount: row.discount as number,
+          tax: 0,
+          total: row.total as number,
+          status: row.status as Order['status'],
+          createdAt: row.created_at as string,
+        }));
+        setOrders(fetched);
+      } catch { /* non-fatal */ }
+    })();
+  }, [session, user?.id]);
 
   const MOCK_COUPONS: Coupon[] = [
     { code: 'SAVE10', discountType: 'percentage', value: 10 },
