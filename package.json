@@ -10,11 +10,14 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "seo": "node scripts/generate-seo-assets.mjs"
+    "seo": "node scripts/generate-seo-assets.mjs",
+    "db:seed": "npx tsx scripts/seed-supabase.ts",
+    "db:types": "npx supabase gen types typescript --linked > src/lib/database.types.ts"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
     "@shopify/storefront-api-client": "^1.0.10",
+    "@supabase/supabase-js": "^2.105.3",
     "@tailwindcss/vite": "^4.1.14",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.4",

@@ -1,13 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, CheckCircle2, Tag, Bell } from 'lucide-react';
-
-/**
- * NewsletterSignup — lead-capture block above the footer. Stub
- * submission (no backend yet); stashes to localStorage so a refresh
- * preserves the confirmation state. Real integration (Klaviyo/Mailchimp)
- * is a follow-up.
- */
+import { supabase } from '../lib/supabase';
 
 const STORAGE_KEY = 'mt_newsletter_email';
 
@@ -17,16 +11,26 @@ export default function NewsletterSignup() {
     try { return !!window.localStorage.getItem(STORAGE_KEY); } catch { return false; }
   });
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    const trimmed = email.trim();
+    const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       setError('Please enter a valid email address.');
       return;
     }
+    setIsSubmitting(true);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from('newsletter_subscribers') as any).upsert(
+        { email: trimmed, is_active: true },
+        { onConflict: 'email', ignoreDuplicates: false }
+      );
+    } catch { /* non-fatal — still show success */ }
     try { window.localStorage.setItem(STORAGE_KEY, trimmed); } catch { /* ignore */ }
+    setIsSubmitting(false);
     setSubmitted(true);
   };
 
@@ -211,7 +215,7 @@ export default function NewsletterSignup() {
                       className="btn btn-primary btn-lg"
                       style={{ flexShrink: 0, background: '#06b6d4', color: 'white', borderColor: '#06b6d4' }}
                     >
-                      Notify me
+                      {isSubmitting ? 'Saving…' : 'Notify me'}
                     </button>
                   </div>
                   {error && (

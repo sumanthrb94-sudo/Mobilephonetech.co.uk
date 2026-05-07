@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 export interface User {
   id: string;
@@ -9,71 +11,97 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, fullName: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
   continueAsGuest: (email: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function supabaseUserToUser(sbUser: SupabaseUser): User {
+  return {
+    id: sbUser.id,
+    email: sbUser.email ?? '',
+    fullName:
+      sbUser.user_metadata?.full_name ??
+      (sbUser.email ? sbUser.email.split('@')[0] : 'User'),
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('mt_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    // Hydrate from Supabase session on mount
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ? supabaseUserToUser(s.user) : null);
+      setIsLoading(false);
+    });
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      setUser(s?.user ? supabaseUserToUser(s.user) : null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, _password: string) => {
-    // Mock login
-    const mockUser: User = {
-      id: '1',
-      email,
-      fullName: email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1),
-    };
-    setUser(mockUser);
-    localStorage.setItem('mt_user', JSON.stringify(mockUser));
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
-  const signup = async (email: string, _password: string, fullName: string) => {
-    // Mock signup
-    const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
+  const signup = async (email: string, password: string, fullName: string) => {
+    const { error } = await supabase.auth.signUp({
       email,
-      fullName,
-    };
-    setUser(mockUser);
-    localStorage.setItem('mt_user', JSON.stringify(mockUser));
+      password,
+      options: { data: { full_name: fullName } },
+    });
+    if (error) throw error;
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('mt_user');
+    setSession(null);
+  };
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) throw error;
   };
 
   const continueAsGuest = (email: string) => {
-    const guestUser: User = {
-      id: 'guest_' + Math.random().toString(36).substr(2, 9),
+    setUser({
+      id: 'guest_' + Math.random().toString(36).slice(2, 9),
       email,
-      fullName: 'Guest User',
+      fullName: 'Guest',
       isGuest: true,
-    };
-    setUser(guestUser);
-    // We don't persist guest sessions in localStorage for this mock
+    });
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated: !!user && !user.isGuest, 
-      login, 
-      signup, 
+    <AuthContext.Provider value={{
+      user,
+      session,
+      isAuthenticated: !!session,
+      isLoading,
+      login,
+      signup,
       logout,
-      continueAsGuest
+      resetPassword,
+      continueAsGuest,
     }}>
       {children}
     </AuthContext.Provider>
@@ -81,9 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }
