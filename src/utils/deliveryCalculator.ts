@@ -112,9 +112,14 @@ function formatDate(date: Date): string {
 }
 
 /**
- * Get region from postal code
+ * Get region from postal code.
+ * Tries exact outward-code match first, then falls back to letter-area match
+ * so that 'BT1 1AA' → try 'BT1', then 'BT'.
  */
 export function getRegionFromPostcode(postalCode: string): string {
-  const postcodePrefix = postalCode.split(' ')[0].toUpperCase();
-  return LOCATION_DATA[postcodePrefix]?.region || 'UK';
+  const outward = postalCode.split(' ')[0].toUpperCase();
+  if (LOCATION_DATA[outward]) return LOCATION_DATA[outward].region;
+  // Strip trailing digits to get the alphabetic area (e.g. 'BT1' → 'BT')
+  const area = outward.replace(/\d.*$/, '');
+  return LOCATION_DATA[area]?.region ?? 'UK';
 }
