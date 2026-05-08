@@ -189,17 +189,15 @@ export default function Navbar(_: NavbarProps) {
               <Menu size={22} style={{ color: '#374151' }} />
             </button>
 
-            {/* ── Centre: Logo — absolutely centred so it ignores left/right widths ── */}
+            {/* ── Logo: absolute-centred on mobile, left-aligned flex item on desktop ── */}
             <Link
               to="/"
               id="navbar-logo"
-              className="navbar-logo flex items-center"
+              className="navbar-logo flex items-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0"
               style={{
-                position: 'absolute',
-                left: '50%',
-                transform: 'translateX(-50%)',
                 textDecoration: 'none',
                 pointerEvents: 'auto',
+                flexShrink: 0,
               }}
             >
               <span className="navbar-logo-tile flex-shrink-0">
@@ -221,7 +219,7 @@ export default function Navbar(_: NavbarProps) {
             </Link>
 
             {/* ── Search hidden on mobile, shown desktop ── */}
-            <div className="hidden lg:block" style={{ flex: 1, maxWidth: '480px', margin: '0 auto' }}>
+            <div className="hidden lg:block" style={{ flex: 1, maxWidth: '480px', margin: '0 auto', paddingLeft: '16px' }}>
               <SearchAutocomplete />
             </div>
 
