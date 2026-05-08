@@ -54,7 +54,7 @@ export default function OrderHistoryPage() {
         return { background: 'var(--color-warn-subtle)', color: '#92400e', border: '1px solid #fde68a' };
       case 'confirmed':
       case 'shipped':
-        return { background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)', border: '1px solid rgba(0,186,219,0.3)' };
+        return { background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)', border: '1px solid rgba(0,108,73,0.3)' };
       case 'delivered':
         return { background: 'var(--green-5)', color: 'var(--color-trust-text)', border: '1px solid var(--green-20)' };
       default:

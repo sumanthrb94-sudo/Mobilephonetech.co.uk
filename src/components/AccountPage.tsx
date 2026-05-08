@@ -198,8 +198,8 @@ export default function AccountPage() {
                 onClick={() => setTab(t.id)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '14px 18px', border: 'none', background: tab === t.id ? '#f0f9ff' : 'white',
-                  borderLeft: `3px solid ${tab === t.id ? '#00badb' : 'transparent'}`,
+                  padding: '14px 18px', border: 'none', background: tab === t.id ? '#f0fdf4' : 'white',
+                  borderLeft: `3px solid ${tab === t.id ? 'var(--brand-cyan)' : 'transparent'}`,
                   fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
                   color: tab === t.id ? '#0f172a' : '#6b7280', cursor: 'pointer', textAlign: 'left',
                   transition: 'all 0.15s',

@@ -192,7 +192,7 @@ export default function TradeInProgram() {
               style={{
                 display: 'inline-flex', alignItems: 'center',
                 padding: '4px 12px', borderRadius: 'var(--radius-full)',
-                background: 'rgba(0, 186, 219, 0.15)', border: '1px solid rgba(0, 186, 219, 0.35)',
+                background: 'rgba(0, 108, 73, 0.15)', border: '1px solid rgba(0, 108, 73, 0.35)',
                 fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700,
                 letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--brand-cyan)',
                 marginBottom: 'var(--spacing-20)',
@@ -227,7 +227,7 @@ export default function TradeInProgram() {
                   transition={{ delay: i * 0.1, duration: 0.4 }}
                   style={{ display: 'flex', gap: 'var(--spacing-16)', alignItems: 'flex-start' }}
                 >
-                  <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'rgba(0, 186, 219, 0.15)', border: '1px solid rgba(0, 186, 219, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', background: 'rgba(0, 108, 73, 0.15)', border: '1px solid rgba(0, 108, 73, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <step.icon size={18} style={{ color: 'var(--brand-cyan)' }} />
                   </div>
                   <div>
@@ -255,7 +255,7 @@ export default function TradeInProgram() {
           >
             <div style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)' }}>
               {/* Card header */}
-              <div style={{ padding: 'var(--spacing-16) var(--spacing-24)', background: 'rgba(0, 186, 219, 0.12)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ padding: 'var(--spacing-16) var(--spacing-24)', background: 'rgba(0, 108, 73, 0.12)', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '14px', color: 'white' }}>
                   Get an instant quote
                 </span>
@@ -305,7 +305,7 @@ export default function TradeInProgram() {
                               cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
                               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                             }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,186,219,0.15)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,186,219,0.4)'; }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,108,73,0.15)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,108,73,0.4)'; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)'; }}
                           >
                             {b}
@@ -334,7 +334,7 @@ export default function TradeInProgram() {
                               cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                               transition: 'all 0.15s',
                             }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,186,219,0.15)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,186,219,0.4)'; }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,108,73,0.15)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,108,73,0.4)'; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)'; }}
                           >
                             <span>{m.name}</span>
@@ -365,7 +365,7 @@ export default function TradeInProgram() {
                               textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                               transition: 'all 0.15s',
                             }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,186,219,0.15)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,186,219,0.4)'; }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,108,73,0.15)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(0,108,73,0.4)'; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(255,255,255,0.1)'; }}
                           >
                             <div>
@@ -385,7 +385,7 @@ export default function TradeInProgram() {
                   {formStep === 'quote' && (
                     <motion.div key="quote" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.22 }}>
                       {/* Quote display */}
-                      <div style={{ textAlign: 'center', padding: 'var(--spacing-20) 0', marginBottom: 'var(--spacing-20)', background: 'rgba(0,186,219,0.08)', borderRadius: '12px', border: '1px solid rgba(0,186,219,0.2)' }}>
+                      <div style={{ textAlign: 'center', padding: 'var(--spacing-20) 0', marginBottom: 'var(--spacing-20)', background: 'rgba(0,108,73,0.08)', borderRadius: '12px', border: '1px solid rgba(0,108,73,0.2)' }}>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
                           Your instant offer
                         </div>
@@ -468,7 +468,7 @@ export default function TradeInProgram() {
 
               {/* Footer tip */}
               {formStep === 'brand' && (
-                <div style={{ padding: 'var(--spacing-16) var(--spacing-24)', background: 'rgba(0, 186, 219, 0.06)', borderTop: '1px solid rgba(0, 186, 219, 0.18)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <div style={{ padding: 'var(--spacing-16) var(--spacing-24)', background: 'rgba(0, 108, 73, 0.06)', borderTop: '1px solid rgba(0, 108, 73, 0.18)', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                   <Lightbulb size={16} style={{ color: 'var(--brand-cyan)', flexShrink: 0, marginTop: '2px' }} />
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, margin: 0 }}>
                     <span style={{ fontWeight: 700, color: 'var(--brand-cyan)' }}>Tip: </span>

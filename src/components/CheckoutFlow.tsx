@@ -452,7 +452,7 @@ export default function CheckoutFlow() {
                         padding: '14px 16px',
                         borderRadius: 'var(--radius-lg)',
                         background: 'var(--color-brand-subtle)',
-                        border: '1px solid rgba(0,186,219,0.25)',
+                        border: '1px solid rgba(0,108,73,0.25)',
                         marginBottom: 'var(--spacing-24)',
                       }}
                     >
@@ -705,7 +705,7 @@ export default function CheckoutFlow() {
                       style={{
                         padding: '14px 16px',
                         background: 'var(--color-brand-subtle)',
-                        border: '1px solid rgba(0,186,219,0.25)',
+                        border: '1px solid rgba(0,108,73,0.25)',
                         borderRadius: 'var(--radius-md)',
                         fontFamily: 'var(--font-body)',
                         fontSize: '13px',

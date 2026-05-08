@@ -7,7 +7,7 @@ type ToastType = 'success' | 'error' | 'info' | 'warning';
 const TOAST_STYLES: Record<ToastType, { bg: string; border: string; iconColor: string; text: string }> = {
   success: { bg: 'var(--green-5)', border: 'var(--green-20)', iconColor: 'var(--green-60)', text: 'var(--black)' },
   error:   { bg: 'var(--color-sale-subtle)', border: '#fecaca', iconColor: 'var(--color-sale)', text: 'var(--black)' },
-  info:    { bg: 'var(--color-brand-subtle)', border: 'rgba(0, 186, 219, 0.25)', iconColor: 'var(--brand-cyan-hover)', text: 'var(--black)' },
+  info:    { bg: 'var(--color-brand-subtle)', border: 'rgba(0, 108, 73, 0.25)', iconColor: 'var(--brand-cyan-hover)', text: 'var(--black)' },
   warning: { bg: 'var(--color-warn-subtle)', border: '#fde68a', iconColor: 'var(--color-warn)', text: 'var(--black)' },
 };
 

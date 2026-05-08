@@ -126,7 +126,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                     value={formData.userName}
                     onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
                     placeholder="Enter your name"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,186,219,0.25)]"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,108,73,0.25)]"
                   />
                 </div>
 
@@ -156,7 +156,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                     onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                     placeholder="Share your experience with this product..."
                     rows={4}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,186,219,0.25)] resize-none"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,108,73,0.25)] resize-none"
                   />
                 </div>
 
