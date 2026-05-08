@@ -363,10 +363,10 @@ export default function Navbar(_: NavbarProps) {
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   height: 40,
-                  background: cartCount > 0 ? '#0f172a' : 'transparent',
+                  background: cartCount > 0 ? 'var(--brand-cyan)' : 'transparent',
                   color: cartCount > 0 ? 'white' : '#374151',
                   border: '1.5px solid',
-                  borderColor: cartCount > 0 ? '#0f172a' : '#e5e7eb',
+                  borderColor: cartCount > 0 ? 'var(--brand-cyan)' : '#e5e7eb',
                   borderRadius: '999px',
                   fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
                   textDecoration: 'none', whiteSpace: 'nowrap',
@@ -437,10 +437,10 @@ export default function Navbar(_: NavbarProps) {
                       padding: '0 12px', height: '100%',
                       fontFamily: 'var(--font-body)', fontSize: '14px',
                       fontWeight: isOpen || isActive ? 700 : 500,
-                      color: isOpen || isActive ? '#0f172a' : 'var(--grey-60)',
+                      color: isOpen || isActive ? 'var(--brand-cyan)' : 'var(--grey-60)',
                       background: 'transparent', border: 'none', cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      borderBottom: isOpen || isActive ? '2px solid #0f172a' : '2px solid transparent',
+                      borderBottom: isOpen || isActive ? '2px solid var(--brand-cyan)' : '2px solid transparent',
                       borderRadius: 0,
                       transition: 'all var(--duration-fast)',
                     }}
@@ -476,12 +476,12 @@ export default function Navbar(_: NavbarProps) {
                       fontFamily: 'var(--font-body)',
                       fontSize: '14px',
                       fontWeight: isOpen || isActive ? 700 : 500,
-                      color: isOpen || isActive ? '#0f172a' : 'var(--grey-60)',
+                      color: isOpen || isActive ? 'var(--brand-cyan)' : 'var(--grey-60)',
                       background: 'transparent',
                       border: 'none',
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      borderBottom: isOpen || isActive ? '2px solid #0f172a' : '2px solid transparent',
+                      borderBottom: isOpen || isActive ? '2px solid var(--brand-cyan)' : '2px solid transparent',
                       borderRadius: 0,
                       transition: 'all var(--duration-fast)',
                     }}
@@ -508,11 +508,11 @@ export default function Navbar(_: NavbarProps) {
                     alignItems: 'center',
                     gap: '6px',
                     padding: '0 12px',
-                    borderBottom: isActive ? '2px solid #0f172a' : '2px solid transparent',
+                    borderBottom: isActive ? '2px solid var(--brand-cyan)' : '2px solid transparent',
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
                     fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#0f172a' : 'var(--grey-60)',
+                    color: isActive ? 'var(--brand-cyan)' : 'var(--grey-60)',
                     background: 'transparent',
                     textDecoration: 'none',
                     whiteSpace: 'nowrap',
@@ -537,15 +537,15 @@ export default function Navbar(_: NavbarProps) {
                     fontFamily: 'var(--font-body)',
                     fontSize: '14px',
                     fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#0f172a' : 'var(--grey-60)',
+                    color: isActive ? 'var(--brand-cyan)' : 'var(--grey-60)',
                     textDecoration: 'none',
                     whiteSpace: 'nowrap',
-                    borderBottom: isActive ? '2px solid #0f172a' : '2px solid transparent',
+                    borderBottom: isActive ? '2px solid var(--brand-cyan)' : '2px solid transparent',
                     borderRadius: 0,
                     transition: 'all var(--duration-fast)',
                   }}
                   onMouseEnter={(e) => {
-                    if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = '#0f172a';
+                    if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = 'var(--brand-cyan)';
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = 'var(--grey-60)';

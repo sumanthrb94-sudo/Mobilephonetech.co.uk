@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 /**
  * Footer — BM spec Section 6
- * Dark background (grey-95/black), multi-column links,
+ * Light background, multi-column links,
  * social links, legal strip. Newsletter signup lives on the
  * homepage in NewsletterSignup.tsx — single source of capture.
  * Your DNA: Blue brand accent, Playfair + DM Sans
@@ -59,7 +59,7 @@ const LEGAL = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: '#0f172a', color: 'rgba(255,255,255,0.85)' }}>
+    <footer style={{ background: '#f8f9fa', color: '#191c1d' }}>
 
       {/* Newsletter strip removed — homepage NewsletterSignup component
           owns lead capture now. Keeping a duplicate here meant users
@@ -100,11 +100,11 @@ export default function Footer() {
                   fontWeight: 900,
                   fontSize: '17px',
                   letterSpacing: '-0.04em',
-                  color: 'white',
+                  color: '#0f172a',
                 }}
               >
                 mobile<span style={{ color: 'var(--brand-cyan)' }}>tech</span>
-                <span style={{ color: 'rgba(255,255,255,0.35)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
+                <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
               </span>
             </Link>
 
@@ -112,7 +112,7 @@ export default function Footer() {
               style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: '13px',
-                color: 'rgba(255,255,255,0.45)',
+                color: '#6b7280',
                 lineHeight: 1.65,
                 marginBottom: 'var(--spacing-20)',
                 maxWidth: '240px',
@@ -129,8 +129,8 @@ export default function Footer() {
                 alignItems: 'center',
                 gap: '10px',
                 padding: '10px 14px',
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.08)',
+                background: '#ffffff',
+                border: '1px solid #e5e7eb',
                 borderRadius: 'var(--radius-md)',
                 marginBottom: 'var(--spacing-24)',
               }}
@@ -140,8 +140,8 @@ export default function Footer() {
                   <Star key={i} size={12} fill="var(--color-star)" style={{ color: 'var(--color-star)' }} />
                 ))}
               </div>
-              <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: 'white' }}>4.9</span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Trustpilot</span>
+              <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: '#111827' }}>4.9</span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#9ca3af' }}>Trustpilot</span>
             </div>
 
             {/* Social icons */}
@@ -157,10 +157,10 @@ export default function Footer() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: '#ffffff',
+                    border: '1px solid #e5e7eb',
                     borderRadius: 'var(--radius-md)',
-                    color: 'rgba(255,255,255,0.5)',
+                    color: '#6b7280',
                     textDecoration: 'none',
                     transition: 'all var(--duration-fast)',
                   }}
@@ -170,9 +170,9 @@ export default function Footer() {
                     (e.currentTarget as HTMLAnchorElement).style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.06)';
-                    (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.08)';
-                    (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.5)';
+                    (e.currentTarget as HTMLAnchorElement).style.background = '#ffffff';
+                    (e.currentTarget as HTMLAnchorElement).style.borderColor = '#e5e7eb';
+                    (e.currentTarget as HTMLAnchorElement).style.color = '#6b7280';
                   }}
                 >
                   <s.icon size={16} />
@@ -191,7 +191,7 @@ export default function Footer() {
                   fontWeight: 700,
                   letterSpacing: '0.12em',
                   textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: '#9ca3af',
                   marginBottom: 'var(--spacing-16)',
                 }}
               >
@@ -205,13 +205,13 @@ export default function Footer() {
                       style={{
                         fontFamily: 'var(--font-body)',
                         fontSize: '14px',
-                        color: 'rgba(255,255,255,0.4)',
+                        color: '#6b7280',
                         textDecoration: 'none',
                         transition: 'color var(--duration-fast)',
                         fontWeight: 400,
                       }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.85)'; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.4)'; }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#111827'; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#6b7280'; }}
                     >
                       {link.label}
                     </Link>
@@ -224,7 +224,7 @@ export default function Footer() {
       </div>
 
       {/* ── Payment + Certifications strip ──────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ borderTop: '1px solid #e5e7eb' }}>
         <div
           className="container-bm py-6"
           style={{
@@ -243,7 +243,7 @@ export default function Footer() {
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: '#9ca3af',
                 }}
               >
                 Payments
@@ -265,15 +265,15 @@ export default function Footer() {
                     alignItems: 'center',
                     height: '24px',
                     padding: '0 9px',
-                    background: 'rgba(255,255,255,0.06)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: '#ffffff',
+                    border: '1px solid #e5e7eb',
                     borderRadius: 'var(--radius-sm)',
                     fontFamily: 'var(--font-sans)',
                     fontSize: '11px',
                     fontWeight: p.fontWeight,
                     letterSpacing: p.letterSpacing,
                     fontStyle: p.italic ? 'italic' : 'normal',
-                    color: 'rgba(255,255,255,0.7)',
+                    color: '#374151',
                     whiteSpace: 'nowrap',
                   }}
                 >
@@ -290,7 +290,7 @@ export default function Footer() {
                   fontWeight: 700,
                   letterSpacing: '0.08em',
                   textTransform: 'uppercase',
-                  color: 'rgba(255,255,255,0.5)',
+                  color: '#9ca3af',
                 }}
               >
                 Certified
@@ -328,7 +328,7 @@ export default function Footer() {
       </div>
 
       {/* ── Legal strip ──────────────────────── */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ borderTop: '1px solid #e5e7eb' }}>
           <div
             className="container-bm py-6"
             style={{
@@ -343,7 +343,7 @@ export default function Footer() {
               style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: '12px',
-                color: 'rgba(255,255,255,0.35)',
+                color: '#9ca3af',
               }}
             >
               © 2026 MobilePhoneMarket.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
@@ -356,12 +356,12 @@ export default function Footer() {
                   style={{
                     fontFamily: 'var(--font-body)',
                     fontSize: '12px',
-                    color: 'rgba(255,255,255,0.35)',
+                    color: '#9ca3af',
                     textDecoration: 'none',
                     transition: 'color var(--duration-fast)',
                   }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.6)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.35)'; }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#374151'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#9ca3af'; }}
                 >
                   {item.label}
                 </Link>

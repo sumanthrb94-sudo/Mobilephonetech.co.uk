@@ -88,10 +88,10 @@ function TabPanel({ phone }: { phone: Product }) {
               fontFamily: 'var(--font-body)',
               fontSize: '14px',
               fontWeight: tab === id ? 700 : 500,
-              color: tab === id ? 'var(--black)' : 'var(--grey-50)',
+              color: tab === id ? 'var(--brand-cyan)' : 'var(--grey-50)',
               background: 'none',
               border: 'none',
-              borderBottom: tab === id ? '2px solid var(--black)' : '2px solid transparent',
+              borderBottom: tab === id ? '2px solid var(--brand-cyan)' : '2px solid transparent',
               marginBottom: '-1px',
               cursor: 'pointer',
               whiteSpace: 'nowrap',
@@ -397,7 +397,7 @@ export default function ProductDetail() {
                 borderRadius: 'var(--radius-xl)',
                 aspectRatio: '1/1',
                 overflow: 'hidden',
-                background: 'var(--grey-5)',
+                background: '#111827',
                 touchAction: 'pan-y',
               }}
             >

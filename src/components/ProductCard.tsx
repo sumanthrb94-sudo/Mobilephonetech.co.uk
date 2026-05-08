@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, Star, ShieldCheck, Truck } from 'lucide-react';
+import { Heart, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product, ProductGrade } from '../types';
 import { useWishlist } from '../context/WishlistContext';
@@ -131,7 +131,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
         {/* ── Image zone ── */}
         <div style={{
           position: 'relative',
-          background: 'linear-gradient(160deg, #f8fafc 0%, #f1f5f9 100%)',
+          background: '#111827',
           aspectRatio: '1 / 1',
           display: 'flex',
           alignItems: 'center',
@@ -149,24 +149,10 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             alt={phone.model}
           />
 
-          {/* Save % — top left */}
-          {savingsPct > 0 && (
-            <span style={{
-              position: 'absolute', top: 12, left: 12,
-              background: '#16a34a', color: '#fff',
-              fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 800,
-              letterSpacing: '0.04em', textTransform: 'uppercase',
-              padding: '4px 9px', borderRadius: '999px',
-              lineHeight: 1,
-            }}>
-              SAVE {savingsPct}%
-            </span>
-          )}
-
-          {/* Grade badge — top right */}
+          {/* Grade badge — top left */}
           {phone.grade && (
             <span style={{
-              position: 'absolute', top: 12, right: 48,
+              position: 'absolute', top: 12, left: 12,
               display: 'inline-flex', alignItems: 'center', gap: 4,
               background: GRADE_BG[phone.grade],
               padding: '4px 9px', borderRadius: '999px',
@@ -176,6 +162,20 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             }}>
               <span style={{ width: 5, height: 5, borderRadius: '50%', background: GRADE_DOT[phone.grade], flexShrink: 0 }} />
               {phone.grade}
+            </span>
+          )}
+
+          {/* Save % — bottom left */}
+          {savingsPct > 0 && (
+            <span style={{
+              position: 'absolute', bottom: 12, left: 12,
+              background: '#16a34a', color: '#fff',
+              fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 800,
+              letterSpacing: '0.04em', textTransform: 'uppercase',
+              padding: '4px 9px', borderRadius: '999px',
+              lineHeight: 1,
+            }}>
+              SAVE {savingsPct}%
             </span>
           )}
 
@@ -295,20 +295,6 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             </div>
           )}
 
-          {/* Stars */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 10 }}>
-            {[1,2,3,4,5].map(s => (
-              <Star key={s} size={11} style={{
-                fill: s <= Math.round(rating) ? '#F59E0B' : 'transparent',
-                color: '#F59E0B',
-                strokeWidth: 1.5,
-              }} />
-            ))}
-            <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#9CA3AF', marginLeft: 3 }}>
-              ({Math.floor(rating * 10)} reviews)
-            </span>
-          </div>
-
           <div style={{ flexGrow: 1 }} />
 
           {/* Price row */}
@@ -329,31 +315,13 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Trust micro-row */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontFamily: 'var(--font-body)', fontSize: '10px',
-              fontWeight: 600, color: '#16a34a',
-            }}>
-              <Truck size={11} strokeWidth={2} /> Free delivery
-            </span>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              fontFamily: 'var(--font-body)', fontSize: '10px',
-              fontWeight: 600, color: '#6B7280',
-            }}>
-              <ShieldCheck size={11} strokeWidth={2} /> 12m warranty
-            </span>
-          </div>
-
           {/* CTA */}
           <button
             onClick={handleViewProduct}
             aria-label={`View ${phone.model} details`}
             style={{
               width: '100%', height: 48,
-              background: '#0f172a',
+              background: 'var(--brand-cyan)',
               color: '#fff',
               fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800,
               letterSpacing: '-0.01em',
@@ -362,11 +330,12 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'background 0.18s, transform 0.12s',
               transform: 'translateZ(0)',
+              marginTop: 14,
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#1e293b')}
-            onMouseLeave={e => (e.currentTarget.style.background = '#0f172a')}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-cyan-hover)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-cyan)')}
           >
-            View device
+            Buy Now <ArrowRight size={14} style={{marginLeft: 6}} />
           </button>
         </div>
       </motion.article>
