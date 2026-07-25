@@ -1,4 +1,4 @@
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import { ArrowRight, SlidersHorizontal } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -13,10 +13,11 @@ const BRAND_TABS = [
 
 export default function FeaturedProducts() {
   const [activeTab, setActiveTab] = React.useState('all');
+  const { products } = useCatalogue();
 
   const filtered = activeTab === 'all'
-    ? MOCK_PHONES.slice(0, 8)
-    : MOCK_PHONES.filter((p) => p.brand === activeTab).slice(0, 8);
+    ? products.slice(0, 8)
+    : products.filter((p) => p.brand === activeTab).slice(0, 8);
 
   return (
     <section
@@ -72,7 +73,7 @@ export default function FeaturedProducts() {
             onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--black)'; }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = 'var(--grey-60)'; }}
           >
-            View all {MOCK_PHONES.length} devices <ArrowRight size={15} />
+            View all {products.length} devices <ArrowRight size={15} />
           </a>
         </div>
 
@@ -192,7 +193,7 @@ export default function FeaturedProducts() {
             id="products-see-all-btn"
             style={{ textDecoration: 'none' }}
           >
-            Browse all {MOCK_PHONES.length} certified devices <ArrowRight size={18} />
+            Browse all {products.length} certified devices <ArrowRight size={18} />
           </a>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-40)' }}>
             Every device includes 12-month warranty &amp; free next-day delivery

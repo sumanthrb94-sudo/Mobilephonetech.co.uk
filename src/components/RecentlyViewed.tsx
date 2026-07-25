@@ -1,5 +1,5 @@
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 
 /**
@@ -8,10 +8,11 @@ import ProductCard from './ProductCard';
  */
 export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
   const { ids, clear } = useRecentlyViewed();
+  const { products } = useCatalogue();
   const items = ids
     .filter((id) => id !== excludeId)
-    .map((id) => MOCK_PHONES.find((p) => p.id === id))
-    .filter(Boolean) as typeof MOCK_PHONES;
+    .map((id) => products.find((p) => p.id === id))
+    .filter(Boolean) as typeof products;
 
   if (items.length === 0) return null;
 

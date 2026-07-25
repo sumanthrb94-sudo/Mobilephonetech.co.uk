@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -99,8 +99,8 @@ const PANELS: SeriesPanel[] = [
   },
 ];
 
-function getSeriesProducts(panel: SeriesPanel): Product[] {
-  const matching = MOCK_PHONES.filter(panel.match);
+function getSeriesProducts(catalogue: Product[], panel: SeriesPanel): Product[] {
+  const matching = catalogue.filter(panel.match);
   const seen = new Set<string>();
   const deduped: Product[] = [];
   for (const p of matching) {
@@ -114,10 +114,11 @@ function getSeriesProducts(panel: SeriesPanel): Product[] {
 }
 
 export default function BrandShowcase() {
+  const { products: catalogue } = useCatalogue();
   return (
     <div id="products">
       {PANELS.map((panel) => {
-        const products = getSeriesProducts(panel);
+        const products = getSeriesProducts(catalogue, panel);
         if (products.length === 0) return null;
         return <Panel key={panel.id} panel={panel} products={products} />;
       })}

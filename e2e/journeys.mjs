@@ -47,6 +47,8 @@ async function run(view, contextOpts) {
     await shot(page, view, 'home');
     const t = await txt(page);
     rec(view, 'Home renders', t.length > 2000 ? 'PASS' : 'FAIL', `${t.length} chars`);
+    const homeCards = await page.locator('[aria-label^="View "]').count();
+    rec(view, 'Home shows catalogue-driven products', homeCards > 0 ? 'PASS' : 'FAIL', `${homeCards} cards`);
   } catch (e) { rec(view, 'Home renders', 'FAIL', e.message.slice(0, 100)); }
 
   // ── Products grid ──
@@ -90,8 +92,10 @@ async function run(view, contextOpts) {
     await page.waitForTimeout(2500);
     await dismissCookies(page);
     if (isMobile) {
-      const menu = page.locator('[aria-label="Open menu"]').first();
-      if (await menu.count()) { await menu.click(); await page.waitForTimeout(1100); }
+      // The desktop autocomplete input shares this label, so match the button.
+      const toggle = page.locator('button[aria-label="Search products"]').first();
+      await toggle.click();
+      await page.waitForTimeout(900);
     }
     const input = page.locator('input:visible').filter({ has: undefined })
       .and(page.getByPlaceholder(/search/i)).first();
@@ -170,6 +174,16 @@ async function run(view, contextOpts) {
       rec(view, 'Auth modal opens', /password|email/i.test(await txt(page)) ? 'PASS' : 'WARN');
     } else rec(view, 'Auth modal opens', 'WARN', 'no sign-in control found');
   } catch (e) { rec(view, 'Auth modal opens', 'FAIL', e.message.slice(0, 100)); }
+
+  // ── Compare ──
+  try {
+    await page.goto(`${BASE}/compare`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(3000);
+    await dismissCookies(page);
+    await shot(page, view, 'compare');
+    const t = await txt(page);
+    rec(view, 'Compare page renders', t.length > 300 ? 'PASS' : 'FAIL');
+  } catch (e) { rec(view, 'Compare page renders', 'FAIL', e.message.slice(0, 100)); }
 
   // ── Wishlist + 404 ──
   try {

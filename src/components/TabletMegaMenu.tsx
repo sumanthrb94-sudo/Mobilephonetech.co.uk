@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, X, Apple, Smartphone } from 'lucide-react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
+import type { Product } from '../types';
 
 /**
  * TabletMegaMenu — mirrors BrandMegaMenu visually but splits the
@@ -10,8 +11,8 @@ import { MOCK_PHONES } from '../data';
  * "iPad") and Android tablets (everything else in category Tablets).
  */
 
-function getTablets() {
-  const tablets = MOCK_PHONES.filter(p => p.category === 'Tablets');
+function getTablets(catalogue: Product[]) {
+  const tablets = catalogue.filter(p => p.category === 'Tablets');
   const ipads    = Array.from(new Set(tablets.filter(p => p.brand === 'Apple').map(p => p.model)));
   const androids = Array.from(new Set(tablets.filter(p => p.brand !== 'Apple').map(p => p.model)));
   // Newest-first heuristic: higher year numbers first, then the rest alphabetical.
@@ -34,7 +35,8 @@ export default function TabletMegaMenu({
   anchorTop?: number;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const { ipads, androids } = useMemo(getTablets, []);
+  const { products } = useCatalogue();
+  const { ipads, androids } = useMemo(() => getTablets(products), [products]);
 
   useEffect(() => {
     if (!isOpen) return;

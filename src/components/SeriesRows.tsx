@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import type { Product } from '../types';
 
@@ -71,8 +71,8 @@ const SERIES: SeriesConfig[] = [
   },
 ];
 
-function firstVariantProducts(configs: SeriesConfig): Product[] {
-  const matching = MOCK_PHONES.filter(configs.match);
+function firstVariantProducts(catalogue: Product[], configs: SeriesConfig): Product[] {
+  const matching = catalogue.filter(configs.match);
   // Dedupe by model — first match wins, so the cheapest/first storage is shown.
   const seen = new Set<string>();
   const deduped: Product[] = [];
@@ -87,6 +87,7 @@ function firstVariantProducts(configs: SeriesConfig): Product[] {
 }
 
 export default function SeriesRows() {
+  const { products: catalogue } = useCatalogue();
   return (
     <section
       className="section-y"
@@ -122,7 +123,7 @@ export default function SeriesRows() {
         </div>
 
         {SERIES.map((s) => {
-          const products = firstVariantProducts(s);
+          const products = firstVariantProducts(catalogue, s);
           if (products.length === 0) return null;
           return <SeriesRail key={s.id} config={s} products={products} />;
         })}
@@ -139,7 +140,7 @@ export default function SeriesRows() {
           }}
         >
           <Link to="/products" className="btn btn-primary btn-lg" style={{ textDecoration: 'none' }}>
-            Browse all {MOCK_PHONES.length} certified devices <ArrowRight size={18} />
+            Browse all {catalogue.length} certified devices <ArrowRight size={18} />
           </Link>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-40)' }}>
             Every device includes 12-month warranty &amp; free next-day delivery

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Product } from '../types';
 import ProductCard from './ProductCard';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import { motion } from 'motion/react';
 
 interface RelatedProductsSectionProps {
@@ -9,8 +9,9 @@ interface RelatedProductsSectionProps {
 }
 
 export default function RelatedProductsSection({ currentProduct }: RelatedProductsSectionProps) {
+  const { products } = useCatalogue();
   const relatedProducts = useMemo(() => {
-    return MOCK_PHONES.filter(phone => {
+    return products.filter(phone => {
       // Exclude current product
       if (phone.id === currentProduct.id) return false;
       
@@ -22,7 +23,7 @@ export default function RelatedProductsSection({ currentProduct }: RelatedProduc
       
       return false;
     }).slice(0, 4); // Show max 4 related products
-  }, [currentProduct]);
+  }, [currentProduct, products]);
 
   if (relatedProducts.length === 0) {
     return null;

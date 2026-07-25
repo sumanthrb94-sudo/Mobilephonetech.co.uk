@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, X } from 'lucide-react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
+import type { Product } from '../types';
 
 /**
  * BrandMegaMenu — an expanding panel that lists every model of a given
@@ -10,7 +11,7 @@ import { MOCK_PHONES } from '../data';
  * pattern: pill-triggered dropdown with "All Refurbished {Brand}" at
  * the top, then one clickable row per model.
  *
- * Pulls models from MOCK_PHONES so the list stays in sync with the
+ * Pulls models from the live catalogue so the list stays in sync with the
  * catalogue. Groups by brand, de-duplicates models, sorts alphabetically
  * with a light newest-first bias (Pro Max > Pro > Plus > base) via a
  * simple scoring pass.
@@ -33,8 +34,8 @@ function modelScore(model: string): number {
   return 40;
 }
 
-function getModels(brand: Brand): string[] {
-  const all = MOCK_PHONES.filter((p) => p.brand === brand).map((p) => p.model);
+function getModels(catalogue: Product[], brand: Brand): string[] {
+  const all = catalogue.filter((p) => p.brand === brand).map((p) => p.model);
   const unique = Array.from(new Set(all));
   // Rough newest-first ordering — any numeric year/version, DESC, then score, then alphabetical.
   return unique.sort((a, b) => {
@@ -61,7 +62,8 @@ export default function BrandMegaMenu({
   anchorTop?: number;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const models = useMemo(() => getModels(brand), [brand]);
+  const { products } = useCatalogue();
+  const models = useMemo(() => getModels(products, brand), [products, brand]);
 
   // Click outside + Escape to close
   useEffect(() => {

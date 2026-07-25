@@ -3,7 +3,7 @@ import { Product, FilterState, ProductGrade } from '../types';
 import { MOCK_PHONES } from '../data';
 import { supabase } from '../lib/supabase';
 
-function rowToProduct(row: Record<string, unknown>): Product {
+export function rowToProduct(row: Record<string, unknown>): Product {
   return {
     id: row.id as string,
     model: row.model as string,

@@ -34,6 +34,7 @@ import { CheckoutProvider } from './context/CheckoutContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
 import { UIProvider } from './context/UIContext';
+import { CatalogueProvider } from './context/CatalogueContext';
 import Toast from './components/Toast';
 import { useSeo } from './hooks/useSeo';
 import { homeSeo } from './utils/seo';
@@ -360,15 +361,17 @@ export default function App() {
       <MotionConfig reducedMotion="user">
         <UIProvider>
           <AuthProvider>
-            <CartProvider>
-              <SearchProvider>
-                <CheckoutProvider>
-                  <WishlistProvider>
-                    <AppContent />
-                  </WishlistProvider>
-                </CheckoutProvider>
-              </SearchProvider>
-            </CartProvider>
+            <CatalogueProvider>
+              <CartProvider>
+                <SearchProvider>
+                  <CheckoutProvider>
+                    <WishlistProvider>
+                      <AppContent />
+                    </WishlistProvider>
+                  </CheckoutProvider>
+                </SearchProvider>
+              </CartProvider>
+            </CatalogueProvider>
           </AuthProvider>
         </UIProvider>
       </MotionConfig>

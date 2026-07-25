@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import { Phone } from '../types';
 import { X, Plus, Search, Scale } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,7 +11,8 @@ export default function ComparisonTool() {
   const [isAdding, setIsAdding] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('Phones');
 
-  const selectedPhones = selectedIds.map(id => MOCK_PHONES.find(p => p.id === id)).filter(Boolean) as Phone[];
+  const { products } = useCatalogue();
+  const selectedPhones = selectedIds.map(id => products.find(p => p.id === id)).filter(Boolean) as Phone[];
 
   const addPhone = (id: string) => {
     if (selectedIds.length < 3 && !selectedIds.includes(id)) {
@@ -25,7 +26,7 @@ export default function ComparisonTool() {
     setSelectedIds(selectedIds.filter(i => i !== id));
   };
 
-  const filteredPhones = MOCK_PHONES.filter(p => 
+  const filteredPhones = products.filter(p => 
     p.category === activeCategory &&
     p.model.toLowerCase().includes(searchTerm.toLowerCase()) && 
     !selectedIds.includes(p.id)

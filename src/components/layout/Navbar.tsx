@@ -34,6 +34,7 @@ const CATEGORIES = [
 
 export default function Navbar(_: NavbarProps) {
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
   const [isAccountOpen, setIsAccountOpen]         = useState(false);
 
@@ -225,6 +226,35 @@ export default function Navbar(_: NavbarProps) {
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
+              {/* Search — phones/tablets only; desktop has the inline bar above.
+                  Without this, search was reachable only from the burger menu. */}
+              <button
+                className="lg:hidden"
+                onClick={() => setIsMobileSearchOpen(v => !v)}
+                aria-label="Search products"
+                aria-expanded={isMobileSearchOpen}
+                aria-controls="mobile-search-bar"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  padding: '4px 8px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  border: 'none',
+                  backgroundColor: 'transparent',
+                  width: '40px',
+                  height: '40px',
+                }}
+              >
+                <Search size={22} style={{ color: '#374151' }} />
+                <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: '#6b7280', lineHeight: 1 }}>
+                  Search
+                </span>
+              </button>
+
               {/* Profile Menu Dropdown */}
               <div style={{ position: 'relative' }} ref={dropdownRef}>
                 <button
@@ -391,7 +421,24 @@ export default function Navbar(_: NavbarProps) {
               </Link>
             </div>
           </div>
+
         </header>
+
+        {/* Expanding mobile search row. Sits outside <header> deliberately: the
+            header is a fixed-height flex row, so a child here collapses to 0px. */}
+        {isMobileSearchOpen && (
+          <div
+            id="mobile-search-bar"
+            className="lg:hidden"
+            style={{
+              padding: '12px 16px',
+              borderTop: '1px solid var(--grey-10)',
+              background: 'white',
+            }}
+          >
+            <SearchAutocomplete />
+          </div>
+        )}
 
         {/* ═══════════════════════════════════════════════════
             CATEGORY NAV BAR — 48px — horizontal scroll

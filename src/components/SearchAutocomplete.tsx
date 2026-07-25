@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import { useSearch } from '../context/SearchContext';
 import ProductImage from './ProductImage';
 
@@ -26,7 +26,7 @@ function saveRecent(list: string[]) {
 
 /**
  * SearchAutocomplete — navbar search input + dropdown results.
- * - Debounced fuzzy match against MOCK_PHONES
+ * - Debounced fuzzy match against the live catalogue
  * - Persisted recent searches
  * - Keyboard navigation (↑/↓ to move, Enter to submit or open, Esc to close)
  * - Click-outside dismiss
@@ -37,6 +37,7 @@ export default function SearchAutocomplete({
   placeholder?: string;
 }) {
   const { searchQuery, setSearchQuery } = useSearch();
+  const { products } = useCatalogue();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -56,12 +57,12 @@ export default function SearchAutocomplete({
   const matches = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
-    return MOCK_PHONES.filter((p) =>
+    return products.filter((p) =>
       p.model.toLowerCase().includes(q) ||
       p.brand.toLowerCase().includes(q) ||
       p.category.toLowerCase().includes(q),
     ).slice(0, 6);
-  }, [searchQuery]);
+  }, [searchQuery, products]);
 
   const showPanel = isOpen && (searchQuery.trim().length > 0 || recent.length > 0);
 
@@ -101,7 +102,10 @@ export default function SearchAutocomplete({
   };
 
   return (
-    <div ref={containerRef} className="hidden md:flex flex-grow max-w-xl relative" role="search">
+    // Visibility is the caller's job: the desktop navbar wraps this in
+    // `hidden lg:block`, and the mobile search row shows it on demand. Owning a
+    // `hidden md:flex` here made the component invisible inside the mobile row.
+    <div ref={containerRef} className="flex flex-grow max-w-xl relative" role="search">
       <form
         onSubmit={(e) => { e.preventDefault(); submit(); }}
         style={{ position: 'relative', width: '100%' }}

@@ -1,7 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useProducts } from '../hooks/useProducts';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
 import { SlidersHorizontal, ChevronDown, SearchX, X } from 'lucide-react';
@@ -142,13 +141,13 @@ export default function ProductsPage() {
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
-  // Pull the whole catalogue in one query — this page filters client-side, and
-  // the inventory is small enough (~133) that paging it server-side would only
-  // break the filter counts below.
-  const { products: catalogue, fromSupabase, isLoading: catalogueLoading } = useProducts({ pageSize: 200 });
+  // Shared catalogue: fetched once by CatalogueProvider and reused across the
+  // app. It is seeded with the bundled data and swapped for live rows, so it is
+  // never empty — this page filters it client-side.
+  const { products: catalogue, fromSupabase, isLoading: catalogueLoading } = useCatalogue();
 
   const scopedProducts = useMemo(() => {
-    const productsToFilter = catalogue.length > 0 ? catalogue : MOCK_PHONES;
+    const productsToFilter = catalogue;
     return productsToFilter.filter(product => {
       if (brandParam && modelParam) {
         // Prefix match: lets series-level "See all" links (model=iPhone 17
@@ -182,13 +181,13 @@ export default function ProductsPage() {
       return true;
     });
     // `catalogue` must stay in the deps: it arrives asynchronously, so without
-    // it this memo keeps returning the MOCK_PHONES fallback it computed on the
-    // first render and the live catalogue never reaches the grid.
+    // it this memo keeps returning the fallback it computed on the first
+    // render and the live catalogue never reaches the grid.
   }, [catalogue, brandCategory, selectedDepartment, brandParam, modelParam, dealOnly]);
 
   const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
   const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
-  const allProducts = catalogue.length > 0 ? catalogue : MOCK_PHONES;
+  const allProducts = catalogue;
   const categories = Array.from(new Set(allProducts.map(p => p.category)));
 
   const filteredProducts = useMemo(() => {

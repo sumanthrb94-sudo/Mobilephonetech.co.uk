@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 
 /**
@@ -20,6 +20,7 @@ const loadGsmarena = (): Promise<GsmarenaEntry[]> => {
 };
 
 export default function AIAssistant() {
+  const { products } = useCatalogue();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
     { role: 'assistant', content: 'Hi there! I\'m your Tech Advisor. Looking for a specific phone or need advice on specs?' }
@@ -55,7 +56,7 @@ export default function AIAssistant() {
         Your goal is to help users navigate our catalog of smartphones, chargers, and accessories.
 
         CATALOG HIGHLIGHTS (OUR INVENTORY):
-        ${MOCK_PHONES.map(p => `${p.model} (${p.brand}): £${p.price}, Grade: ${p.grade}`).join('\n')}
+        ${products.map(p => `${p.model} (${p.brand}): £${p.price}, Grade: ${p.grade}`).join('\n')}
 
         DEEP TECHNICAL KNOWLEDGE (FROM GSMARENA):
         ${relevantData.length > 0
