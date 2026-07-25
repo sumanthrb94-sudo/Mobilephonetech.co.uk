@@ -11,6 +11,7 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "seo": "node scripts/generate-seo-assets.mjs",
+    "db:bootstrap": "./scripts/bootstrap-db.sh",
     "db:seed": "npx tsx scripts/seed-supabase.ts",
     "db:types": "npx supabase gen types typescript --linked > src/lib/database.types.ts",
     "test": "vitest run",
