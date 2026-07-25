@@ -4,27 +4,30 @@
  *
  * Usage:
  *   VITE_SUPABASE_URL=https://xxx.supabase.co \
- *   VITE_SUPABASE_ANON_KEY=eyJ... \
+ *   SUPABASE_SERVICE_ROLE_KEY=eyJ... \
  *   npx tsx scripts/seed-supabase.ts
  *
- * Or use the service-role key for bypassing RLS:
- *   SUPABASE_SERVICE_ROLE_KEY=eyJ... npx tsx scripts/seed-supabase.ts
+ * The service-role key is required — `products` and `product_variants` have RLS
+ * enabled with SELECT-only policies, so the anon key cannot insert.
  */
 
 import { createClient } from '@supabase/supabase-js';
 import { MOCK_PHONES } from '../src/data';
 
 const url = process.env.VITE_SUPABASE_URL;
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!url || !key) {
-  console.error('Set VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or VITE_SUPABASE_ANON_KEY)');
+  console.error('Set VITE_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+  console.error('The anon key will not work: products/product_variants are SELECT-only under RLS.');
   process.exit(1);
 }
 
 const supabase = createClient(url, key);
 
 const BATCH = 50;
+
+let failed = 0;
 
 async function seed() {
   console.log(`Seeding ${MOCK_PHONES.length} products…`);
@@ -61,6 +64,7 @@ async function seed() {
       .upsert(batch, { onConflict: 'id' });
 
     if (error) {
+      failed++;
       console.error(`Batch ${i / BATCH + 1} failed:`, error.message);
     } else {
       console.log(`  ✓ ${Math.min(i + BATCH, rows.length)} / ${rows.length}`);
@@ -93,6 +97,7 @@ async function seed() {
         .upsert(batch, { onConflict: 'id' });
 
       if (error) {
+        failed++;
         console.error(`Variant batch ${i / BATCH + 1} failed:`, error.message);
       } else {
         console.log(`  ✓ ${Math.min(i + BATCH, variantRows.length)} / ${variantRows.length}`);
@@ -100,7 +105,28 @@ async function seed() {
     }
   }
 
-  console.log('\nDone.');
+  // Verify the rows actually landed, rather than trusting the writes
+  const { count, error: verifyErr } = await supabase
+    .from('products')
+    .select('id', { count: 'exact', head: true });
+
+  if (verifyErr) {
+    console.error('\nVerification query failed:', verifyErr.message);
+    process.exit(1);
+  }
+
+  console.log(`\nVerified ${count ?? 0} products in the database.`);
+
+  if (failed > 0) {
+    console.error(`Seed FAILED — ${failed} batch(es) did not write.`);
+    process.exit(1);
+  }
+  if (!count) {
+    console.error('Seed FAILED — products table is empty after seeding.');
+    process.exit(1);
+  }
+
+  console.log('Done.');
 }
 
 seed().catch(err => { console.error(err); process.exit(1); });
