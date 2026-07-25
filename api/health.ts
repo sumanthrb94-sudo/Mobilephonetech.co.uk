@@ -37,6 +37,23 @@ export default async function handler(req: any, res: any) {
     checks.productRows = count ?? 0;
     checks.latencyMs   = Date.now() - started;
 
+    // Report which auth providers GoTrue actually has enabled. /auth/v1/settings
+    // is public, and this is the only way to confirm an OAuth provider is live
+    // without opening the dashboard.
+    try {
+      const s = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } });
+      if (s.ok) {
+        const settings = await s.json() as { external?: Record<string, boolean> };
+        const enabled = Object.entries(settings.external ?? {})
+          .filter(([, on]) => on)
+          .map(([name]) => name);
+        checks.authProviders = enabled.length ? enabled : ['email only'];
+        checks.googleSignIn  = enabled.includes('google') ? 'enabled' : 'NOT enabled';
+      }
+    } catch {
+      checks.authProviders = 'could not read auth settings';
+    }
+
     // Reachable but empty still cannot serve a storefront, so report it as
     // degraded rather than letting the mock-data fallback disguise it.
     if (!count) {
