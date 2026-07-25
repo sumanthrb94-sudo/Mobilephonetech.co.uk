@@ -7,3 +7,9 @@ coverage/
 .env*
 !.env.example
 .env.local
+
+# Firebase service account keys — never commit
+*service-account*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+sa-key.json
