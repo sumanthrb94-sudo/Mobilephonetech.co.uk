@@ -1297,3 +1297,16 @@ html.is-checkout .ai-fab {
   font-size: clamp(13px, 1.5vw, 15px);
   text-align: center;
 }
+/* ── Product grid ──────────────────────────────────────────────
+   Phones get a fixed two-up. A single auto-fill rule cannot serve
+   both cases: a 240px minimum leaves phones with one column, and a
+   155px minimum leaves a 1440px desktop with six cramped ones. */
+.product-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}

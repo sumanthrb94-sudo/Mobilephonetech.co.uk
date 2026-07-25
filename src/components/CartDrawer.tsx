@@ -1,13 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Bookmark, Loader2 } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Bookmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import ProductImage from './ProductImage';
-import shopifyService from '../services/shopify';
 
 /**
  * CartDrawer — right-anchored slide-in panel.
@@ -26,7 +25,6 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const { showToast } = useUI();
   const navigate = useNavigate();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const saveForLater = (itemId: string) => {
     const item = items.find((i) => i.id === itemId);
@@ -37,33 +35,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     import('../utils/haptics').then((m) => m.haptic('tap'));
   };
 
-  const handleCheckout = async () => {
-    if (checkoutLoading) return;
-
-    // Build Shopify line items from cart — only items with a Shopify variant ID
-    const lineItems = items.flatMap((item) =>
-      item.variants?.[0]?.id
-        ? [{ variantId: item.variants[0].id, quantity: item.quantity }]
-        : []
-    );
-
-    if (lineItems.length > 0 && shopifyService.isConfigured()) {
-      setCheckoutLoading(true);
-      try {
-        const checkout = await shopifyService.createCheckout(lineItems);
-        if (checkout?.webUrl) {
-          onClose();
-          window.location.href = checkout.webUrl;
-          return;
-        }
-      } catch {
-        // fall through to demo checkout on error
-      } finally {
-        setCheckoutLoading(false);
-      }
-    }
-
-    // Fallback: demo checkout for mock products or when Shopify isn't configured
+  const handleCheckout = () => {
+    // Checkout is served by our own flow. The previous Shopify branch here was
+    // dead — the storefront credentials are legacy and unset, so isConfigured()
+    // always returned false and every call fell through to this same path.
     setCurrentStep('shipping');
     onClose();
     navigate('/checkout');
@@ -263,13 +238,10 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                 <button
                   onClick={handleCheckout}
-                  disabled={checkoutLoading}
                   className="btn btn-primary btn-lg btn-full"
-                  style={{ marginBottom: '12px', opacity: checkoutLoading ? 0.7 : 1 }}
+                  style={{ marginBottom: '12px' }}
                 >
-                  {checkoutLoading
-                    ? <><Loader2 size={16} className="animate-spin" /> Processing…</>
-                    : <>Checkout <ArrowRight size={16} /></>}
+                  Checkout <ArrowRight size={16} />
                 </button>
                 <button onClick={onClose} className="btn btn-secondary btn-md btn-full">
                   Continue shopping

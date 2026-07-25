@@ -8,6 +8,7 @@ import { useUI } from '../context/UIContext';
 import ProductImage from './ProductImage';
 import QuickViewModal from './QuickViewModal';
 import { useHoverPrefetch } from '../hooks/useHoverPrefetch';
+import { getFastestDelivery } from '../utils/deliveryCalculator';
 
 const GRADE_DOT: Record<ProductGrade, string> = {
   Pristine: '#3b82f6',
@@ -71,6 +72,19 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
   const [isHovering, setIsHovering]   = useState(false);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const inWishlist = isInWishlist(phone.id);
+
+  // Nationwide default postcode: the grid has no address yet, and standard
+  // delivery is free everywhere, so the date is the only variable part.
+  const deliveryLabel = React.useMemo(
+    () => {
+      if (phone.stock <= 0) return null;
+      const label = getFastestDelivery('SW1A 1AA')?.label;
+      // Labels read "Get it by Tomorrow" / "Delivery by Fri 3 Jun"; strip the
+      // lead-in so the card does not say "Free delivery · Delivery by …".
+      return label ? label.replace(/^(Get it by|Delivery by|Express:)\s*/i, '') : null;
+    },
+    [phone.stock],
+  );
 
   const savings    = phone.originalPrice - phone.price;
   const savingsPct = Math.round((savings / phone.originalPrice) * 100);
@@ -313,6 +327,18 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               </span>
             )}
           </div>
+
+          {/* Delivery promise — Amazon puts the arrival date on every card because
+              it is one of the strongest signals in the grid. Derived from the same
+              calculator the product page uses, so the two cannot disagree. */}
+          {deliveryLabel && (
+            <p style={{
+              fontFamily: 'var(--font-body)', fontSize: '12px', lineHeight: 1.3,
+              color: '#047857', margin: '2px 0 0 0', fontWeight: 600,
+            }}>
+              Free delivery · {deliveryLabel}
+            </p>
+          )}
 
           {/* CTA */}
           <button

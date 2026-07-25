@@ -676,9 +676,13 @@ export default function ProductsPage() {
                   </motion.div>
                 ) : (
                   <div
+                    className="product-grid"
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                      // Columns come from .product-grid so the phone case is a
+                      // fixed 2-up rather than whatever auto-fill decides. A single
+                      // auto-fill rule could not serve both: 240px gave phones one
+                      // column, 155px gave desktops six cramped ones.
                       gap: 'var(--spacing-20)',
                     }}
                   >
