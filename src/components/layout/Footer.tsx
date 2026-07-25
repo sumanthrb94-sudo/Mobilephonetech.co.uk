@@ -197,7 +197,7 @@ export default function Footer() {
               >
                 {col.heading}
               </h4>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <Link
@@ -209,6 +209,13 @@ export default function Footer() {
                         textDecoration: 'none',
                         transition: 'color var(--duration-fast)',
                         fontWeight: 400,
+                        // WCAG 2.2 SC 2.5.8 wants a 24px minimum target. These sat
+                        // at 16px tall; padding grows the hit area without moving
+                        // the text (the list gap shrinks to compensate).
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        minHeight: '24px',
+                        paddingBlock: '4px',
                       }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#111827'; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#6b7280'; }}
@@ -359,6 +366,11 @@ export default function Footer() {
                     color: '#9ca3af',
                     textDecoration: 'none',
                     transition: 'color var(--duration-fast)',
+                    // 24px minimum touch target (WCAG 2.2 SC 2.5.8) — 12px type
+                    // left these legal links only 19px tall on phones.
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: '24px',
                   }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#374151'; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = '#9ca3af'; }}

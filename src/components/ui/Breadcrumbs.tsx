@@ -35,7 +35,16 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
               {item.to && !isLast ? (
                 <Link
                   to={item.to}
-                  style={{ color: 'var(--grey-60)', textDecoration: 'none', fontWeight: 500 }}
+                  style={{
+                    color: 'var(--grey-60)',
+                    textDecoration: 'none',
+                    fontWeight: 500,
+                    // 24px minimum touch target (WCAG 2.2 SC 2.5.8); the 13px
+                    // type only gave these ~21px of height on phones.
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    minHeight: '24px',
+                  }}
                 >
                   {item.label}
                 </Link>
