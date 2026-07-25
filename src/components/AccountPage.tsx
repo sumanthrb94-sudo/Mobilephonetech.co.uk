@@ -74,7 +74,6 @@ export default function AccountPage() {
   const [savingAddress, setSavingAddress] = useState(false);
 
   // Security state
-  const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [showPw, setShowPw] = useState(false);
@@ -150,7 +149,7 @@ export default function AccountPage() {
     setSavingPw(false);
     if (error) { setPwError(error.message); return; }
     setPwSuccess('Password updated successfully.');
-    setCurrentPw(''); setNewPw(''); setConfirmPw('');
+    setNewPw(''); setConfirmPw('');
   }
 
   const handleLogout = async () => { await logout(); navigate('/'); };

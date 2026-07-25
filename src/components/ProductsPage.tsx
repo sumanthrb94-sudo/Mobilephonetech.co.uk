@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useProducts } from '../hooks/useShopify';
+import { useProducts } from '../hooks/useProducts';
 import { MOCK_PHONES } from '../data';
 import ProductCard from './ProductCard';
 import { useSearch } from '../context/SearchContext';
@@ -142,10 +142,13 @@ export default function ProductsPage() {
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
-  const { products: shopifyProducts } = useProducts();
+  // Pull the whole catalogue in one query — this page filters client-side, and
+  // the inventory is small enough (~133) that paging it server-side would only
+  // break the filter counts below.
+  const { products: catalogue, fromSupabase, isLoading: catalogueLoading } = useProducts({ pageSize: 200 });
 
   const scopedProducts = useMemo(() => {
-    const productsToFilter = shopifyProducts.length > 0 ? shopifyProducts : MOCK_PHONES;
+    const productsToFilter = catalogue.length > 0 ? catalogue : MOCK_PHONES;
     return productsToFilter.filter(product => {
       if (brandParam && modelParam) {
         // Prefix match: lets series-level "See all" links (model=iPhone 17
@@ -178,11 +181,14 @@ export default function ProductsPage() {
       }
       return true;
     });
-  }, [brandCategory, selectedDepartment, brandParam, modelParam, dealOnly]);
+    // `catalogue` must stay in the deps: it arrives asynchronously, so without
+    // it this memo keeps returning the MOCK_PHONES fallback it computed on the
+    // first render and the live catalogue never reaches the grid.
+  }, [catalogue, brandCategory, selectedDepartment, brandParam, modelParam, dealOnly]);
 
   const brands  = Array.from(new Set(scopedProducts.map(p => p.brand))).sort();
   const grades  = Array.from(new Set(scopedProducts.map(p => p.grade)));
-  const allProducts = shopifyProducts.length > 0 ? shopifyProducts : MOCK_PHONES;
+  const allProducts = catalogue.length > 0 ? catalogue : MOCK_PHONES;
   const categories = Array.from(new Set(allProducts.map(p => p.category)));
 
   const filteredProducts = useMemo(() => {
@@ -410,6 +416,29 @@ export default function ProductsPage() {
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-50)', maxWidth: '560px', margin: 0 }}>
             {pageIntro} {scopedProducts.length} item{scopedProducts.length !== 1 ? 's' : ''} available.
           </p>
+
+          {/* The catalogue silently falls back to bundled sample data when the
+              database is unreachable. Say so, otherwise an outage looks like a
+              working shop with the wrong stock and prices. */}
+          {!catalogueLoading && !fromSupabase && (
+            <p
+              role="status"
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: '13px',
+                lineHeight: 1.4,
+                color: '#8a5a00',
+                background: '#fff8e6',
+                border: '1px solid #f0d089',
+                borderRadius: '8px',
+                padding: '10px 12px',
+                marginTop: '12px',
+                maxWidth: '560px',
+              }}
+            >
+              Showing sample data — live stock and pricing are temporarily unavailable.
+            </p>
+          )}
         </div>
 
         {/* Mobile filter bottom-sheet */}

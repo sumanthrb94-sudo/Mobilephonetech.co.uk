@@ -74,7 +74,6 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
   const savings    = phone.originalPrice - phone.price;
   const savingsPct = Math.round((savings / phone.originalPrice) * 100);
-  const rating     = Math.min(5, 3.8 + (parseInt(phone.id.slice(-1), 16) % 12) * 0.1);
   const prefetchProductDetail = useHoverPrefetch(() => import('./ProductDetail'));
 
   const handleWishlist = (e: React.MouseEvent) => {
