@@ -18,6 +18,7 @@ interface AuthContextType {
   signup: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   continueAsGuest: (email: string) => void;
 }
 
@@ -72,6 +73,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error;
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      // Come back to the page the user started from rather than the site root.
+      options: { redirectTo: `${window.location.origin}${window.location.pathname}` },
+    });
+    // supabase-js redirects the browser on success, so reaching here with an
+    // error means the provider is disabled or misconfigured in the dashboard.
+    if (error) throw error;
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -104,6 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signup,
       logout,
       resetPassword,
+      signInWithGoogle,
       continueAsGuest,
     }}>
       {children}

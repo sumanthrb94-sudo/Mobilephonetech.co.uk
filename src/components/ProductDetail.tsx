@@ -5,7 +5,7 @@ import {
   Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_PHONES } from '../data';
+import { useCatalogue } from '../context/CatalogueContext';
 import { useCart } from '../context/CartContext';
 import ReviewsSection from './ReviewsSection';
 import RelatedProductsSection from './RelatedProductsSection';
@@ -188,13 +188,19 @@ export default function ProductDetail() {
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
 
-  // Load product: Supabase first, fall back to mock data
+  // Load product: seed from the shared catalogue for an instant first paint,
+  // then refresh from Supabase (which also brings variant rows).
+  const { products: catalogue } = useCatalogue();
   const [phone, setPhone] = React.useState<Product | null | undefined>(undefined); // undefined = loading
   const [loadError, setLoadError] = React.useState(false);
 
   React.useEffect(() => {
     if (!id) { setPhone(null); return; }
-    setPhone(undefined);
+    // Render straight from the shared catalogue instead of showing a skeleton
+    // while the per-product query is in flight. That query only adds variant
+    // rows, so everything above the fold is already available here.
+    const seed = catalogue.find(p => p.id === id);
+    setPhone(seed ?? undefined);
     setLoadError(false);
 
     (async () => {
@@ -230,11 +236,11 @@ export default function ProductDetail() {
         // Supabase unavailable — fall through to mock data
       }
 
-      // Fallback: mock data
-      const mock = MOCK_PHONES.find(p => p.id === id);
-      setPhone(mock ?? null);
+      // The query failed; keep the catalogue copy if we seeded one, otherwise
+      // this id genuinely does not exist.
+      setPhone(prev => prev ?? (catalogue.find(p => p.id === id) ?? null));
     })();
-  }, [id]);
+  }, [id, catalogue]);
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
