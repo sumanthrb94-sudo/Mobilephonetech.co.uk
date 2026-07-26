@@ -194,6 +194,14 @@ export default function ProductDetail() {
   const [phone, setPhone] = React.useState<Product | null | undefined>(undefined); // undefined = loading
   const [loadError, setLoadError] = React.useState(false);
 
+  // Real review aggregate, derived from this product's own reviews. Zero when
+  // there are none, in which case the rating row is not rendered at all.
+  const productReviews = phone?.reviews ?? [];
+  const reviewCount    = productReviews.length;
+  const averageRating  = reviewCount
+    ? productReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+    : 0;
+
   React.useEffect(() => {
     if (!id) { setPhone(null); return; }
     // Render straight from the shared catalogue instead of showing a skeleton
@@ -533,12 +541,23 @@ export default function ProductDetail() {
                 >
                   How does grading work?
                 </button>
-                <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }}>
-                  {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
-                </div>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
-                  4.8★ (342 reviews)
-                </span>
+                {/* Rating is derived from the product's own reviews and hidden
+                    when there are none. This previously rendered five filled
+                    stars and a hardcoded "4.8★ (342 reviews)" on every product,
+                    which is an invented aggregate — a banned practice under the
+                    DMCC Act, and misleading regardless. */}
+                {reviewCount > 0 && (
+                  <>
+                    <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+                      ))}
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
+                      {averageRating.toFixed(1)}★ ({reviewCount} review{reviewCount === 1 ? '' : 's'})
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
