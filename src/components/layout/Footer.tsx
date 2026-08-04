@@ -100,10 +100,10 @@ export default function Footer() {
                   fontWeight: 900,
                   fontSize: '17px',
                   letterSpacing: '-0.04em',
-                  color: '#0f172a',
+                  color: 'var(--black)',
                 }}
               >
-                mobile<span style={{ color: 'var(--brand-cyan)' }}>tech</span>
+                Le<span style={{ color: 'var(--brand-cyan)' }}>Hart</span>
                 <span style={{ color: '#9ca3af', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
               </span>
             </Link>
@@ -353,7 +353,7 @@ export default function Footer() {
                 color: '#9ca3af',
               }}
             >
-              © 2026 MobilePhoneMarket.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
+              © 2026 LeHart.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
               {LEGAL.map((item) => (

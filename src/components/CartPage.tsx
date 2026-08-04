@@ -20,7 +20,7 @@ import ProductImage from './ProductImage';
 
 export default function CartPage() {
   useSeo({
-    title: 'Your basket | MobilePhoneMarket',
+    title: 'Your basket | LeHart',
     description: 'Review the refurbished devices in your basket before checkout.',
     canonical: `${SITE_ORIGIN}/cart`,
     noindex: true,

@@ -8,7 +8,7 @@ import { Lock, RefreshCw, ArrowLeft } from 'lucide-react';
  * bottom tab-bar — anything that could pull them out mid-purchase.
  *
  * Layout:
- *   [← Cart]       mobiletech                Secure checkout  🔒
+ *   [← Cart]       LeHart                   Secure checkout  🔒
  *
  * - Logo is still a link back to home but de-emphasised
  * - "Secure checkout" + lock is the trust cue
@@ -68,7 +68,7 @@ export default function CheckoutHeader() {
         {/* Logo — centred */}
         <Link
           to="/"
-          aria-label="mobilephonemarket.co.uk home"
+          aria-label="lehart.co.uk home"
           className="navbar-logo flex items-center min-w-0"
           style={{ textDecoration: 'none', margin: '0 auto' }}
         >
@@ -85,7 +85,7 @@ export default function CheckoutHeader() {
               lineHeight: 1,
             }}
           >
-            mobile<span style={{ color: 'var(--grey-0)' }}>phonemarket</span>
+            Le<span style={{ color: 'var(--grey-0)' }}>Hart</span>
           </span>
         </Link>
 

@@ -16,4 +16,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://mobilephonetech.co.uk/sitemap.xml
+Sitemap: https://lehart.co.uk/sitemap.xml

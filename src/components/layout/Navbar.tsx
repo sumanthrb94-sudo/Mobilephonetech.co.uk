@@ -210,12 +210,12 @@ export default function Navbar(_: NavbarProps) {
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
-                  color: '#0f172a',
+                  color: 'var(--black)',
                   lineHeight: 1,
                   whiteSpace: 'nowrap',
                 }}
               >
-                mobilephonemarket
+                Le<span style={{ color: 'var(--brand-cyan)' }}>Hart</span>
               </span>
             </Link>
 
@@ -644,7 +644,7 @@ export default function Navbar(_: NavbarProps) {
                 style={{ borderBottom: '1px solid var(--grey-10)', height: '64px' }}
               >
                 <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: '#0f172a' }}>
-                  mobile<span style={{ color: 'var(--brand-cyan)' }}>phonemarket</span>
+                  Le<span style={{ color: 'var(--brand-cyan)' }}>Hart</span>
                   <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
                 </span>
                 <button

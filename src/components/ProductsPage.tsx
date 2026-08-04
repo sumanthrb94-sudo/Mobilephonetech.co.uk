@@ -470,7 +470,10 @@ export default function ProductsPage() {
         )}
 
         {/* ── Main grid (sidebar + products) ─────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-32)' }} className="lg:products-grid">
+        {/* Columns live in CSS (.lg:products-grid) so the desktop breakpoint can
+            own them. The inner wrapper is display:contents, so the sidebar and
+            the results column are promoted into this grid directly. */}
+        <div style={{ display: 'grid', gap: 'var(--spacing-32)' }} className="lg:products-grid">
           <div style={{ display: 'contents' }} className="lg:grid lg:grid-cols-4 lg:gap-8">
 
             {/* Desktop sticky sidebar */}

@@ -51,7 +51,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function AccountPage() {
-  useSeo({ title: 'My Account | MobilePhoneMarket', noindex: true });
+  useSeo({ title: 'My Account | LeHart', noindex: true });
   const navigate = useNavigate();
   const { user, session, logout } = useAuth();
   const [tab, setTab] = useState<Tab>('profile');

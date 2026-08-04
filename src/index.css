@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   BACK MARKET DNA DESIGN SYSTEM — mobilephonetech.co.uk
+   BACK MARKET DNA DESIGN SYSTEM — lehart.co.uk
    Blue Brand Identity × Back Market Layout Discipline
    ═══════════════════════════════════════════════════════════════ */
 
@@ -12,26 +12,26 @@
 :root {
   /* ── Raw Colour Scale ── */
   --grey-0: #ffffff;
-  --grey-5: #f7f7f7;
-  --grey-10: #eeeeee;
-  --grey-20: #dddddd;
-  --grey-30: #cccccc;
-  --grey-40: #aaaaaa;
-  --grey-50: #888888;
-  --grey-60: #666666;
-  --grey-70: #444444;
-  --grey-80: #222222;
-  --grey-90: #111111;
-  --grey-95: #0a0a0a;
-  --black: #1c1c1c;
+  --grey-5: #f6f8f7;
+  --grey-10: #e9edeb;
+  --grey-20: #d6ddd9;
+  --grey-30: #b9c3be;
+  --grey-40: #94a09b;
+  --grey-50: #6f7c77;
+  --grey-60: #55625d;
+  --grey-70: #3a4642;
+  --grey-80: #222b28;
+  --grey-90: #141a18;
+  --grey-95: #0a0e0c;
+  --black: #0d1311;
 
-  /* ── Brand Colors (mobilephonemarket.co.uk) ── */
-  --brand-cyan: #006c49;
-  --brand-cyan-hover: #004d34;
+  /* ── Brand Colors (lehart.co.uk) ── */
+  --brand-cyan: #0b7a5a;
+  --brand-cyan-hover: #0e9b6e;
   --brand-purple: #8b5cf6;
-  --brand-header: #0f172a;
-  --brand-primary: #0f172a;
-  --brand-header-dark: #121d42;
+  --brand-header: #0a0e0c;
+  --brand-primary: #0b7a5a;
+  --brand-header-dark: #0d1311;
 
   /* ── Extended accent palette ── */
   --accent-amber: #d97706;
@@ -101,16 +101,16 @@
   --color-grade-new-text: var(--blue-70);
 
   /* ── Shadows (BM spec) ── */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.08);
-  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.10);
+  --shadow-sm: 0 1px 2px rgba(10, 14, 12, 0.06);
+  --shadow-md: 0 6px 16px -4px rgba(10, 14, 12, 0.10), 0 2px 4px rgba(10, 14, 12, 0.04);
+  --shadow-lg: 0 18px 40px -12px rgba(10, 14, 12, 0.16), 0 4px 10px rgba(10, 14, 12, 0.05);
+  --shadow-xl: 0 32px 64px -20px rgba(10, 14, 12, 0.22), 0 8px 20px rgba(10, 14, 12, 0.07);
 
   /* ── Border Radius ── */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 26px;
   --radius-full: 9999px;
 
   /* ── Spacing scale (8px base) ── */
@@ -1308,5 +1308,19 @@ html.is-checkout .ai-fab {
 @media (min-width: 640px) {
   .product-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+/* ── Catalogue page: sidebar + grid ────────────────────────────
+   ProductsPage has always carried `className="lg:products-grid"`, but no
+   such rule existed, so the class was inert and the filter panel stacked
+   above the grid — pushing products below the fold on desktop. Defining it
+   restores the intended two-column layout. */
+.lg\:products-grid { grid-template-columns: minmax(0, 1fr); }
+
+@media (min-width: 1024px) {
+  .lg\:products-grid {
+    grid-template-columns: 264px minmax(0, 1fr);
+    align-items: start;
   }
 }

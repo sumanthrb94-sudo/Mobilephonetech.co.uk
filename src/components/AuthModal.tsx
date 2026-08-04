@@ -137,7 +137,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
                 {mode === 'login'
                   ? 'Sign in to access your orders and wishlist.'
-                  : 'Join mobilephonemarket.co.uk for a certified experience.'}
+                  : 'Join lehart.co.uk for a certified experience.'}
               </p>
             </div>
 

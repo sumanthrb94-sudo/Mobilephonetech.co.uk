@@ -42,7 +42,7 @@ const proRank = (m: string) => /Pro\s*Max/i.test(m) ? 3 : /Pro|Ultra/i.test(m) ?
 const PANELS: SeriesPanel[] = [
   {
     id: 'iphone-17',
-    eyebrow: 'iPhone 17 Series · MPM Certified',
+    eyebrow: 'iPhone 17 Series · LeHart Certified',
     headline: 'Luxury refurbished.\nUnboxing experience intact.',
     subline: 'Battery health verified. Face ID tested. Every sensor checked. 12-month warranty, 30-day returns — no asterisk.',
     ctaLabel: 'Shop iPhone 17',

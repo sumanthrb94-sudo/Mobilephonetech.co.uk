@@ -13,7 +13,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT       = resolve(__dirname, '..');
 const DATA_PATH  = resolve(ROOT, 'src/data.ts');
 const PUBLIC_DIR = resolve(ROOT, 'public');
-const ORIGIN     = 'https://mobilephonetech.co.uk';
+const ORIGIN     = 'https://lehart.co.uk';
 
 const data = readFileSync(DATA_PATH, 'utf8');
 

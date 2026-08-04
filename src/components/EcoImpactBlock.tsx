@@ -3,7 +3,7 @@ import { Leaf, Droplet, Recycle } from 'lucide-react';
 
 /**
  * EcoImpactBlock — homepage-wide sustainability claim, the lead
- * MPM.co.uk uses to differentiate from big-box refurb sellers.
+ * LeHart.co.uk uses to differentiate from big-box refurb sellers.
  * Three figures: CO₂e saved, water saved, raw material avoided.
  * Numbers are industry-standard rule-of-thumb averages for a
  * smartphone's embodied footprint (Apple & ADEME LCA data).

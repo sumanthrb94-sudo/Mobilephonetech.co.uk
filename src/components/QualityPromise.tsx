@@ -67,7 +67,7 @@ export default function QualityPromise() {
             color: '#06b6d4',
             marginBottom: '8px',
           }}>
-            The MPM Standard
+            The LeHart Standard
           </div>
           <h2
             style={{
@@ -91,7 +91,7 @@ export default function QualityPromise() {
               lineHeight: 1.6,
             }}
           >
-            Every MobilePhoneMarket device clears four engineering standards before it ships. This is what separates a certified refurb from a resell.
+            Every LeHart device clears four engineering standards before it ships. This is what separates a certified refurb from a resell.
           </p>
         </div>
 

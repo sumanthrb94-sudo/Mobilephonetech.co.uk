@@ -6,7 +6,7 @@ import { useCatalogue } from '../context/CatalogueContext';
 import { useSearch } from '../context/SearchContext';
 import ProductImage from './ProductImage';
 
-const RECENT_KEY = 'mobilephonemarket:recent-searches';
+const RECENT_KEY = 'lehart:recent-searches';
 const MAX_RECENT = 6;
 
 function loadRecent(): string[] {

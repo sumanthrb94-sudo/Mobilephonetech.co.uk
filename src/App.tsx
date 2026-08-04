@@ -136,7 +136,7 @@ function HomePage() {
           (QualityPromise) so readers who want depth can dive in. */}
       <HomeBlog />
 
-      {/* MPM-signature Inspected / Tested / Cleaned strip — moved down from
+      {/* LeHart-signature Inspected / Tested / Cleaned strip — moved down from
           just-below-hero to footer-adjacent so product content takes the
           above-the-fold real estate instead. */}
       <QualityPromise />
