@@ -774,22 +774,10 @@ export default function CheckoutFlow() {
                     onClick={handlePlaceOrder}
                     disabled={isProcessing}
                     data-loading={isProcessing || undefined}
-                    className="btn btn-lg btn-full"
+                    className="btn btn-buy btn-lg btn-full"
                     style={{
                       marginTop: 'var(--spacing-48)',
-                      background: '#FFD814',
-                      borderColor: '#FCD200',
-                      color: '#0F1111',
-                      fontWeight: 800,
                       fontSize: 'clamp(15px, 2vw, 17px)',
-                      boxShadow: '0 2px 5px rgba(213,217,217,0.5)',
-                      letterSpacing: '-0.01em',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = '#F7CA00';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = '#FFD814';
                     }}
                   >
                     <Lock size={16} /> Place your order · £{total.toFixed(2)}

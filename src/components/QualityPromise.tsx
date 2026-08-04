@@ -49,7 +49,7 @@ export default function QualityPromise() {
     <section
       aria-label="Our quality promise"
       style={{
-        background: '#0f172a',
+        background: 'var(--black)',
         paddingTop: 'var(--spacing-48)',
         paddingBottom: 'var(--spacing-48)',
       }}
@@ -64,7 +64,7 @@ export default function QualityPromise() {
             fontWeight: 800,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: '#06b6d4',
+            color: 'var(--brand-cyan-on-dark)',
             marginBottom: '8px',
           }}>
             The LeHart Standard

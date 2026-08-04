@@ -186,13 +186,7 @@ export default function AddedToCartModal() {
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <button
                   onClick={handleCheckout}
-                  className="btn btn-lg btn-full"
-                  style={{
-                    background: '#FFD814', borderColor: '#FCD200', color: '#0F1111',
-                    fontWeight: 800, boxShadow: '0 2px 5px rgba(213,217,217,0.5)',
-                  }}
-                  onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = '#F7CA00')}
-                  onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = '#FFD814')}
+                  className="btn btn-buy btn-lg btn-full"
                 >
                   Proceed to checkout <ArrowRight size={16} />
                 </button>

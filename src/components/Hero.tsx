@@ -19,9 +19,9 @@ const SLIDES = [
     ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-17-pro-max-orange.jpg',
     imageAlt: 'Certified iPhone 17 Pro Max',
-    gradientFrom: '#08110d',
-    gradientTo: '#0b7a5a',
-    glowColor: 'rgba(14, 155, 110, 0.42)',
+    gradientFrom: '#0c0a09',
+    gradientTo: '#44403c',
+    glowColor: 'rgba(161, 98, 7, 0.45)',
     savings: 'Save up to £600',
   },
   {
@@ -32,9 +32,9 @@ const SLIDES = [
     ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy S24 Ultra',
-    gradientFrom: '#0a0f14',
-    gradientTo: '#0f5f6b',
-    glowColor: 'rgba(20, 160, 170, 0.38)',
+    gradientFrom: '#1c1917',
+    gradientTo: '#57534e',
+    glowColor: 'rgba(168, 162, 158, 0.30)',
     savings: 'From £199',
   },
   {
@@ -45,9 +45,9 @@ const SLIDES = [
     ctaHref: '/products?brand=Google',
     image: '/assets/pixel-8-pro.png',
     imageAlt: 'Google Pixel 8 Pro',
-    gradientFrom: '#07130f',
-    gradientTo: '#12896a',
-    glowColor: 'rgba(52, 199, 154, 0.40)',
+    gradientFrom: '#0c0a09',
+    gradientTo: '#3f3a35',
+    glowColor: 'rgba(202, 138, 4, 0.38)',
     savings: 'From £249',
   },
   {
@@ -58,9 +58,9 @@ const SLIDES = [
     ctaHref: '/#trade-in',
     image: '/assets/iphone-17-pro-max-trio.jpg',
     imageAlt: 'Trade in your phone',
-    gradientFrom: '#0d1311',
-    gradientTo: '#3f4b3f',
-    glowColor: 'rgba(212, 160, 74, 0.34)',
+    gradientFrom: '#1c1917',
+    gradientTo: '#4b443c',
+    glowColor: 'rgba(161, 98, 7, 0.36)',
     savings: 'Best prices guaranteed',
   },
 ] as const;
@@ -213,7 +213,7 @@ export default function Hero() {
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     height: 50, padding: '0 28px',
-                    background: '#ffffff', color: '#0f172a',
+                    background: '#ffffff', color: 'var(--black)',
                     fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800,
                     letterSpacing: '-0.01em', textDecoration: 'none',
                     borderRadius: '999px',
@@ -267,8 +267,11 @@ export default function Hero() {
             <div
               style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
-                order: isDesktop ? 0 : -1,
-                height: isDesktop ? '360px' : '200px',
+                // On phones the copy leads and the shot follows. The image used
+                // to be ordered first, which pushed the headline and the primary
+                // CTA below the fold on a 390×644 viewport.
+                order: 0,
+                height: isDesktop ? '360px' : '168px',
                 width: '100%',
                 position: 'relative',
               }}
@@ -356,7 +359,7 @@ export default function Hero() {
               width: 36, height: 36, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
               background: 'rgba(255,255,255,0.95)', borderRadius: '50%', cursor: 'pointer',
-              border: 'none', color: '#0f172a',
+              border: 'none', color: 'var(--black)',
               boxShadow: '0 2px 12px rgba(0,0,0,0.30)',
             }}
           >

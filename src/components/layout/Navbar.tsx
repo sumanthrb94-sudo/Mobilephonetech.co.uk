@@ -204,8 +204,11 @@ export default function Navbar(_: NavbarProps) {
               <span className="navbar-logo-tile flex-shrink-0">
                 <RefreshCw className="navbar-logo-icon" color="white" strokeWidth={2.5} />
               </span>
+              {/* Wordmark shows at every width: hiding it below 640px left
+                  phones with a bare glyph and no brand name at all. The CSS
+                  scales it down so it still clears the header icons. */}
               <span
-                className="navbar-logo-wordmark hidden sm:inline"
+                className="navbar-logo-wordmark"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
@@ -643,7 +646,7 @@ export default function Navbar(_: NavbarProps) {
                 className="flex items-center justify-between px-5 py-4"
                 style={{ borderBottom: '1px solid var(--grey-10)', height: '64px' }}
               >
-                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: '#0f172a' }}>
+                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: 'var(--black)' }}>
                   Le<span style={{ color: 'var(--brand-cyan)' }}>Hart</span>
                   <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
                 </span>

@@ -105,8 +105,10 @@ function TabPanel({ phone }: { phone: Product }) {
 
       {/* Tab content */}
       <div style={{ padding: 'var(--spacing-32) 0' }}>
+        {/* No inline gridTemplateColumns below: it would outrank
+            lg:grid-cols-2. A bare `display: grid` is single-column anyway. */}
         {tab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
+          <div style={{ display: 'grid', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
             {/* Product description — always shown */}
             <div style={{ gridColumn: '1 / -1' }}>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-70)', lineHeight: 1.75, margin: 0 }}>
@@ -290,7 +292,7 @@ export default function ProductDetail() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
         <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-32)' }} className="lg:grid-cols-2">
+          <div style={{ display: 'grid', gap: 'var(--spacing-32)' }} className="lg:grid-cols-2">
             <div style={{ aspectRatio: '1/1', borderRadius: 'var(--radius-xl)', background: 'var(--grey-10)', animation: 'pulse 1.5s ease-in-out infinite' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[80, 50, 40, 100, 60].map((w, i) => (
@@ -384,14 +386,12 @@ export default function ProductDetail() {
           <ArrowLeft size={16} /> Back
         </button>
 
-        {/* Main Grid: Mobile-First Stacking */}
-        <div 
-          style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr', 
-            gap: 'var(--spacing-32)' 
-          }} 
-          className="lg:grid-cols-2 lg:gap-16 items-start mb-16"
+        {/* Main Grid: Mobile-First Stacking. Columns live in CSS
+            (.lg:pdp-grid) — an inline gridTemplateColumns would outrank the
+            Tailwind breakpoint class and flatten this back to one column. */}
+        <div
+          style={{ display: 'grid', gap: 'var(--spacing-32)' }}
+          className="lg:pdp-grid lg:gap-16 items-start mb-16"
         >
           
           {/* ── Left Column: Claude-designed 6-frame gallery ─ */}

@@ -38,7 +38,7 @@ export default function NewsletterSignup() {
     <section
       aria-label="Subscribe for deals"
       style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+        background: 'linear-gradient(135deg, var(--grey-90) 0%, var(--black) 100%)',
         color: 'white',
         paddingTop: 'var(--spacing-64)',
         paddingBottom: 'var(--spacing-64)',
@@ -66,7 +66,7 @@ export default function NewsletterSignup() {
           <div>
             <div
               className="overline"
-              style={{ color: '#06b6d4', marginBottom: '8px' }}
+              style={{ color: 'var(--brand-cyan-on-dark)', marginBottom: '8px' }}
             >
               Price drops & new stock
             </div>
@@ -196,7 +196,7 @@ export default function NewsletterSignup() {
                       placeholder="you@email.com"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                      onFocus={(e) => { e.currentTarget.style.borderColor = '#06b6d4'; }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--brand-cyan-on-dark)'; }}
                       onBlur={(e) => { e.currentTarget.style.borderColor = error ? 'var(--color-sale)' : 'rgba(255,255,255,0.22)'; }}
                       style={{
                         flex: '1 1 200px',
@@ -213,7 +213,7 @@ export default function NewsletterSignup() {
                     <button
                       type="submit"
                       className="btn btn-primary btn-lg"
-                      style={{ flexShrink: 0, background: '#06b6d4', color: 'white', borderColor: '#06b6d4' }}
+                      style={{ flexShrink: 0, background: 'var(--brand-cyan-on-dark)', color: 'var(--black)', borderColor: 'var(--brand-cyan-on-dark)' }}
                     >
                       {isSubmitting ? 'Saving…' : 'Notify me'}
                     </button>

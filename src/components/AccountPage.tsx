@@ -34,7 +34,7 @@ const STATUS_COLOR: Record<string, string> = {
   pending:    '#f59e0b',
   confirmed:  '#3b82f6',
   processing: '#8b5cf6',
-  shipped:    '#06b6d4',
+  shipped:    'var(--brand-cyan-hover)',
   delivered:  '#16a34a',
   cancelled:  '#ef4444',
   refunded:   '#6b7280',
@@ -169,13 +169,13 @@ export default function AccountPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', paddingTop: 'var(--nav-total)', paddingBottom: 64 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)', paddingBottom: 64 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 20px', boxSizing: 'border-box' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 900, color: '#0f172a', margin: 0 }}>
+            <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 900, color: 'var(--black)', margin: 0 }}>
               Hello, {fullName || user?.fullName || 'there'} 👋
             </h1>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: '#6b7280', margin: '4px 0 0' }}>{user?.email}</p>
@@ -200,7 +200,7 @@ export default function AccountPage() {
                   padding: '14px 18px', border: 'none', background: tab === t.id ? '#f0fdf4' : 'white',
                   borderLeft: `3px solid ${tab === t.id ? 'var(--brand-cyan)' : 'transparent'}`,
                   fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
-                  color: tab === t.id ? '#0f172a' : '#6b7280', cursor: 'pointer', textAlign: 'left',
+                  color: tab === t.id ? 'var(--black)' : '#6b7280', cursor: 'pointer', textAlign: 'left',
                   transition: 'all 0.15s',
                 }}
               >
@@ -208,7 +208,7 @@ export default function AccountPage() {
                 {tab === t.id && <ChevronRight size={14} style={{ marginLeft: 'auto' }} />}
               </button>
             ))}
-            <div style={{ padding: '12px 18px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ padding: '12px 18px', borderTop: '1px solid var(--grey-10)' }}>
               <Link to="/wishlist" style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none' }}>
                 <Heart size={16} /> Wishlist
               </Link>
@@ -230,7 +230,7 @@ export default function AccountPage() {
               {tab === 'profile' && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Personal details</h2>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: 0 }}>Personal details</h2>
                     {!editingProfile ? (
                       <button onClick={() => setEditingProfile(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
                         <Edit3 size={13} /> Edit
@@ -238,7 +238,7 @@ export default function AccountPage() {
                     ) : (
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => setEditingProfile(false)} style={{ padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={saveProfile} disabled={savingProfile} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: '#0f172a', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+                        <button onClick={saveProfile} disabled={savingProfile} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: 'var(--black)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
                           {savingProfile ? 'Saving…' : 'Save changes'}
                         </button>
                       </div>
@@ -262,7 +262,7 @@ export default function AccountPage() {
                         {editingProfile && !disabled ? (
                           <input type={type} value={value} onChange={e => setter(e.target.value)} style={inputStyle} />
                         ) : (
-                          <div style={{ padding: '10px 14px', borderRadius: 10, background: '#f8fafc', fontFamily: 'var(--font-body)', fontSize: 14, color: disabled ? '#9ca3af' : '#111827' }}>
+                          <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--grey-5)', fontFamily: 'var(--font-body)', fontSize: 14, color: disabled ? '#9ca3af' : '#111827' }}>
                             {value || <span style={{ color: '#9ca3af' }}>Not set</span>}
                           </div>
                         )}
@@ -275,14 +275,14 @@ export default function AccountPage() {
               {/* ── Orders tab ── */}
               {tab === 'orders' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 24px' }}>Order history</h2>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 24px' }}>Order history</h2>
                   {ordersLoading ? (
                     <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af' }}>Loading orders…</div>
                   ) : orders.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: 48 }}>
                       <ShoppingBag size={40} style={{ color: '#e5e7eb', marginBottom: 12 }} />
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: '#6b7280', margin: '0 0 16px' }}>No orders yet.</p>
-                      <Link to="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 999, background: '#0f172a', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
+                      <Link to="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 20px', borderRadius: 999, background: 'var(--black)', color: 'white', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}>
                         Browse devices
                       </Link>
                     </div>
@@ -297,7 +297,7 @@ export default function AccountPage() {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1, minWidth: 0 }}>
                               <div style={{ width: 10, height: 10, borderRadius: '50%', background: STATUS_COLOR[order.status] ?? '#9ca3af', flexShrink: 0 }} />
                               <div style={{ textAlign: 'left', minWidth: 0 }}>
-                                <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>
+                                <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'var(--black)' }}>
                                   Order #{order.id.slice(0, 8).toUpperCase()}
                                 </div>
                                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#6b7280' }}>
@@ -307,7 +307,7 @@ export default function AccountPage() {
                               </div>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a' }}>£{Number(order.total).toFixed(2)}</span>
+                              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'var(--black)' }}>£{Number(order.total).toFixed(2)}</span>
                               <span style={{ fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: STATUS_COLOR[order.status] + '20', color: STATUS_COLOR[order.status] }}>
                                 {STATUS_LABEL[order.status] ?? order.status}
                               </span>
@@ -323,26 +323,26 @@ export default function AccountPage() {
                                 transition={{ duration: 0.22 }}
                                 style={{ overflow: 'hidden' }}
                               >
-                                <div style={{ padding: '0 20px 20px', borderTop: '1px solid #f1f5f9' }}>
+                                <div style={{ padding: '0 20px 20px', borderTop: '1px solid var(--grey-10)' }}>
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
                                     {(order.order_items ?? []).map(item => (
                                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <div style={{ width: 52, height: 52, borderRadius: 8, background: '#f8fafc', flexShrink: 0, overflow: 'hidden' }}>
+                                        <div style={{ width: 52, height: 52, borderRadius: 8, background: 'var(--grey-5)', flexShrink: 0, overflow: 'hidden' }}>
                                           <ProductImage brand={item.brand} model={item.model} imageUrl={item.image_url ?? ''} alt={item.model} color={item.selected_color ?? undefined} />
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.brand} {item.model}</div>
+                                          <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.brand} {item.model}</div>
                                           <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#6b7280' }}>
                                             {[item.selected_storage, item.selected_color].filter(Boolean).join(' · ')}
                                             {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                                           </div>
                                         </div>
-                                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: '#0f172a', flexShrink: 0 }}>£{Number(item.price).toFixed(2)}</div>
+                                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'var(--black)', flexShrink: 0 }}>£{Number(item.price).toFixed(2)}</div>
                                       </div>
                                     ))}
                                   </div>
                                   {order.delivery_address && (
-                                    <div style={{ marginTop: 16, padding: '12px 14px', background: '#f8fafc', borderRadius: 10 }}>
+                                    <div style={{ marginTop: 16, padding: '12px 14px', background: 'var(--grey-5)', borderRadius: 10 }}>
                                       <div style={{ fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Delivered to</div>
                                       <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#374151', lineHeight: 1.5 }}>
                                         {order.delivery_address.fullName}<br />
@@ -366,7 +366,7 @@ export default function AccountPage() {
               {tab === 'addresses' && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: 0 }}>Saved address</h2>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: 0 }}>Saved address</h2>
                     {!editingAddress ? (
                       <button onClick={() => setEditingAddress(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
                         <Edit3 size={13} /> Edit
@@ -374,7 +374,7 @@ export default function AccountPage() {
                     ) : (
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button onClick={() => setEditingAddress(false)} style={{ padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={saveAddress} disabled={savingAddress} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: '#0f172a', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+                        <button onClick={saveAddress} disabled={savingAddress} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: 'var(--black)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
                           {savingAddress ? 'Saving…' : 'Save address'}
                         </button>
                       </div>
@@ -392,7 +392,7 @@ export default function AccountPage() {
                         {editingAddress ? (
                           <input value={address[key]} onChange={e => setAddress(a => ({ ...a, [key]: e.target.value }))} style={inputStyle} />
                         ) : (
-                          <div style={{ padding: '10px 14px', borderRadius: 10, background: '#f8fafc', fontFamily: 'var(--font-body)', fontSize: 14, color: '#111827' }}>
+                          <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--grey-5)', fontFamily: 'var(--font-body)', fontSize: 14, color: '#111827' }}>
                             {address[key] || <span style={{ color: '#9ca3af' }}>Not set</span>}
                           </div>
                         )}
@@ -405,7 +405,7 @@ export default function AccountPage() {
               {/* ── Security tab ── */}
               {tab === 'security' && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: '#0f172a', margin: '0 0 24px' }}>Change password</h2>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 24px' }}>Change password</h2>
                   {pwError && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, marginBottom: 16, color: '#dc2626', fontFamily: 'var(--font-body)', fontSize: 14 }}>
                       <X size={14} /> {pwError}
@@ -439,7 +439,7 @@ export default function AccountPage() {
                     <button
                       onClick={changePassword}
                       disabled={savingPw || !newPw || !confirmPw}
-                      style={{ padding: '12px 24px', borderRadius: 999, border: 'none', background: '#0f172a', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 700, color: 'white', cursor: 'pointer', opacity: savingPw || !newPw || !confirmPw ? 0.5 : 1 }}
+                      style={{ padding: '12px 24px', borderRadius: 999, border: 'none', background: 'var(--black)', fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 700, color: 'white', cursor: 'pointer', opacity: savingPw || !newPw || !confirmPw ? 0.5 : 1 }}
                     >
                       {savingPw ? 'Updating…' : 'Update password'}
                     </button>

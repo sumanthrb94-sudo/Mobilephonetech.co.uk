@@ -1,9 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════
-   BACK MARKET DNA DESIGN SYSTEM — lehart.co.uk
-   Blue Brand Identity × Back Market Layout Discipline
+   LEHART DESIGN SYSTEM — lehart.co.uk
+   Stone neutrals × gold accent, marketplace layout discipline.
+   Typefaces (Rubik / Nunito Sans) are linked from index.html so they
+   start downloading before this stylesheet is parsed.
    ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Hanken+Grotesk:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 /* ───────────────────────────────────────────────────────────────
@@ -12,26 +13,29 @@
 :root {
   /* ── Raw Colour Scale ── */
   --grey-0: #ffffff;
-  --grey-5: #f6f8f7;
-  --grey-10: #e9edeb;
-  --grey-20: #d6ddd9;
-  --grey-30: #b9c3be;
-  --grey-40: #94a09b;
-  --grey-50: #6f7c77;
-  --grey-60: #55625d;
-  --grey-70: #3a4642;
-  --grey-80: #222b28;
-  --grey-90: #141a18;
-  --grey-95: #0a0e0c;
-  --black: #0d1311;
+  --grey-5: #fafaf9;
+  --grey-10: #ededeb;
+  --grey-20: #d6d3d1;
+  --grey-30: #bfbbb7;
+  --grey-40: #a8a29e;
+  --grey-50: #78716c;
+  --grey-60: #57534e;
+  --grey-70: #44403c;
+  --grey-80: #292524;
+  --grey-90: #1c1917;
+  --grey-95: #0c0a09;
+  --black: #0c0a09;
 
   /* ── Brand Colors (lehart.co.uk) ── */
-  --brand-cyan: #0b7a5a;
-  --brand-cyan-hover: #0e9b6e;
+  --brand-cyan: #a16207;
+  --brand-cyan-hover: #854d0e;
+  /* Gold light enough to clear 4.5:1 on the stone-black surfaces. The base
+     --brand-cyan is tuned for white backgrounds and goes muddy on dark. */
+  --brand-cyan-on-dark: #eab308;
   --brand-purple: #8b5cf6;
-  --brand-header: #0a0e0c;
-  --brand-primary: #0b7a5a;
-  --brand-header-dark: #0d1311;
+  --brand-header: #1c1917;
+  --brand-primary: #1c1917;
+  --brand-header-dark: #0c0a09;
 
   /* ── Extended accent palette ── */
   --accent-amber: #d97706;
@@ -71,7 +75,7 @@
   --color-border: var(--grey-20);
   --color-border-subtle: var(--grey-10);
   --color-brand: var(--brand-cyan);
-  --color-brand-subtle: #d1fae5;
+  --color-brand-subtle: #fef3c7;
   --color-trust: var(--green-5);
   --color-trust-text: var(--green-60);
 
@@ -86,7 +90,7 @@
   --color-surface-inverse: #0a0a0a;
 
   /* ── Feature gradients (navy, used for trade-in/premium cards) ── */
-  --gradient-navy: linear-gradient(120deg, #0f172a 0%, var(--brand-header) 100%);
+  --gradient-navy: linear-gradient(120deg, var(--grey-90) 0%, var(--black) 100%);
 
   /* Condition grades */
   --color-grade-pristine-bg: var(--blue-20);
@@ -154,9 +158,9 @@
    2. TAILWIND v4 THEME (Required for utility generation)
 ─────────────────────────────────────────────────────────────── */
 @theme {
-  --font-serif: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-  --font-sans: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
-  --font-body: 'Hanken Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Rubik', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Rubik', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
 
   --color-brand-primary: #006c49;
   --color-brand-blue: #006c49;
@@ -360,7 +364,9 @@ html.is-checkout .ai-fab {
 }
 
 .navbar-logo-wordmark {
-  font-size: 17px;
+  /* Small enough that the absolutely-centred logo still clears the hamburger
+     on the left and the four action icons on the right at 360px. */
+  font-size: 15px;
 }
 
 @media (min-width: 640px) {
@@ -660,7 +666,7 @@ html.is-checkout .ai-fab {
   transform: scale(0.98);
 }
 
-/* Primary — Green (Material Design 3 brand identity) */
+/* Primary — brand gold */
 .btn-primary {
   background: var(--brand-cyan);
   color: #ffffff;
@@ -672,6 +678,26 @@ html.is-checkout .ai-fab {
 
 .btn-primary:hover {
   background: var(--brand-cyan-hover);
+  border-color: var(--brand-cyan-hover);
+}
+
+/* Buy — the single highest-intent action on a page (proceed to checkout,
+   place order). Deliberately louder than .btn-primary so there is never
+   ambiguity about the next step, but drawn from the brand ramp: the buy
+   button used to be Amazon's literal #FFD814, which is both off-brand
+   against the gold identity and someone else's trade dress. */
+.btn-buy {
+  background: var(--brand-cyan-on-dark);
+  color: var(--black);
+  border-color: var(--brand-cyan);
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 2px 6px rgba(161, 98, 7, 0.28);
+}
+
+.btn-buy:hover {
+  background: #f5c518;
   border-color: var(--brand-cyan-hover);
 }
 
@@ -890,7 +916,7 @@ html.is-checkout .ai-fab {
   font-size: 15px;
   color: var(--black);
   background: var(--grey-5);
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid var(--grey-20);
   border-radius: var(--radius-md);
   outline: none;
   transition:
@@ -1321,6 +1347,21 @@ html.is-checkout .ai-fab {
 @media (min-width: 1024px) {
   .lg\:products-grid {
     grid-template-columns: 264px minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* Product detail: gallery beside the buy box on desktop.
+   Same story as above — the element sets `gridTemplateColumns: '1fr'` inline,
+   which outranks Tailwind's `lg:grid-cols-2` class, so the page stayed one
+   column and the price, variants and Add to cart all sat below a full-width
+   gallery. The gallery gets the larger share, as on Amazon and Apple, but the
+   buy box stays wide enough for the variant chips not to wrap. */
+.lg\:pdp-grid { grid-template-columns: minmax(0, 1fr); }
+
+@media (min-width: 1024px) {
+  .lg\:pdp-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     align-items: start;
   }
 }

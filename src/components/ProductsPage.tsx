@@ -474,15 +474,17 @@ export default function ProductsPage() {
             own them. The inner wrapper is display:contents, so the sidebar and
             the results column are promoted into this grid directly. */}
         <div style={{ display: 'grid', gap: 'var(--spacing-32)' }} className="lg:products-grid">
-          <div style={{ display: 'contents' }} className="lg:grid lg:grid-cols-4 lg:gap-8">
+          <div style={{ display: 'contents' }}>
 
             {/* Desktop sticky sidebar */}
             <div style={{ position: 'sticky', top: '120px', alignSelf: 'start' }} className="hidden lg:block">
               <FilterPanel />
             </div>
 
-            {/* Product Grid */}
-            <div className="lg:col-span-3">
+            {/* Product Grid — no col-span here: the two columns are declared on
+                .lg:products-grid, and a `span 3` would not fit, bumping this
+                column onto its own row underneath the sidebar. */}
+            <div>
               {/* Unified toolbar: count · sort · (mobile) filters */}
               <div
                 style={{
