@@ -190,11 +190,16 @@ export default function Navbar(_: NavbarProps) {
               <Menu size={22} style={{ color: '#374151' }} />
             </button>
 
-            {/* ── Logo: absolute-centred on mobile, left-aligned flex item on desktop ── */}
+            {/* ── Logo: a normal left-aligned flex item at every width.
+                 It used to be absolutely centred on mobile, which was fine
+                 while only the 30px glyph showed. Now that the wordmark is
+                 visible on phones too, centring floated it over the search
+                 button and swallowed the taps. As a flex item it reserves
+                 its own width and the action icons shuffle right. ── */}
             <Link
               to="/"
               id="navbar-logo"
-              className="navbar-logo flex items-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0"
+              className="navbar-logo flex items-center"
               style={{
                 textDecoration: 'none',
                 pointerEvents: 'auto',
