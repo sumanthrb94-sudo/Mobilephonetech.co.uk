@@ -20,7 +20,7 @@ async function getReviews(req: any, res: any) {
   const limit = Math.min(50, parseInt(limitStr ?? '10', 10) || 10);
   const offset = (page - 1) * limit;
 
-  const db = adminDb();
+  const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Reviews are unavailable' });
 
   try {
@@ -85,7 +85,7 @@ async function postReview(req: any, res: any) {
     return res.status(400).json({ error: 'title must be under 200 characters' });
   }
 
-  const db = adminDb();
+  const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Reviews are unavailable' });
 
   try {

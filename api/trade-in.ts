@@ -66,7 +66,7 @@ export default async function handler(req: any, res: any) {
 
   const estimatedValue = estimateValue(brand.trim(), model.trim(), condition as Condition);
 
-  const db = adminDb();
+  const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Trade-in quotes are unavailable' });
 
   try {

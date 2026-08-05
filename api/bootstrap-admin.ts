@@ -76,8 +76,8 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  const auth = adminAuth();
-  const db = adminDb();
+  const auth = await adminAuth();
+  const db = await adminDb();
   if (!auth || !db) {
     return res.status(503).json({
       error: 'Firebase Admin SDK is not initialised',

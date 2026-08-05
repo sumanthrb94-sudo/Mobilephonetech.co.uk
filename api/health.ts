@@ -23,7 +23,7 @@ export default async function handler(req: any, res: any) {
     serviceAccountConfigured: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT),
   };
 
-  const db = adminDb();
+  const db = await adminDb();
   if (!db) {
     checks.database = 'unconfigured';
     checks.detail = getAdminInitError() ?? 'FIREBASE_SERVICE_ACCOUNT missing from the environment';
@@ -45,7 +45,7 @@ export default async function handler(req: any, res: any) {
     // Confirm the sign-in providers are actually usable, not just ticked in the
     // console: listing users exercises the same credential path auth does.
     try {
-      const auth = adminAuth();
+      const auth = await adminAuth();
       if (auth) {
         const list = await auth.listUsers(1);
         checks.authReachable = true;

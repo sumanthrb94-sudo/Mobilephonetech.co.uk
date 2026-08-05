@@ -16,7 +16,7 @@ export default async function handler(req: any, res: any) {
 
   const limit = Math.min(10, parseInt(req.query?.limit ?? '8', 10) || 8);
 
-  const db = adminDb();
+  const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Search is unavailable' });
 
   try {

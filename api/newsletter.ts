@@ -25,7 +25,7 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    const db = adminDb();
+    const db = await adminDb();
     if (!db) return res.status(503).json({ error: 'Newsletter signup is unavailable' });
 
     // The normalised address is the document id, so re-subscribing overwrites

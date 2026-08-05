@@ -1,6 +1,6 @@
-import { cert, getApp, getApps, initializeApp, type App } from 'firebase-admin/app';
-import { getAuth, type Auth } from 'firebase-admin/auth';
-import { getFirestore, type Firestore } from 'firebase-admin/firestore';
+import type { App } from 'firebase-admin/app';
+import type { Auth } from 'firebase-admin/auth';
+import type { Firestore } from 'firebase-admin/firestore';
 
 /**
  * Firebase Admin SDK for the serverless functions.
@@ -11,6 +11,13 @@ import { getFirestore, type Firestore } from 'firebase-admin/firestore';
  * the private key into the browser bundle.
  *
  * Underscore-prefixed so Vercel treats it as a helper rather than a route.
+ *
+ * firebase-admin is imported dynamically rather than at module scope. A
+ * top-level import that throws — a Node version below the package's floor is
+ * the realistic case — crashes the whole function before any handler runs, and
+ * Vercel reports that as an opaque FUNCTION_INVOCATION_FAILED with nothing to
+ * diagnose from. Deferring it turns the same failure into a 503 that says what
+ * went wrong.
  */
 
 let cachedApp: App | null = null;
@@ -33,11 +40,14 @@ function loadCredentials(): Record<string, string> | null {
   return parsed;
 }
 
-export function getAdminApp(): App | null {
+export async function getAdminApp(): Promise<App | null> {
   if (cachedApp) return cachedApp;
-  if (getApps().length) { cachedApp = getApp(); return cachedApp; }
 
   try {
+    const { cert, getApp, getApps, initializeApp } = await import('firebase-admin/app');
+
+    if (getApps().length) { cachedApp = getApp(); return cachedApp; }
+
     const creds = loadCredentials();
     if (!creds) {
       initError = 'FIREBASE_SERVICE_ACCOUNT is not set';
@@ -53,7 +63,13 @@ export function getAdminApp(): App | null {
     });
     return cachedApp;
   } catch (err) {
-    initError = (err as Error).message;
+    const message = (err as Error).message;
+    // Name the Node-version case explicitly: firebase-admin v14 requires
+    // Node 22, and on an older runtime the import fails with something that
+    // reads like a syntax or module error rather than a version mismatch.
+    initError = /Unexpected token|SyntaxError|ERR_REQUIRE_ESM|Cannot find module 'firebase-admin/i.test(message)
+      ? `${message} — check the deployment is running Node 22 (package.json sets engines.node)`
+      : message;
     return null;
   }
 }
@@ -63,14 +79,18 @@ export function getAdminInitError(): string | null {
 }
 
 /** Firestore handle, or null when credentials are missing or malformed. */
-export function adminDb(): Firestore | null {
-  const a = getAdminApp();
-  return a ? getFirestore(a) : null;
+export async function adminDb(): Promise<Firestore | null> {
+  const a = await getAdminApp();
+  if (!a) return null;
+  const { getFirestore } = await import('firebase-admin/firestore');
+  return getFirestore(a);
 }
 
-export function adminAuth(): Auth | null {
-  const a = getAdminApp();
-  return a ? getAuth(a) : null;
+export async function adminAuth(): Promise<Auth | null> {
+  const a = await getAdminApp();
+  if (!a) return null;
+  const { getAuth } = await import('firebase-admin/auth');
+  return getAuth(a);
 }
 
 /**
@@ -82,7 +102,7 @@ export async function verifyCaller(req: { headers?: Record<string, unknown> }) {
   const token = header.startsWith('Bearer ') ? header.slice(7) : '';
   if (!token) return null;
 
-  const a = adminAuth();
+  const a = await adminAuth();
   if (!a) return null;
 
   try {

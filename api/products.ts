@@ -39,7 +39,7 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'minPrice must be ≤ maxPrice' });
   }
 
-  const db = adminDb();
+  const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Products are unavailable' });
 
   try {
