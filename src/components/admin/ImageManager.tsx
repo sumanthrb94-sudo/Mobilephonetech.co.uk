@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, Trash2, Star, ArrowLeft, ArrowRight, Loader2, AlertTriangle } from 'lucide-react';
+import { Upload, Trash2, Star, ArrowLeft, ArrowRight, Loader2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
 import {
   uploadImage, deleteImage, validateImageFile, describeError,
   ACCEPTED_IMAGE_TYPES, pathFromPublicUrl,
@@ -24,6 +24,45 @@ export default function ImageManager({
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [urlValue, setUrlValue] = useState('');
+
+  /**
+   * Link an image that is already hosted somewhere else.
+   *
+   * Cloud Storage requires Firebase's paid plan just to enable, so uploading
+   * is not available on every project. Linking keeps the console fully usable
+   * without it — and is genuinely wanted anyway when the artwork already lives
+   * on a CDN or in the bundled /assets folder.
+   */
+  const addUrl = () => {
+    const raw = urlValue.trim();
+    if (!raw) return;
+
+    // Accept a site-relative path (/assets/…) or an absolute http(s) URL, and
+    // nothing else: a data: or javascript: value would end up in an <img src>.
+    const isRelative = raw.startsWith('/');
+    let ok = isRelative;
+    if (!isRelative) {
+      try {
+        const parsed = new URL(raw);
+        ok = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        ok = false;
+      }
+    }
+    if (!ok) {
+      setErrors([`${raw.slice(0, 60)} — enter a full http(s) address or a path beginning with "/".`]);
+      return;
+    }
+    if (images.includes(raw)) {
+      setErrors(['That image is already on this product.']);
+      return;
+    }
+
+    setErrors([]);
+    setUrlValue('');
+    onChange([...images, raw]);
+  };
 
   const handleFiles = async (fileList: FileList | null) => {
     if (!fileList?.length) return;
@@ -122,6 +161,32 @@ export default function ImageManager({
           : <><Upload size={16} /> Upload images</>}
       </button>
 
+      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+        <input
+          value={urlValue}
+          onChange={e => setUrlValue(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
+          placeholder="…or paste an image URL"
+          aria-label="Add an image by URL"
+          disabled={disabled}
+          style={{
+            flex: 1, minWidth: 0, height: 40, padding: '0 12px',
+            border: '1.5px solid var(--grey-20)', borderRadius: 'var(--radius-md)',
+            fontFamily: 'var(--font-body)', fontSize: '13.5px', color: 'var(--black)',
+            background: 'var(--grey-0)', boxSizing: 'border-box',
+          }}
+        />
+        <button
+          type="button"
+          onClick={addUrl}
+          disabled={disabled || !urlValue.trim()}
+          className="btn btn-secondary btn-md"
+          style={{ flexShrink: 0 }}
+        >
+          <LinkIcon size={15} /> Add
+        </button>
+      </div>
+
       {errors.length > 0 && (
         <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0', display: 'flex', flexDirection: 'column', gap: '6px' }}>
           {errors.map((msg, i) => (
@@ -161,8 +226,8 @@ export default function ImageManager({
                   <span style={primaryBadgeStyle}><Star size={10} fill="currentColor" /> Primary</span>
                 )}
                 {!pathFromPublicUrl(url) && (
-                  <span style={bundledBadgeStyle} title="Shipped with the app rather than uploaded — removing it here only unlinks it.">
-                    Bundled
+                  <span style={bundledBadgeStyle} title="Linked rather than uploaded — removing it here only unlinks it, the file itself is untouched.">
+                    Linked
                   </span>
                 )}
               </div>
