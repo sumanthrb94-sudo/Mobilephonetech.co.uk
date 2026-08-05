@@ -1371,31 +1371,82 @@ html.is-checkout .ai-fab {
    Scoped to /admin; none of these class names appear on the storefront.
 ─────────────────────────────────────────────────────────────── */
 
+/* min-height, not height: with flex-wrap on, a fixed 52px let the wrapped
+   second line spill out of the bar on narrow screens. */
 .admin-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 52px;
+  gap: 10px;
+  min-height: 52px;
+  padding-block: 8px;
   flex-wrap: wrap;
 }
 
-/* Inventory row: wraps to two lines on phones, single row from 640px up. */
+/* One surface for the whole inventory table — toolbar, column header and rows
+   share a single border. Per-row cards on a tinted page read as boxes inside
+   boxes, which is exactly what every real back office (Seller Central, Back
+   Market) avoids: one panel, rows divided by hairlines. */
+.admin-panel {
+  background: var(--grey-0);
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.admin-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--grey-10);
+}
+
+/* Column header only earns its space once the row is genuinely tabular. */
+.admin-thead {
+  display: none;
+}
+
 .admin-row {
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
-  background: var(--grey-0);
-  border: 1px solid var(--grey-10);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--grey-10);
+  transition: background 0.12s ease;
 }
 
-.admin-filter-bar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: var(--spacing-20);
+.admin-row:last-child {
+  border-bottom: none;
+}
+
+.admin-row:hover {
+  background: var(--grey-5);
+}
+
+@media (min-width: 900px) {
+  .admin-thead,
+  .admin-row {
+    display: grid;
+    /* The stock column is sized for its widest state — the inline editor
+       (input + save + cancel = 156px), not the resting pill. */
+    grid-template-columns: 48px minmax(0, 1fr) 88px 160px 78px;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: nowrap;
+  }
+
+  .admin-thead {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--grey-10);
+    background: var(--grey-5);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--grey-50);
+  }
 }
 
 /* Editor field pairs stack on phones and sit side by side from 640px. */
@@ -1410,6 +1461,18 @@ html.is-checkout .ai-fab {
     flex-direction: row;
     gap: 16px;
   }
+}
+
+/* Row actions: invisible until pointed at, so the row stays quiet. Hover is
+   the only cue that changes, and focus-visible keeps keyboard parity. */
+.admin-ghost:hover:not(:disabled),
+.admin-ghost:focus-visible {
+  background: var(--grey-10);
+}
+
+.admin-ghost-danger:hover:not(:disabled),
+.admin-ghost-danger:focus-visible {
+  background: var(--color-sale-subtle);
 }
 
 .admin-spin {

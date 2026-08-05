@@ -228,10 +228,23 @@ async function probeInput(page, view, spec, isMobile, info, bad) {
   // jump, focus-on-error, Tab into an off-screen field, iOS keyboard scroll).
   // Blockers are classified by whether they are fixed/sticky page chrome.
   const coverAt = async (block) => {
-    const r = await page.evaluate(({ sel, block }) => {
+    // Scroll and measure in separate steps.
+    //
+    // index.css sets `scroll-behavior: smooth` on <html>, so a default
+    // scrollIntoView animates. Reading getBoundingClientRect() in the same
+    // evaluate therefore measured where the field *was*, mid-flight, not where
+    // it came to rest — which reported fields as buried under the header when
+    // they in fact land well clear of it. behavior:'instant' overrides the CSS
+    // and completes before the call returns; the settle wait covers any
+    // scroll-driven layout that follows.
+    await page.evaluate(({ sel, block }) => {
+      document.querySelector(sel)?.scrollIntoView({ block, inline: 'nearest', behavior: 'instant' });
+    }, { sel, block });
+    await page.waitForTimeout(250);
+
+    const r = await page.evaluate(({ sel }) => {
       const el = document.querySelector(sel);
       if (!el) return { ok: false, why: 'element no longer in the DOM' };
-      el.scrollIntoView({ block, inline: 'nearest' });
       const b = el.getBoundingClientRect();
       const x = Math.round(b.left + b.width / 2);
       const y = Math.round(b.top + b.height / 2);
@@ -257,8 +270,7 @@ async function probeInput(page, view, spec, isMobile, info, bad) {
         why: `${hit.tagName}${hit.id ? '#' + hit.id : ''}${cls(hit)} text="${(hit.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28)}"` +
              (chrome ? ` inside ${chrome.tagName}${chrome.id ? '#' + chrome.id : ''}${cls(chrome)} (position:${cs.position}, z-index:${cs.zIndex})` : ' (not fixed/sticky)'),
       };
-    }, { sel, block });
-    await page.waitForTimeout(120);
+    }, { sel });
     return r;
   };
 

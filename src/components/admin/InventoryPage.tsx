@@ -111,8 +111,9 @@ export default function InventoryPage() {
         <Banner tone="error" onDismiss={() => setError(null)}>{error}</Banner>
       )}
 
-      {/* ── Filters ── */}
-      <div className="admin-filter-bar">
+      {/* ── Toolbar, column header and rows share one panel ── */}
+      <div className="admin-panel">
+      <div className="admin-toolbar">
         <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 0 }}>
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-50)', pointerEvents: 'none' }} />
           <input
@@ -160,18 +161,30 @@ export default function InventoryPage() {
           <p style={{ margin: 0 }}>No products match those filters.</p>
         </div>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {products.map(p => (
-            <InventoryRow
-              key={p.id}
-              product={p}
-              onStockSaved={handleStockSaved}
-              onDeleteRequest={() => setPendingDelete(p)}
-              onError={setError}
-            />
-          ))}
-        </ul>
+        <>
+          {/* aria-hidden: the labels are decoration for sighted scanning — each
+              cell already carries its own accessible name. */}
+          <div className="admin-thead" aria-hidden="true">
+            <span>Image</span>
+            <span>Product</span>
+            <span>Price</span>
+            <span>Stock</span>
+            <span style={{ textAlign: 'right' }}>Actions</span>
+          </div>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {products.map(p => (
+              <InventoryRow
+                key={p.id}
+                product={p}
+                onStockSaved={handleStockSaved}
+                onDeleteRequest={() => setPendingDelete(p)}
+                onError={setError}
+              />
+            ))}
+          </ul>
+        </>
       )}
+      </div>{/* /.admin-panel */}
 
       {totalPages > 1 && (
         <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 'var(--spacing-24)' }} aria-label="Inventory pages">
@@ -265,7 +278,9 @@ function InventoryRow({
 
   return (
     <li className="admin-row">
-      <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 'var(--radius-md)', background: 'var(--grey-5)', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
+      {/* A hairline frame, not a filled tile: the thumbnail should read as an
+          image on the row, not as a card nested inside one. */}
+      <div style={{ width: 48, height: 48, flexShrink: 0, borderRadius: 'var(--radius-sm)', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
         {/* A product whose image 404s falls back to the placeholder rather than
             the browser's broken-image icon — a missing file is exactly the kind
             of thing an admin comes here to notice and fix. */}
@@ -283,15 +298,23 @@ function InventoryRow({
       </div>
 
       <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700, color: 'var(--black)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <Link
+          to={`/admin/inventory/${product.id}`}
+          /* minHeight 24 keeps the name link above the WCAG 2.2 SC 2.5.8
+             target minimum — a 19px line box would not be. */
+          /* Block, not flex: ellipsis truncation needs a block box. A 24px
+             line box also clears the WCAG 2.2 SC 2.5.8 target minimum, which
+             the natural ~19px one would not. */
+          style={{ fontFamily: 'var(--font-sans)', fontSize: '14.5px', fontWeight: 700, color: 'var(--black)', textDecoration: 'none', display: 'block', lineHeight: '24px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
           {product.brand} {product.model}
-        </div>
-        <div style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--grey-50)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        </Link>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {product.grade}{product.storage ? ` · ${product.storage}` : ''} · {product.id}
         </div>
       </div>
 
-      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)', flexShrink: 0, minWidth: 68 }}>
+      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14.5px', fontWeight: 800, color: 'var(--black)', flexShrink: 0, minWidth: 68 }}>
         £{product.price}
       </div>
 
@@ -319,19 +342,21 @@ function InventoryRow({
             aria-label={`Edit stock for ${product.brand} ${product.model}, currently ${product.stock}`}
             style={{ ...stockPillStyle, ...stockToneStyle[tone] }}
           >
-            {product.stock} in stock
+            <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: stockDotColor[tone], flexShrink: 0 }} />
+            {product.stock === 0 ? 'Out of stock' : `${product.stock} in stock`}
           </button>
         )}
       </div>
 
-      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: 4, flexShrink: 0, justifyContent: 'flex-end' }}>
         <Link
           to={`/admin/inventory/${product.id}`}
           aria-label={`Edit ${product.brand} ${product.model}`}
-          className="btn btn-secondary btn-sm"
-          style={{ textDecoration: 'none', padding: '0 10px' }}
+          title="Edit"
+          className="admin-ghost"
+          style={{ ...ghostButtonStyle, color: 'var(--grey-60)', textDecoration: 'none' }}
         >
-          <Pencil size={14} />
+          <Pencil size={15} />
         </Link>
         <IconButton label={`Delete ${product.brand} ${product.model}`} onClick={onDeleteRequest} danger>
           <Trash2 size={15} />
@@ -349,12 +374,9 @@ function IconButton({
   return (
     <button
       type="button" onClick={onClick} disabled={disabled} aria-label={label} title={label}
+      className={danger ? 'admin-ghost admin-ghost-danger' : 'admin-ghost'}
       style={{
-        // 34px square — above the 24px WCAG 2.2 SC 2.5.8 target minimum.
-        width: 34, height: 34, display: 'grid', placeItems: 'center',
-        borderRadius: 'var(--radius-md)',
-        border: `1.5px solid ${danger ? '#fecaca' : 'var(--grey-20)'}`,
-        background: danger ? 'var(--color-sale-subtle)' : 'var(--grey-0)',
+        ...ghostButtonStyle,
         color: disabled ? 'var(--grey-30)' : danger ? 'var(--color-sale)' : 'var(--grey-60)',
         cursor: disabled ? 'default' : 'pointer',
       }}
@@ -402,16 +424,33 @@ const controlStyle: React.CSSProperties = {
   background: 'var(--grey-0)', boxSizing: 'border-box',
 };
 
+/* Borderless, transparent until hovered. Framed icon buttons on a framed row
+   inside a framed panel is the nesting the row layout is trying to shed. */
+const ghostButtonStyle: React.CSSProperties = {
+  // 34px square — above the 24px WCAG 2.2 SC 2.5.8 target minimum.
+  width: 34, height: 34, display: 'grid', placeItems: 'center', flexShrink: 0,
+  borderRadius: 'var(--radius-md)', border: '1px solid transparent',
+  background: 'transparent', cursor: 'pointer',
+};
+
+/* The status colour carries the meaning; the dot and the click affordance do
+   the rest, so no hard border is needed to make it legible. */
 const stockPillStyle: React.CSSProperties = {
-  height: 34, padding: '0 12px', borderRadius: 'var(--radius-full)',
+  height: 30, padding: '0 10px', borderRadius: 'var(--radius-full)',
+  display: 'inline-flex', alignItems: 'center', gap: 6,
   fontFamily: 'var(--font-sans)', fontSize: '12.5px', fontWeight: 700,
+  border: '1px solid transparent',
   cursor: 'pointer', whiteSpace: 'nowrap',
 };
 
 const stockToneStyle: Record<string, React.CSSProperties> = {
-  ok:  { background: 'var(--color-trust)', border: '1.5px solid var(--green-20)', color: 'var(--color-trust-text)' },
-  low: { background: 'var(--color-warn-subtle)', border: '1.5px solid #fde68a', color: '#92400e' },
-  out: { background: 'var(--color-sale-subtle)', border: '1.5px solid #fecaca', color: '#991b1b' },
+  ok:  { background: 'var(--color-trust)', color: 'var(--color-trust-text)' },
+  low: { background: 'var(--color-warn-subtle)', color: '#92400e' },
+  out: { background: 'var(--color-sale-subtle)', color: '#991b1b' },
+};
+
+const stockDotColor: Record<string, string> = {
+  ok: 'var(--color-trust-text)', low: '#b45309', out: '#dc2626',
 };
 
 const emptyStyle: React.CSSProperties = {

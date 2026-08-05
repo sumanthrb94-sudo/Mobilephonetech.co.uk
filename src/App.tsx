@@ -336,14 +336,20 @@ function AppContent() {
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <AddedToCartModal />
-      <Suspense fallback={null}>
-        <AIAssistant />
-      </Suspense>
+      {/* The shopping assistant is for shoppers. In the console it is not just
+          irrelevant — its floating bubble sits over the row action buttons. */}
+      {!isAdminRoute && (
+        <Suspense fallback={null}>
+          <AIAssistant />
+        </Suspense>
+      )}
       <Toast />
       <CookieBanner />
       {isCheckoutRoute ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
       {!isCheckoutRoute && !isAdminRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
-      <AnnouncementBar />
+      {/* Same again for the trust strip: delivery and returns promises are a
+          shopper cue, and pinned to the bottom it covers the last table row. */}
+      {!isAdminRoute && <AnnouncementBar />}
     </div>
   );
 }

@@ -35,6 +35,23 @@ async function shot(page, name) {
   await page.screenshot({ path: `${OUT}/${String(shotN).padStart(2, '0')}-${name}.png`, fullPage: false });
 }
 
+/**
+ * Wait for something to actually render rather than for a fixed delay.
+ *
+ * Every admin route gates on an auth check and then a Firestore query, neither
+ * of which has a fixed cost. A flat 600–800ms passed locally and failed
+ * intermittently under load, so the suite reported a different failure on each
+ * run — which makes every result, pass or fail, untrustworthy.
+ *
+ * Failure to appear is swallowed on purpose: the assertion that follows is
+ * what should report the problem, with its own message.
+ */
+async function settled(page, selector, timeout = 20000) {
+  await page.locator(selector).first()
+    .waitFor({ state: 'visible', timeout })
+    .catch(() => {});
+}
+
 async function dismissCookies(page) {
   const b = page.getByRole('button', { name: /accept all cookies/i });
   if (await b.count()) { await b.first().click().catch(() => {}); await page.waitForTimeout(300); }
@@ -96,7 +113,7 @@ async function run(view, contextOpts) {
   // ── 1. Dashboard loads for an admin ──
   await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
   await dismissCookies(page);
-  await page.waitForTimeout(700);
+  await settled(page, '.admin-row');
   let body = await txt();
   rec(view, 'Admin dashboard opens for an admin', /\bAdmin\b/i.test(body) && /Inventory/i.test(body), body.slice(0, 90));
   rec(view, 'Seeded products are listed', /iPhone 17/.test(body) && /Galaxy S23/.test(body));
@@ -105,7 +122,9 @@ async function run(view, contextOpts) {
   await shot(page, `${view}-dashboard`);
 
   // ── 2. Stock states are visually distinguished ──
-  rec(view, 'Out-of-stock item shows 0 in stock', /0 in stock/.test(body));
+  // Zero reads as "Out of stock", not "0 in stock" — the count is only
+  // meaningful while there is one. The aria-label still carries the number.
+  rec(view, 'Out-of-stock item is labelled out of stock', /Out of stock/.test(body));
   rec(view, 'Low-stock item shows its count', /4 in stock/.test(body));
 
   // ── 3. Inline stock edit persists ──
@@ -153,7 +172,7 @@ async function run(view, contextOpts) {
 
   // ── 6. Create a product ──
   await page.goto(`${BASE}/admin/inventory/new`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(600);
+  await settled(page, '#field-brand');
   rec(view, 'Add-product form opens', /Add a product/i.test(await txt()));
 
   // Empty submit must surface validation, not silently do nothing.
@@ -192,7 +211,7 @@ async function run(view, contextOpts) {
 
   // ── 7. Edit an existing product ──
   await page.goto(`${BASE}/admin/inventory/apple-iphone-17`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(800);
+  await settled(page, '#field-model');
   rec(view, 'Edit form loads the existing values', (await page.locator('#field-model').inputValue()) === 'iPhone 17');
   rec(view, 'Slug is locked when editing', await page.locator('#field-id').isEditable() === false);
 
@@ -205,7 +224,7 @@ async function run(view, contextOpts) {
 
   // ── 8. Image manager ──
   await page.goto(`${BASE}/admin/inventory/apple-iphone-17`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(800);
+  await settled(page, '#field-model');
   rec(view, 'Image manager renders', /Images/.test(await txt()));
 
   const uploadBtn = page.getByRole('button', { name: /Upload images/i }).first();
@@ -225,7 +244,7 @@ async function run(view, contextOpts) {
 
   // ── 9. Delete requires confirmation ──
   await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(800);
+  await settled(page, '.admin-row');
   const before = await countProducts();
   const delBtn = page.getByRole('button', { name: /Delete Samsung Galaxy S23/i }).first();
   if (await delBtn.count()) {
@@ -283,10 +302,46 @@ async function run(view, contextOpts) {
 
   // ── 11. Hygiene ──
   await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(600);
+  await settled(page, '.admin-row');
   const overflow = await page.evaluate(() =>
     document.documentElement.scrollWidth - document.documentElement.clientWidth);
   rec(view, 'No horizontal overflow', overflow <= 0, `${overflow}px`);
+
+  // Shopper chrome must not follow staff into the console. Both of these are
+  // pinned overlays, so on a phone they sat directly on top of the row action
+  // buttons rather than merely looking out of place.
+  const probe = () => ({
+    assistant: Boolean(document.querySelector('.ai-fab, [aria-label="Open Tech Advisor"]')),
+    trustStrip: Boolean(document.querySelector('.announcement-bar')),
+  });
+  const chrome = await page.evaluate(probe);
+  rec(view, 'Shopping assistant is not shown in the console', !chrome.assistant);
+  rec(view, 'Storefront trust strip is not shown in the console', !chrome.trustStrip);
+
+  // Positive control. Without it the two assertions above would also hold for
+  // a selector that matches nothing anywhere — which is how an absence test
+  // quietly stops testing anything.
+  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.announcement-bar');
+  // The assistant is a lazy chunk, so it appears a beat after the rest.
+  await settled(page, '.ai-fab');
+  const onStore = await page.evaluate(probe);
+  rec(view, 'Absence selectors do match on the storefront', onStore.assistant && onStore.trustStrip,
+    JSON.stringify(onStore));
+
+  await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.admin-row');
+
+  // One panel, not a stack of cards: rows must not carry their own frame.
+  const rowFrames = await page.evaluate(() => {
+    const row = document.querySelector('.admin-row');
+    if (!row) return null;
+    const s = getComputedStyle(row);
+    return { radius: parseFloat(s.borderTopLeftRadius), top: s.borderTopWidth, left: s.borderLeftWidth };
+  });
+  rec(view, 'Inventory rows are table rows, not nested cards',
+    Boolean(rowFrames) && rowFrames.radius === 0 && rowFrames.top === '0px' && rowFrames.left === '0px',
+    JSON.stringify(rowFrames));
 
   const smallTargets = await page.evaluate(() => {
     const bad = [];
