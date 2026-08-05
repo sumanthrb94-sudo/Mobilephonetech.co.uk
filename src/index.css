@@ -1489,19 +1489,38 @@ html.is-checkout .ai-fab {
    the thumb mid-tap, which reads as the caret jumping somewhere random.
    Thirteen fields were between 13px and 14px. Setting the floor here
    rather than per-field also covers any input added later. */
+/* !important is deliberate: nearly every field in this codebase sets its
+   size via an inline style object, and an inline style beats any selector
+   without it. The alternative is editing ~15 call sites and hoping the next
+   one remembers — this way the floor cannot be undercut by accident. */
 @media (max-width: 767px) {
   input:not([type='checkbox']):not([type='radio']):not([type='range']),
   select,
   textarea {
-    font-size: 16px;
+    font-size: 16px !important;
   }
 }
 
 /* The header and announcement bar are fixed, so anything the browser
    scrolls to on its own — an anchor jump, focus on an invalid field,
    tabbing into an off-screen input, the iOS keyboard pushing the view —
-   lands underneath them. Reserving the chrome height means the field
-   stops below it instead of behind it. */
+   lands underneath them.
+   scroll-padding on the scrolling container is the tool for this rather
+   than scroll-margin on each element: it applies to every scroll into
+   this container, including block:'center', which ignores scroll-margin.
+   The per-element margins below stay as a backstop for nested scrollers. */
+html {
+  scroll-padding-top: calc(var(--nav-total) + 16px);
+  scroll-padding-bottom: calc(36px + 16px);
+}
+
+@media (max-width: 1023px) {
+  html {
+    /* plus the mobile tab bar */
+    scroll-padding-bottom: calc(36px + 64px + 16px);
+  }
+}
+
 input,
 select,
 textarea,
