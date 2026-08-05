@@ -5,7 +5,7 @@ import {
   Search, Heart, User,
   HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2,
-  ShoppingCart
+  ShoppingCart, Boxes,
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +14,7 @@ import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
 import TabletMegaMenu from '../TabletMegaMenu';
+import { useAdmin } from '../../hooks/useAdmin';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -46,6 +47,7 @@ export default function Navbar(_: NavbarProps) {
 
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
+  const { isAdmin } = useAdmin();
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -345,6 +347,26 @@ export default function Navbar(_: NavbarProps) {
                           Help & Support
                         </span>
                       </button>
+
+                      {isAdmin && (
+                        <Link
+                          to="/admin/inventory"
+                          onClick={() => setIsAccountOpen(false)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '12px',
+                            width: '100%', padding: '12px 16px',
+                            background: 'var(--color-brand-subtle)',
+                            border: 'none', cursor: 'pointer', textAlign: 'left',
+                            borderTop: '1px solid var(--grey-10)',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <Boxes size={18} style={{ color: 'var(--brand-cyan-hover)' }} />
+                          <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>
+                            Back store
+                          </span>
+                        </Link>
+                      )}
 
                       {isAuthenticated ? (
                         <Link
@@ -711,6 +733,16 @@ export default function Navbar(_: NavbarProps) {
 
               {/* Auth */}
               <div className="p-4" style={{ borderTop: '1px solid var(--grey-10)' }}>
+                {isAdmin && (
+                  <Link
+                    to="/admin/inventory"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="btn btn-secondary btn-md btn-full"
+                    style={{ textDecoration: 'none', marginBottom: 10 }}
+                  >
+                    <Boxes size={16} /> Back store
+                  </Link>
+                )}
                 {isAuthenticated ? (
                   <Link
                     to="/account"

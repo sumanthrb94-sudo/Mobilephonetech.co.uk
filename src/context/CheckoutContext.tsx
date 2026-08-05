@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { collection, doc, getDocs, orderBy, query, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { db, COL } from '../lib/firebase';
 import { stripUndefined } from '../lib/productMapper';
 import { useAuth } from './AuthContext';
@@ -135,10 +135,12 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
+        // No orderBy: an equality filter plus an orderBy on another field
+        // requires a composite index, and Firestore rejects the query without
+        // one. Sorting a shopper's own orders in memory avoids that entirely.
         const snap = await getDocs(query(
           collection(db, COL.orders),
           where('userId', '==', user.id),
-          orderBy('createdAt', 'desc'),
         ));
         if (cancelled) return;
 
@@ -160,6 +162,7 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
             createdAt: row.createdAt as string,
           };
         });
+        fetched.sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
         setOrders(fetched);
       } catch { /* non-fatal — the local order list still renders */ }
     })();

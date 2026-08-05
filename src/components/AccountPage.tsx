@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, MapPin, Lock, ChevronRight, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
-import { collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { updatePassword } from 'firebase/auth';
 import { auth, db, COL } from '../lib/firebase';
 import { useSeo } from '../hooks/useSeo';
@@ -71,6 +71,7 @@ export default function AccountPage() {
   // Orders state
   const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersError, setOrdersError] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   // Address state
@@ -115,16 +116,26 @@ export default function AccountPage() {
   async function loadOrders() {
     if (!session) return;
     setOrdersLoading(true);
+    setOrdersError(null);
     try {
+      // No orderBy in the query: combining an equality filter with an orderBy
+      // on a different field needs a composite index, and without it Firestore
+      // rejects the whole query. A shopper has few orders, so sorting here
+      // costs nothing and removes a deployment step that is easy to miss.
       const snap = await getDocs(query(
         collection(db, COL.orders),
         where('userId', '==', user!.id),
-        orderBy('createdAt', 'desc'),
       ));
       // Line items live on the order document now, so there is nothing to join.
-      setOrders(snap.docs.map(d => ({ id: d.id, ...(d.data() as object) }) as StoredOrder));
-    } catch {
+      const rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as object) }) as StoredOrder);
+      rows.sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
+      setOrders(rows);
+    } catch (err) {
+      // Previously this swallowed the error and rendered "No orders yet",
+      // which is indistinguishable from genuinely having none — the single
+      // most confusing way for this to fail.
       setOrders([]);
+      setOrdersError((err as Error)?.message ?? 'Could not load your orders.');
     } finally {
       setOrdersLoading(false);
     }
@@ -333,6 +344,16 @@ export default function AccountPage() {
               {tab === 'orders' && (
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 24px' }}>Order history</h2>
+                  {ordersError && (
+                    <div role="alert" style={{
+                      display: 'flex', gap: 10, alignItems: 'flex-start',
+                      background: 'var(--color-sale-subtle)', border: '1px solid #fecaca',
+                      borderRadius: 'var(--radius-md)', padding: '12px 14px', marginBottom: 16,
+                      fontFamily: 'var(--font-body)', fontSize: 13.5, color: '#991b1b', lineHeight: 1.5,
+                    }}>
+                      <span>Could not load your orders — {ordersError}</span>
+                    </div>
+                  )}
                   {ordersLoading ? (
                     <div style={{ textAlign: 'center', padding: 48, color: '#9ca3af' }}>Loading orders…</div>
                   ) : orders.length === 0 ? (

@@ -210,6 +210,11 @@ export default function CheckoutFlow() {
     const order: Order = {
       id: `ORD-${Date.now()}`, items, shippingAddress, shippingOption, paymentMethod,
       subtotal, shippingCost, tax, total, status: 'confirmed', createdAt: new Date().toISOString(),
+      // Without this the order is unattributable: the Firestore rule requires
+      // userId to equal the caller's uid, so the write was rejected outright —
+      // and order history, which filters on userId, could never have matched
+      // it either. Guests stay null and are matched by email instead.
+      userId: user && !user.isGuest ? user.id : undefined,
     };
 
     createOrder(order);

@@ -36,6 +36,7 @@ import { AuthProvider } from './context/AuthContext';
 import { UIProvider } from './context/UIContext';
 import { CatalogueProvider } from './context/CatalogueContext';
 import Toast from './components/Toast';
+import { PageLoading } from './components/ui/Loading';
 import { useSeo } from './hooks/useSeo';
 import { homeSeo } from './utils/seo';
 
@@ -59,34 +60,6 @@ const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
 const ProductEditor = lazy(() => import('./components/admin/ProductEditor'));
-
-// Loading state component — on-brand skeleton
-const PageLoader = () => (
-  <div
-    style={{
-      minHeight: '60vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'var(--grey-0)',
-      padding: 'var(--spacing-48) var(--spacing-16)',
-    }}
-  >
-    <div
-      style={{
-        width: '44px',
-        height: '44px',
-        border: '3px solid var(--color-brand-subtle)',
-        borderTopColor: 'var(--brand-cyan)',
-        borderRadius: '50%',
-        animation: 'spin 0.7s linear infinite',
-      }}
-      role="status"
-      aria-label="Loading"
-    />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </div>
-);
 
 
 /**
@@ -250,7 +223,7 @@ function AppContent() {
       */}
       <main id="main-content" style={{ flexGrow: 1 }}>
         <ErrorBoundary>
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<PageLoading />}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<HomePage />} />

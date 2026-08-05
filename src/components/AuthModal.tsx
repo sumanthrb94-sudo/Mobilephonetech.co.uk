@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Spinner } from './ui/Loading';
 import { useAuth } from '../context/AuthContext';
 import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginIdentifier';
 
@@ -215,10 +216,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <button
                   type="submit"
                   disabled={isLoading}
+                  aria-busy={isLoading}
                   className="btn btn-primary btn-lg btn-full"
                   style={{ marginTop: '8px' }}
                 >
-                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : (
+                  {isLoading ? (
+                    <Spinner
+                      size="sm"
+                      tone="current"
+                      label={mode === 'login' ? 'Signing in' : 'Creating your account'}
+                    />
+                  ) : (
                     <>{mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={16} /></>
                   )}
                 </button>
@@ -235,6 +243,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 type="button"
                 onClick={handleGoogle}
                 disabled={googleBusy}
+                aria-busy={googleBusy}
                 aria-label="Continue with Google"
                 style={{
                   width: '100%',
@@ -256,7 +265,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 onMouseOver={(e) => { e.currentTarget.style.background = 'var(--grey-5)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.background = 'var(--grey-0)'; }}
               >
-                {googleBusy ? <Loader2 size={18} className="animate-spin" /> : (
+                {googleBusy ? <Spinner size="sm" label="Signing in with Google" /> : (
                   <>
                     {/* Google mark — inline so no external request is needed. */}
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
