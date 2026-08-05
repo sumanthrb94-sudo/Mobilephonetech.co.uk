@@ -89,6 +89,16 @@ function buildSearchTerms(brand, model, category) {
   return [...terms].slice(0, 120);
 }
 
+function deepClean(value) {
+  if (Array.isArray(value)) return value.map(deepClean);
+  if (value && typeof value === 'object' && !(value instanceof Date)) {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) if (v !== undefined) out[k] = deepClean(v);
+    return out;
+  }
+  return value;
+}
+
 function toDoc(p) {
   const doc = {
     model: p.model,
@@ -115,9 +125,9 @@ function toDoc(p) {
     searchTerms: buildSearchTerms(p.brand, p.model, p.category),
     updatedAt: FieldValue.serverTimestamp(),
   };
-  // Firestore rejects undefined outright, unlike null.
-  for (const k of Object.keys(doc)) if (doc[k] === undefined) doc[k] = null;
-  return doc;
+  // Recursive: Firestore rejects undefined at any depth, and one product has
+  // one inside variants[]. A top-level-only clean fails the entire batch.
+  return deepClean(doc);
 }
 
 const products = loadProducts();

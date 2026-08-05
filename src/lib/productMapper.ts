@@ -89,11 +89,24 @@ export function buildSearchTerms(brand: string, model: string, category?: string
   return [...terms].slice(0, 120);
 }
 
-/** Strip undefined — Firestore rejects it, unlike null. */
-export function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (v !== undefined) out[k] = v;
+/**
+ * Strip undefined — Firestore rejects it, unlike null.
+ *
+ * Recursive on purpose. A top-level-only version looks like it works and then
+ * fails on the one record with an undefined buried inside an array: Firestore
+ * rejects the whole write, so in a batch that means every document in it is
+ * lost, not just the offending one.
+ */
+export function stripUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map(v => stripUndefined(v)) as unknown as T;
   }
-  return out as T;
+  if (value && typeof value === 'object' && !(value instanceof Date)) {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (v !== undefined) out[k] = stripUndefined(v);
+    }
+    return out as T;
+  }
+  return value;
 }
