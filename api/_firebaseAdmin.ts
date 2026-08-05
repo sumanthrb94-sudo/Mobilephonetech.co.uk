@@ -64,11 +64,10 @@ export async function getAdminApp(): Promise<App | null> {
     return cachedApp;
   } catch (err) {
     const message = (err as Error).message;
-    // Name the Node-version case explicitly: firebase-admin v14 requires
-    // Node 22, and on an older runtime the import fails with something that
-    // reads like a syntax or module error rather than a version mismatch.
+    // An import failure here reads like a syntax or module-resolution problem
+    // rather than what it usually is, so say what to actually check.
     initError = /Unexpected token|SyntaxError|ERR_REQUIRE_ESM|Cannot find module 'firebase-admin/i.test(message)
-      ? `${message} — check the deployment is running Node 22 (package.json sets engines.node)`
+      ? `${message} — firebase-admin failed to load; check the deployment's Node version is 20 or newer`
       : message;
     return null;
   }

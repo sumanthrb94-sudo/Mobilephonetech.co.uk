@@ -2,7 +2,7 @@
   "name": "lehart-co-uk",
   "private": true,
   "engines": {
-    "node": "22.x"
+    "node": ">=20"
   },
   "version": "0.0.0",
   "type": "module",
@@ -22,6 +22,7 @@
     "test:coverage": "vitest run --coverage",
     "e2e:interactions": "node e2e/interactions.mjs",
     "e2e:admin": "node e2e/admin.mjs",
+    "e2e:focus": "node e2e/focus.mjs",
     "seed": "node scripts/seed-firestore.mjs",
     "create-users": "node scripts/create-users.mjs",
     "emulators": "firebase emulators:start --project demo-lehart --only auth,firestore,storage"
@@ -36,7 +37,7 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "firebase": "^12.17.1",
-    "firebase-admin": "^14.2.0",
+    "firebase-admin": "^13.10.0",
     "graphql": "^16.13.2",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
