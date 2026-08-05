@@ -16,6 +16,34 @@ interface AuthModalProps {
   initialMode?: 'login' | 'signup';
 }
 
+/**
+ * Firebase reports auth failures as `auth/...` codes wrapped in a generic
+ * "Firebase: Error (auth/...)" message, which tells the user nothing. The two
+ * that actually happen in deployment are worth naming precisely, because both
+ * are console configuration rather than anything the user did wrong.
+ */
+function describeGoogleError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? '';
+  const message = (err as { message?: string })?.message ?? '';
+
+  switch (code) {
+    case 'auth/operation-not-allowed':
+      return 'Google sign-in is not enabled for this project yet. Please use email and password.';
+    case 'auth/unauthorized-domain':
+      // By far the most common one on a new deployment: the domain has to be
+      // listed under Firebase Auth -> Settings -> Authorized domains.
+      return 'This site is not an authorised domain for Google sign-in. Please use email and password.';
+    case 'auth/account-exists-with-different-credential':
+      return 'An account already exists with that email. Sign in with your password instead.';
+    case 'auth/network-request-failed':
+      return 'Could not reach Google. Check your connection and try again.';
+    case 'auth/internal-error':
+      return 'Google sign-in failed unexpectedly. Please use email and password.';
+    default:
+      return message || 'Could not start Google sign-in. Please try again.';
+  }
+}
+
 export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }: AuthModalProps) {
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
   const [email, setEmail] = useState('');
@@ -50,13 +78,24 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     setError('');
     setGoogleBusy(true);
     try {
-      await signInWithGoogle();
-      // On success the browser navigates to Google, so we never get here.
+      const outcome = await signInWithGoogle();
+
+      // Firebase's popup flow resolves in place — unlike Supabase's redirect,
+      // which unloaded the page and meant nothing after the await ever ran.
+      // Without closing here the user is signed in behind a modal that is
+      // still spinning, which looks exactly like a failure.
+      if (outcome === 'signed-in') {
+        onSuccess?.();
+        onClose();
+        return;
+      }
+      // 'redirecting' — the page is about to unload, so leave the busy state.
+      if (outcome === 'redirecting') return;
+
+      // 'cancelled' — the user closed the popup. Not an error; just reset.
+      setGoogleBusy(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '';
-      setError(/provider|not enabled|unsupported/i.test(msg)
-        ? 'Google sign-in is not enabled yet. Please use email and password.'
-        : msg || 'Could not start Google sign-in. Please try again.');
+      setError(describeGoogleError(err));
       setGoogleBusy(false);
     }
   };

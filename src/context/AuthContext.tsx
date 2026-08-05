@@ -40,7 +40,12 @@ interface AuthContextType {
   signup: (email: string, password: string, fullName: string) => Promise<void>;
   logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  /**
+   * Resolves with what actually happened, because the caller has to react
+   * differently: 'signed-in' should close the modal, 'cancelled' should leave
+   * it open untouched, and 'redirecting' means the page is about to unload.
+   */
+  signInWithGoogle: () => Promise<'signed-in' | 'cancelled' | 'redirecting'>;
   continueAsGuest: (email: string) => void;
   /** Force-refresh the ID token, e.g. right after a role change. */
   refreshClaims: () => Promise<void>;
@@ -134,22 +139,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(await toUser(cred.user));
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<'signed-in' | 'cancelled' | 'redirecting'> => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
       const cred = await signInWithPopup(auth, provider);
       await ensureProfile(cred.user);
+      // Unlike Supabase's signInWithOAuth, the popup flow resolves in place:
+      // the user is signed in and the caller still has a live component to
+      // update. Returning the outcome is what lets it close the modal.
+      setUser(await toUser(cred.user));
+      return 'signed-in';
     } catch (err) {
       const code = (err as { code?: string })?.code ?? '';
       // A blocked popup is a browser setting, not a failure worth surfacing —
       // fall back to the redirect flow, which no blocker interferes with.
       if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
         await signInWithRedirect(auth, provider);
-        return;
+        return 'redirecting';
       }
-      // The user closing the popup is a deliberate cancel, not an error.
-      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return;
+      // Closing the popup is a deliberate cancel, not an error.
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return 'cancelled';
       throw err;
     }
   };
