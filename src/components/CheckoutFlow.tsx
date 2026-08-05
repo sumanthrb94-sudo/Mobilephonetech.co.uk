@@ -66,6 +66,17 @@ export default function CheckoutFlow() {
     try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior }); }
     catch { window.scrollTo(0, 0); }
   }, [currentStep]);
+
+  // currentStep is only advanced past 'cart' by the cart's own CTAs, so
+  // arriving at /checkout any other way — a bookmark, a refresh, a shared
+  // link — left it on 'cart' and rendered an empty column: no form, no
+  // explanation, nothing to click. Being on this page with a basket is
+  // itself the intent to check out.
+  useEffect(() => {
+    if (currentStep === 'cart' && items.length > 0) setCurrentStep('shipping');
+    // Runs on mount and if the cart fills while here; later steps are
+    // untouched because the guard only fires on 'cart'.
+  }, [currentStep, items.length, setCurrentStep]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
@@ -226,7 +237,15 @@ export default function CheckoutFlow() {
   const handleGuestCheckout = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const email = new FormData(e.currentTarget).get('guestEmail') as string;
-    if (email) { continueAsGuest(email); setCheckoutMode('shipping'); }
+    if (!email) return;
+    continueAsGuest(email);
+    setCheckoutMode('shipping');
+    // currentStep starts at 'cart' and was only ever advanced by the cart's
+    // own CTAs. Landing on /checkout directly — a bookmark, a refresh, a
+    // shared link — and continuing as a guest left it on 'cart', so neither
+    // branch below matched and the page rendered an empty column with no
+    // shipping form and no explanation.
+    if (currentStep === 'cart') setCurrentStep('shipping');
   };
 
   // ── CONFIRMATION PAGE ──────────────────────────────────────────────────────

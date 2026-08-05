@@ -53,6 +53,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
 
+  // onClose is a fresh closure on every parent render, so keeping it in the
+  // effect's dependencies tore the effect down and re-ran it constantly while
+  // the modal was open — re-capturing lastFocusedRef each time, usually onto
+  // the modal's own first field. A ref keeps the latest callback reachable
+  // without making the effect depend on its identity.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+
   // Focus management: remember the trigger, focus the first field on
   // open, restore focus on close. Esc closes from anywhere in the modal.
   useEffect(() => {
@@ -60,15 +68,34 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     lastFocusedRef.current = (document.activeElement as HTMLElement) ?? null;
     const t = window.setTimeout(() => firstFieldRef.current?.focus(), 30);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+      if (e.key === 'Escape') { e.preventDefault(); onCloseRef.current(); }
     };
     document.addEventListener('keydown', onKey);
     return () => {
       window.clearTimeout(t);
       document.removeEventListener('keydown', onKey);
-      lastFocusedRef.current?.focus?.();
+
+      // The trigger is often inside a menu that closed itself on the way in,
+      // which leaves a detached node whose .focus() silently does nothing —
+      // dropping focus to <body>, so the next Tab restarts at the top of the
+      // page. Fall back to any still-connected sign-in control, then to the
+      // main landmark, so focus always lands somewhere navigable.
+      const previous = lastFocusedRef.current;
+      const restore = previous?.isConnected
+        ? previous
+        : (document.querySelector('[data-auth-trigger]') as HTMLElement | null)
+          ?? (document.getElementById('main-content') as HTMLElement | null);
+
+      if (restore) {
+        // main is not focusable by default; -1 lets it receive focus
+        // programmatically without adding it to the tab order.
+        if (restore.id === 'main-content' && !restore.hasAttribute('tabindex')) {
+          restore.setAttribute('tabindex', '-1');
+        }
+        restore.focus?.();
+      }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');

@@ -1479,3 +1479,43 @@ html.is-checkout .ai-fab {
     overflow-x: visible;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────
+   FORM FIELD BASELINE
+─────────────────────────────────────────────────────────────── */
+
+/* iOS Safari zooms the whole page when a focused input's font-size is
+   under 16px. The page then lurches and the field slides out from under
+   the thumb mid-tap, which reads as the caret jumping somewhere random.
+   Thirteen fields were between 13px and 14px. Setting the floor here
+   rather than per-field also covers any input added later. */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* The header and announcement bar are fixed, so anything the browser
+   scrolls to on its own — an anchor jump, focus on an invalid field,
+   tabbing into an off-screen input, the iOS keyboard pushing the view —
+   lands underneath them. Reserving the chrome height means the field
+   stops below it instead of behind it. */
+input,
+select,
+textarea,
+[data-scroll-target] {
+  scroll-margin-top: calc(var(--nav-total) + 16px);
+  scroll-margin-bottom: calc(36px + 16px);
+}
+
+@media (max-width: 1023px) {
+  /* The mobile tab bar occupies the bottom too. */
+  input,
+  select,
+  textarea,
+  [data-scroll-target] {
+    scroll-margin-bottom: calc(36px + 64px + 16px);
+  }
+}
