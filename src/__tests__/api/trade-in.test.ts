@@ -1,18 +1,30 @@
 import { describe, it, expect, vi } from 'vitest';
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({
-    from: () => ({
-      insert: () => ({
-        select: () => ({
-          single: () => Promise.resolve({
-            data: { id: 'quote-uuid-001', estimated_value: 700, status: 'quoted' },
-            error: null,
-          }),
-        }),
+// Mock the Admin SDK wrapper before importing the handler. Mocking our own
+// module rather than firebase-admin keeps the stub to the one function the
+// route actually uses.
+const added: Record<string, unknown>[] = [];
+const setDocs: Record<string, unknown>[] = [];
+
+vi.mock('../../../api/_firebaseAdmin.js', () => ({
+  adminDb: () => ({
+    collection: () => ({
+      add: (data: Record<string, unknown>) => {
+        added.push(data);
+        return Promise.resolve({ id: 'mock-id' });
+      },
+      doc: () => ({
+        set: (data: Record<string, unknown>) => {
+          setDocs.push(data);
+          return Promise.resolve();
+        },
       }),
     }),
   }),
+  adminAuth: () => null,
+  getAdminInitError: () => null,
+  verifyCaller: () => Promise.resolve(null),
+  callerIsAdmin: () => Promise.resolve(false),
 }));
 
 const { default: handler } = await import('../../../api/trade-in');

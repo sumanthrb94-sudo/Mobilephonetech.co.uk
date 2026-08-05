@@ -1,31 +1,34 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
+import {
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut,
+  sendPasswordResetEmail, signInWithPopup, updateProfile,
+} from 'firebase/auth';
 import { AuthProvider, useAuth } from '../../context/AuthContext';
 
-// The global setup.ts already mocks '../lib/supabase'.
-// Some tests need to override specific auth methods — use vi.mocked() or re-mock here.
+// firebase/auth and firebase/firestore are mocked globally in src/test/setup.ts.
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider>{children}</AuthProvider>
 );
 
-describe('AuthContext (Supabase-backed)', () => {
+/** Render the provider and wait for the initial auth check to settle. */
+async function renderAuth() {
+  const { result } = renderHook(() => useAuth(), { wrapper });
+  await waitFor(() => expect(result.current.isLoading).toBe(false));
+  return result;
+}
+
+describe('AuthContext (Firebase-backed)', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.clearAllMocks();
   });
 
   // ── Initial state ─────────────────────────────────────
-  it('starts with isLoading true initially', () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    // isLoading is true until getSession resolves
-    // (may already be false after async resolution in test env)
-    expect(typeof result.current.isLoading).toBe('boolean');
-  });
-
-  it('starts unauthenticated — getSession returns null session', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('starts unauthenticated — onAuthStateChanged reports no user', async () => {
+    const result = await renderAuth();
     expect(result.current.isAuthenticated).toBe(false);
     expect(result.current.user).toBeNull();
   });
@@ -38,85 +41,98 @@ describe('AuthContext (Supabase-backed)', () => {
   });
 
   // ── login ─────────────────────────────────────────────
-  it('calls supabase.auth.signInWithPassword on login', async () => {
-    const { supabase } = await import('../../lib/supabase');
-    const spy = vi.spyOn(supabase.auth, 'signInWithPassword');
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('calls signInWithEmailAndPassword on login', async () => {
+    const result = await renderAuth();
 
     await act(async () => {
       await result.current.login('test@example.com', 'password123');
     });
 
-    expect(spy).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
+    expect(signInWithEmailAndPassword).toHaveBeenCalledWith(
+      expect.anything(), 'test@example.com', 'password123',
+    );
   });
 
-  it('throws when Supabase signIn returns an error', async () => {
-    const { supabase } = await import('../../lib/supabase');
-    vi.spyOn(supabase.auth, 'signInWithPassword').mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: 'Invalid credentials', status: 400 } as any,
-    });
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('propagates a rejected sign-in so the form can show the message', async () => {
+    vi.mocked(signInWithEmailAndPassword).mockRejectedValueOnce(
+      Object.assign(new Error('Invalid credentials'), { code: 'auth/invalid-credential' }),
+    );
+    const result = await renderAuth();
 
     await expect(
-      act(async () => { await result.current.login('bad@example.com', 'wrong'); })
-    ).rejects.toThrow();
+      act(async () => { await result.current.login('bad@example.com', 'wrong'); }),
+    ).rejects.toThrow(/invalid credentials/i);
   });
 
-  // ── signup ─────────────────────────────────────────────
-  it('calls supabase.auth.signUp on signup', async () => {
-    const { supabase } = await import('../../lib/supabase');
-    const spy = vi.spyOn(supabase.auth, 'signUp');
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  // ── signup ────────────────────────────────────────────
+  it('creates the account and sets the display name', async () => {
+    const result = await renderAuth();
 
     await act(async () => {
       await result.current.signup('new@example.com', 'pass123', 'Jane Doe');
     });
 
-    expect(spy).toHaveBeenCalledWith(expect.objectContaining({
-      email: 'new@example.com',
-      password: 'pass123',
-      options: expect.objectContaining({ data: { full_name: 'Jane Doe' } }),
-    }));
+    expect(createUserWithEmailAndPassword).toHaveBeenCalledWith(
+      expect.anything(), 'new@example.com', 'pass123',
+    );
+    // Firebase stores no metadata at creation, so the name is a second call —
+    // without it the user would show up as the email local-part everywhere.
+    expect(updateProfile).toHaveBeenCalledWith(
+      expect.anything(), { displayName: 'Jane Doe' },
+    );
   });
 
-  it('throws when Supabase signUp returns an error', async () => {
-    const { supabase } = await import('../../lib/supabase');
-    vi.spyOn(supabase.auth, 'signUp').mockResolvedValueOnce({
-      data: { user: null, session: null },
-      error: { message: 'Email already in use', status: 422 } as any,
-    });
-
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('propagates a rejected sign-up', async () => {
+    vi.mocked(createUserWithEmailAndPassword).mockRejectedValueOnce(
+      Object.assign(new Error('Email already in use'), { code: 'auth/email-already-in-use' }),
+    );
+    const result = await renderAuth();
 
     await expect(
-      act(async () => { await result.current.signup('dup@example.com', 'pass', 'Dup'); })
-    ).rejects.toThrow();
+      act(async () => { await result.current.signup('dup@example.com', 'pass', 'Dup'); }),
+    ).rejects.toThrow(/already in use/i);
   });
 
-  // ── logout ─────────────────────────────────────────────
-  it('calls supabase.auth.signOut on logout', async () => {
-    const { supabase } = await import('../../lib/supabase');
-    const spy = vi.spyOn(supabase.auth, 'signOut');
+  // ── Google ────────────────────────────────────────────
+  it('signs in with a Google popup', async () => {
+    const result = await renderAuth();
+    await act(async () => { await result.current.signInWithGoogle(); });
+    expect(signInWithPopup).toHaveBeenCalled();
+  });
 
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  it('treats a closed popup as a cancel, not an error', async () => {
+    vi.mocked(signInWithPopup).mockRejectedValueOnce(
+      Object.assign(new Error('closed'), { code: 'auth/popup-closed-by-user' }),
+    );
+    const result = await renderAuth();
 
+    // Closing the popup is a deliberate action; surfacing it as an error would
+    // show a scary message for something the user chose to do.
+    await expect(
+      act(async () => { await result.current.signInWithGoogle(); }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('rethrows a genuine Google failure', async () => {
+    vi.mocked(signInWithPopup).mockRejectedValueOnce(
+      Object.assign(new Error('Provider disabled'), { code: 'auth/operation-not-allowed' }),
+    );
+    const result = await renderAuth();
+
+    await expect(
+      act(async () => { await result.current.signInWithGoogle(); }),
+    ).rejects.toThrow(/provider disabled/i);
+  });
+
+  // ── logout ────────────────────────────────────────────
+  it('calls signOut on logout', async () => {
+    const result = await renderAuth();
     await act(async () => { await result.current.logout(); });
-
-    expect(spy).toHaveBeenCalled();
+    expect(signOut).toHaveBeenCalled();
   });
 
   it('clears user and session after logout', async () => {
-    const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    const result = await renderAuth();
     await act(async () => { await result.current.logout(); });
 
     expect(result.current.user).toBeNull();
@@ -124,7 +140,7 @@ describe('AuthContext (Supabase-backed)', () => {
   });
 
   // ── continueAsGuest ───────────────────────────────────
-  it('continueAsGuest sets a guest user without Supabase session', () => {
+  it('continueAsGuest sets a guest user without a Firebase session', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     act(() => result.current.continueAsGuest('guest@example.com'));
     expect(result.current.user).not.toBeNull();
@@ -135,21 +151,21 @@ describe('AuthContext (Supabase-backed)', () => {
   it('guest user has isAuthenticated = false (no session)', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     act(() => result.current.continueAsGuest('guest@example.com'));
-    // isAuthenticated = !!session — guest doesn't create a Supabase session
     expect(result.current.isAuthenticated).toBe(false);
   });
 
-  // ── resetPassword ─────────────────────────────────────
-  it('calls supabase.auth.resetPasswordForEmail', async () => {
-    const { supabase } = await import('../../lib/supabase');
-    // Add the mock for resetPasswordForEmail
-    (supabase.auth as any).resetPasswordForEmail = vi.fn().mockResolvedValue({ error: null });
-    const spy = vi.spyOn(supabase.auth as any, 'resetPasswordForEmail');
-
+  it('a guest is never an admin', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    act(() => result.current.continueAsGuest('guest@example.com'));
+    expect(result.current.user!.isAdmin).toBeFalsy();
+  });
 
+  // ── resetPassword ─────────────────────────────────────
+  it('calls sendPasswordResetEmail', async () => {
+    const result = await renderAuth();
     await act(async () => { await result.current.resetPassword('user@example.com'); });
-    expect(spy).toHaveBeenCalledWith('user@example.com', expect.any(Object));
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith(
+      expect.anything(), 'user@example.com', expect.any(Object),
+    );
   });
 });

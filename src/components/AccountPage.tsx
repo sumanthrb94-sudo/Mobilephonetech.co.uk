@@ -3,30 +3,34 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, MapPin, Lock, ChevronRight, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { collection, doc, getDoc, getDocs, orderBy, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { updatePassword } from 'firebase/auth';
+import { auth, db, COL } from '../lib/firebase';
 import { useSeo } from '../hooks/useSeo';
 import ProductImage from './ProductImage';
 
 type Tab = 'profile' | 'orders' | 'addresses' | 'security';
 
-interface SupabaseOrder {
+/** Shape of an order document in Firestore, camelCase throughout. */
+interface StoredOrder {
   id: string;
   status: string;
   total: number;
   subtotal: number;
-  delivery_cost: number;
-  created_at: string;
-  delivery_address: Record<string, string> | null;
-  payment_method: string | null;
-  order_items: {
+  shippingCost: number;
+  createdAt: string;
+  shippingAddress: Record<string, string> | null;
+  paymentMethod: string | null;
+  /** Line items live on the order document rather than a joined table. */
+  items: {
     id: string;
     model: string;
     brand: string;
     price: number;
     quantity: number;
-    image_url: string | null;
-    selected_color: string | null;
-    selected_storage: string | null;
+    imageUrl: string | null;
+    selectedColor: string | null;
+    selectedStorage: string | null;
   }[];
 }
 
@@ -64,7 +68,7 @@ export default function AccountPage() {
   const [profileSaved, setProfileSaved] = useState(false);
 
   // Orders state
-  const [orders, setOrders] = useState<SupabaseOrder[]>([]);
+  const [orders, setOrders] = useState<StoredOrder[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
@@ -92,37 +96,44 @@ export default function AccountPage() {
 
   async function loadProfile() {
     if (!session) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase.from('profiles') as any)
-      .select('full_name, phone, address')
-      .eq('id', user!.id)
-      .single();
-    if (data) {
-      setFullName(data.full_name ?? user!.fullName);
-      setPhone(data.phone ?? '');
-      if (data.address) setAddress(data.address);
-    }
+    try {
+      const snap = await getDoc(doc(db, COL.users, user!.id));
+      const data = snap.data() as Record<string, unknown> | undefined;
+      if (data) {
+        setFullName((data.fullName as string) ?? user!.fullName);
+        setPhone((data.phone as string) ?? '');
+        if (data.address) setAddress(data.address as typeof address);
+      }
+    } catch { /* fall back to the values already in state */ }
   }
 
   async function loadOrders() {
     if (!session) return;
     setOrdersLoading(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase.from('orders') as any)
-      .select('*, order_items(*)')
-      .eq('user_id', user!.id)
-      .order('created_at', { ascending: false });
-    setOrders(data ?? []);
-    setOrdersLoading(false);
+    try {
+      const snap = await getDocs(query(
+        collection(db, COL.orders),
+        where('userId', '==', user!.id),
+        orderBy('createdAt', 'desc'),
+      ));
+      // Line items live on the order document now, so there is nothing to join.
+      setOrders(snap.docs.map(d => ({ id: d.id, ...(d.data() as object) }) as StoredOrder));
+    } catch {
+      setOrders([]);
+    } finally {
+      setOrdersLoading(false);
+    }
   }
 
   async function saveProfile() {
     if (!session) return;
     setSavingProfile(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('profiles') as any)
-      .upsert({ id: user!.id, full_name: fullName, phone })
-      .eq('id', user!.id);
+    // merge:true so this never clobbers the role or the saved address.
+    await setDoc(
+      doc(db, COL.users, user!.id),
+      { fullName, phone, updatedAt: serverTimestamp() },
+      { merge: true },
+    ).catch(() => { /* surfaced by the unchanged UI state */ });
     setSavingProfile(false);
     setEditingProfile(false);
     setProfileSaved(true);
@@ -132,10 +143,11 @@ export default function AccountPage() {
   async function saveAddress() {
     if (!session) return;
     setSavingAddress(true);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('profiles') as any)
-      .upsert({ id: user!.id, address })
-      .eq('id', user!.id);
+    await setDoc(
+      doc(db, COL.users, user!.id),
+      { address, updatedAt: serverTimestamp() },
+      { merge: true },
+    ).catch(() => { /* surfaced by the unchanged UI state */ });
     setSavingAddress(false);
     setEditingAddress(false);
   }
@@ -145,11 +157,22 @@ export default function AccountPage() {
     if (newPw.length < 8) { setPwError('Password must be at least 8 characters.'); return; }
     if (newPw !== confirmPw) { setPwError('Passwords do not match.'); return; }
     setSavingPw(true);
-    const { error } = await supabase.auth.updateUser({ password: newPw });
-    setSavingPw(false);
-    if (error) { setPwError(error.message); return; }
-    setPwSuccess('Password updated successfully.');
-    setNewPw(''); setConfirmPw('');
+    try {
+      const current = auth.currentUser;
+      if (!current) throw new Error('You are not signed in.');
+      await updatePassword(current, newPw);
+      setPwSuccess('Password updated successfully.');
+      setNewPw(''); setConfirmPw('');
+    } catch (err) {
+      const code = (err as { code?: string })?.code ?? '';
+      // Firebase requires a recent sign-in for password changes and reports it
+      // as an opaque code; say what to actually do about it.
+      setPwError(code === 'auth/requires-recent-login'
+        ? 'For security, sign out and back in before changing your password.'
+        : (err as Error).message);
+    } finally {
+      setSavingPw(false);
+    }
   }
 
   const handleLogout = async () => { await logout(); navigate('/'); };
@@ -301,8 +324,8 @@ export default function AccountPage() {
                                   Order #{order.id.slice(0, 8).toUpperCase()}
                                 </div>
                                 <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#6b7280' }}>
-                                  {new Date(order.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                                  {' · '}{order.order_items?.length ?? 0} item{order.order_items?.length !== 1 ? 's' : ''}
+                                  {new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                  {' · '}{order.items?.length ?? 0} item{order.items?.length !== 1 ? 's' : ''}
                                 </div>
                               </div>
                             </div>
@@ -325,15 +348,15 @@ export default function AccountPage() {
                               >
                                 <div style={{ padding: '0 20px 20px', borderTop: '1px solid var(--grey-10)' }}>
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
-                                    {(order.order_items ?? []).map(item => (
+                                    {(order.items ?? []).map(item => (
                                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                         <div style={{ width: 52, height: 52, borderRadius: 8, background: 'var(--grey-5)', flexShrink: 0, overflow: 'hidden' }}>
-                                          <ProductImage brand={item.brand} model={item.model} imageUrl={item.image_url ?? ''} alt={item.model} color={item.selected_color ?? undefined} />
+                                          <ProductImage brand={item.brand} model={item.model} imageUrl={item.imageUrl ?? ''} alt={item.model} color={item.selectedColor ?? undefined} />
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                           <div style={{ fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.brand} {item.model}</div>
                                           <div style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: '#6b7280' }}>
-                                            {[item.selected_storage, item.selected_color].filter(Boolean).join(' · ')}
+                                            {[item.selectedStorage, item.selectedColor].filter(Boolean).join(' · ')}
                                             {item.quantity > 1 ? ` × ${item.quantity}` : ''}
                                           </div>
                                         </div>
@@ -341,13 +364,13 @@ export default function AccountPage() {
                                       </div>
                                     ))}
                                   </div>
-                                  {order.delivery_address && (
+                                  {order.shippingAddress && (
                                     <div style={{ marginTop: 16, padding: '12px 14px', background: 'var(--grey-5)', borderRadius: 10 }}>
                                       <div style={{ fontFamily: 'var(--font-sans)', fontSize: 11, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Delivered to</div>
                                       <div style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#374151', lineHeight: 1.5 }}>
-                                        {order.delivery_address.fullName}<br />
-                                        {order.delivery_address.addressLine1}{order.delivery_address.addressLine2 ? `, ${order.delivery_address.addressLine2}` : ''}<br />
-                                        {order.delivery_address.city}, {order.delivery_address.postalCode}
+                                        {order.shippingAddress.fullName}<br />
+                                        {order.shippingAddress.addressLine1}{order.shippingAddress.addressLine2 ? `, ${order.shippingAddress.addressLine2}` : ''}<br />
+                                        {order.shippingAddress.city}, {order.shippingAddress.postalCode}
                                       </div>
                                     </div>
                                   )}

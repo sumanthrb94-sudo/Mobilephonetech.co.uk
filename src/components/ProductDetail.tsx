@@ -25,12 +25,15 @@ import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { addDoc, collection, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db, COL } from '../lib/firebase';
+import { docToProduct } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 import { generateProductDescription } from '../utils/productDescription';
 
 import type { Product } from '../types';
+import CountUp from './ui/CountUp';
 
 type Tab = 'overview' | 'specs' | 'reviews';
 
@@ -47,15 +50,20 @@ function TabPanel({ phone }: { phone: Product }) {
       date: new Date().toISOString(),
     };
     setReviews(prev => [newReview, ...prev]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('reviews') as any).insert({
-      product_id: phone.id,
-      user_id: user?.id ?? null,
-      rating: review.rating,
-      comment: review.comment,
-      user_name: review.userName,
-      is_verified: false,
-    });
+    try {
+      await addDoc(collection(db, COL.reviews), {
+        productId: phone.id,
+        userId: user?.id ?? null,
+        rating: review.rating,
+        comment: review.comment,
+        userName: review.userName,
+        isVerified: false,
+        createdAt: serverTimestamp(),
+      });
+    } catch {
+      // The review is already shown optimistically; a failed write should not
+      // yank it back out from under the person who just typed it.
+    }
   };
 
   const tabs: { id: Tab; label: string }[] = [
@@ -215,35 +223,13 @@ export default function ProductDetail() {
 
     (async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (supabase.from('products') as any)
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (!error && data) {
-          const row = data as Record<string, unknown>;
-          setPhone({
-            id: row.id as string,
-            model: row.model as string,
-            brand: row.brand as string,
-            category: row.category as Product['category'],
-            storage: (row.storage as string) ?? undefined,
-            price: row.price as number,
-            originalPrice: (row.original_price as number) ?? (row.price as number),
-            grade: row.grade as Product['grade'],
-            batteryHealth: (row.battery_health as number) ?? 100,
-            warrantyMonths: (row.warranty_months as number) ?? 12,
-            returnDays: (row.return_days as number) ?? 30,
-            imageUrl: (row.image_url as string) ?? '',
-            isCertified: (row.is_certified as boolean) ?? false,
-            stock: (row.stock as number) ?? 0,
-            specs: (row.specs as Product['specs']) ?? {},
-          });
+        const snap = await getDoc(doc(db, COL.products, id));
+        if (snap.exists()) {
+          setPhone(docToProduct(snap.id, snap.data()));
           return;
         }
       } catch {
-        // Supabase unavailable — fall through to mock data
+        // Firestore unreachable — fall through to the catalogue copy.
       }
 
       // The query failed; keep the catalogue copy if we seeded one, otherwise
@@ -569,6 +555,20 @@ export default function ProductDetail() {
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
                 )}
               </div>
+
+              {savings > 0 && (
+                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--color-trust-text)' }}>
+                  {/* Keyed on the variant so switching storage re-counts to the
+                      new saving rather than leaving the previous figure. */}
+                  You save{' '}
+                  <CountUp
+                    key={`saving-${selectedVariant?.id ?? phone.id}-${savings}`}
+                    to={savings}
+                    prefix="£"
+                    duration={900}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Urgency + price-match cue row */}

@@ -16,3 +16,4 @@ sa-key.json
 
 # E2E screenshots are build output, not source
 e2e/screenshots/
+.env.e2e

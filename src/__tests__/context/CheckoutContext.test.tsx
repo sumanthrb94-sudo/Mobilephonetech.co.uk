@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
-import { AuthProvider, useAuth } from '../../context/AuthContext';
+import { AuthProvider } from '../../context/AuthContext';
 import {
   CheckoutProvider,
   useCheckout,
@@ -289,20 +289,8 @@ describe('CheckoutContext', () => {
       await act(async () => { await result.current.createOrder(makeOrder()); });
       expect(result.current.appliedCoupon).toBeNull();
     });
-
-    it('createOrder calls supabase.from("orders").insert with correct fields', async () => {
-      const { supabase } = await import('../../lib/supabase');
-
-      // Build a spy chain: from() → insert() → select() → single()
-      const singleSpy = vi.fn().mockResolvedValue({
-        data: { id: 'supabase-order-id' },
-        error: null,
-      });
-      const selectSpy = vi.fn().mockReturnValue({ single: singleSpy });
-      const insertSpy = vi.fn().mockReturnValue({ select: selectSpy });
-      const fromSpy = vi.spyOn(supabase, 'from').mockReturnValue({
-        insert: insertSpy,
-      } as any);
+    it('createOrder writes the order to Firestore under its own id', async () => {
+      const { setDoc, doc } = await import('firebase/firestore');
 
       const order = makeOrder({
         id: 'order-spy-001',
@@ -318,46 +306,27 @@ describe('CheckoutContext', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       await act(async () => { await result.current.createOrder(order); });
 
-      // The first call to supabase.from should target 'orders'
-      expect(fromSpy).toHaveBeenCalledWith('orders');
-      expect(insertSpy).toHaveBeenCalledWith(
+      // setDoc with the caller's id rather than addDoc: the order number is
+      // already on the confirmation screen, so the document must use it.
+      expect(doc).toHaveBeenCalledWith(expect.anything(), 'orders', 'order-spy-001');
+      expect(setDoc).toHaveBeenCalledWith(
+        expect.anything(),
         expect.objectContaining({
-          id: 'order-spy-001',
-          user_id: 'user-abc',
-          guest_email: MOCK_ADDRESS.email,
+          userId: 'user-abc',
+          guestEmail: MOCK_ADDRESS.email,
           status: 'confirmed',
           subtotal: 649,
-          delivery_cost: 9.99,
+          shippingCost: 9.99,
           discount: 20,
           total: 638.99,
-          delivery_address: MOCK_ADDRESS,
-          payment_method: 'Visa',
-        })
+          shippingAddress: MOCK_ADDRESS,
+          paymentMethod: 'Visa',
+        }),
       );
     });
 
-    it('createOrder inserts order_items for each line item', async () => {
-      const { supabase } = await import('../../lib/supabase');
-
-      const orderItemsInsertSpy = vi.fn().mockResolvedValue({ error: null });
-
-      // from('orders') returns the insert-chain; from('order_items') returns bare insert
-      const fromSpy = vi.spyOn(supabase, 'from').mockImplementation((table: string) => {
-        if (table === 'orders') {
-          return {
-            insert: vi.fn().mockReturnValue({
-              select: vi.fn().mockReturnValue({
-                single: vi.fn().mockResolvedValue({
-                  data: { id: 'returned-order-id' },
-                  error: null,
-                }),
-              }),
-            }),
-          } as any;
-        }
-        // order_items
-        return { insert: orderItemsInsertSpy } as any;
-      });
+    it('embeds the line items on the order document rather than a second collection', async () => {
+      const { setDoc } = await import('firebase/firestore');
 
       const order = makeOrder({
         id: 'order-items-001',
@@ -380,296 +349,61 @@ describe('CheckoutContext', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       await act(async () => { await result.current.createOrder(order); });
 
-      expect(fromSpy).toHaveBeenCalledWith('order_items');
-      expect(orderItemsInsertSpy).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({
-            order_id: 'returned-order-id',
-            product_id: 'iphone-15-pro',
-            model: 'iPhone 15 Pro',
-            brand: 'Apple',
-            price: 649,
-            quantity: 1,
-          }),
-        ])
-      );
+      const written = vi.mocked(setDoc).mock.calls.at(-1)?.[1] as Record<string, unknown>;
+      expect(written.items).toEqual([
+        expect.objectContaining({
+          id: 'iphone-15-pro',
+          model: 'iPhone 15 Pro',
+          brand: 'Apple',
+          price: 649,
+          quantity: 1,
+          selectedColor: 'Black',
+          selectedStorage: '256GB',
+        }),
+      ]);
     });
 
-    it('createOrder succeeds locally even when Supabase insert throws', async () => {
-      const { supabase } = await import('../../lib/supabase');
-      vi.spyOn(supabase, 'from').mockImplementation(() => {
-        throw new Error('Network failure');
-      });
+    it('never writes undefined, which Firestore rejects outright', async () => {
+      const { setDoc } = await import('firebase/firestore');
 
       const { result } = renderHook(() => useCheckout(), { wrapper });
-      // Should not throw — createOrder catches Supabase errors
+      await act(async () => { await result.current.createOrder(makeOrder({ id: 'order-undef' })); });
+
+      const written = vi.mocked(setDoc).mock.calls.at(-1)?.[1] as Record<string, unknown>;
+      expect(Object.values(written).every(v => v !== undefined)).toBe(true);
+    });
+
+    it('createOrder succeeds locally even when the Firestore write throws', async () => {
+      const { setDoc } = await import('firebase/firestore');
+      vi.mocked(setDoc).mockRejectedValueOnce(new Error('Network failure'));
+
+      const { result } = renderHook(() => useCheckout(), { wrapper });
+      // Must not throw: the shopper has already paid, so a failed write cannot
+      // be allowed to break the confirmation screen.
       await act(async () => { await result.current.createOrder(makeOrder({ id: 'order-offline' })); });
       expect(result.current.orders).toHaveLength(1);
       expect(result.current.orders[0].id).toBe('order-offline');
     });
   });
 
-  // ── Order history fetch from Supabase ─────────────────────────────────────
+  // ── Order history fetch from Firestore ────────────────────────────────────
 
-  describe('order history fetch from Supabase', () => {
-    it('fetches orders from Supabase on mount when user is authenticated', async () => {
-      const { supabase } = await import('../../lib/supabase');
+  describe('order history fetch from Firestore', () => {
+    it('does not query when signed out', async () => {
+      const { getDocs } = await import('firebase/firestore');
+      vi.mocked(getDocs).mockClear();
 
-      // Simulate an authenticated session returned by getSession
-      const fakeUser = {
-        id: 'user-real-001',
-        email: 'real@example.com',
-        user_metadata: { full_name: 'Real User' },
-        app_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      } as any;
-
-      const fakeSession = {
-        access_token: 'fake-access-token',
-        refresh_token: 'fake-refresh-token',
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: fakeUser,
-      } as any;
-
-      vi.spyOn(supabase.auth, 'getSession').mockResolvedValueOnce({
-        data: { session: fakeSession },
-        error: null,
-      });
-
-      // Fake order row returned by supabase.from('orders')...
-      const fakeOrderRow = {
-        id: 'fetched-order-001',
-        user_id: 'user-real-001',
-        status: 'delivered',
-        subtotal: 399,
-        delivery_cost: 0,
-        discount: 0,
-        total: 399,
-        delivery_address: MOCK_ADDRESS,
-        payment_method: 'MasterCard',
-        created_at: '2026-01-15T10:00:00.000Z',
-        order_items: [
-          {
-            product_id: 'galaxy-s24',
-            model: 'Galaxy S24',
-            brand: 'Samsung',
-            price: 399,
-            original_price: 549,
-            quantity: 1,
-            image_url: '/img/s24.jpg',
-            selected_color: 'Phantom Black',
-            selected_storage: '128GB',
-            selected_condition: 'Good',
-          },
-        ],
-      };
-
-      // Build a query-chain spy: from('orders').select(...).eq(...).order(...)
-      const orderSpy = vi.fn().mockResolvedValue({ data: [fakeOrderRow], error: null });
-      const eqSpy = vi.fn().mockReturnValue({ order: orderSpy });
-      const selectSpy = vi.fn().mockReturnValue({ eq: eqSpy });
-
-      vi.spyOn(supabase, 'from').mockImplementation((table: string) => {
-        if (table === 'orders') {
-          return { select: selectSpy } as any;
-        }
-        return {
-          insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: { id: 'x' }, error: null }),
-            }),
-          }),
-        } as any;
-      });
-
-      const { result } = renderHook(() => useCheckout(), { wrapper });
-
-      // Wait for auth loading + the async fetch effect to complete
-      await waitFor(() => {
-        expect(result.current.orders.length).toBeGreaterThan(0);
-      });
-
-      expect(result.current.orders).toHaveLength(1);
-      const fetchedOrder = result.current.orders[0];
-      expect(fetchedOrder.id).toBe('fetched-order-001');
-      expect(fetchedOrder.userId).toBe('user-real-001');
-      expect(fetchedOrder.status).toBe('delivered');
-      expect(fetchedOrder.total).toBe(399);
-      expect(fetchedOrder.shippingAddress).toEqual(MOCK_ADDRESS);
+      renderHook(() => useCheckout(), { wrapper });
+      await waitFor(() => expect(vi.mocked(getDocs)).not.toHaveBeenCalled());
     });
 
-    it('populates order.items from the nested order_items array', async () => {
-      const { supabase } = await import('../../lib/supabase');
-
-      const fakeUser = {
-        id: 'user-items-test',
-        email: 'items@example.com',
-        user_metadata: {},
-        app_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      } as any;
-
-      vi.spyOn(supabase.auth, 'getSession').mockResolvedValueOnce({
-        data: {
-          session: {
-            access_token: 'tok',
-            refresh_token: 'rtok',
-            expires_in: 3600,
-            token_type: 'bearer',
-            user: fakeUser,
-          } as any,
-        },
-        error: null,
-      });
-
-      const fakeRow = {
-        id: 'order-with-items',
-        user_id: 'user-items-test',
-        status: 'confirmed',
-        subtotal: 649,
-        delivery_cost: 9.99,
-        discount: 0,
-        total: 658.99,
-        delivery_address: MOCK_ADDRESS,
-        payment_method: 'Visa',
-        created_at: '2026-02-10T12:00:00.000Z',
-        order_items: [
-          {
-            product_id: 'iphone-15-pro',
-            model: 'iPhone 15 Pro',
-            brand: 'Apple',
-            price: 649,
-            original_price: 899,
-            quantity: 2,
-            image_url: '/img/iphone15.jpg',
-            selected_color: 'Natural Titanium',
-            selected_storage: '512GB',
-            selected_condition: 'Excellent',
-          },
-        ],
-      };
-
-      const orderSpy = vi.fn().mockResolvedValue({ data: [fakeRow], error: null });
-      vi.spyOn(supabase, 'from').mockImplementation((table: string) => {
-        if (table === 'orders') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({ order: orderSpy }),
-            }),
-          } as any;
-        }
-        return {
-          insert: vi.fn().mockReturnValue({
-            select: vi.fn().mockReturnValue({
-              single: vi.fn().mockResolvedValue({ data: { id: 'y' }, error: null }),
-            }),
-          }),
-        } as any;
-      });
+    it('survives a rejected history read without breaking the provider', async () => {
+      const { getDocs } = await import('firebase/firestore');
+      vi.mocked(getDocs).mockRejectedValueOnce(new Error('permission-denied'));
 
       const { result } = renderHook(() => useCheckout(), { wrapper });
-      await waitFor(() => expect(result.current.orders.length).toBeGreaterThan(0));
-
-      const items = result.current.orders[0].items;
-      expect(items).toHaveLength(1);
-      expect(items[0].id).toBe('iphone-15-pro');
-      expect(items[0].model).toBe('iPhone 15 Pro');
-      expect(items[0].quantity).toBe(2);
-      expect(items[0].selectedColor).toBe('Natural Titanium');
-      expect(items[0].selectedStorage).toBe('512GB');
-    });
-
-    it('does not fetch orders when there is no authenticated session', async () => {
-      const { supabase } = await import('../../lib/supabase');
-
-      // getSession returns null (the default baseline mock behaviour)
-      vi.spyOn(supabase.auth, 'getSession').mockResolvedValueOnce({
-        data: { session: null },
-        error: null,
-      });
-
-      const fromSpy = vi.spyOn(supabase, 'from');
-
-      const { result } = renderHook(() => useCheckout(), { wrapper });
-
-      // Let all async effects settle
-      await waitFor(() => expect(result.current.orders).toBeDefined());
-
-      // from() should never have been called for 'orders' with a select chain
-      const ordersFetchCalls = fromSpy.mock.calls.filter(([table]) => table === 'orders');
-      expect(ordersFetchCalls).toHaveLength(0);
-      expect(result.current.orders).toHaveLength(0);
-    });
-
-    it('does not fetch orders when the user is a guest', async () => {
-      // Guest users set via continueAsGuest — they have no Supabase session,
-      // so the effect guard (if (!session || !user || user.isGuest)) should bail.
-      const { supabase } = await import('../../lib/supabase');
-      const fromSpy = vi.spyOn(supabase, 'from');
-
-      // Render both hooks together inside the same wrapper tree so they share context
-      const { result: authResult } = renderHook(
-        () => ({ auth: useAuth(), checkout: useCheckout() }),
-        { wrapper }
-      );
-
-      act(() => authResult.current.auth.continueAsGuest('guest@example.com'));
-      await waitFor(() => expect(authResult.current.auth.user?.isGuest).toBe(true));
-
-      const ordersFetchCalls = fromSpy.mock.calls.filter(([table]) => table === 'orders');
-      expect(ordersFetchCalls).toHaveLength(0);
-      expect(authResult.current.checkout.orders).toHaveLength(0);
-    });
-
-    it('handles a Supabase error during fetch gracefully (orders stays empty)', async () => {
-      const { supabase } = await import('../../lib/supabase');
-
-      const fakeUser = {
-        id: 'user-err-001',
-        email: 'err@example.com',
-        user_metadata: {},
-        app_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-      } as any;
-
-      vi.spyOn(supabase.auth, 'getSession').mockResolvedValueOnce({
-        data: {
-          session: {
-            access_token: 'tok',
-            refresh_token: 'rtok',
-            expires_in: 3600,
-            token_type: 'bearer',
-            user: fakeUser,
-          } as any,
-        },
-        error: null,
-      });
-
-      // Supabase returns an error
-      const orderSpy = vi.fn().mockResolvedValue({ data: null, error: { message: 'DB error' } });
-      vi.spyOn(supabase, 'from').mockImplementation((table: string) => {
-        if (table === 'orders') {
-          return {
-            select: vi.fn().mockReturnValue({
-              eq: vi.fn().mockReturnValue({ order: orderSpy }),
-            }),
-          } as any;
-        }
-        return {} as any;
-      });
-
-      const { result } = renderHook(() => useCheckout(), { wrapper });
-
-      // Give the effect time to run and handle the error
-      await waitFor(() => expect(result.current.orders).toBeDefined());
-      // A short extra wait to allow the async effect to complete
-      await new Promise(r => setTimeout(r, 50));
-
-      expect(result.current.orders).toHaveLength(0);
+      await waitFor(() => expect(result.current.currentStep).toBeDefined());
+      expect(result.current.orders).toEqual([]);
     });
   });
 });

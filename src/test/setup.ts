@@ -1,27 +1,65 @@
 import '@testing-library/jest-dom';
 import { vi, beforeEach, afterEach } from 'vitest';
 
-// ── Global Supabase mock ──────────────────────────────────────
-// Prevents real network calls in any test that imports CheckoutContext,
-// ProductDetail, AccountPage etc. Individual tests can override vi.mock().
-vi.mock('../lib/supabase', () => ({
-  supabase: {
-    from: () => ({
-      select: () => ({ data: [], error: null, count: 0 }),
-      insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: { id: 'mock-id' }, error: null }) }) }),
-      upsert: () => Promise.resolve({ error: null }),
-      update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
-      delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
-    }),
-    auth: {
-      getSession:      () => Promise.resolve({ data: { session: null }, error: null }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: vi.fn() } } }),
-      signInWithPassword: () => Promise.resolve({ data: {}, error: null }),
-      signUp:          () => Promise.resolve({ data: {}, error: null }),
-      signOut:         () => Promise.resolve({ error: null }),
-      updateUser:      () => Promise.resolve({ data: {}, error: null }),
-    },
-  },
+// ── Global Firebase mocks ─────────────────────────────────────
+// Prevents real network calls in any test that imports AuthContext,
+// CheckoutContext, ProductDetail, AccountPage etc. The SDK modules are mocked
+// rather than src/lib/firebase.ts, so a test can spy on the individual
+// functions (getDocs, signInWithEmailAndPassword, ...) it cares about.
+
+vi.mock('firebase/app', () => ({
+  initializeApp: vi.fn(() => ({ name: '[DEFAULT]' })),
+  getApps: vi.fn(() => []),
+  getApp: vi.fn(() => ({ name: '[DEFAULT]' })),
+}));
+
+vi.mock('firebase/auth', () => ({
+  getAuth: vi.fn(() => ({ currentUser: null })),
+  // Immediately reports "signed out" so providers finish loading instead of
+  // hanging every test that renders inside AuthProvider.
+  onAuthStateChanged: vi.fn((_auth, next) => {
+    if (typeof next === 'function') next(null);
+    return vi.fn();
+  }),
+  signInWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c' } })),
+  createUserWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c' } })),
+  signInWithPopup: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c' } })),
+  signInWithRedirect: vi.fn(() => Promise.resolve()),
+  GoogleAuthProvider: class { setCustomParameters() {} },
+  signOut: vi.fn(() => Promise.resolve()),
+  sendPasswordResetEmail: vi.fn(() => Promise.resolve()),
+  updateProfile: vi.fn(() => Promise.resolve()),
+  updatePassword: vi.fn(() => Promise.resolve()),
+}));
+
+vi.mock('firebase/firestore', () => {
+  const emptySnap = { empty: true, docs: [], size: 0 };
+  return {
+    getFirestore: vi.fn(() => ({})),
+    collection: vi.fn((_db, ...path: string[]) => ({ path: path.join('/') })),
+    doc: vi.fn((_db, ...path: string[]) => ({ path: path.join('/'), id: path[path.length - 1] })),
+    getDoc: vi.fn(() => Promise.resolve({ exists: () => false, data: () => undefined, id: 'mock' })),
+    getDocs: vi.fn(() => Promise.resolve(emptySnap)),
+    setDoc: vi.fn(() => Promise.resolve()),
+    addDoc: vi.fn(() => Promise.resolve({ id: 'mock-id' })),
+    updateDoc: vi.fn(() => Promise.resolve()),
+    deleteDoc: vi.fn(() => Promise.resolve()),
+    query: vi.fn((...args: unknown[]) => ({ args })),
+    where: vi.fn(() => ({})),
+    orderBy: vi.fn(() => ({})),
+    limit: vi.fn(() => ({})),
+    serverTimestamp: vi.fn(() => new Date().toISOString()),
+    writeBatch: vi.fn(() => ({ set: vi.fn(), delete: vi.fn(), commit: vi.fn(() => Promise.resolve()) })),
+  };
+});
+
+vi.mock('firebase/storage', () => ({
+  getStorage: vi.fn(() => ({})),
+  ref: vi.fn((_s, path: string) => ({ fullPath: path })),
+  uploadBytes: vi.fn(() => Promise.resolve({})),
+  getDownloadURL: vi.fn(() => Promise.resolve('https://example.test/image.jpg')),
+  deleteObject: vi.fn(() => Promise.resolve()),
+  listAll: vi.fn(() => Promise.resolve({ items: [] })),
 }));
 
 // ── localStorage mock ─────────────────────────────────────────

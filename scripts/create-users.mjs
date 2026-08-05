@@ -1,27 +1,24 @@
 #!/usr/bin/env node
 /**
- * Provision the staff admin and a demo customer.
+ * Provision the staff admin and a demo customer in Firebase Auth.
  *
- * Supabase's Admin API needs the service-role key, which must never reach the
- * browser — so this runs on your machine, not in the app. Credentials are read
- * from the environment so that no password is ever written into the repository.
+ * The admin flag is a **custom claim** on the ID token, not a database field.
+ * Only the Admin SDK can set one, so a user cannot grant it to themselves —
+ * which is exactly why the security rules check the claim rather than a
+ * document the user is able to edit.
  *
- *   export VITE_SUPABASE_URL="https://<ref>.supabase.co"
- *   export SUPABASE_SERVICE_ROLE_KEY="<service role key>"
+ *   export FIREBASE_SERVICE_ACCOUNT="$(base64 -w0 serviceAccountKey.json)"
  *   export ADMIN_PASSWORD='...'          # required
  *   export CUSTOMER_PASSWORD='...'       # optional, defaults to ADMIN_PASSWORD
  *   node scripts/create-users.mjs
  *
- * Re-running is safe: existing users have their password reset and their role
+ * Re-running is safe: an existing account has its password reset and its claim
  * re-applied rather than erroring on a duplicate.
- *
- * Requires the admin_inventory migration to have been applied first — it is
- * what creates `profiles.role`.
  */
-import { createClient } from '@supabase/supabase-js';
+import { cert, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
-const URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@lehart.co.uk';
 const CUSTOMER_EMAIL = process.env.CUSTOMER_EMAIL || 'customer@lehart.co.uk';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -32,94 +29,90 @@ function fail(msg) {
   process.exit(1);
 }
 
-if (!URL) fail('Set VITE_SUPABASE_URL to your project URL.');
-if (!SERVICE_KEY) fail('Set SUPABASE_SERVICE_ROLE_KEY (Settings → API → service_role).');
+const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+if (!raw) fail('Set FIREBASE_SERVICE_ACCOUNT (service-account JSON, raw or base64).');
 if (!ADMIN_PASSWORD) fail('Set ADMIN_PASSWORD. Passwords are read from the environment so they stay out of git.');
-if (ADMIN_PASSWORD.length < 8) fail('ADMIN_PASSWORD must be at least 8 characters.');
+if (ADMIN_PASSWORD.length < 8) fail('ADMIN_PASSWORD must be at least 8 characters (Firebase requires 6+).');
 
-const admin = createClient(URL, SERVICE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
-
-/** Find an existing user by email, paging until found or exhausted. */
-async function findByEmail(email) {
-  const target = email.toLowerCase();
-  for (let page = 1; page <= 20; page++) {
-    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
-    if (error) throw error;
-    const hit = data.users.find(u => (u.email ?? '').toLowerCase() === target);
-    if (hit) return hit;
-    if (data.users.length < 200) return null;
-  }
-  return null;
+let creds;
+try {
+  const text = raw.trim().startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8');
+  creds = JSON.parse(text);
+  if (typeof creds.private_key === 'string') creds.private_key = creds.private_key.replace(/\\n/g, '\n');
+} catch (err) {
+  fail(`FIREBASE_SERVICE_ACCOUNT could not be parsed: ${err.message}`);
 }
 
-async function upsertUser({ email, password, fullName, role }) {
-  const existing = await findByEmail(email);
-  let userId;
+initializeApp({
+  credential: cert({
+    projectId: creds.project_id,
+    clientEmail: creds.client_email,
+    privateKey: creds.private_key,
+  }),
+  projectId: creds.project_id,
+});
+const auth = getAuth();
+const db = getFirestore();
 
-  if (existing) {
-    const { error } = await admin.auth.admin.updateUserById(existing.id, {
+async function upsertUser({ email, password, fullName, admin }) {
+  let user;
+  try {
+    user = await auth.getUserByEmail(email);
+    await auth.updateUser(user.uid, {
       password,
-      email_confirm: true,
-      user_metadata: { full_name: fullName },
+      displayName: fullName,
+      // Provisioned accounts are confirmed up front; without this the first
+      // sign-in works but the address shows as unverified everywhere.
+      emailVerified: true,
     });
-    if (error) throw error;
-    userId = existing.id;
     console.log(`  · ${email} already existed — password reset`);
-  } else {
-    const { data, error } = await admin.auth.admin.createUser({
-      email,
-      password,
-      // Confirmed up front: these are provisioned accounts, and without this
-      // the first sign-in fails with "Email not confirmed".
-      email_confirm: true,
-      user_metadata: { full_name: fullName },
-    });
-    if (error) throw error;
-    userId = data.user.id;
+  } catch (err) {
+    if (err.code !== 'auth/user-not-found') throw err;
+    user = await auth.createUser({ email, password, displayName: fullName, emailVerified: true });
     console.log(`  · ${email} created`);
   }
 
-  // The handle_new_user trigger creates the profile row, but it runs on insert
-  // only — upsert so an account made before the migration still gets one.
-  const { error: profileErr } = await admin
-    .from('profiles')
-    .upsert({ id: userId, full_name: fullName, role }, { onConflict: 'id' });
-  if (profileErr) {
-    if (/column .*role.* does not exist/i.test(profileErr.message)) {
-      fail('profiles.role is missing — apply supabase/migrations/20260805000000_admin_inventory.sql first.');
-    }
-    throw profileErr;
-  }
-  console.log(`    role = ${role}`);
+  // setCustomUserClaims replaces the whole claims object, so send the full set
+  // every time rather than only the flag that changed.
+  await auth.setCustomUserClaims(user.uid, admin ? { admin: true } : {});
+  console.log(`    claims = ${admin ? '{ admin: true }' : '{}'}`);
 
-  return userId;
+  // Mirror into the profile document so the console can show who is staff.
+  // Display only — the rules never read this, they read the claim.
+  await db.collection('users').doc(user.uid).set({
+    fullName,
+    email,
+    role: admin ? 'admin' : 'customer',
+    updatedAt: FieldValue.serverTimestamp(),
+    createdAt: FieldValue.serverTimestamp(),
+  }, { merge: true });
+
+  return user.uid;
 }
 
 try {
-  console.log(`\nProvisioning users on ${URL}\n`);
-  await upsertUser({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD, fullName: 'Store Admin', role: 'admin' });
-  await upsertUser({ email: CUSTOMER_EMAIL, password: CUSTOMER_PASSWORD, fullName: 'Demo Customer', role: 'customer' });
+  console.log(`\nProvisioning users on ${creds.project_id}\n`);
 
-  // Read the roles back rather than trusting the writes — a silent RLS or
-  // trigger failure would otherwise look like success.
-  const { data: check, error } = await admin
-    .from('profiles')
-    .select('id, full_name, role')
-    .in('id', [
-      (await findByEmail(ADMIN_EMAIL))?.id,
-      (await findByEmail(CUSTOMER_EMAIL))?.id,
-    ].filter(Boolean));
-  if (error) throw error;
+  const adminUid = await upsertUser({
+    email: ADMIN_EMAIL, password: ADMIN_PASSWORD, fullName: 'Store Admin', admin: true,
+  });
+  await upsertUser({
+    email: CUSTOMER_EMAIL, password: CUSTOMER_PASSWORD, fullName: 'Demo Customer', admin: false,
+  });
 
-  console.log('\nVerified in the database:');
-  for (const row of check ?? []) console.log(`  ${row.role.padEnd(8)} ${row.full_name}`);
+  // Read the claim back rather than trusting the write — a silent failure
+  // would otherwise be indistinguishable from success.
+  const check = await auth.getUser(adminUid);
+  if (check.customClaims?.admin !== true) {
+    fail('The admin claim did not persist. Check the service account has the Firebase Authentication Admin role.');
+  }
 
-  const adminOk = (check ?? []).some(r => r.role === 'admin');
-  if (!adminOk) fail('No admin role was persisted — check the migration ran.');
-
-  console.log(`\n  ✓ Done. Sign in at /admin/inventory as "${ADMIN_EMAIL.split('@')[0]}".\n`);
+  console.log('\nVerified:');
+  console.log(`  admin     ${ADMIN_EMAIL}      claim admin=true`);
+  console.log(`  customer  ${CUSTOMER_EMAIL}   no claim`);
+  console.log(`\n  ✓ Done. Sign in at /admin/inventory as "${ADMIN_EMAIL.split('@')[0]}".`);
+  console.log('    A claim only reaches the browser on a fresh ID token, so if the');
+  console.log('    admin is already signed in somewhere, sign out and back in.\n');
 } catch (err) {
   fail(err?.message ?? String(err));
 }

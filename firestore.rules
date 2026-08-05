@@ -1,0 +1,120 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════
+// LeHart — Firestore security rules
+//
+// These are the authorization boundary. The React guard on /admin only hides
+// the console; everything below is what actually stops a non-admin writing.
+//
+// Admin is the `admin` custom claim on the ID token, set with the Admin SDK
+// (scripts/create-users.mjs). A claim cannot be written by the client, which
+// is why it is used rather than a role field on the user document — a field
+// the user can edit is not an authorization mechanism.
+//
+// Deploy:  firebase deploy --only firestore:rules
+// ═══════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ── Products ────────────────────────────────────────────
+    // Public catalogue: anyone may read, only an admin may write.
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Users ───────────────────────────────────────────────
+    // A user reads and writes only their own document. `role` is explicitly
+    // immutable from the client: it is display-only, but letting someone set
+    // it to "admin" would be misleading at best and, if any future code ever
+    // trusted it, a privilege escalation.
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow create: if isSelf(uid)
+                    && (!request.resource.data.keys().hasAny(['role'])
+                        || request.resource.data.role == 'customer');
+      allow update: if isSelf(uid)
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      allow delete: if false;
+
+      // Cart and wishlist are private to their owner. Admins are deliberately
+      // excluded — running the shop is no reason to read someone's basket.
+      match /cart/{itemId} {
+        allow read, write: if isSelf(uid);
+      }
+      match /wishlist/{productId} {
+        allow read, write: if isSelf(uid);
+      }
+    }
+
+    // ── Orders ──────────────────────────────────────────────
+    // Readable by the buyer or an admin. Created by the buyer at checkout, but
+    // never edited afterwards from the client: order status belongs to the
+    // back office, and a shopper must not be able to mark their own order paid.
+    match /orders/{orderId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.userId == request.auth.uid);
+      allow create: if signedIn()
+                    && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── Reviews ─────────────────────────────────────────────
+    // Public to read. Only a signed-in user may post, and only under their own
+    // id — otherwise reviews could be attributed to anyone. `isVerified` is
+    // forced false on create so a reviewer cannot award themselves the badge.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.rating is number
+                    && request.resource.data.rating >= 1
+                    && request.resource.data.rating <= 5
+                    && request.resource.data.isVerified == false;
+      allow update: if isAdmin()
+                    || (signedIn() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // ── Trade-in quotes ─────────────────────────────────────
+    // Anyone may request a quote, including guests — the form is public and
+    // asks for an email rather than an account. Only staff can read them back:
+    // they contain contact details.
+    match /tradeInQuotes/{quoteId} {
+      allow create: if true;
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Newsletter ──────────────────────────────────────────
+    // Write-only from the client: subscribing is public, but the subscriber
+    // list is not — allowing reads would expose every address to anyone.
+    match /newsletterSubscribers/{email} {
+      allow create, update: if true;
+      allow read: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Anything not matched above is denied. Firestore already defaults to
+    // deny, but stating it means a new collection cannot be reached by
+    // accident before its rules are written.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

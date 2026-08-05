@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL ?? '',
-  process.env.VITE_SUPABASE_ANON_KEY ?? '',
-);
+import { adminDb } from './_firebaseAdmin.js';
 
 const VALID_CONDITIONS = ['Pristine', 'Excellent', 'Good', 'Fair'] as const;
 type Condition = (typeof VALID_CONDITIONS)[number];
@@ -71,20 +66,23 @@ export default async function handler(req: any, res: any) {
 
   const estimatedValue = estimateValue(brand.trim(), model.trim(), condition as Condition);
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('trade_in_quotes') as any).insert({
-      email:            email.trim().toLowerCase(),
-      device_brand:     brand.trim(),
-      device_model:     model.trim(),
-      device_storage:   storage?.trim() ?? null,
-      device_condition: condition,
-      issues:           Array.isArray(issues) ? issues : [],
-      estimated_value:  estimatedValue,
-      status:           'quoted',
-    }).select('id, estimated_value, status').single();
+  const db = adminDb();
+  if (!db) return res.status(503).json({ error: 'Trade-in quotes are unavailable' });
 
-    if (error) throw error;
+  try {
+    const body = {
+      email:           email.trim().toLowerCase(),
+      deviceBrand:     brand.trim(),
+      deviceModel:     model.trim(),
+      deviceStorage:   storage?.trim() ?? null,
+      deviceCondition: condition,
+      issues:          Array.isArray(issues) ? issues : [],
+      estimatedValue,
+      status:          'quoted',
+      createdAt:       new Date().toISOString(),
+    };
+    const ref = await db.collection('tradeInQuotes').add(body);
+    const data = { id: ref.id, estimated_value: body.estimatedValue, status: body.status };
 
     return res.status(201).json({
       id:             data.id,

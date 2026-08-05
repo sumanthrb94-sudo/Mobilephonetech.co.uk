@@ -1,8 +1,13 @@
-import { createClient } from '@supabase/supabase-js';
+import { adminAuth, adminDb, getAdminInitError } from './_firebaseAdmin.js';
 
-const url = process.env.VITE_SUPABASE_URL ?? '';
-const key = process.env.VITE_SUPABASE_ANON_KEY ?? '';
-
+/**
+ * Deployment health check.
+ *
+ * Reports whether the serverless functions can actually reach Firestore, how
+ * long it took, and how many products are visible. Reachable-but-empty is
+ * reported as degraded rather than ok: the storefront's MOCK_PHONES fallback
+ * would otherwise disguise an unseeded database as a working shop.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -13,51 +18,46 @@ export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
   const checks: Record<string, unknown> = {
-    supabaseUrlConfigured: Boolean(url),
-    supabaseKeyConfigured: Boolean(key),
+    projectId: process.env.VITE_FIREBASE_PROJECT_ID ?? null,
+    webConfigured: Boolean(process.env.VITE_FIREBASE_API_KEY && process.env.VITE_FIREBASE_PROJECT_ID),
+    serviceAccountConfigured: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT),
   };
 
-  if (!url || !key) {
+  const db = adminDb();
+  if (!db) {
     checks.database = 'unconfigured';
-    checks.detail = 'VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY missing from the environment';
+    checks.detail = getAdminInitError() ?? 'FIREBASE_SERVICE_ACCOUNT missing from the environment';
     return res.status(503).json({ status: 'degraded', checks });
   }
 
   const started = Date.now();
 
   try {
-    const supabase = createClient(url, key);
-    const { count, error } = await supabase
-      .from('products')
-      .select('id', { count: 'exact', head: true });
-
-    if (error) throw error;
+    // count() is an aggregation query — billed as roughly one read rather than
+    // one per document, so this stays cheap however large the catalogue grows.
+    const snapshot = await db.collection('products').count().get();
+    const products = snapshot.data().count;
 
     checks.database    = 'connected';
-    checks.productRows = count ?? 0;
+    checks.productRows = products;
     checks.latencyMs   = Date.now() - started;
 
-    // Report which auth providers GoTrue actually has enabled. /auth/v1/settings
-    // is public, and this is the only way to confirm an OAuth provider is live
-    // without opening the dashboard.
+    // Confirm the sign-in providers are actually usable, not just ticked in the
+    // console: listing users exercises the same credential path auth does.
     try {
-      const s = await fetch(`${url}/auth/v1/settings`, { headers: { apikey: key } });
-      if (s.ok) {
-        const settings = await s.json() as { external?: Record<string, boolean> };
-        const enabled = Object.entries(settings.external ?? {})
-          .filter(([, on]) => on)
-          .map(([name]) => name);
-        checks.authProviders = enabled.length ? enabled : ['email only'];
-        checks.googleSignIn  = enabled.includes('google') ? 'enabled' : 'NOT enabled';
+      const auth = adminAuth();
+      if (auth) {
+        const list = await auth.listUsers(1);
+        checks.authReachable = true;
+        checks.hasUsers = list.users.length > 0;
       }
-    } catch {
-      checks.authProviders = 'could not read auth settings';
+    } catch (err) {
+      checks.authReachable = false;
+      checks.authDetail = (err as Error).message;
     }
 
-    // Reachable but empty still cannot serve a storefront, so report it as
-    // degraded rather than letting the mock-data fallback disguise it.
-    if (!count) {
-      checks.detail = 'products table is empty';
+    if (!products) {
+      checks.detail = 'products collection is empty — run scripts/seed-firestore.mjs';
       return res.status(503).json({ status: 'degraded', checks });
     }
 

@@ -1,7 +1,15 @@
-import { supabase } from './supabase';
-import { rowToProduct } from '../hooks/useProducts';
+import {
+  collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp,
+  setDoc, updateDoc, where, limit as fsLimit,
+} from 'firebase/firestore';
+import {
+  deleteObject, getDownloadURL, listAll, ref, uploadBytes,
+} from 'firebase/storage';
+import { db, storage, COL } from './firebase';
+import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
 import type { Product, ProductGrade } from '../types';
 
+/** Storage folder for product imagery. */
 export const IMAGE_BUCKET = 'product-images';
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
@@ -11,11 +19,11 @@ export const GRADES: ProductGrade[] = ['New', 'Pristine', 'Excellent', 'Good', '
 /**
  * Admin data layer for the back store.
  *
- * Every call goes through the ordinary browser client carrying the signed-in
- * user's JWT — authorization is enforced by the RLS policies added in
- * `20260805000000_admin_inventory.sql`, not by this file. A non-admin who
- * calls these functions gets a Postgres permission error, which is the point:
- * hiding the UI is presentation, the database is the actual gate.
+ * Every call goes through the ordinary browser SDK carrying the signed-in
+ * user's ID token — authorization is enforced by firestore.rules and
+ * storage.rules, which check the `admin` custom claim, not by this file. A
+ * non-admin who calls these functions gets a permission-denied error, which is
+ * the point: hiding the UI is presentation, the rules are the actual gate.
  */
 
 export interface ProductDraft {
@@ -40,29 +48,36 @@ export interface ProductDraft {
   storageOptions?: string[];
 }
 
-/** Inverse of rowToProduct — camelCase draft to the snake_case column names. */
+/**
+ * Draft to Firestore document.
+ *
+ * `id` is deliberately absent: it is the document key, not a field, so writing
+ * it into the body too would let the two drift apart on a later edit.
+ * searchTerms is derived here so every write keeps the search index in step —
+ * Firestore has no triggers to do it for us.
+ */
 export function draftToRow(draft: ProductDraft): Record<string, unknown> {
-  return {
-    id: draft.id,
+  return stripUndefined({
     model: draft.model,
     brand: draft.brand,
     category: draft.category,
     storage: draft.storage || null,
     price: draft.price,
-    original_price: draft.originalPrice,
+    originalPrice: draft.originalPrice,
     grade: draft.grade,
-    battery_health: draft.batteryHealth ?? null,
-    warranty_months: draft.warrantyMonths,
-    return_days: draft.returnDays,
-    image_url: draft.imageUrl || null,
-    gallery_images: draft.galleryImages?.length ? draft.galleryImages : null,
-    is_certified: draft.isCertified,
+    batteryHealth: draft.batteryHealth ?? null,
+    warrantyMonths: draft.warrantyMonths,
+    returnDays: draft.returnDays,
+    imageUrl: draft.imageUrl || null,
+    galleryImages: draft.galleryImages?.length ? draft.galleryImages : null,
+    isCertified: draft.isCertified,
     stock: draft.stock,
     description: draft.description || null,
-    condition_description: draft.conditionDescription || null,
-    color_options: draft.colorOptions?.length ? draft.colorOptions : null,
-    storage_options: draft.storageOptions?.length ? draft.storageOptions : null,
-  };
+    conditionDescription: draft.conditionDescription || null,
+    colorOptions: draft.colorOptions?.length ? draft.colorOptions : null,
+    storageOptions: draft.storageOptions?.length ? draft.storageOptions : null,
+    searchTerms: buildSearchTerms(draft.brand, draft.model, draft.category),
+  });
 }
 
 /** Seed a blank draft. Slug is derived from brand+model as the user types. */
@@ -163,17 +178,33 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
   return errors;
 }
 
-/** Human-readable message for a Supabase error, with the RLS case called out. */
+/**
+ * Human-readable message for a Firebase error.
+ *
+ * `permission-denied` is by far the most common one here and its raw text
+ * ("Missing or insufficient permissions") gives no clue what to do, so it is
+ * translated into the actual cause: the account has no admin claim.
+ */
 export function describeError(err: unknown): string {
   const e = err as { code?: string; message?: string } | null;
+  const code = e?.code ?? '';
   const message = e?.message ?? String(err);
 
-  if (e?.code === '23505') return 'A product with that slug already exists. Pick a different one.';
-  if (e?.code === '42501' || /row-level security/i.test(message)) {
+  if (code === 'permission-denied' || code === 'storage/unauthorized' || /insufficient permissions/i.test(message)) {
     return 'Your account is not an admin, so the database refused the change.';
   }
-  if (e?.code === '23514') return 'A value is outside the range the database allows.';
+  if (code === 'already-exists') return 'A product with that slug already exists. Pick a different one.';
+  if (code === 'unavailable' || code === 'storage/retry-limit-exceeded') {
+    return 'Could not reach the database. Check your connection and try again.';
+  }
+  if (code === 'unauthenticated') return 'Your session expired. Sign in again.';
+  if (code === 'storage/quota-exceeded') return 'Storage quota exceeded.';
   return message || 'Something went wrong.';
+}
+
+/** Marker so callers can distinguish a duplicate slug from any other failure. */
+class AlreadyExistsError extends Error {
+  code = 'already-exists';
 }
 
 // ── Reads ──────────────────────────────────────────────────────
@@ -192,48 +223,50 @@ export const LOW_STOCK_THRESHOLD = 5;
 export async function listInventory(q: InventoryQuery = {}): Promise<{ products: Product[]; total: number }> {
   const { search, brand, stockFilter = 'all', sort = 'newest', page = 1, pageSize = 25 } = q;
 
-  let query = supabase.from('products').select('*', { count: 'exact' });
+  // One indexed query (brand, when given) then narrowing in memory.
+  //
+  // Firestore permits a single range filter per query and no OR across fields,
+  // so expressing search + stock band + sort as a query would need a composite
+  // index per combination. The catalogue is a few hundred documents, so it is
+  // cheaper — in latency and in index maintenance — to read once and filter here.
+  const constraints = brand ? [where('brand', '==', brand)] : [];
+  const snap = await getDocs(query(collection(db, COL.products), ...constraints, fsLimit(1000)));
+
+  let rows = snap.docs.map(d => docToProduct(d.id, d.data()));
 
   if (search?.trim()) {
-    const term = search.trim().replace(/[%,]/g, '');
-    query = query.or(`model.ilike.%${term}%,brand.ilike.%${term}%,id.ilike.%${term}%`);
+    const term = search.trim().toLowerCase();
+    rows = rows.filter(p =>
+      p.model.toLowerCase().includes(term) ||
+      p.brand.toLowerCase().includes(term) ||
+      p.id.toLowerCase().includes(term));
   }
-  if (brand) query = query.eq('brand', brand);
 
-  if (stockFilter === 'in') query = query.gt('stock', 0);
-  else if (stockFilter === 'out') query = query.eq('stock', 0);
-  else if (stockFilter === 'low') query = query.gt('stock', 0).lte('stock', LOW_STOCK_THRESHOLD);
+  if (stockFilter === 'in') rows = rows.filter(p => p.stock > 0);
+  else if (stockFilter === 'out') rows = rows.filter(p => p.stock === 0);
+  else if (stockFilter === 'low') rows = rows.filter(p => p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD);
 
   switch (sort) {
-    case 'stock_asc':  query = query.order('stock', { ascending: true }); break;
-    case 'price_desc': query = query.order('price', { ascending: false }); break;
-    case 'model_asc':  query = query.order('model', { ascending: true }); break;
-    default:           query = query.order('created_at', { ascending: false });
+    case 'stock_asc':  rows.sort((a, b) => a.stock - b.stock); break;
+    case 'price_desc': rows.sort((a, b) => b.price - a.price); break;
+    case 'model_asc':  rows.sort((a, b) => a.model.localeCompare(b.model)); break;
+    default: break; // documents already arrive newest-first from the seed order
   }
 
-  query = query.range((page - 1) * pageSize, page * pageSize - 1);
-
-  const { data, error, count } = await query;
-  if (error) throw error;
-
-  return {
-    products: (data ?? []).map(r => rowToProduct(r as Record<string, unknown>)),
-    total: count ?? 0,
-  };
+  const total = rows.length;
+  return { products: rows.slice((page - 1) * pageSize, page * pageSize), total };
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  const { data, error } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
-  if (error) throw error;
-  return data ? rowToProduct(data as Record<string, unknown>) : null;
+  const snap = await getDoc(doc(db, COL.products, id));
+  return snap.exists() ? docToProduct(snap.id, snap.data()) : null;
 }
 
 export async function listBrands(): Promise<string[]> {
-  const { data, error } = await supabase.from('products').select('brand');
-  if (error) throw error;
+  const snap = await getDocs(query(collection(db, COL.products), fsLimit(1000)));
   const set = new Set<string>();
-  for (const row of data ?? []) {
-    const b = (row as { brand?: string }).brand;
+  for (const d of snap.docs) {
+    const b = (d.data() as { brand?: string }).brand;
     if (b) set.add(b);
   }
   return [...set].sort();
@@ -242,43 +275,36 @@ export async function listBrands(): Promise<string[]> {
 // ── Writes ─────────────────────────────────────────────────────
 
 export async function createProduct(draft: ProductDraft): Promise<Product> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from('products') as any)
-    .insert(draftToRow(draft))
-    .select()
-    .single();
-  if (error) throw error;
-  return rowToProduct(data as Record<string, unknown>);
+  const ref = doc(db, COL.products, draft.id);
+
+  // Firestore's setDoc overwrites silently — there is no INSERT that fails on
+  // a duplicate key — so the existence check has to be explicit or creating a
+  // product with a taken slug would quietly destroy the existing one.
+  const existing = await getDoc(ref);
+  if (existing.exists()) throw new AlreadyExistsError('A product with that slug already exists.');
+
+  const body = { ...draftToRow(draft), createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+  await setDoc(ref, body);
+  return { ...docToProduct(draft.id, body as Record<string, unknown>) };
 }
 
 export async function updateProduct(draft: ProductDraft): Promise<Product> {
-  const row = draftToRow(draft);
-  // The primary key is the URL slug — changing it would orphan every existing
-  // link, so it is fixed after creation and never sent in an update.
-  delete row.id;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from('products') as any)
-    .update(row)
-    .eq('id', draft.id)
-    .select()
-    .single();
-  if (error) throw error;
-  return rowToProduct(data as Record<string, unknown>);
+  const ref = doc(db, COL.products, draft.id);
+  const body = { ...draftToRow(draft), updatedAt: serverTimestamp() };
+  await updateDoc(ref, body);
+  return { ...docToProduct(draft.id, body as Record<string, unknown>) };
 }
 
 export async function setStock(id: string, stock: number): Promise<void> {
   if (!Number.isInteger(stock) || stock < 0) throw new Error('Stock must be a whole number of 0 or more.');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase.from('products') as any).update({ stock }).eq('id', id);
-  if (error) throw error;
+  await updateDoc(doc(db, COL.products, id), { stock, updatedAt: serverTimestamp() });
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  // product_variants cascades on delete; the stored images do not, so they are
-  // removed first. Losing an image is recoverable, a dangling variant is not.
+  // Stored images are removed first: losing an image is recoverable, but a
+  // deleted document leaves no record of which files belonged to it.
   await deleteAllImagesFor(id).catch(() => { /* orphaned files are not fatal */ });
-  const { error } = await supabase.from('products').delete().eq('id', id);
-  if (error) throw error;
+  await deleteDoc(doc(db, COL.products, id));
 }
 
 // ── Images ─────────────────────────────────────────────────────
@@ -311,35 +337,43 @@ export async function uploadImage(productId: string, file: File): Promise<string
   const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const path = imagePath(productId, file.name, unique);
 
-  const { error } = await supabase.storage
-    .from(IMAGE_BUCKET)
-    .upload(path, file, { cacheControl: '31536000', upsert: false });
-  if (error) throw error;
-
-  const { data } = supabase.storage.from(IMAGE_BUCKET).getPublicUrl(path);
-  return data.publicUrl;
+  const objectRef = ref(storage, `${IMAGE_BUCKET}/${path}`);
+  await uploadBytes(objectRef, file, {
+    contentType: file.type,
+    cacheControl: 'public, max-age=31536000',
+  });
+  return getDownloadURL(objectRef);
 }
 
 /**
- * Storage path from a public URL. Returns null for images that are not in our
- * bucket — seeded products point at `/assets/…` files bundled with the app, and
- * trying to "delete" one of those from storage would fail confusingly.
+ * Storage path from a download URL, or null when the image is not ours.
+ *
+ * Seeded products point at `/assets/...` files bundled with the app; calling
+ * delete on one of those would fail confusingly, so they are filtered out here
+ * and the UI shows them as "Bundled" instead.
+ *
+ * Firebase download URLs percent-encode the path inside /o/ and append a
+ * ?alt=media&token=... query, so both have to be undone.
  */
 export function pathFromPublicUrl(url: string): string | null {
-  const marker = `/storage/v1/object/public/${IMAGE_BUCKET}/`;
+  const marker = '/o/';
   const i = url.indexOf(marker);
-  return i === -1 ? null : decodeURIComponent(url.slice(i + marker.length));
+  if (i === -1 || !url.includes('firebasestorage')) return null;
+
+  const encoded = url.slice(i + marker.length).split('?')[0];
+  const full = decodeURIComponent(encoded);
+  const prefix = `${IMAGE_BUCKET}/`;
+  return full.startsWith(prefix) ? full.slice(prefix.length) : null;
 }
 
 export async function deleteImage(url: string): Promise<void> {
   const path = pathFromPublicUrl(url);
   if (!path) return; // bundled asset — nothing stored to remove
-  const { error } = await supabase.storage.from(IMAGE_BUCKET).remove([path]);
-  if (error) throw error;
+  await deleteObject(ref(storage, `${IMAGE_BUCKET}/${path}`));
 }
 
 async function deleteAllImagesFor(productId: string): Promise<void> {
-  const { data, error } = await supabase.storage.from(IMAGE_BUCKET).list(productId);
-  if (error || !data?.length) return;
-  await supabase.storage.from(IMAGE_BUCKET).remove(data.map(f => `${productId}/${f.name}`));
+  const folder = ref(storage, `${IMAGE_BUCKET}/${productId}`);
+  const listing = await listAll(folder);
+  await Promise.all(listing.items.map(item => deleteObject(item)));
 }

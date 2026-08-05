@@ -7,7 +7,7 @@ import type { Product } from '../../types';
 
 // The page is exercised against a mocked data layer: these tests are about the
 // console's behaviour (rendering, inline stock edits, delete confirmation),
-// not about Supabase itself.
+// not about Firestore itself.
 const listInventory = vi.fn();
 const listBrands = vi.fn();
 const setStock = vi.fn();
@@ -76,7 +76,7 @@ describe('InventoryPage', () => {
   });
 
   it('surfaces a load failure instead of rendering an empty list silently', async () => {
-    listInventory.mockRejectedValue({ code: '42501', message: 'row-level security' });
+    listInventory.mockRejectedValue({ code: 'permission-denied', message: 'Missing or insufficient permissions.' });
     renderPage();
     expect(await screen.findByRole('alert')).toHaveTextContent(/not an admin/i);
   });
@@ -96,7 +96,7 @@ describe('InventoryPage', () => {
   });
 
   it('reverts and reports when the stock edit is rejected', async () => {
-    setStock.mockRejectedValue({ code: '42501', message: 'row-level security' });
+    setStock.mockRejectedValue({ code: 'permission-denied', message: 'Missing or insufficient permissions.' });
     const user = userEvent.setup();
     renderPage();
 

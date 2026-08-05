@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, CheckCircle2, Tag, Bell } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { db, COL } from '../lib/firebase';
 
 const STORAGE_KEY = 'mt_newsletter_email';
 
@@ -23,10 +24,13 @@ export default function NewsletterSignup() {
     }
     setIsSubmitting(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('newsletter_subscribers') as any).upsert(
-        { email: trimmed, is_active: true },
-        { onConflict: 'email', ignoreDuplicates: false }
+      // The email is the document id, so re-subscribing overwrites rather
+       // than creating a duplicate — the equivalent of the old unique index.
+      // Lowercased so Foo@x.com and foo@x.com are one subscriber.
+      await setDoc(
+        doc(db, COL.newsletter, trimmed.toLowerCase()),
+        { email: trimmed.toLowerCase(), isActive: true, subscribedAt: serverTimestamp() },
+        { merge: true },
       );
     } catch { /* non-fatal — still show success */ }
     try { window.localStorage.setItem(STORAGE_KEY, trimmed); } catch { /* ignore */ }

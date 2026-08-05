@@ -72,25 +72,43 @@ describe('validateDraft', () => {
 });
 
 describe('draftToRow', () => {
-  it('maps camelCase fields onto the snake_case columns', () => {
+  it('maps the draft onto the Firestore document fields', () => {
     const row = draftToRow(draft({ batteryHealth: 90, storage: '256GB' }));
     expect(row).toMatchObject({
-      id: 'apple-iphone-17',
-      original_price: 1099,
-      battery_health: 90,
-      warranty_months: 12,
-      return_days: 30,
-      is_certified: true,
+      originalPrice: 1099,
+      batteryHealth: 90,
+      warrantyMonths: 12,
+      returnDays: 30,
+      isCertified: true,
       storage: '256GB',
     });
   });
 
-  it('sends null rather than empty strings and arrays so the column stays NULL', () => {
+  it('omits id — it is the document key, not a field that could drift from it', () => {
+    expect(draftToRow(draft())).not.toHaveProperty('id');
+  });
+
+  it('derives searchTerms, since Firestore cannot do a LIKE query', () => {
+    const row = draftToRow(draft({ brand: 'Apple', model: 'iPhone 17' }));
+    const terms = row.searchTerms as string[];
+    expect(terms).toContain('apple');
+    expect(terms).toContain('iphone');
+    expect(terms).toContain('17');
+    // Prefixes so a partially typed query still matches.
+    expect(terms).toContain('iph');
+  });
+
+  it('sends null rather than empty strings and arrays', () => {
     const row = draftToRow(draft({ storage: '', description: '', galleryImages: [], colorOptions: [] }));
     expect(row.storage).toBeNull();
     expect(row.description).toBeNull();
-    expect(row.gallery_images).toBeNull();
-    expect(row.color_options).toBeNull();
+    expect(row.galleryImages).toBeNull();
+    expect(row.colorOptions).toBeNull();
+  });
+
+  it('never emits undefined, which Firestore rejects outright', () => {
+    const row = draftToRow(draft({ batteryHealth: undefined }));
+    expect(Object.values(row).every(v => v !== undefined)).toBe(true);
   });
 });
 
@@ -98,11 +116,10 @@ describe('productToDraft', () => {
   it('round-trips a real catalogue product through draftToRow without losing fields', () => {
     const product = MOCK_PHONES[0];
     const row = draftToRow(productToDraft(product));
-    expect(row.id).toBe(product.id);
     expect(row.model).toBe(product.model);
     expect(row.brand).toBe(product.brand);
     expect(row.price).toBe(product.price);
-    expect(row.original_price).toBe(product.originalPrice);
+    expect(row.originalPrice).toBe(product.originalPrice);
     expect(row.grade).toBe(product.grade);
     expect(row.stock).toBe(product.stock);
   });
@@ -146,32 +163,58 @@ describe('imagePath', () => {
 });
 
 describe('pathFromPublicUrl', () => {
-  it('extracts the storage path from a public URL', () => {
-    const url = `https://x.supabase.co/storage/v1/object/public/${IMAGE_BUCKET}/apple-iphone-17/abc.jpg`;
-    expect(pathFromPublicUrl(url)).toBe('apple-iphone-17/abc.jpg');
+  // Firebase download URLs percent-encode the whole object path inside /o/ and
+  // append ?alt=media&token=..., so both have to be undone to get back to the
+  // path that deleteObject expects.
+  const download = (path: string) =>
+    `https://firebasestorage.googleapis.com/v0/b/proj.appspot.com/o/${encodeURIComponent(path)}?alt=media&token=abc-123`;
+
+  it('extracts the storage path from a download URL', () => {
+    expect(pathFromPublicUrl(download(`${IMAGE_BUCKET}/apple-iphone-17/abc.jpg`)))
+      .toBe('apple-iphone-17/abc.jpg');
   });
 
   it('decodes percent-encoded segments', () => {
-    const url = `https://x.supabase.co/storage/v1/object/public/${IMAGE_BUCKET}/p/a%20b.jpg`;
-    expect(pathFromPublicUrl(url)).toBe('p/a b.jpg');
+    expect(pathFromPublicUrl(download(`${IMAGE_BUCKET}/p/a b.jpg`))).toBe('p/a b.jpg');
   });
 
-  it('returns null for a bundled asset so it is never sent to storage.remove', () => {
+  it('strips the query string, which carries the access token', () => {
+    const url = download(`${IMAGE_BUCKET}/p/x.jpg`);
+    expect(url).toContain('token=');
+    expect(pathFromPublicUrl(url)).toBe('p/x.jpg');
+  });
+
+  it('returns null for a bundled asset so it is never sent to deleteObject', () => {
     expect(pathFromPublicUrl('/assets/iphone-17-pro-max-orange.jpg')).toBeNull();
     expect(pathFromPublicUrl('https://example.com/other-bucket/x.jpg')).toBeNull();
+  });
+
+  it('returns null for a file outside the product-images folder', () => {
+    expect(pathFromPublicUrl(download('some-other-folder/x.jpg'))).toBeNull();
   });
 });
 
 describe('describeError', () => {
-  it('explains an RLS rejection in terms the admin can act on', () => {
-    expect(describeError({ code: '42501', message: 'new row violates row-level security policy' }))
+  it('explains a rules rejection in terms the admin can act on', () => {
+    // "Missing or insufficient permissions" gives no clue what to do about it.
+    expect(describeError({ code: 'permission-denied', message: 'Missing or insufficient permissions.' }))
       .toMatch(/not an admin/i);
-    expect(describeError({ message: 'row-level security policy violation' }))
+    expect(describeError({ code: 'storage/unauthorized', message: 'User does not have permission' }))
+      .toMatch(/not an admin/i);
+    expect(describeError({ message: 'Missing or insufficient permissions.' }))
       .toMatch(/not an admin/i);
   });
 
   it('explains a duplicate slug', () => {
-    expect(describeError({ code: '23505', message: 'duplicate key' })).toMatch(/slug already exists/i);
+    expect(describeError({ code: 'already-exists', message: 'exists' })).toMatch(/slug already exists/i);
+  });
+
+  it('explains an expired session separately from a permissions problem', () => {
+    expect(describeError({ code: 'unauthenticated', message: 'x' })).toMatch(/session expired/i);
+  });
+
+  it('explains an unreachable backend', () => {
+    expect(describeError({ code: 'unavailable', message: 'x' })).toMatch(/could not reach/i);
   });
 
   it('falls back to the raw message', () => {

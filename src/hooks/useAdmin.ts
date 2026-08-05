@@ -1,43 +1,18 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 /**
- * Whether the signed-in user is an admin, read from `profiles.role`.
+ * Whether the signed-in user is an admin.
  *
- * This drives what the UI *shows*. It is not what makes the app secure —
- * the RLS policies do that, so a user who fakes this flag still cannot write
- * anything. Treat a false value as "hide the controls", not "the data is safe".
+ * Read from the `admin` custom claim on the Firebase ID token, which
+ * AuthContext resolves on sign-in. The claim can only be set with the Admin
+ * SDK (see scripts/create-users.mjs), so a user cannot grant it to themselves
+ * the way an editable database field would allow.
+ *
+ * This drives what the UI *shows*. It is not what makes the app secure — the
+ * Firestore and Storage rules check the same claim server-side, so a user who
+ * fakes this flag in devtools still cannot write anything.
  */
 export function useAdmin(): { isAdmin: boolean; isLoading: boolean } {
-  const { user, isLoading: authLoading } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (authLoading) return;
-    if (!user) {
-      setIsAdmin(false);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled) return;
-        setIsAdmin((data as { role?: string } | null)?.role === 'admin');
-        setIsLoading(false);
-      });
-
-    return () => { cancelled = true; };
-  }, [user, authLoading]);
-
-  return { isAdmin, isLoading };
+  const { user, isLoading } = useAuth();
+  return { isAdmin: Boolean(user?.isAdmin), isLoading };
 }

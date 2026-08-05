@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ArrowLeft, Pause, Play, ShieldCheck, Battery, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import CountUp from './ui/CountUp';
+import RevealText from './ui/RevealText';
 
 /**
  * Hero — BM spec Section 3
@@ -65,6 +67,28 @@ const SLIDES = [
   },
 ] as const;
 
+
+/**
+ * Slide savings read like "Save up to £600" or "From £199" — animate the
+ * figure and leave the words alone. Anything without a number ("Best prices
+ * guaranteed") renders as-is rather than being forced into a counter.
+ */
+function renderSavings(label: string, slideIndex: number) {
+  const match = /^(.*?)£([\d,]+)(.*)$/.exec(label);
+  if (!match) return label;
+
+  const [, before, digits, after] = match;
+  const value = parseInt(digits.replace(/,/g, ''), 10);
+  if (!Number.isFinite(value)) return label;
+
+  return (
+    <>
+      {before}
+      <CountUp key={`savings-${slideIndex}`} to={value} prefix="£" duration={1100} />
+      {after}
+    </>
+  );
+}
 
 export default function Hero() {
   const [current, setCurrent] = useState(0);
@@ -183,16 +207,20 @@ export default function Hero() {
                 {slide.eyebrow}
               </div>
 
-              <h1 style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 'clamp(36px, 5.2vw, 68px)',
-                fontWeight: 900,
-                letterSpacing: '-0.04em', lineHeight: 1.0,
-                color: '#ffffff',
-                marginBottom: 16, whiteSpace: 'pre-line',
-              }}>
+              <RevealText
+                as="h1"
+                key={`headline-${current}`}
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 'clamp(36px, 5.2vw, 68px)',
+                  fontWeight: 900,
+                  letterSpacing: '-0.04em', lineHeight: 1.0,
+                  color: '#ffffff',
+                  marginBottom: 16, whiteSpace: 'pre-line',
+                }}
+              >
                 {slide.headline}
-              </h1>
+              </RevealText>
 
               <p style={{
                 fontFamily: 'var(--font-body)', fontSize: '15px',
@@ -236,7 +264,7 @@ export default function Hero() {
                   fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
                   color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap',
                 }}>
-                  {slide.savings}
+                  {renderSavings(slide.savings, current)}
                 </span>
               </div>
 

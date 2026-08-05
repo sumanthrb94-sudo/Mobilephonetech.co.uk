@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL ?? '',
-  process.env.VITE_SUPABASE_ANON_KEY ?? '',
-);
+import { adminDb } from './_firebaseAdmin.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -21,29 +16,47 @@ export default async function handler(req: any, res: any) {
 
   const limit = Math.min(10, parseInt(req.query?.limit ?? '8', 10) || 8);
 
+  const db = adminDb();
+  if (!db) return res.status(503).json({ error: 'Search is unavailable' });
+
   try {
-    const term = `%${q}%`;
+    // Firestore has no LIKE, so search runs against the `searchTerms` array
+    // that every product write regenerates (see productMapper.buildSearchTerms).
+    // array-contains matches whole tokens and prefixes, which covers "iph",
+    // "iphone", "apple" — enough for autocomplete without a search service.
+    const term = q.toLowerCase();
+    const snap = await db.collection('products')
+      .where('searchTerms', 'array-contains', term)
+      .where('stock', '>', 0)
+      .limit(limit)
+      .get();
 
-    const { data, error } = await supabase
-      .from('products')
-      .select('id, model, brand, price, image_url, grade, category')
-      .or(`model.ilike.${term},brand.ilike.${term}`)
-      .gt('stock', 0)
-      .order('price', { ascending: true })
-      .limit(limit);
-
-    if (error) throw error;
+    const data = snap.docs.map(d => {
+      const v = d.data();
+      return {
+        id: d.id,
+        model: v.model,
+        brand: v.brand,
+        price: v.price,
+        image_url: v.imageUrl ?? null,
+        grade: v.grade,
+        category: v.category,
+      };
+    });
+    // Firestore cannot order by price while range-filtering stock, so the
+    // cheapest-first ordering the UI expects is applied here.
+    data.sort((a, b) => Number(a.price ?? 0) - Number(b.price ?? 0));
 
     // Derive unique brand/model suggestions for autocomplete chips
     const seen = new Set<string>();
     const suggestions: string[] = [];
-    for (const row of (data ?? [])) {
+    for (const row of data) {
       const key = `${row.brand} ${row.model}`;
       if (!seen.has(key)) { seen.add(key); suggestions.push(key); }
       if (suggestions.length >= 5) break;
     }
 
-    return res.status(200).json({ suggestions, products: data ?? [] });
+    return res.status(200).json({ suggestions, products: data });
   } catch (err) {
     console.error('[api/search]', err);
     return res.status(500).json({ error: 'Search failed' });

@@ -1,13 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL ?? '',
-  process.env.VITE_SUPABASE_ANON_KEY ?? '',
-);
+import { adminDb } from './_firebaseAdmin.js';
 
 const VALID_SORTS = ['price_asc', 'price_desc', 'newest', 'discount'] as const;
 type SortMode = (typeof VALID_SORTS)[number];
 
+/**
+ * Paginated, filtered product list.
+ *
+ * Firestore allows one range filter per query and no OR across fields, so
+ * expressing this filter set as a query would need a composite index per
+ * combination — and still could not express the multi-select cases. The
+ * catalogue is a few hundred documents, so it is read once (narrowed by
+ * category server-side where possible) and filtered in memory, which keeps the
+ * response shape and the filter semantics identical to the SQL version.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
@@ -34,73 +39,57 @@ export default async function handler(req: any, res: any) {
     return res.status(400).json({ error: 'minPrice must be ≤ maxPrice' });
   }
 
+  const db = adminDb();
+  if (!db) return res.status(503).json({ error: 'Products are unavailable' });
+
   try {
-    // Count query
-    let countQuery = supabase.from('products').select('id', { count: 'exact', head: true });
-    let dataQuery  = supabase.from('products').select('*, product_variants(*)');
+    // Category is the one filter that is always a single value, so it can be
+    // pushed down to Firestore; everything else is multi-select or a range.
+    const base = db.collection('products');
+    const snap = await (q.category
+      ? base.where('category', '==', q.category).limit(1000)
+      : base.limit(1000)
+    ).get();
 
-    // ── Filters ─────────────────────────────────────────
-    if (q.brand) {
-      const brands = q.brand.split(',').map(b => b.trim()).filter(Boolean);
-      countQuery = countQuery.in('brand', brands);
-      dataQuery  = dataQuery.in('brand', brands);
-    }
-    if (q.grade) {
-      const grades = q.grade.split(',').map(g => g.trim()).filter(Boolean);
-      countQuery = countQuery.in('grade', grades);
-      dataQuery  = dataQuery.in('grade', grades);
-    }
-    if (q.category) {
-      countQuery = countQuery.eq('category', q.category);
-      dataQuery  = dataQuery.eq('category', q.category);
-    }
-    if (q.storage) {
-      const storages = q.storage.split(',').map(s => s.trim()).filter(Boolean);
-      countQuery = countQuery.in('storage', storages);
-      dataQuery  = dataQuery.in('storage', storages);
-    }
-    if (minPrice !== null) {
-      countQuery = countQuery.gte('price', minPrice);
-      dataQuery  = dataQuery.gte('price', minPrice);
-    }
-    if (maxPrice !== null) {
-      countQuery = countQuery.lte('price', maxPrice);
-      dataQuery  = dataQuery.lte('price', maxPrice);
-    }
-    if (q.inStock === 'true') {
-      countQuery = countQuery.gt('stock', 0);
-      dataQuery  = dataQuery.gt('stock', 0);
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+
+    const csv = (v?: string) => (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
+
+    const brands = csv(q.brand);
+    if (brands.length) rows = rows.filter(r => brands.includes(r.brand));
+
+    const grades = csv(q.grade);
+    if (grades.length) rows = rows.filter(r => grades.includes(r.grade));
+
+    const storages = csv(q.storage);
+    if (storages.length) rows = rows.filter(r => storages.includes(r.storage));
+
+    if (minPrice !== null) rows = rows.filter(r => Number(r.price ?? 0) >= minPrice);
+    if (maxPrice !== null) rows = rows.filter(r => Number(r.price ?? 0) <= maxPrice);
+    if (q.inStock === 'true') rows = rows.filter(r => Number(r.stock ?? 0) > 0);
+
     if (q.search) {
-      const term = `%${q.search.trim()}%`;
-      countQuery = countQuery.or(`model.ilike.${term},brand.ilike.${term}`);
-      dataQuery  = dataQuery.or(`model.ilike.${term},brand.ilike.${term}`);
+      const term = q.search.trim().toLowerCase();
+      rows = rows.filter(r =>
+        String(r.model ?? '').toLowerCase().includes(term) ||
+        String(r.brand ?? '').toLowerCase().includes(term));
     }
 
-    // ── Sort ─────────────────────────────────────────────
     switch (sort) {
-      case 'price_asc':  dataQuery = dataQuery.order('price', { ascending: true });  break;
-      case 'price_desc': dataQuery = dataQuery.order('price', { ascending: false }); break;
-      case 'discount':   dataQuery = dataQuery.order('original_price', { ascending: false }); break;
-      default:           dataQuery = dataQuery.order('created_at', { ascending: false });
+      case 'price_asc':  rows.sort((a, b) => Number(a.price ?? 0) - Number(b.price ?? 0)); break;
+      case 'price_desc': rows.sort((a, b) => Number(b.price ?? 0) - Number(a.price ?? 0)); break;
+      case 'discount':   rows.sort((a, b) => Number(b.originalPrice ?? 0) - Number(a.originalPrice ?? 0)); break;
+      default:
+        rows.sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
     }
 
-    // ── Pagination ────────────────────────────────────────
-    const offset = (page - 1) * limit;
-    dataQuery = dataQuery.range(offset, offset + limit - 1);
-
-    const [{ count }, { data: products, error }] = await Promise.all([
-      countQuery,
-      dataQuery,
-    ]);
-
-    if (error) throw error;
-
-    const total      = count ?? 0;
+    const total      = rows.length;
     const totalPages = Math.ceil(total / limit);
+    const offset     = (page - 1) * limit;
 
     return res.status(200).json({
-      products: products ?? [],
+      products: rows.slice(offset, offset + limit),
       total,
       page,
       limit,

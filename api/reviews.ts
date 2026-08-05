@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL ?? '',
-  process.env.VITE_SUPABASE_ANON_KEY ?? '',
-);
+import { adminDb } from './_firebaseAdmin.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -25,19 +20,38 @@ async function getReviews(req: any, res: any) {
   const limit = Math.min(50, parseInt(limitStr ?? '10', 10) || 10);
   const offset = (page - 1) * limit;
 
+  const db = adminDb();
+  if (!db) return res.status(503).json({ error: 'Reviews are unavailable' });
+
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, count, error } = await (supabase.from('reviews') as any)
-      .select('id, rating, title, comment, user_name, is_verified, created_at', { count: 'exact' })
-      .eq('product_id', productId)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+    const base = db.collection('reviews').where('productId', '==', productId);
 
-    if (error) throw error;
+    // Firestore has no OFFSET. Pages are small and reviews are capped at 50 per
+    // page, so the page is sliced from an ordered read rather than paying for a
+    // cursor round-trip; the count comes from a separate aggregation query,
+    // which is billed as one read rather than one per document.
+    const [countSnap, snap] = await Promise.all([
+      base.count().get(),
+      base.orderBy('createdAt', 'desc').limit(offset + limit).get(),
+    ]);
 
-    const reviews = data ?? [];
+    const count = countSnap.data().count;
+    const reviews = snap.docs.slice(offset).map(d => {
+      const v = d.data();
+      return {
+        id: d.id,
+        rating: v.rating,
+        title: v.title ?? null,
+        comment: v.comment ?? null,
+        user_name: v.userName ?? null,
+        is_verified: Boolean(v.isVerified),
+        created_at: v.createdAt ?? null,
+      };
+    });
+
     const avgRating = reviews.length
-      ? reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ? reviews.reduce((sum: number, r: any) => sum + Number(r.rating ?? 0), 0) / reviews.length
       : null;
 
     return res.status(200).json({
@@ -71,21 +85,25 @@ async function postReview(req: any, res: any) {
     return res.status(400).json({ error: 'title must be under 200 characters' });
   }
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('reviews') as any)
-      .insert({
-        product_id:  productId,
-        rating,
-        title:       title?.trim() ?? null,
-        comment:     comment?.trim() ?? null,
-        user_name:   userName.trim(),
-        is_verified: false,
-      })
-      .select('id, rating, user_name, created_at')
-      .single();
+  const db = adminDb();
+  if (!db) return res.status(503).json({ error: 'Reviews are unavailable' });
 
-    if (error) throw error;
+  try {
+    const createdAt = new Date().toISOString();
+    const body = {
+      productId,
+      rating,
+      title: title?.trim() ?? null,
+      comment: comment?.trim() ?? null,
+      userName: userName.trim(),
+      // Never trusted from the request: the badge means a verified purchase,
+      // so a reviewer must not be able to award it to themselves.
+      isVerified: false,
+      createdAt,
+    };
+    const ref = await db.collection('reviews').add(body);
+    const data = { id: ref.id, rating, user_name: body.userName, created_at: createdAt };
+
     return res.status(201).json({ review: data });
   } catch (err) {
     console.error('[api/reviews POST]', err);

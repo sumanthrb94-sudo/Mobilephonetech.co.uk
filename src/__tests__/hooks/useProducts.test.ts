@@ -2,26 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useProducts } from '../../hooks/useProducts';
 import { MOCK_PHONES } from '../../data';
-import { supabase } from '../../lib/supabase';
+import { getDocs } from 'firebase/firestore';
 
-// supabase is globally mocked via src/test/setup.ts.
-// The default mock returns { data: [], error: null, count: 0 } which is the
-// "empty" branch and forces useProducts to fall back to MOCK_PHONES.
+// firebase/firestore is globally mocked in src/test/setup.ts. The default
+// getDocs resolves to an empty snapshot, which is the "empty" branch and
+// forces useProducts to fall back to MOCK_PHONES.
 
-// ---------------------------------------------------------------------------
-// Helper: build a chainable Supabase query stub that resolves to `response`
-// ---------------------------------------------------------------------------
-function makeQueryStub(response: { data: unknown[] | null; error: unknown; count: number | null }) {
-  const stub: Record<string, unknown> = {};
-  const chain = () => stub;
-  stub.select  = chain;
-  stub.in      = chain;
-  stub.gte     = chain;
-  stub.lte     = chain;
-  stub.or      = chain;
-  stub.order   = chain;
-  stub.range   = vi.fn().mockResolvedValue(response);
-  return stub;
+/** A Firestore QuerySnapshot carrying the given documents. */
+function snapshot(docs: { id: string; data: Record<string, unknown> }[]) {
+  return {
+    empty: docs.length === 0,
+    size: docs.length,
+    docs: docs.map(d => ({ id: d.id, data: () => d.data })),
+  };
 }
 
 describe('useProducts', () => {
@@ -30,9 +23,9 @@ describe('useProducts', () => {
   });
 
   // ── Fallback behaviour ──────────────────────────────────────────────────
-  it('returns MOCK_PHONES fallback when Supabase returns empty data', async () => {
-    // Default global mock already returns { data: [], error: null, count: 0 },
-    // so no additional stubbing is needed.
+  it('returns MOCK_PHONES fallback when Firestore returns no documents', async () => {
+    // The default global mock resolves to an empty snapshot, so no extra
+    // stubbing is needed here.
     const { result } = renderHook(() => useProducts());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -44,10 +37,8 @@ describe('useProducts', () => {
     });
   });
 
-  it('returns MOCK_PHONES fallback when Supabase returns an error', async () => {
-    vi.spyOn(supabase, 'from').mockReturnValue(
-      makeQueryStub({ data: null, error: { message: 'fail' }, count: null }) as ReturnType<typeof supabase.from>
-    );
+  it('returns MOCK_PHONES fallback when Firestore rejects', async () => {
+    vi.mocked(getDocs).mockRejectedValueOnce(new Error('unavailable'));
 
     const { result } = renderHook(() => useProducts());
 
@@ -67,40 +58,39 @@ describe('useProducts', () => {
     expect(result.current.fromSupabase).toBe(false);
   });
 
-  it('sets fromSupabase to true when Supabase returns real data', async () => {
-    const mockRow = {
-      id:                MOCK_PHONES[0].id,
-      model:             MOCK_PHONES[0].model,
-      brand:             MOCK_PHONES[0].brand,
-      category:          MOCK_PHONES[0].category,
-      storage:           MOCK_PHONES[0].storage ?? null,
-      price:             MOCK_PHONES[0].price,
-      original_price:    MOCK_PHONES[0].originalPrice,
-      grade:             MOCK_PHONES[0].grade,
-      battery_health:    MOCK_PHONES[0].batteryHealth,
-      warranty_months:   MOCK_PHONES[0].warrantyMonths,
-      return_days:       MOCK_PHONES[0].returnDays,
-      image_url:         MOCK_PHONES[0].imageUrl,
-      gallery_images:    null,
-      is_certified:      MOCK_PHONES[0].isCertified,
-      stock:             MOCK_PHONES[0].stock,
-      specs:             {},
-      description:       null,
-      condition_description: null,
-      color_options:     null,
-      storage_options:   null,
-      condition_options: null,
+  it('sets fromSupabase to true when Firestore returns real data', async () => {
+    const source = MOCK_PHONES[0];
+    // Firestore documents are camelCase, and the id is the document key rather
+    // than a field on the document body.
+    const mockDoc = {
+      id: source.id,
+      data: {
+        model: source.model,
+        brand: source.brand,
+        category: source.category,
+        storage: source.storage ?? null,
+        price: source.price,
+        originalPrice: source.originalPrice,
+        grade: source.grade,
+        batteryHealth: source.batteryHealth,
+        warrantyMonths: source.warrantyMonths,
+        returnDays: source.returnDays,
+        imageUrl: source.imageUrl,
+        isCertified: source.isCertified,
+        stock: source.stock,
+        specs: {},
+      },
     };
 
-    vi.spyOn(supabase, 'from').mockReturnValue(
-      makeQueryStub({ data: [mockRow], error: null, count: 1 }) as ReturnType<typeof supabase.from>
-    );
+    vi.mocked(getDocs).mockResolvedValueOnce(snapshot([mockDoc]) as never);
 
     const { result } = renderHook(() => useProducts());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.fromSupabase).toBe(true);
+    expect(result.current.products[0].id).toBe(source.id);
+    expect(result.current.products[0].price).toBe(source.price);
   });
 
   // ── Loading state ───────────────────────────────────────────────────────

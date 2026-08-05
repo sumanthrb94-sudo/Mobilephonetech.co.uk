@@ -1,9 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL ?? '',
-  process.env.VITE_SUPABASE_ANON_KEY ?? '',
-);
+import { adminDb } from './_firebaseAdmin.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,11 +25,17 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase.from('newsletter_subscribers') as any)
-      .upsert({ email: normalised, name: name?.trim() ?? null, is_active: true }, { onConflict: 'email' });
+    const db = adminDb();
+    if (!db) return res.status(503).json({ error: 'Newsletter signup is unavailable' });
 
-    if (error) throw error;
+    // The normalised address is the document id, so re-subscribing overwrites
+    // instead of creating a duplicate — the old unique index, by another name.
+    await db.collection('newsletterSubscribers').doc(normalised).set({
+      email: normalised,
+      name: name?.trim() ?? null,
+      isActive: true,
+      subscribedAt: new Date().toISOString(),
+    }, { merge: true });
 
     return res.status(200).json({ success: true, message: 'Subscribed successfully' });
   } catch (err) {
