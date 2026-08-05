@@ -8,6 +8,7 @@ import { updatePassword } from 'firebase/auth';
 import { auth, db, COL } from '../lib/firebase';
 import { useSeo } from '../hooks/useSeo';
 import ProductImage from './ProductImage';
+import AuthModal from './AuthModal';
 
 type Tab = 'profile' | 'orders' | 'addresses' | 'security';
 
@@ -84,9 +85,13 @@ export default function AccountPage() {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
   const [savingPw, setSavingPw] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
   useEffect(() => {
-    if (!user || user.isGuest) { navigate('/'); return; }
+    // Signed out is rendered below rather than redirected: bouncing someone to
+    // the homepage for tapping "Account" gives no clue what happened or what
+    // to do about it.
+    if (!user || user.isGuest) return;
     loadProfile();
   }, [user]);
 
@@ -190,6 +195,35 @@ export default function AccountPage() {
     { id: 'addresses', label: 'Addresses',     icon: <MapPin size={16} /> },
     { id: 'security',  label: 'Security',      icon: <Lock size={16} /> },
   ];
+
+  // ── Signed out ──────────────────────────────────────────────
+  if (!user || user.isGuest) {
+    return (
+      <div style={{ minHeight: '70vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)', display: 'grid', placeItems: 'center', paddingInline: 20 }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', margin: '0 auto 18px',
+            display: 'grid', placeItems: 'center',
+            background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)',
+          }}>
+            <User size={26} />
+          </div>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 22, fontWeight: 900, color: 'var(--black)', margin: '0 0 8px' }}>
+            {user?.isGuest ? 'You are browsing as a guest' : 'Sign in to your account'}
+          </h1>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--grey-60)', lineHeight: 1.6, margin: '0 0 22px' }}>
+            {user?.isGuest
+              ? 'Create an account to keep your orders, addresses and wishlist across devices.'
+              : 'See your orders, saved addresses and account details.'}
+          </p>
+          <button type="button" className="btn btn-primary btn-md" onClick={() => setAuthOpen(true)}>
+            Sign in or create an account
+          </button>
+        </div>
+        <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)', paddingBottom: 64 }}>
