@@ -1,6 +1,7 @@
-# robots.txt — MobileTech UK
+# robots.txt — LeHart
 User-agent: *
 Allow: /
+Disallow: /admin
 Disallow: /checkout
 Disallow: /cart
 Disallow: /wishlist

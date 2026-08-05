@@ -1365,3 +1365,63 @@ html.is-checkout .ai-fab {
     align-items: start;
   }
 }
+
+/* ───────────────────────────────────────────────────────────────
+   ADMIN — back-store console
+   Scoped to /admin; none of these class names appear on the storefront.
+─────────────────────────────────────────────────────────────── */
+
+.admin-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  flex-wrap: wrap;
+}
+
+/* Inventory row: wraps to two lines on phones, single row from 640px up. */
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--grey-0);
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+}
+
+.admin-filter-bar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: var(--spacing-20);
+}
+
+/* Editor field pairs stack on phones and sit side by side from 640px. */
+.admin-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+@media (min-width: 640px) {
+  .admin-field-row {
+    flex-direction: row;
+    gap: 16px;
+  }
+}
+
+.admin-spin {
+  animation: admin-spin 0.9s linear infinite;
+}
+
+@keyframes admin-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Respect a reduced-motion preference — the spinner is decorative, the
+   adjacent text already says what is happening. */
+@media (prefers-reduced-motion: reduce) {
+  .admin-spin { animation: none; }
+}

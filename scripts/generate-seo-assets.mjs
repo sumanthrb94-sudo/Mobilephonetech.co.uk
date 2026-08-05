@@ -61,9 +61,12 @@ ${urls.map(u => `  <url>
 </urlset>
 `;
 
-const robots = `# robots.txt — MobileTech UK
+// public/robots.txt is generated, not hand-edited — `prebuild` runs this
+// script and overwrites it, so any change has to be made here to survive.
+const robots = `# robots.txt — LeHart
 User-agent: *
 Allow: /
+Disallow: /admin
 Disallow: /checkout
 Disallow: /cart
 Disallow: /wishlist

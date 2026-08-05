@@ -57,11 +57,16 @@ export interface Database {
           phone: string | null;
           address: Json | null;
           avatar_url: string | null;
+          role: 'customer' | 'admin';
           created_at: string;
           updated_at: string;
         };
+        // `role` is readable but not writable from the client: a database
+        // trigger rejects any change to it that is not made with the service
+        // role, so leaving it out here surfaces that as a type error rather
+        // than a runtime one.
         Insert: Pick<Database['public']['Tables']['profiles']['Row'], 'id'> &
-          Partial<Omit<Database['public']['Tables']['profiles']['Row'], 'id' | 'created_at' | 'updated_at'>>;
+          Partial<Omit<Database['public']['Tables']['profiles']['Row'], 'id' | 'role' | 'created_at' | 'updated_at'>>;
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>;
       };
       cart_items: {

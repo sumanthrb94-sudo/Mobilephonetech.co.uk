@@ -54,6 +54,11 @@ const FaqPage = lazy(() => import('./components/content/FaqPage'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
 const AccountPage = lazy(() => import('./components/AccountPage'));
+// Admin console — lazy so the back-store bundle never ships to shoppers.
+const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
+const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
+const ProductEditor = lazy(() => import('./components/admin/ProductEditor'));
 
 // Loading state component — on-brand skeleton
 const PageLoader = () => (
@@ -172,6 +177,9 @@ function AppContent() {
   const { isCartOpen, setIsCartOpen, cartCount } = useCart();
   const location = useLocation();
   const isCheckoutRoute = location.pathname.startsWith('/checkout');
+  // The back store keeps the navbar (admins still browse the shop) but drops
+  // the marketing footer and the shopper tab bar, which are only noise there.
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   // Toggle a root class so CSS can strip the mobile-reserved bottom
   // padding (which normally makes room for the fixed tab bar).
@@ -327,6 +335,19 @@ function AppContent() {
                 </AnimatedPage>
               } />
 
+              {/* Admin back store. AdminRoute wraps the layout rather than each
+                  child so the access check runs once for the whole section. */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }>
+                <Route index element={<InventoryPage />} />
+                <Route path="inventory" element={<InventoryPage />} />
+                <Route path="inventory/new" element={<ProductEditor />} />
+                <Route path="inventory/:id" element={<ProductEditor />} />
+              </Route>
+
               {/* Wildcard — catches every unmatched URL so a typo
                   never lands on a blank body. Emits noindex via useSeo. */}
               <Route path="*" element={
@@ -347,8 +368,8 @@ function AppContent() {
       </Suspense>
       <Toast />
       <CookieBanner />
-      {isCheckoutRoute ? <CheckoutFooter /> : <Footer />}
-      {!isCheckoutRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
+      {isCheckoutRoute ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
+      {!isCheckoutRoute && !isAdminRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
       <AnnouncementBar />
     </div>
   );
