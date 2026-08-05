@@ -1425,3 +1425,57 @@ html.is-checkout .ai-fab {
 @media (prefers-reduced-motion: reduce) {
   .admin-spin { animation: none; }
 }
+
+/* ───────────────────────────────────────────────────────────────
+   ACCOUNT PAGE
+   The sidebar/content split and the paired form fields are desktop
+   layouts. Applied unconditionally they squeezed a 390px phone into a
+   180px sidebar plus ~150px of content, which then overflowed the
+   viewport — so both stack until there is room.
+─────────────────────────────────────────────────────────────── */
+
+.account-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .account-grid {
+    grid-template-columns: clamp(180px, 22%, 240px) minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Paired fields (first/last name, city/postcode) side by side only when
+   each half is still wide enough to read. */
+.account-field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .account-field-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+/* The account tab list reads as a row of chips on phones and a vertical
+   rail on desktop — a five-item vertical list eats the whole first screen
+   on mobile before any content is visible. */
+.account-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.account-tabs::-webkit-scrollbar { display: none; }
+
+@media (min-width: 900px) {
+  .account-tabs {
+    display: block;
+    overflow-x: visible;
+  }
+}

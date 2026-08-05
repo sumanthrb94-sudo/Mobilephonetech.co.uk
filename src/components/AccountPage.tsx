@@ -88,6 +88,11 @@ export default function AccountPage() {
   const [savingPw, setSavingPw] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
+  // undefined while providers are still unknown, so neither panel flashes.
+  const hasPassword = user?.providers
+    ? user.providers.includes('password')
+    : undefined;
+
   useEffect(() => {
     // Signed out is rendered below rather than redirected: bouncing someone to
     // the homepage for tapping "Account" gives no clue what happened or what
@@ -256,7 +261,10 @@ export default function AccountPage() {
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'clamp(180px,22%,240px) 1fr', gap: 24, alignItems: 'start' }}>
+        {/* Columns live in CSS (.account-grid): applied inline they had no
+            breakpoint, so a 390px phone got a 180px sidebar and the content
+            column overflowed the viewport. */}
+        <div className="account-grid">
           {/* Sidebar */}
           <div style={{ background: 'white', borderRadius: 16, border: '1px solid #e5e7eb', overflow: 'hidden', position: 'sticky', top: 100 }}>
             {TABS.map(t => (
@@ -319,7 +327,7 @@ export default function AccountPage() {
                     </div>
                   )}
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="account-field-row">
                     {[
                       { label: 'Full name', value: fullName, setter: setFullName, type: 'text' },
                       { label: 'Email address', value: user?.email ?? '', setter: () => {}, type: 'email', disabled: true },
@@ -458,7 +466,7 @@ export default function AccountPage() {
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="account-field-row">
                     {[
                       { label: 'Address line 1', key: 'line1' as const, col: '1 / -1' },
                       { label: 'Address line 2 (optional)', key: 'line2' as const, col: '1 / -1' },
@@ -481,7 +489,24 @@ export default function AccountPage() {
               )}
 
               {/* ── Security tab ── */}
-              {tab === 'security' && (
+              {tab === 'security' && hasPassword === false && (
+                <div>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 16px' }}>Sign-in method</h2>
+                  <div style={{
+                    display: 'flex', gap: 12, alignItems: 'flex-start',
+                    background: 'var(--grey-5)', border: '1px solid var(--grey-10)',
+                    borderRadius: 'var(--radius-md)', padding: '14px 16px',
+                    fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--grey-70)', lineHeight: 1.6,
+                  }}>
+                    <span>
+                      You sign in with <strong style={{ color: 'var(--black)' }}>Google</strong>, so there is no
+                      password on this account to change. Manage it from your Google account settings.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {tab === 'security' && hasPassword !== false && (
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 24px' }}>Change password</h2>
                   {pwError && (

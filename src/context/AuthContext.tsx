@@ -21,6 +21,12 @@ export interface User {
   isGuest?: boolean;
   /** From the `admin` custom claim on the ID token, not a database field. */
   isAdmin?: boolean;
+  /**
+   * Sign-in providers on the account, e.g. ['google.com'] or ['password'].
+   * A Google-only account has no password, so offering to change one is
+   * offering something that does not exist.
+   */
+  providers?: string[];
 }
 
 /**
@@ -69,6 +75,9 @@ async function toUser(fbUser: FirebaseUser): Promise<User> {
     email: fbUser.email ?? '',
     fullName: fbUser.displayName ?? (fbUser.email ? fbUser.email.split('@')[0] : 'User'),
     isAdmin,
+    // Optional chain: providerData is always present on a real Firebase user,
+    // but a missing one must not take sign-in down over a display detail.
+    providers: fbUser.providerData?.map(p => p.providerId) ?? [],
   };
 }
 

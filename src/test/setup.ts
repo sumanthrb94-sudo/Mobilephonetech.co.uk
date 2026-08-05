@@ -21,9 +21,11 @@ vi.mock('firebase/auth', () => ({
     if (typeof next === 'function') next(null);
     return vi.fn();
   }),
-  signInWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c' } })),
-  createUserWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c' } })),
-  signInWithPopup: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c' } })),
+  // providerData mirrors a real Firebase user — the app reads it to tell a
+  // Google account (no password to change) from a password one.
+  signInWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'password' }] } })),
+  createUserWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'password' }] } })),
+  signInWithPopup: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'google.com' }] } })),
   signInWithRedirect: vi.fn(() => Promise.resolve()),
   GoogleAuthProvider: class { setCustomParameters() {} },
   signOut: vi.fn(() => Promise.resolve()),
