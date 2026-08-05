@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
+import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginIdentifier';
 
 /**
  * AuthModal — centred floating modal for sign-in / sign-up.
@@ -62,13 +63,20 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
     setInfo('');
 
+    if (mode === 'login' && !isValidLoginIdentifier(email)) {
+      setError('Enter your email address, or your staff username.');
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       if (mode === 'login') {
-        await login(email, password);
+        // `admin` resolves to admin@lehart.co.uk; a full address passes through.
+        await login(resolveLoginIdentifier(email), password);
         onSuccess?.();
         onClose();
       } else {
@@ -151,7 +159,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 )}
                 <div style={{ position: 'relative' }}>
                   <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                  <input ref={firstFieldRef} type="email" required placeholder="Email Address" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  <input ref={firstFieldRef} type={mode === 'login' ? 'text' : 'email'} required placeholder={mode === 'login' ? 'Email or username' : 'Email Address'} autoComplete={mode === 'login' ? 'username' : 'email'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                 </div>
                 <div style={{ position: 'relative' }}>
                   <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />

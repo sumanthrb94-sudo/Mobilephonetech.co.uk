@@ -19,7 +19,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "e2e:interactions": "node e2e/interactions.mjs"
+    "e2e:interactions": "node e2e/interactions.mjs",
+    "e2e:admin": "node e2e/admin.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

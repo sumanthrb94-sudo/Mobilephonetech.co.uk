@@ -231,8 +231,10 @@ function InventoryRow({
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(String(product.stock));
   const [saving, setSaving] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
 
   useEffect(() => { setValue(String(product.stock)); }, [product.stock]);
+  useEffect(() => { setImageFailed(false); }, [product.imageUrl]);
 
   const commit = async () => {
     const next = parseInt(value, 10);
@@ -264,9 +266,20 @@ function InventoryRow({
   return (
     <li className="admin-row">
       <div style={{ width: 56, height: 56, flexShrink: 0, borderRadius: 'var(--radius-md)', background: 'var(--grey-5)', overflow: 'hidden', display: 'grid', placeItems: 'center' }}>
-        {product.imageUrl
-          ? <img src={product.imageUrl} alt="" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-          : <PackageX size={18} style={{ color: 'var(--grey-30)' }} />}
+        {/* A product whose image 404s falls back to the placeholder rather than
+            the browser's broken-image icon — a missing file is exactly the kind
+            of thing an admin comes here to notice and fix. */}
+        {product.imageUrl && !imageFailed
+          ? (
+            <img
+              src={product.imageUrl}
+              alt=""
+              loading="lazy"
+              onError={() => setImageFailed(true)}
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          )
+          : <PackageX size={18} style={{ color: 'var(--grey-30)' }} aria-label="No image" />}
       </div>
 
       <div style={{ flex: '1 1 200px', minWidth: 0 }}>
