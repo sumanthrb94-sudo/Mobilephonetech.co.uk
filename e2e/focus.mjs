@@ -79,20 +79,35 @@ async function openRoute(page, spec, isMobile) {
     // The shipping form only renders when CheckoutContext.currentStep is
     // 'shipping', which only the cart's CTA sets — so enter the way a user does.
     await page.goto(`${BASE}/cart`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2600);
-    await dismissCookies(page);
     const cta = page.getByRole('button', { name: /proceed to checkout/i }).first();
-    if (await cta.count()) { await cta.click().catch(() => {}); await page.waitForTimeout(2600); }
-    else await page.goto(`${BASE}${spec.path}`, { waitUntil: 'domcontentloaded' });
+    await cta.waitFor({ timeout: 20000 }).catch(() => {});
+    await dismissCookies(page);
+    if (await cta.count()) {
+      await cta.click().catch(() => {});
+      await page.waitForSelector('input[name="guestEmail"], input[name="fullName"]', { timeout: 20000 }).catch(() => {});
+    } else {
+      await page.goto(`${BASE}${spec.path}`, { waitUntil: 'domcontentloaded' });
+    }
   } else {
     await page.goto(`${BASE}${spec.path}`, { waitUntil: 'domcontentloaded' });
+    // Wait on a real signal rather than a fixed sleep: the app hydrates and
+    // then fills the route from the catalogue.
+    if (spec.path === '/products') {
+      await page.getByText(/items? available/i).first().waitFor({ timeout: 25000 }).catch(() => {});
+    } else {
+      await page.waitForSelector('main, [role="main"], input', { timeout: 20000 }).catch(() => {});
+    }
   }
-  await page.waitForTimeout(2800);
+  await page.waitForTimeout(1200);
   await dismissCookies(page);
   // Mobile hides the facet panel behind a bottom-sheet toggle.
   if (spec.path === '/products' && isMobile) {
     const t = page.locator('#products-filter-toggle').first();
-    if (await t.count()) { await t.click().catch(() => {}); await page.waitForTimeout(1200); }
+    if (await t.count()) {
+      await t.click().catch(() => {});
+      await page.waitForSelector('input[type="number"]', { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(500);
+    }
   }
   // Checkout gates the shipping form behind sign-in / guest email.
   if (spec.advance === 'guest') {
@@ -100,7 +115,10 @@ async function openRoute(page, spec, isMobile) {
     if (await ge.count()) {
       await ge.first().fill('e2e-focus@example.com').catch(() => {});
       const go = page.getByRole('button', { name: /continue as guest/i }).first();
-      if (await go.count()) { await go.click().catch(() => {}); await page.waitForTimeout(2200); }
+      if (await go.count()) {
+        await go.click().catch(() => {});
+        await page.waitForSelector('input[name="fullName"]', { timeout: 20000 }).catch(() => {});
+      }
     }
   }
   await page.waitForTimeout(400);
@@ -205,52 +223,63 @@ async function probeInput(page, view, spec, isMobile, info, bad) {
   }
 
   // 5. Nothing covering the field: elementFromPoint at its centre is the input.
-  // Measured at two scroll positions, because they fail for different reasons:
-  //   centred  — a true overlay sits on top of the field wherever it is
-  //   top-edge — where the browser parks a field it auto-scrolls to (anchor
-  //              jump, focus-on-error, Tab into an off-screen field); a sticky
-  //              header that overlaps here swallows the tap.
+  // Measured at two scroll positions, because a field can be clear when centred
+  // and buried when the browser parks it at the top of the viewport (anchor
+  // jump, focus-on-error, Tab into an off-screen field, iOS keyboard scroll).
+  // Blockers are classified by whether they are fixed/sticky page chrome.
   const coverAt = async (block) => {
     const r = await page.evaluate(({ sel, block }) => {
       const el = document.querySelector(sel);
-      if (!el) return { ok: false, why: 'element no longer in the DOM', overlap: 0 };
+      if (!el) return { ok: false, why: 'element no longer in the DOM' };
       el.scrollIntoView({ block, inline: 'nearest' });
       const b = el.getBoundingClientRect();
       const x = Math.round(b.left + b.width / 2);
       const y = Math.round(b.top + b.height / 2);
-      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return { ok: true, why: '', overlap: 0 };
-      const top = document.elementFromPoint(x, y);
-      if (!top) return { ok: false, why: 'elementFromPoint returned null', overlap: 0 };
-      if (top === el || el.contains(top)) return { ok: true, why: '', overlap: 0 };
-      const cls = typeof top.className === 'string' ? top.className.trim().slice(0, 40) : '';
-      const blocker = top.closest('header, nav, [class*="sticky"], [class*="navbar"]') || top;
-      const br = blocker.getBoundingClientRect();
-      const cs = getComputedStyle(blocker);
+      if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return { ok: true };
+      const hit = document.elementFromPoint(x, y);
+      if (!hit) return { ok: false, why: 'elementFromPoint returned null' };
+      if (hit === el || el.contains(hit)) return { ok: true };
+      // Walk up to the nearest fixed/sticky ancestor — that is the thing
+      // actually floating over the page, not whatever leaf the point landed on.
+      let anc = hit, chrome = null;
+      while (anc && anc !== document.body) {
+        const p = getComputedStyle(anc).position;
+        if (p === 'fixed' || p === 'sticky') { chrome = anc; break; }
+        anc = anc.parentElement;
+      }
+      const cls = e => (typeof e.className === 'string' && e.className.trim() ? '.' + e.className.trim().split(/\s+/).slice(0, 3).join('.') : '');
+      const box = chrome || hit;
+      const cs = getComputedStyle(box);
       return {
         ok: false,
-        overlap: Math.max(0, Math.round(br.bottom - b.top)),
-        why: `${top.tagName}${top.id ? '#' + top.id : ''}${cls ? '.' + cls.replace(/\s+/g, '.') : ''}` +
-             ` text="${(top.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 30)}"` +
-             ` inside ${blocker.tagName}${blocker.id ? '#' + blocker.id : ''} (position:${cs.position}, z-index:${cs.zIndex})`,
+        isChrome: !!chrome,
+        overlap: Math.max(0, Math.round(box.getBoundingClientRect().bottom - b.top)),
+        why: `${hit.tagName}${hit.id ? '#' + hit.id : ''}${cls(hit)} text="${(hit.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 28)}"` +
+             (chrome ? ` inside ${chrome.tagName}${chrome.id ? '#' + chrome.id : ''}${cls(chrome)} (position:${cs.position}, z-index:${cs.zIndex})` : ' (not fixed/sticky)'),
       };
     }, { sel, block });
     await page.waitForTimeout(120);
     return r;
   };
 
-  const centred = await coverAt('center').catch(e => ({ ok: false, why: e.message.slice(0, 60), overlap: 0 }));
-  if (!centred.ok) {
-    bad.covered.push(`${d} <- ${centred.why}`);
-    defect(view, where, d, 'covered-by-overlay',
-      `with the field centred in the viewport, elementFromPoint at its centre hits ${centred.why} — taps land on that instead`);
-  }
-  const topEdge = await coverAt('start').catch(e => ({ ok: false, why: e.message.slice(0, 60), overlap: 0 }));
-  if (!topEdge.ok && centred.ok) {
-    bad.sticky.push(`${d} <- ${topEdge.why} (covers ${topEdge.overlap}px of it)`);
-    defect(view, where, d, 'covered-by-sticky-header-when-scrolled-to-top',
-      `when the field is scrolled to the top of the viewport (anchor jump / focus-on-error / Tab into an ` +
-      `off-screen field), its centre is covered by ${topEdge.why}, overlapping ${topEdge.overlap}px. ` +
-      `A tap there hits the header. Fix with scroll-margin-top on the field or scroll-padding-top on the scroller.`);
+  const at = {
+    centred: await coverAt('center').catch(e => ({ ok: false, why: e.message.slice(0, 60) })),
+    topEdge: await coverAt('start').catch(e => ({ ok: false, why: e.message.slice(0, 60) })),
+  };
+  for (const [pos, r] of Object.entries(at)) {
+    if (r.ok) continue;
+    const posLabel = pos === 'centred' ? 'centred in the viewport' : 'scrolled to the top of the viewport';
+    if (r.isChrome) {
+      bad.sticky.push(`${d} @${pos} <- ${r.why} (covers ${r.overlap}px)`);
+      defect(view, where, d, 'covered-by-fixed-page-chrome',
+        `with the field ${posLabel}, elementFromPoint at its centre hits ${r.why}, overlapping ${r.overlap}px of the field. ` +
+        `A tap there hits the header instead of the input. Fix with scroll-margin-top on the field (or scroll-padding-top on the scroller) ` +
+        `so the browser never parks it under the fixed chrome.`);
+    } else {
+      bad.covered.push(`${d} @${pos} <- ${r.why}`);
+      defect(view, where, d, 'covered-by-overlay',
+        `with the field ${posLabel}, elementFromPoint at its centre hits ${r.why} — taps land on that instead`);
+    }
   }
 
   await loc.scrollIntoViewIfNeeded({ timeout: 5000 }).catch(() => {});
@@ -408,8 +437,8 @@ async function checkRoute(page, view, spec, isMobile) {
   say('Caret ends at end of typed text', bad.caret,
       bad.caretSkipped.length ? ` (${bad.caretSkipped.length} ${[...new Set(bad.caretSkipped)].join('/')} inputs expose no selection API — covered by the mid-string check)` : '');
   say('Mid-string typing does not jump the caret', bad.mid);
-  say('Input is not covered by an overlay (centred)', bad.covered);
-  say('Input is not covered by the sticky header (scrolled to top)', bad.sticky);
+  say('Input is not covered by an overlay', bad.covered);
+  say('Input is not covered by fixed page chrome', bad.sticky);
   if (isMobile) say('Input font-size >= 16px (no iOS zoom)', bad.font);
 }
 
@@ -482,7 +511,7 @@ async function checkTabOrder(page, view, spec, isMobile) {
 async function checkDirectCheckoutLoad(page, view) {
   try {
     await page.goto(`${BASE}/checkout`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(1800);
     await dismissCookies(page);
     const form = await page.locator('input[name="fullName"], input[name="addressLine1"]').count();
     const gate = await page.getByRole('button', { name: /continue as guest|sign in/i }).count();
@@ -548,7 +577,7 @@ async function checkSearch(page, view, isMobile) {
 async function checkEscape(page, view, isMobile) {
   try {
     await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(1800);
     await dismissCookies(page);
     const more = page.locator('[aria-label="More options"], [aria-label="Open menu"]').first();
     if (await more.count()) { await more.click(); await page.waitForTimeout(900); }

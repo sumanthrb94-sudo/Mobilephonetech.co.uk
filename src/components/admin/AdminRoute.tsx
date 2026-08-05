@@ -27,8 +27,8 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
     );
   }
 
-  if (!isAuthenticated) return <Gate icon={<LogIn size={26} />} title="Sign in required" body="The back store is only available to signed-in staff accounts." cta={{ to: '/account', label: 'Go to sign in' }} />;
-  if (!isAdmin) return <Gate icon={<ShieldAlert size={26} />} title="Admin access only" body="Your account does not have the admin role. Ask an existing admin to grant it in Supabase." cta={{ to: '/', label: 'Back to the store' }} />;
+  if (!isAuthenticated) return <Gate icon={<LogIn size={26} />} title="Sign in required" body="The admin console is only available to signed-in staff accounts." cta={{ to: '/account', label: 'Go to sign in' }} />;
+  if (!isAdmin) return <Gate icon={<ShieldAlert size={26} />} title="Admin access only" body="Your account does not have the admin role. If it was just granted, sign out and back in — the change only reaches your browser on a fresh sign-in." cta={{ to: '/', label: 'Back to the store' }} />;
 
   return <>{children}</>;
 }

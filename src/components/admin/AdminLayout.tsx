@@ -3,14 +3,14 @@ import { Boxes, Store } from 'lucide-react';
 import { useSeo } from '../../hooks/useSeo';
 
 /**
- * Chrome for the back store: a narrow header strip that is visibly distinct
+ * Chrome for the admin console: a narrow header strip that is visibly distinct
  * from the storefront, so it is never ambiguous whether you are looking at
  * live customer-facing pages or the admin console.
  */
 export default function AdminLayout() {
   // Belt and braces with the robots.txt Disallow: a disallowed URL can still
   // be indexed from inbound links, whereas noindex is honoured directly.
-  useSeo({ title: 'Back store — LeHart', description: 'Staff inventory console.', noindex: true });
+  useSeo({ title: 'Admin — LeHart', description: 'Staff inventory console.', noindex: true });
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)' }}>
@@ -18,7 +18,7 @@ export default function AdminLayout() {
         <div className="container-bm admin-bar" style={{ maxWidth: 'var(--container-max)' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, letterSpacing: '-0.01em' }}>
             <Boxes size={16} style={{ color: 'var(--brand-cyan-on-dark)' }} />
-            Back store
+            Admin
           </span>
 
           <nav style={{ display: 'flex', gap: 4 }} aria-label="Admin sections">

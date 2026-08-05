@@ -363,7 +363,7 @@ export default function Navbar(_: NavbarProps) {
                         >
                           <Boxes size={18} style={{ color: 'var(--brand-cyan-hover)' }} />
                           <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>
-                            Back store
+                            Admin
                           </span>
                         </Link>
                       )}
@@ -740,7 +740,7 @@ export default function Navbar(_: NavbarProps) {
                     className="btn btn-secondary btn-md btn-full"
                     style={{ textDecoration: 'none', marginBottom: 10 }}
                   >
-                    <Boxes size={16} /> Back store
+                    <Boxes size={16} /> Admin
                   </Link>
                 )}
                 {isAuthenticated ? (

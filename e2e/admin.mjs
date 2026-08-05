@@ -98,7 +98,7 @@ async function run(view, contextOpts) {
   await dismissCookies(page);
   await page.waitForTimeout(700);
   let body = await txt();
-  rec(view, 'Admin dashboard opens for an admin', /Back store/i.test(body) && /Inventory/i.test(body), body.slice(0, 90));
+  rec(view, 'Admin dashboard opens for an admin', /\bAdmin\b/i.test(body) && /Inventory/i.test(body), body.slice(0, 90));
   rec(view, 'Seeded products are listed', /iPhone 17/.test(body) && /Galaxy S23/.test(body));
   rec(view, 'Product count matches the rows shown', /2 products/.test(body), body.slice(0, 120));
   rec(view, 'Storefront chrome (marketing footer) is hidden', !/Sign up to our newsletter/i.test(body));

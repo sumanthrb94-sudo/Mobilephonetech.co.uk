@@ -150,7 +150,7 @@ function AppContent() {
   const { isCartOpen, setIsCartOpen, cartCount } = useCart();
   const location = useLocation();
   const isCheckoutRoute = location.pathname.startsWith('/checkout');
-  // The back store keeps the navbar (admins still browse the shop) but drops
+  // The admin console keeps the navbar (admins still browse the shop) but drops
   // the marketing footer and the shopper tab bar, which are only noise there.
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -308,7 +308,7 @@ function AppContent() {
                 </AnimatedPage>
               } />
 
-              {/* Admin back store. AdminRoute wraps the layout rather than each
+              {/* Admin console. AdminRoute wraps the layout rather than each
                   child so the access check runs once for the whole section. */}
               <Route path="/admin" element={
                 <AdminRoute>
