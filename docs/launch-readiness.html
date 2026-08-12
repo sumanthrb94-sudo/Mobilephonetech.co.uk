@@ -164,6 +164,13 @@
     border-top: 1px solid var(--rule-strong);
   }
 
+  /* The masthead already closes with a rule; a second one directly under it
+     reads as an accident rather than a section break. */
+  .masthead + section h2 {
+    border-top: none;
+    padding-top: 0;
+  }
+
   h3 {
     font-family: var(--body);
     font-size: 0.95rem;
