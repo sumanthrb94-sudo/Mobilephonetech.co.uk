@@ -158,6 +158,24 @@ export async function seed() {
   return { adminUid, customerUid };
 }
 
+/**
+ * Write additional catalogue rows on top of seed().
+ *
+ * The two-product fixture is deliberate for tests — it keeps assertions about
+ * counts and filters readable. Screenshot capture wants the opposite: an admin
+ * console holding two rows misrepresents the thing being photographed.
+ */
+export async function seedExtraProducts(products) {
+  for (const p of products) {
+    const { id, ...rest } = p;
+    await writeDoc('products', id, {
+      ...rest,
+      specs: rest.specs ?? {},
+      searchTerms: searchTerms(p.brand, p.model, p.category),
+    });
+  }
+}
+
 /** Read a product back, so a test can assert what actually landed in the DB. */
 export async function getProduct(id) {
   const res = await fetch(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products/${id}`, { headers: authHeaders });

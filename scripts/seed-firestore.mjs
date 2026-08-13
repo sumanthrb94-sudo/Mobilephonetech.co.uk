@@ -61,7 +61,11 @@ function loadProducts() {
   const start = src.indexOf(marker);
   if (start === -1) fail('Could not find MOCK_PHONES in src/data.ts');
 
-  const open = src.indexOf('[', start);
+  // Seek past the "=" first. The declaration is
+  //   export const MOCK_PHONES: Product[] = [
+  // so the first "[" after the name is the type annotation's, not the array's.
+  // Taking it extracts "[]" and seeds an empty catalogue while reporting success.
+  const open = src.indexOf('[', src.indexOf('=', start));
   let depth = 0;
   let end = -1;
   for (let i = open; i < src.length; i++) {
