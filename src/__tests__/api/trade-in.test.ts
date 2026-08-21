@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { resetRateLimits } from '../../../api/_rateLimit.js';
 
 // Mock the Admin SDK wrapper before importing the handler. Mocking our own
 // module rather than firebase-admin keeps the stub to the one function the
@@ -40,6 +41,7 @@ function res() {
     get body() { return _body; },
     status(code: number) { _code = code; return this; },
     json(data: unknown) { _body = data; return this; },
+    setHeader() { return this; },
   };
 }
 
@@ -51,6 +53,10 @@ const VALID_BODY = {
 };
 
 describe('POST /api/trade-in', () => {
+  // Every test is one fake client, which trips the per-IP limiter across a
+  // file — reset between tests so each starts from a clean window.
+  beforeEach(() => resetRateLimits());
+
   it('returns 405 for GET requests', async () => {
     const r = res();
     await handler(req('GET'), r);

@@ -10,30 +10,25 @@ import ProductImage from './ProductImage';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode } from '../utils/postcodeLookup';
 
-// Demo-mode payment helpers. Real card tokenisation happens through
-// a PSP widget (Stripe / Adyen) in production — until then the form
-// accepts whatever the user types and falls back to a Visa 4242 stub
-// when fields are blank, so a walkthrough is never blocked by an
-// unfilled card form.
+// Payment method selection only — this form NEVER collects card details.
+//
+// That is deliberate, not a gap. Accepting a card number, expiry or CVC into
+// our own DOM would put the site in a PCI DSS scope it cannot satisfy; card
+// capture belongs exclusively to the payment provider's hosted fields
+// (Stripe Elements / Checkout), which arrive with the PSP integration. Until
+// then the step records which method the customer chose and nothing else.
+// Do not add card inputs back here — wire the PSP instead.
 
 type PaymentTypeKey = 'card' | 'klarna' | 'clearpay' | 'apple_pay' | 'google_pay' | 'paypal';
 
 const PAYMENT_METHOD_LABELS: Record<PaymentTypeKey, { brand: string; last4: string; display: string }> = {
-  card:       { brand: 'Visa',       last4: '4242', display: 'Credit or debit card' },
+  card:       { brand: 'Card',       last4: '····', display: 'Credit or debit card' },
   klarna:     { brand: 'Klarna',     last4: 'PAY3', display: 'Klarna · Pay in 3'    },
   clearpay:   { brand: 'Clearpay',   last4: 'PAY4', display: 'Clearpay · Pay in 4'  },
   apple_pay:  { brand: 'Apple Pay',  last4: 'WLLT', display: 'Apple Pay'            },
   google_pay: { brand: 'Google Pay', last4: 'WLLT', display: 'Google Pay'           },
   paypal:     { brand: 'PayPal',     last4: 'PYPL', display: 'PayPal'               },
 };
-
-function detectCardBrand(cardNumber: string): string {
-  if (/^4/.test(cardNumber)) return 'Visa';
-  if (/^(5[1-5]|2[2-7])/.test(cardNumber)) return 'Mastercard';
-  if (/^3[47]/.test(cardNumber)) return 'Amex';
-  if (/^6(011|5)/.test(cardNumber)) return 'Discover';
-  return 'Card';
-}
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -172,34 +167,18 @@ export default function CheckoutFlow() {
 
   const handlePaymentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
 
-    // Demo mode: pick whatever method the user selected. If they
-    // bothered to type a card number, we use it — otherwise we ship
-    // a sensible placeholder so the mock order goes through. No
-    // payment method is ever blocking.
-    const cardNumberRaw = String(formData.get('cardNumber') ?? '').replace(/\s+/g, '');
-
-    let method: PaymentMethod;
-    if (paymentType === 'card') {
-      const last4 = cardNumberRaw.length >= 4 ? cardNumberRaw.slice(-4) : '4242';
-      const brand = cardNumberRaw.length >= 4 ? detectCardBrand(cardNumberRaw) : 'Visa';
-      method = {
-        id: Math.random().toString(36).slice(2, 11),
-        type: 'card',
-        last4,
-        brand,
-      };
-    } else {
-      method = {
-        id: Math.random().toString(36).slice(2, 11),
-        type: paymentType === 'apple_pay' || paymentType === 'google_pay' || paymentType === 'paypal'
-          ? paymentType
-          : 'card',
-        last4: PAYMENT_METHOD_LABELS[paymentType].last4,
-        brand: PAYMENT_METHOD_LABELS[paymentType].brand,
-      };
-    }
+    // Selection only. Card capture happens on the payment provider's hosted
+    // page once the PSP is wired — nothing sensitive exists in this form to
+    // read, which is exactly the point.
+    const method: PaymentMethod = {
+      id: Math.random().toString(36).slice(2, 11),
+      type: paymentType === 'apple_pay' || paymentType === 'google_pay' || paymentType === 'paypal'
+        ? paymentType
+        : 'card',
+      last4: PAYMENT_METHOD_LABELS[paymentType].last4,
+      brand: PAYMENT_METHOD_LABELS[paymentType].brand,
+    };
 
     setFormErrors({});
     setPaymentMethod(method);
@@ -671,76 +650,30 @@ export default function CheckoutFlow() {
                     />
                   </div>
 
-                  {paymentType === 'card' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={labelStyle} htmlFor="checkout-card-number">Card Number <span style={{ color: 'var(--grey-40)', fontWeight: 500 }}>(optional for demo)</span></label>
-                      <input
-                        id="checkout-card-number"
-                        name="cardNumber"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-number"
-                        placeholder="0000 0000 0000 0000"
-                        maxLength={23}
-                        style={{ ...inputStyle, borderColor: formErrors.cardNumber ? 'var(--color-sale)' : inputStyle.border as string }}
-                        aria-invalid={!!formErrors.cardNumber}
-                        aria-describedby={formErrors.cardNumber ? 'err-cardNumber' : undefined}
-                      />
-                      {formErrors.cardNumber && <p id="err-cardNumber" style={errorStyle}>{formErrors.cardNumber}</p>}
-                    </div>
-                    <div>
-                      <label style={labelStyle} htmlFor="checkout-card-expiry">Expiry Date</label>
-                      <input
-                        id="checkout-card-expiry"
-                        name="cardExpiry"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-exp"
-                        placeholder="MM/YY"
-                        maxLength={5}
-                        style={{ ...inputStyle, borderColor: formErrors.cardExpiry ? 'var(--color-sale)' : inputStyle.border as string }}
-                        aria-invalid={!!formErrors.cardExpiry}
-                        aria-describedby={formErrors.cardExpiry ? 'err-cardExpiry' : undefined}
-                      />
-                      {formErrors.cardExpiry && <p id="err-cardExpiry" style={errorStyle}>{formErrors.cardExpiry}</p>}
-                    </div>
-                    <div>
-                      <label style={labelStyle} htmlFor="checkout-card-cvv">CVV</label>
-                      <input
-                        id="checkout-card-cvv"
-                        name="cardCvv"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-csc"
-                        placeholder="123"
-                        maxLength={4}
-                        style={{ ...inputStyle, borderColor: formErrors.cardCvv ? 'var(--color-sale)' : inputStyle.border as string }}
-                        aria-invalid={!!formErrors.cardCvv}
-                        aria-describedby={formErrors.cardCvv ? 'err-cardCvv' : undefined}
-                      />
-                      {formErrors.cardCvv && <p id="err-cardCvv" style={errorStyle}>{formErrors.cardCvv}</p>}
-                    </div>
+                  {/* No card inputs, by design: card details belong to the
+                      payment provider's secure page, never to this site's DOM.
+                      See the PCI note at the top of this file. */}
+                  <div
+                    style={{
+                      display: 'flex', gap: '10px', alignItems: 'flex-start',
+                      padding: '14px 16px',
+                      background: 'var(--color-brand-subtle)',
+                      border: '1px solid rgba(161, 98, 7, 0.25)',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '13px',
+                      color: 'var(--brand-cyan-hover)',
+                      marginTop: 'var(--spacing-16)',
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    <Lock size={15} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+                    <span>
+                      <strong style={{ fontWeight: 700 }}>{PAYMENT_METHOD_LABELS[paymentType].display}</strong>
+                      {' '}selected. You'll confirm and pay on a secure payment page after reviewing your
+                      order — card details are never entered on this site.
+                    </span>
                   </div>
-                  )}
-
-                  {paymentType !== 'card' && (
-                    <div
-                      style={{
-                        padding: '14px 16px',
-                        background: 'var(--color-brand-subtle)',
-                        border: '1px solid rgba(0,108,73,0.25)',
-                        borderRadius: 'var(--radius-md)',
-                        fontFamily: 'var(--font-body)',
-                        fontSize: '13px',
-                        color: 'var(--brand-cyan-hover)',
-                        marginTop: 'var(--spacing-16)',
-                      }}
-                    >
-                      <strong style={{ fontWeight: 700, marginRight: '4px' }}>{PAYMENT_METHOD_LABELS[paymentType].display}</strong>
-                      selected — you'll be redirected to confirm on the next step.
-                    </div>
-                  )}
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
                     Review Order <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />

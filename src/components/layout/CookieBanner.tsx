@@ -51,7 +51,11 @@ export default function CookieBanner() {
                 </span>
               </div>
               <p id="cookie-banner-desc" style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.55, margin: 0 }}>
-                We use cookies to keep the site secure, remember your preferences, and understand how it's used. By clicking "Accept all", you agree to our{' '}
+                We use cookies to keep the site secure and remember your preferences. What we
+                store is listed in our{' '}
+                <Link to="/cookies" style={{ color: 'var(--brand-cyan)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                  cookie policy
+                </Link>; how we handle personal data is in our{' '}
                 <Link to="/privacy" style={{ color: 'var(--brand-cyan)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
                   privacy policy
                 </Link>.

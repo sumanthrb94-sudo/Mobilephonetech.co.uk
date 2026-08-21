@@ -45,10 +45,11 @@ There are two — in *Project URL* and at the end of *Project description*.
 > row-level security with a claims-based authorisation model.
 >
 > **Testing and quality**
-> • 411 unit tests
-> • Four end-to-end suites driving real Chromium: 47 customer-journey checks,
+> • 420 unit tests
+> • Six end-to-end suites driving real Chromium: 47 customer-journey checks,
 >   17 interaction checks, 98 admin and security-rule checks, 85 focus and
->   text-input checks
+>   text-input checks, 17 Content-Security-Policy conformance checks, and a
+>   9-step checkout walk that proves no card data is ever collected on-site
 > • The admin suite runs against the Firebase emulator suite, so the security
 >   rules under test are the ones actually enforced — not stubs of them
 > • Verified on desktop and mobile viewports, including WCAG 2.2 target-size

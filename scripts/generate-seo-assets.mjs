@@ -43,6 +43,9 @@ const staticRoutes = [
   { path: '/guides',                   priority: '0.5', freq: 'monthly' },
   { path: '/privacy',                  priority: '0.3', freq: 'yearly'  },
   { path: '/terms',                    priority: '0.3', freq: 'yearly'  },
+  { path: '/returns',                  priority: '0.4', freq: 'yearly'  },
+  { path: '/delivery',                 priority: '0.4', freq: 'yearly'  },
+  { path: '/cookies',                  priority: '0.2', freq: 'yearly'  },
 ];
 
 const urls = [

@@ -48,6 +48,9 @@ const WishlistPage = lazy(() => import('./components/WishlistPage'));
 const OrderHistoryPage = lazy(() => import('./components/OrderHistoryPage'));
 const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
+const ReturnsPolicy = lazy(() => import('./components/legal/ReturnsPolicy'));
+const DeliveryPolicy = lazy(() => import('./components/legal/DeliveryPolicy'));
+const CookiePolicy = lazy(() => import('./components/legal/CookiePolicy'));
 const AboutPage = lazy(() => import('./components/content/AboutPage'));
 const SustainabilityPage = lazy(() => import('./components/content/SustainabilityPage'));
 const BuyingGuidesPage = lazy(() => import('./components/content/BuyingGuidesPage'));
@@ -271,6 +274,21 @@ function AppContent() {
               <Route path="/terms" element={
                 <AnimatedPage paddingTop="var(--nav-total)">
                   <TermsOfService />
+                </AnimatedPage>
+              } />
+              <Route path="/returns" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <ReturnsPolicy />
+                </AnimatedPage>
+              } />
+              <Route path="/delivery" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <DeliveryPolicy />
+                </AnimatedPage>
+              } />
+              <Route path="/cookies" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <CookiePolicy />
                 </AnimatedPage>
               } />
               <Route path="/about" element={

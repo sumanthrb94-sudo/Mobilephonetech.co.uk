@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Mail, MapPin } from 'lucide-react';
+import { COMPANY } from '../../config/company';
 
 export default function PrivacyPolicy() {
   useEffect(() => {
@@ -39,8 +40,19 @@ export default function PrivacyPolicy() {
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6, marginBottom: '12px' }}>
               At LeHart.co.uk ("we", "our", or "us"), we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.
             </p>
+            {/* Rendered only when the real reference is set in src/config/company.ts —
+                publishing an invented ICO number is a false statement, not a placeholder. */}
+            {COMPANY.icoRegistration && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
+                We are registered with the Information Commissioner's Office (ICO) under registration number: <strong>{COMPANY.icoRegistration}</strong>.
+              </p>
+            )}
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
-              We are registered with the Information Commissioner's Office (ICO) under registration number: <strong>ZA123456</strong> (Mock Registration).
+              The services that process personal data on our behalf are: <strong>Google Firebase</strong> (accounts,
+              sign-in and our database, including Google sign-in), <strong>Vercel</strong> (website hosting), and our
+              payment provider once checkout goes live — card details are entered on the payment provider's secure
+              page and never touch this site. If we introduce an email service for order confirmations or marketing,
+              it will be named here before it receives any personal data.
             </p>
           </section>
 

@@ -1,4 +1,5 @@
 import { adminDb } from './_firebaseAdmin.js';
+import { enforceRateLimit } from './_rateLimit.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -6,6 +7,8 @@ export default async function handler(req: any, res: any) {
     return getReviews(req, res);
   }
   if (req.method === 'POST') {
+    // Unauthenticated write — cap it. Review floods are the classic abuse here.
+    if (!enforceRateLimit(req, res, 'reviews', { limit: 5, windowMs: 60_000 })) return;
     return postReview(req, res);
   }
   return res.status(405).json({ error: 'Method not allowed' });

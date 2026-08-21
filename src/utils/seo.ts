@@ -113,11 +113,11 @@ export function productJsonLd(p: Product) {
         },
       },
     },
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      reviewCount: '342',
-    },
+    // No aggregateRating: emitting one requires real reviews to back it.
+    // The 4.8-from-342 block that used to sit here was invented — which is
+    // both the fake-review conduct the DMCC Act 2024 prohibits and the kind
+    // of structured-data misrepresentation Google issues manual actions for.
+    // Reinstate only when computed from genuine, verified purchase reviews.
   };
 }
 

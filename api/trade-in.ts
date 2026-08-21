@@ -1,4 +1,5 @@
 import { adminDb } from './_firebaseAdmin.js';
+import { enforceRateLimit } from './_rateLimit.js';
 
 const VALID_CONDITIONS = ['Pristine', 'Excellent', 'Good', 'Fair'] as const;
 type Condition = (typeof VALID_CONDITIONS)[number];
@@ -47,6 +48,9 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // Unauthenticated write — cap it. A human requests a handful of quotes.
+  if (!enforceRateLimit(req, res, 'trade-in', { limit: 10, windowMs: 60_000 })) return;
 
   const { brand, model, condition, email, storage, issues } = req.body ?? {};
 

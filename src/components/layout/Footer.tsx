@@ -1,5 +1,6 @@
 import { Facebook, Twitter, Instagram, Youtube, RefreshCw, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { COMPANY } from '../../config/company';
 
 /**
  * Footer — BM spec Section 6
@@ -36,9 +37,9 @@ const LINK_COLS = [
     links: [
       { label: 'Help & FAQ',            href: '/faq' },
       { label: 'Track my order',        href: '/orders' },
-      { label: 'Returns & warranty',    href: '/faq' },
+      { label: 'Returns & warranty',    href: '/returns' },
+      { label: 'Delivery',              href: '/delivery' },
       { label: 'Trade-in programme',    href: '/#trade-in' },
-      { label: 'Payment options',       href: '/faq' },
     ],
   },
 ];
@@ -53,7 +54,9 @@ const SOCIALS = [
 const LEGAL = [
   { label: 'Privacy policy', href: '/privacy' },
   { label: 'Terms of service', href: '/terms' },
-  { label: 'Grading guide', href: '/guides' },
+  { label: 'Returns & cancellations', href: '/returns' },
+  { label: 'Delivery', href: '/delivery' },
+  { label: 'Cookies', href: '/cookies' },
   { label: 'Sustainability', href: '/sustainability' },
 ];
 
@@ -353,7 +356,13 @@ export default function Footer() {
                 color: '#9ca3af',
               }}
             >
-              © 2026 LeHart.co.uk Ltd — Registered in England &amp; Wales · All rights reserved
+              {/* Never invent a registration: the legal identity renders only
+                  once the real details are set in src/config/company.ts. */}
+              © 2026 {COMPANY.legalName || COMPANY.tradingName}
+              {COMPANY.companyNumber ? ` — Registered in England & Wales, company no. ${COMPANY.companyNumber}` : ''}
+              {COMPANY.registeredOffice ? ` · Registered office: ${COMPANY.registeredOffice}` : ''}
+              {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
+              {' '}· All rights reserved
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
               {LEGAL.map((item) => (

@@ -97,6 +97,24 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://lehart.co.uk/returns</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://lehart.co.uk/delivery</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://lehart.co.uk/cookies</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  <url>
     <loc>https://lehart.co.uk/product/apple-iphone-15-plus-unlocked</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>weekly</changefreq>
