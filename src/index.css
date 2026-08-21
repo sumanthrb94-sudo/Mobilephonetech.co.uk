@@ -1463,6 +1463,318 @@ html.is-checkout .ai-fab {
   }
 }
 
+/* ── Operations Hub ──────────────────────────────────────────────
+   Structure follows the InventoryManager console so staff moving between
+   the two tools recognise the layout; the palette is LeHart's own. The
+   mono micro-label is a system stack — no webfont, no network cost. */
+
+.ops-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-20);
+}
+
+.ops-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ops-eyebrow {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--grey-50);
+  margin: 0;
+}
+
+.ops-title {
+  font-family: var(--font-sans);
+  font-size: clamp(22px, 3.4vw, 30px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--black);
+  margin: 3px 0 0;
+}
+
+.ops-meta {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--grey-50);
+}
+
+.ops-alert {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--color-sale-subtle);
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+}
+
+/* KPI strip — auto-fit so it degrades to 2-up and 1-up without breakpoints. */
+.ops-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.ops-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: var(--grey-0);
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-lg);
+  padding: 15px 16px;
+}
+
+.ops-kpi-icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  margin-bottom: 3px;
+}
+
+.ops-kpi-ink  { background: var(--grey-10); color: var(--grey-70); }
+.ops-kpi-gold { background: var(--color-brand-subtle); color: var(--brand-cyan-hover); }
+.ops-kpi-warn { background: var(--color-sale-subtle); color: var(--color-sale); }
+
+.ops-kpi-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--grey-50);
+}
+
+.ops-kpi-value {
+  font-family: var(--font-sans);
+  font-size: 23px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Panels */
+.ops-panel {
+  background: var(--grey-0);
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-lg);
+  padding: 17px 18px;
+}
+
+.ops-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.ops-panel-title {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--black);
+  margin: 0;
+}
+
+.ops-panel-action {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 24px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--brand-cyan-hover);
+  text-decoration: none;
+}
+
+.ops-panel-action:hover { text-decoration: underline; }
+
+.ops-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 900px) {
+  .ops-split { grid-template-columns: 1fr 1fr; }
+}
+
+/* Lists */
+.ops-list { list-style: none; margin: 0; padding: 0; }
+
+.ops-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.ops-list-row:last-child { border-bottom: none; }
+
+.ops-list-name {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--black);
+  text-decoration: none;
+  line-height: 24px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.ops-list-name:hover { color: var(--brand-cyan-hover); }
+
+.ops-pill {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ops-pill-out     { background: var(--color-sale-subtle); color: #991b1b; }
+.ops-pill-low     { background: var(--color-warn-subtle); color: #92400e; }
+.ops-pill-neutral { background: var(--grey-10); color: var(--grey-70); }
+
+/* Bars */
+.ops-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+
+.ops-bar-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 10px;
+}
+
+.ops-bar-label {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--grey-70);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ops-bar-track {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--grey-10);
+  overflow: hidden;
+}
+
+.ops-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--brand-cyan);
+}
+
+.ops-bar-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--grey-60);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Quick actions */
+.ops-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.ops-action {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--black);
+  color: var(--grey-0);
+  border-radius: var(--radius-lg);
+  padding: 17px 18px;
+  text-decoration: none;
+  transition: transform 0.14s ease, background 0.14s ease;
+}
+
+.ops-action:hover { background: var(--grey-90); transform: translateY(-2px); }
+.ops-action .ops-eyebrow { color: var(--brand-cyan-on-dark); }
+.ops-action .ops-meta { color: var(--grey-30); }
+
+.ops-action-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--brand-cyan-on-dark);
+  margin-bottom: 7px;
+}
+
+.ops-action-title {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Empty and loading states */
+.ops-empty {
+  display: grid;
+  place-items: center;
+  gap: 9px;
+  padding: 26px 0;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--grey-50);
+}
+
+.ops-skel {
+  display: block;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--grey-10) 25%, var(--grey-5) 50%, var(--grey-10) 75%);
+  background-size: 200% 100%;
+  animation: ops-shimmer 1.3s ease-in-out infinite;
+}
+
+@keyframes ops-shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ops-skel { animation: none; }
+  .ops-action:hover { transform: none; }
+}
+
 /* Row actions: invisible until pointed at, so the row stays quiet. Hover is
    the only cue that changes, and focus-visible keeps keyboard parity. */
 .admin-ghost:hover:not(:disabled),

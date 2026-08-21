@@ -30,7 +30,9 @@ There are two — in *Project URL* and at the end of *Project description*.
 > Trade-in quotes and an AI buying advisor round out the customer side.
 >
 > **Staff back office**
-> An inventory console built for the shop's own team: create and edit products,
+> An Operations Hub dashboard — stock valuation and unit KPIs, a stock-by-brand
+> breakdown, a restocking work queue and recent orders — over an inventory
+> console built for the shop's own team: create and edit products,
 > upload images to cloud storage, adjust stock inline without leaving the list,
 > and filter by brand or stock state across a paginated catalogue. Access is
 > enforced by Firebase custom claims plus hand-written Firestore and Storage
@@ -107,7 +109,8 @@ but they carry the story when someone only skims the gallery.
 | `02-catalogue.png` | Faceted catalogue — filtering 133 products down to 53 by brand, with active filters shown as removable chips. |
 | `03-product-detail.png` | Product page — condition grade, battery health, warranty, colour and storage variants, and instalment options. |
 | `04-checkout.png` | Checkout — guest or account, address capture with postcode lookup, and a live order summary with VAT. |
-| `05-admin-inventory.png` | Staff inventory console — search, brand and stock filters, inline stock editing, and per-row edit and delete. |
+| `05-admin-dashboard.png` | Operations Hub — stock KPIs, stock-by-brand breakdown, a restocking queue and recent orders. |
+| `06-admin-inventory.png` | Staff inventory console — search, brand and stock filters, inline stock editing, and per-row edit and delete. |
 
 ---
 

@@ -163,13 +163,20 @@ function loadCatalogue(limit) {
   }));
 }
 
+const DEMO_ORDERS = [
+  { id: 'ord-1041', total: 592.8, status: 'shipped',   createdAt: '2026-08-19T10:12:00Z', itemCount: 1, shippingAddress: { fullName: 'Alex Morgan' }, items: [{ id: 'a' }] },
+  { id: 'ord-1040', total: 269.0, status: 'confirmed', createdAt: '2026-08-18T16:44:00Z', itemCount: 1, shippingAddress: { fullName: 'Priya Shah' }, items: [{ id: 'b' }] },
+  { id: 'ord-1039', total: 928.0, status: 'delivered', createdAt: '2026-08-17T09:03:00Z', itemCount: 2, shippingAddress: { fullName: 'Tom Whitfield' }, items: [{ id: 'c' }, { id: 'd' }] },
+];
+
 async function captureAdmin() {
-  const { seed, seedExtraProducts, waitForEmulators, PASSWORD } =
+  const { seed, seedExtraProducts, seedOrders, waitForEmulators, PASSWORD } =
     await import('../e2e/emulator-seed.mjs');
 
   await waitForEmulators();
   await seed();
   await seedExtraProducts(loadCatalogue(26));
+  await seedOrders(DEMO_ORDERS);
 
   const { browser, page } = await launch();
 
@@ -189,11 +196,17 @@ async function captureAdmin() {
   await page.locator('form').getByRole('button', { name: /^(sign in|log in)$/i }).first().click();
   await page.waitForTimeout(3500);
 
+  await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' });
+  await page.locator('.ops-bar-row').first().waitFor({ state: 'visible', timeout: 20000 });
+  await page.waitForTimeout(600);
+  await dismissChrome(page);
+  await shot(page, '05-admin-dashboard');
+
   await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
   await page.locator('.admin-row').first().waitFor({ state: 'visible', timeout: 20000 });
   await page.waitForTimeout(600);
   await dismissChrome(page);
-  await shot(page, '05-admin-inventory');
+  await shot(page, '06-admin-inventory');
 
   await browser.close();
 }

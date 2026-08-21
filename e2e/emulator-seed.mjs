@@ -176,6 +176,18 @@ export async function seedExtraProducts(products) {
   }
 }
 
+/**
+ * Write a few orders. The dashboard's revenue KPI and recent-orders panel have
+ * nothing to show without them, and "no orders yet" is a different code path
+ * from "orders rendered" — both are worth being able to exercise.
+ */
+export async function seedOrders(orders) {
+  for (const o of orders) {
+    const { id, ...rest } = o;
+    await writeDoc('orders', id, rest);
+  }
+}
+
 /** Read a product back, so a test can assert what actually landed in the DB. */
 export async function getProduct(id) {
   const res = await fetch(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products/${id}`, { headers: authHeaders });

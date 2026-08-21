@@ -257,6 +257,125 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
   return { products: rows.slice((page - 1) * pageSize, page * pageSize), total };
 }
 
+// ── Dashboard ──────────────────────────────────────────────────────
+
+export interface BrandStock {
+  brand: string;
+  units: number;
+  value: number;
+}
+
+export interface RecentOrder {
+  id: string;
+  total: number;
+  status: string;
+  createdAt: string;
+  customer: string;
+  itemCount: number;
+}
+
+export interface DashboardStats {
+  skuCount: number;
+  unitsInStock: number;
+  /** Retail value of stock on hand, in pounds. Not cost — LeHart does not
+   *  record what each unit was bought for, which is also why the VAT margin
+   *  scheme cannot be worked out from this data yet. */
+  stockValue: number;
+  outOfStock: number;
+  lowStock: number;
+  byBrand: BrandStock[];
+  needsAttention: Product[];
+  orderCount: number;
+  orderRevenue: number;
+  recentOrders: RecentOrder[];
+  /** True when the orders read failed — so the panel can say "unavailable"
+   *  rather than draw a confident zero. */
+  ordersUnavailable: boolean;
+}
+
+/**
+ * One read of the catalogue plus one of orders, aggregated in memory.
+ *
+ * Firestore has no GROUP BY and no SUM, so every figure here would otherwise
+ * be a separate aggregation query or a maintained counter document. At a few
+ * hundred products that is more moving parts than it is worth.
+ */
+export async function loadDashboardStats(): Promise<DashboardStats> {
+  const snap = await getDocs(query(collection(db, COL.products), fsLimit(1000)));
+  const products = snap.docs.map(d => docToProduct(d.id, d.data()));
+
+  const brands = new Map<string, BrandStock>();
+  let unitsInStock = 0;
+  let stockValue = 0;
+  let outOfStock = 0;
+  let lowStock = 0;
+
+  for (const p of products) {
+    const units = Math.max(0, p.stock ?? 0);
+    const value = units * (p.price ?? 0);
+    unitsInStock += units;
+    stockValue += value;
+
+    if (units === 0) outOfStock++;
+    else if (units <= LOW_STOCK_THRESHOLD) lowStock++;
+
+    const row = brands.get(p.brand) ?? { brand: p.brand, units: 0, value: 0 };
+    row.units += units;
+    row.value += value;
+    brands.set(p.brand, row);
+  }
+
+  // Out of stock first, then thinnest stock — the order you would work them in.
+  const needsAttention = products
+    .filter(p => (p.stock ?? 0) <= LOW_STOCK_THRESHOLD)
+    .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
+    .slice(0, 6);
+
+  let orderCount = 0;
+  let orderRevenue = 0;
+  let recentOrders: RecentOrder[] = [];
+  let ordersUnavailable = false;
+
+  try {
+    const orderSnap = await getDocs(query(collection(db, COL.orders), fsLimit(500)));
+    const rows = orderSnap.docs.map(d => {
+      const o = d.data() as Record<string, unknown>;
+      const addr = (o.shippingAddress ?? {}) as { fullName?: string };
+      return {
+        id: d.id,
+        total: Number(o.total ?? 0),
+        status: String(o.status ?? 'pending'),
+        createdAt: String(o.createdAt ?? ''),
+        customer: addr.fullName ?? 'Guest',
+        itemCount: Array.isArray(o.items) ? o.items.length : 0,
+      };
+    });
+    orderCount = rows.length;
+    orderRevenue = rows.reduce((sum, o) => sum + o.total, 0);
+    recentOrders = rows
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, 5);
+  } catch {
+    // An admin who cannot read orders is a rules problem worth surfacing,
+    // but it must not take the whole dashboard down with it.
+    ordersUnavailable = true;
+  }
+
+  return {
+    skuCount: products.length,
+    unitsInStock,
+    stockValue,
+    outOfStock,
+    lowStock,
+    byBrand: [...brands.values()].sort((a, b) => b.units - a.units),
+    needsAttention,
+    orderCount,
+    orderRevenue,
+    recentOrders,
+    ordersUnavailable,
+  };
+}
+
 export async function getProduct(id: string): Promise<Product | null> {
   const snap = await getDoc(doc(db, COL.products, id));
   return snap.exists() ? docToProduct(snap.id, snap.data()) : null;

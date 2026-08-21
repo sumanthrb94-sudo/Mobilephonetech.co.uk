@@ -58,6 +58,7 @@ const AccountPage = lazy(() => import('./components/AccountPage'));
 // Admin console — lazy so the back-store bundle never ships to shoppers.
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./components/admin/DashboardPage'));
 const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
 const ProductEditor = lazy(() => import('./components/admin/ProductEditor'));
 
@@ -315,7 +316,7 @@ function AppContent() {
                   <AdminLayout />
                 </AdminRoute>
               }>
-                <Route index element={<InventoryPage />} />
+                <Route index element={<AdminDashboard />} />
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />

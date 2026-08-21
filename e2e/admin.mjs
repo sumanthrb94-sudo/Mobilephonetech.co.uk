@@ -110,7 +110,37 @@ async function run(view, contextOpts) {
 
   const txt = async () => (await page.locator('body').innerText()).replace(/\s+/g, ' ');
 
-  // ── 1. Dashboard loads for an admin ──
+  // ── 0. Operations Hub ──
+  // The seed fixture is two products: one with 4 in stock at £759, one out of
+  // stock at £399. Every figure below is therefore checked against a number
+  // computed by hand, not against whatever the page happens to render.
+  await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' });
+  await dismissCookies(page);
+  await settled(page, '.ops-bar-row');
+  const hub = await txt();
+
+  rec(view, 'Operations Hub is the admin landing page', /OPERATIONS HUB/i.test(hub), hub.slice(0, 80));
+  rec(view, 'Product count KPI is right', /PRODUCTS 2\b/i.test(hub), hub.slice(0, 160));
+  rec(view, 'Units-in-stock KPI is right', /UNITS IN STOCK 4\b/i.test(hub));
+  // 4 x £759 = £3,036, and the out-of-stock item contributes nothing.
+  rec(view, 'Stock value KPI is right', /STOCK VALUE £3,036/i.test(hub), hub.slice(0, 220));
+  rec(view, 'Needs-attention KPI counts both bands', /NEEDS ATTENTION 2\b/i.test(hub) && /1 out · 1 low/.test(hub));
+
+  const bars = await page.locator('.ops-bar-row').count();
+  rec(view, 'Stock-by-brand chart renders a bar per brand', bars === 2, `${bars} bars`);
+
+  // A zero-unit brand must draw no fill at all — a stub of bar reads as "some".
+  const zeroBarWidth = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.ops-bar-row')];
+    const samsung = rows.find(r => /Samsung/i.test(r.textContent || ''));
+    return samsung?.querySelector('.ops-bar-fill')?.getBoundingClientRect().width ?? -1;
+  });
+  rec(view, 'A brand with zero stock draws no bar', zeroBarWidth === 0, `${zeroBarWidth}px`);
+
+  rec(view, 'Restocking queue lists the out-of-stock item', /Samsung Galaxy S23/.test(hub) && /OUT OF STOCK/i.test(hub));
+  await shot(page, `${view}-dashboard-hub`);
+
+  // ── 1. Inventory loads for an admin ──
   await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
   await dismissCookies(page);
   await settled(page, '.admin-row');
