@@ -27,7 +27,8 @@
     "create-users": "node scripts/create-users.mjs",
     "emulators": "firebase emulators:start --project demo-lehart --only auth,firestore,storage",
     "e2e:csp": "node e2e/csp.mjs",
-    "e2e:checkout": "node e2e/checkout.mjs"
+    "e2e:checkout": "node e2e/checkout.mjs",
+    "e2e:parallel": "node e2e/parallel.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
