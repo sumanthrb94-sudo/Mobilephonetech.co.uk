@@ -437,6 +437,32 @@
   </section>
 
   <section>
+    <h2>Live status</h2>
+    <p>Checked directly against the deployment, not inferred.</p>
+
+    <div class="audit">
+      <div class="audit-item">
+        <span class="chip chip-live">Up</span>
+        <h3>The site is deployed and healthy</h3>
+        <p>Production is served from <code>mobilephonetech-co-uk.vercel.app</code> on Node 24. Firebase is connected, the service account is configured, auth is reachable and has users. No runtime errors in the last seven days.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-demo">Broken</span>
+        <h3>The production database has no products in it</h3>
+        <p><code>/api/health</code> reports <code>productRows: 0</code> and <code>/api/products</code> returns an empty list. The catalogue seed was never run.</p>
+        <p>The shop still looks full, which is why this has gone unnoticed: the storefront falls back to the catalogue bundled into the JavaScript when Firestore returns nothing. So <strong>every shopper is browsing a hardcoded list, while the admin console manages an empty database</strong>. Stock edits, price changes and new products cannot reach customers, because customers are not reading from the database at all.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-missing">Not attached</span>
+        <h3>lehart.co.uk does not point anywhere</h3>
+        <p>The domain is set as the canonical URL throughout the code and in the sitemap, but it is not attached to the Vercel project. Every canonical tag, Open Graph URL and sitemap entry currently advertises an address that does not resolve — which also means search engines are being pointed at a dead domain.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <h2>What's actually built</h2>
     <p>This matters more than the stack question, because it's the thing that decides your timeline. I went through the code rather than going from memory.</p>
 
