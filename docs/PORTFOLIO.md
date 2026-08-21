@@ -47,7 +47,7 @@ There are two — in *Project URL* and at the end of *Project description*.
 > **Testing and quality**
 > • 411 unit tests
 > • Four end-to-end suites driving real Chromium: 47 customer-journey checks,
->   17 interaction checks, 82 admin and security-rule checks, 85 focus and
+>   17 interaction checks, 98 admin and security-rule checks, 85 focus and
 >   text-input checks
 > • The admin suite runs against the Firebase emulator suite, so the security
 >   rules under test are the ones actually enforced — not stubs of them
