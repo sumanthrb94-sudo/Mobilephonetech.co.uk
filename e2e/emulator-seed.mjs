@@ -246,3 +246,35 @@ export async function attemptProductWriteAs(email, productId, fields) {
   );
   return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
 }
+
+/**
+ * Attempt to post a support message as a given user, claiming a given sender.
+ *
+ * The rule worth proving is that a customer cannot post a message labelled
+ * `sender: 'admin'` — otherwise a shopper could manufacture a promise the shop
+ * never made and point at it later.
+ */
+export async function attemptMessageAs(email, conversationId, sender) {
+  const idToken = await signInForToken(email);
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/conversations/${conversationId}/messages`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({
+        fields: toFields({ body: 'rules probe', sender, senderName: 'probe', at: new Date().toISOString() }),
+      }),
+    },
+  );
+  return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
+}
+
+/** Attempt to read another customer's return. Must be refused. */
+export async function attemptReturnReadAs(email, rmaId) {
+  const idToken = await signInForToken(email);
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/returns/${rmaId}`,
+    { headers: { Authorization: `Bearer ${idToken}` } },
+  );
+  return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
+}

@@ -57,12 +57,15 @@ const BuyingGuidesPage = lazy(() => import('./components/content/BuyingGuidesPag
 const FaqPage = lazy(() => import('./components/content/FaqPage'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
+const SupportChat = lazy(() => import('./components/SupportChat'));
 const AccountPage = lazy(() => import('./components/AccountPage'));
 // Admin console — lazy so the back-store bundle never ships to shoppers.
 const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('./components/admin/DashboardPage'));
 const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
+const ReturnsPage = lazy(() => import('./components/admin/ReturnsPage'));
+const SupportInbox = lazy(() => import('./components/admin/SupportInbox'));
 const ProductEditor = lazy(() => import('./components/admin/ProductEditor'));
 
 
@@ -338,6 +341,8 @@ function AppContent() {
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
+                <Route path="returns" element={<ReturnsPage />} />
+                <Route path="support" element={<SupportInbox />} />
               </Route>
 
               {/* Wildcard — catches every unmatched URL so a typo
@@ -360,6 +365,13 @@ function AppContent() {
       {!isAdminRoute && (
         <Suspense fallback={null}>
           <AIAssistant />
+        </Suspense>
+      )}
+      {/* Human support, separate from the AI advisor: the assistant answers
+          product questions, this reaches a person about an order. */}
+      {!isAdminRoute && !isCheckoutRoute && (
+        <Suspense fallback={null}>
+          <SupportChat />
         </Suspense>
       )}
       <Toast />

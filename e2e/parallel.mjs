@@ -18,7 +18,10 @@
 // turn-taking. Assertions cross sessions only at explicit joins.
 import { chromium } from 'playwright';
 import { resolveChromium } from './chromium-path.mjs';
-import { seed, waitForEmulators, getProduct, PASSWORD, CUSTOMER_EMAIL } from './emulator-seed.mjs';
+import {
+  seed, waitForEmulators, getProduct, attemptMessageAs, attemptReturnReadAs,
+  PASSWORD, CUSTOMER_EMAIL, ADMIN_EMAIL,
+} from './emulator-seed.mjs';
 
 const BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
 const EXE = resolveChromium();
@@ -54,7 +57,7 @@ async function signIn(page, identifier) {
 }
 
 await waitForEmulators();
-await seed();
+const { customerUid } = await seed();
 
 const browser = await chromium.launch({ ...(EXE ? { executablePath: EXE } : {}), args: ['--no-sandbox'] });
 const adminCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -203,6 +206,114 @@ await cust.goto(`${BASE}/product/google-pixel-9-parallel`, { waitUntil: 'domcont
 await cust.waitForTimeout(2200);
 const newPdp = await text(cust);
 rec('customer', 'New product PDP renders with its price', /Pixel 9 Parallel/.test(newPdp) && /£349/.test(newPdp));
+
+// ── Phase G: the customer raises a return; the admin works it ──
+await cust.goto(`${BASE}/orders`, { waitUntil: 'domcontentloaded' });
+await cust.waitForTimeout(2500);
+const startReturn = cust.getByRole('button', { name: /start a return/i }).first();
+rec('customer', 'Return can be started from the order', await startReturn.count() > 0);
+await startReturn.click();
+await cust.waitForTimeout(900);
+
+// Reason → outcome → details. Replacement is the path that did not exist
+// before, so it is the one worth walking.
+await cust.getByRole('radio', { name: /faulty or not working/i }).first().check();
+await cust.getByRole('button', { name: /^continue$/i }).first().click();
+await cust.waitForTimeout(600);
+
+const replacement = cust.getByRole('radio', { name: /replacement/i }).first();
+rec('customer', 'Replacement is offered as an outcome', await replacement.count() > 0);
+await replacement.check();
+await cust.getByRole('button', { name: /^continue$/i }).first().click();
+await cust.waitForTimeout(600);
+
+await cust.locator('#return-note').fill('Screen flickers after ten minutes of use.');
+await cust.getByRole('button', { name: /submit return/i }).first().click();
+await cust.waitForTimeout(3000);
+
+const confirmation = await text(cust);
+const rmaMatch = confirmation.match(/RMA-[A-Z2-9]{6}/);
+rec('customer', 'Return created and an RMA reference shown', Boolean(rmaMatch), confirmation.slice(0, 140));
+const rmaId = rmaMatch?.[0] ?? '';
+
+// The admin sees it in the queue and works it through to resolved.
+await admin.goto(`${BASE}/admin/returns`, { waitUntil: 'domcontentloaded' });
+await admin.waitForTimeout(2500);
+const queue = await text(admin);
+rec('admin', "Customer's return appears in the returns queue", rmaId !== '' && queue.includes(rmaId), queue.slice(0, 160));
+rec('admin', 'Queue shows the requested outcome and legal basis',
+  /replacement/i.test(queue) && /30-day reject/i.test(queue));
+
+// Each step waits for the NEXT action to exist rather than for a fixed delay.
+// The queue reloads from Firestore after every transition, and a fixed wait
+// raced that re-render — clicking a button belonging to the previous state,
+// which the status-machine guard then correctly refused.
+const step = async (clickName, expectNext) => {
+  await admin.getByRole('button', { name: clickName }).first().click();
+  if (expectNext) {
+    await admin.getByRole('button', { name: expectNext }).first()
+      .waitFor({ state: 'visible', timeout: 20000 });
+  }
+};
+await step(/approve/i, /mark received/i);
+await step(/mark received/i, /^resolve$/i);
+await step(/^resolve$/i, null);
+
+// Resolved returns leave the default "Open" filter, which is itself the
+// proof the transition committed rather than silently failing.
+await admin.getByRole('button', { name: /^resolved$/i }).first().click();
+await admin.waitForTimeout(2000);
+const resolvedList = await text(admin);
+rec('admin', 'Return reaches resolved and leaves the open queue',
+  rmaId !== '' && resolvedList.includes(rmaId), resolvedList.slice(0, 160));
+
+// Back on the customer's side, the order now carries the return's live state.
+await cust.goto(`${BASE}/orders`, { waitUntil: 'domcontentloaded' });
+await cust.waitForTimeout(2500);
+const orderPage = await text(cust);
+rec('customer', 'Order shows the resolved return, not a second Start button',
+  orderPage.includes(rmaId) && /resolved/i.test(orderPage), orderPage.slice(0, 160));
+
+// ── Phase H: live chat both ways ──────────────────────────────
+await cust.getByRole('button', { name: /open support chat/i }).first().click();
+await cust.waitForTimeout(1500);
+await cust.locator('#support-input').fill('Hi — when will my replacement ship?');
+await cust.getByRole('button', { name: /send message/i }).first().click();
+await cust.waitForTimeout(2000);
+rec('customer', 'Customer message appears in their thread',
+  /when will my replacement ship/i.test(await text(cust)));
+
+await admin.goto(`${BASE}/admin/support`, { waitUntil: 'domcontentloaded' });
+await admin.waitForTimeout(2500);
+const inbox = await text(admin);
+rec('admin', "Customer's message reaches the support inbox",
+  /when will my replacement ship/i.test(inbox) || /Demo Customer/i.test(inbox), inbox.slice(0, 160));
+
+await admin.locator('.support-thread').first().click();
+await admin.waitForTimeout(1500);
+await admin.locator('#admin-reply').fill('Tomorrow, tracked. Sorry for the trouble.');
+await admin.getByRole('button', { name: /send reply/i }).first().click();
+await admin.waitForTimeout(2500);
+
+// The customer's panel is still open — the reply must land without a reload.
+await cust.waitForTimeout(2500);
+rec('customer', "Admin's reply arrives live, without a refresh",
+  /tomorrow, tracked/i.test(await text(cust)));
+
+// ── Phase I: the rules, probed directly rather than assumed ────
+// The UI never offers these, which is exactly why they are worth testing:
+// a determined caller skips the UI entirely.
+const impersonation = await attemptMessageAs(CUSTOMER_EMAIL, customerUid, 'admin');
+rec('rules', 'Customer cannot post a message labelled as staff',
+  impersonation.startsWith('DENIED'), impersonation);
+
+const ownMessage = await attemptMessageAs(CUSTOMER_EMAIL, customerUid, 'customer');
+rec('rules', 'Customer can post as themselves (control)', ownMessage === 'ALLOWED', ownMessage);
+
+if (rmaId) {
+  const adminRead = await attemptReturnReadAs(ADMIN_EMAIL, rmaId);
+  rec('rules', 'Admin can read any return (control)', adminRead === 'ALLOWED', adminRead);
+}
 
 rec('admin', 'No uncaught errors in the admin session', errors.admin.length === 0, errors.admin.join(' | '));
 rec('customer', 'No uncaught errors in the customer session', errors.customer.length === 0, errors.customer.join(' | '));

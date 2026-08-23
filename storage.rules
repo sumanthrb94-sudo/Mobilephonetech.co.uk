@@ -32,6 +32,19 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+    // Return evidence photos. Unlike product imagery these are NOT public:
+    // a photo of a fault often shows the customer's home, so only the owner
+    // and staff can read them.
+    match /return-photos/{userId}/{fileName} {
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && isImage()
+                    && withinSizeLimit();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

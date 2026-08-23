@@ -73,7 +73,11 @@ export const COL = {
   reviews: 'reviews',
   tradeInQuotes: 'tradeInQuotes',
   newsletter: 'newsletterSubscribers',
+  returns: 'returns',
+  conversations: 'conversations',
   // Per-user subcollections under users/{uid}
   cart: 'cart',
   wishlist: 'wishlist',
+  // Subcollection under conversations/{uid}
+  messages: 'messages',
 } as const;

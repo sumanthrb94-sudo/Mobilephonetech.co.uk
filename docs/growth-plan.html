@@ -1,0 +1,473 @@
+<title>LeHart Growth Levers</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Public+Sans:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --paper:        #F3F2EE;
+    --surface:      #FCFBF9;
+    --surface-sunk: #E9E7E1;
+    --ink:          #17171A;
+    --ink-2:        #4C4B52;
+    --ink-3:        #7C7A83;
+    --rule:         #DEDCD6;
+    --rule-strong:  #C3C0B8;
+    --accent:       #6B3FA0;
+    --accent-soft:  #EDE6F5;
+    --now:          #3B6742;
+    --now-soft:     #E5EDE4;
+    --next:         #8A5A0B;
+    --next-soft:    #F5EEDD;
+    --later:        #4A5B7A;
+    --later-soft:   #E6EAF1;
+
+    --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  :root:not([data-theme="light"]) { color-scheme: light; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:        #121215;
+      --surface:      #1B1B20;
+      --surface-sunk: #0D0D10;
+      --ink:          #ECEBE7;
+      --ink-2:        #ABA9B2;
+      --ink-3:        #7E7C86;
+      --rule:         #2B2B31;
+      --rule-strong:  #3F3E46;
+      --accent:       #B79BE0;
+      --accent-soft:  #241B33;
+      --now:          #7FB587;
+      --now-soft:     #1A2A1D;
+      --next:         #D9B063;
+      --next-soft:    #2C2617;
+      --later:        #93A8C9;
+      --later-soft:   #1A2130;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:        #121215;
+    --surface:      #1B1B20;
+    --surface-sunk: #0D0D10;
+    --ink:          #ECEBE7;
+    --ink-2:        #ABA9B2;
+    --ink-3:        #7E7C86;
+    --rule:         #2B2B31;
+    --rule-strong:  #3F3E46;
+    --accent:       #B79BE0;
+    --accent-soft:  #241B33;
+    --now:          #7FB587;
+    --now-soft:     #1A2A1D;
+    --next:         #D9B063;
+    --next-soft:    #2C2617;
+    --later:        #93A8C9;
+    --later-soft:   #1A2130;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 1.25rem 5rem;
+  }
+
+  .wrap { max-width: 56rem; margin: 0 auto; }
+
+  header.masthead {
+    padding: 4rem 0 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2.3rem, 6vw, 3.5rem);
+    line-height: 1.02;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    font-family: var(--display);
+    font-size: clamp(1.05rem, 2.4vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 38rem;
+    margin: 0;
+  }
+
+  section { padding: 3rem 0 0; display: flex; flex-direction: column; gap: 1.1rem; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(1.5rem, 3.4vw, 2rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .masthead + section h2 { border-top: none; padding-top: 0; }
+
+  p { margin: 0; max-width: 40rem; }
+  strong { font-weight: 700; }
+
+  a { color: var(--accent); text-underline-offset: 0.15em; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.04em 0.32em;
+  }
+
+  /* ── Lever cards ── */
+
+  .levers { display: flex; flex-direction: column; gap: 0; border-top: 1px solid var(--rule); }
+
+  .lever {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .lever-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .lever-head h3 {
+    font-family: var(--body);
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .lever p { font-size: 0.95rem; color: var(--ink-2); max-width: 44rem; }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.22em 0.55em;
+    border-radius: 3px;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+
+  .chip-now   { background: var(--now-soft);   color: var(--now);   border-color: var(--now); }
+  .chip-next  { background: var(--next-soft);  color: var(--next);  border-color: var(--next); }
+  .chip-later { background: var(--later-soft); color: var(--later); border-color: var(--later); }
+
+  .cost {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ── Stack table ── */
+
+  .scroller { overflow-x: auto; border: 1px solid var(--rule-strong); background: var(--surface); }
+
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: 0.9rem; }
+
+  thead th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 400;
+    padding: 0.75rem 0.95rem;
+    background: var(--surface-sunk);
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.8rem 0.95rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-2);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  td.pick { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  td.free { font-family: var(--mono); font-size: 0.8rem; color: var(--now); white-space: nowrap; }
+
+  ul { margin: 0; padding-left: 1.15rem; max-width: 42rem; }
+  li { margin-bottom: 0.45rem; }
+  li::marker { color: var(--ink-3); }
+
+  .callout {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 1.15rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    max-width: 44rem;
+  }
+
+  .callout p { max-width: none; }
+  .callout p:first-child { font-family: var(--display); font-size: 1.15rem; font-weight: 500; line-height: 1.45; }
+
+  .caveat {
+    margin-top: 3rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--next-soft);
+    border: 1px solid var(--next);
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    max-width: 44rem;
+  }
+
+  .caveat .eyebrow { color: var(--next); margin-bottom: 0.5rem; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Growth</p>
+    <h1>LeHart Growth Levers</h1>
+    <p class="standfirst">Where a refurbished-phone shop actually compounds — ordered by what returns most per pound, not by what is most fun to build.</p>
+  </header>
+
+  <section>
+    <h2>The one that matters most</h2>
+
+    <div class="callout">
+      <p>Repeat purchase is not the growth lever here. Trust is.</p>
+      <p>People buy one phone every two to three years, so you will never win on repeat orders the way a coffee brand does. What you can win is <strong>the decision</strong> — the moment someone weighs a £499 refurbished iPhone against a £999 new one and decides whether to trust a shop they have never heard of.</p>
+      <p>Everything below is judged on whether it moves that decision. The trade-in engine and the review engine move it most, and neither is a marketing spend.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Levers, in order</h2>
+    <p>Tagged by when they earn their keep: <strong>now</strong> pays back inside a month, <strong>next</strong> needs volume first, <strong>later</strong> needs a team.</p>
+
+    <div class="levers">
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-now">Now</span>
+          <h3>Turn trade-ins into supply, not just a quote form</h3>
+          <span class="cost">already built, not wired</span>
+        </div>
+        <p>You capture trade-in quotes and they go nowhere. That is the single highest-value idle asset in the codebase. Every trade-in is <em>stock you buy below market from someone who has already chosen you</em> — it solves acquisition and supply in one transaction. Wire the quote to a follow-up sequence, a postage label and an inspection step, and your cost of goods drops while your customer list grows.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-now">Now</span>
+          <h3>Collect reviews from real buyers, relentlessly</h3>
+          <span class="cost">£0–50/mo</span>
+        </div>
+        <p>Second-hand buyers check reputation before price. Ask every delivered order for a review 7 days after arrival — long enough to have used the phone, short enough to still care. Genuine reviews only: the DMCC Act bans fakes and incentives-without-disclosure, and I removed an invented 4.8-from-342 rating from your structured data for exactly that reason. Real reviews also unlock rich snippets, which is free search real estate.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-now">Now</span>
+          <h3>Back-in-stock alerts</h3>
+          <span class="cost">£0</span>
+        </div>
+        <p>Refurbished stock is single-unit and sells out. Every out-of-stock page view is currently a lost customer with no way to raise their hand. An email capture on sold-out listings converts unusually well because the intent is already proven — and it tells you what to buy next, which is a merchandising signal you cannot get any other way.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-now">Now</span>
+          <h3>Abandoned basket recovery</h3>
+          <span class="cost">£0 on Brevo free tier</span>
+        </div>
+        <p>People compare refurbished prices for days before committing. A two-email sequence at 4 hours and 24 hours typically recovers a tenth of abandoned baskets, and on a £500 average order that pays for the whole email stack many times over. This is the highest-revenue flow in most refurbished shops.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-next">Next</span>
+          <h3>Per-IMEI inventory and the VAT margin scheme</h3>
+          <span class="cost">engineering, then real margin</span>
+        </div>
+        <p>Not marketing, but it is the biggest margin lever you have. Under the second-hand margin scheme you pay VAT on your margin rather than the full sale price — on a £500 phone bought for £350 that is the difference between roughly £83 and £25 of VAT. It requires a stock book per individual item, which is exactly the per-IMEI model your inventory does not yet have. Talk to an accountant, then build it.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-next">Next</span>
+          <h3>Google Merchant Center and Shopping</h3>
+          <span class="cost">free listings + ad spend</span>
+        </div>
+        <p>Free product listings put your stock in front of people already searching "refurbished iPhone 15". Your structured data now declares refurbished condition, GBP pricing and availability correctly, which is the prerequisite. Start with the free surface, then add paid Shopping once you can measure a margin per SKU.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-next">Next</span>
+          <h3>Content that answers the pre-purchase question</h3>
+          <span class="cost">time only</span>
+        </div>
+        <p>"Is refurbished worth it", "what does Grade A actually mean", "iPhone 14 vs 15 in 2026". These rank, they compound, and they are cheap. Your grading explainer is already the strongest trust asset on the site — build outward from it rather than writing generic blog filler.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-later">Later</span>
+          <h3>Marketplace channels — eBay, Back Market, Amazon Renewed</h3>
+          <span class="cost">8–15% commission</span>
+        </div>
+        <p>Painful margin, but they are where the demand already is, and they launder trust: a first purchase through Back Market can become a direct second purchase. Worth it once your fulfilment and returns can absorb the volume without breaking. Not before.</p>
+      </div>
+
+      <div class="lever">
+        <div class="lever-head">
+          <span class="chip chip-later">Later</span>
+          <h3>B2B and refurb-as-a-service</h3>
+          <span class="cost">sales effort</span>
+        </div>
+        <p>Small businesses and schools buy in tens, care less about cosmetics, and churn devices on a cycle. Higher order values, predictable repeat demand, and far fewer emotional returns than consumer sales. This is where refurbished shops that outgrow their founders usually end up.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>The cheapest stack that does the job</h2>
+    <p>UK/EU-friendly, free where a free tier is genuinely usable. Prices move — check before committing.</p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Job</th>
+            <th scope="col">Pick</th>
+            <th scope="col">Free tier</th>
+            <th scope="col">Why this one</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pick">Email — all of it</td>
+            <td>Brevo</td>
+            <td class="free">300/day</td>
+            <td>Already your account. Transactional, marketing and SMS in one, EU-based so the data paperwork is simpler. 300/day covers order mail plus a modest list indefinitely. The code is wired and waiting for a key.</td>
+          </tr>
+          <tr>
+            <td class="pick">Support chat</td>
+            <td>Built in</td>
+            <td class="free">£0</td>
+            <td>Now part of the app rather than a third-party widget: no per-seat fee, no extra script slowing the page, and no customer data leaving your Firebase project.</td>
+          </tr>
+          <tr>
+            <td class="pick">Analytics</td>
+            <td>Plausible or GA4</td>
+            <td class="free">GA4 free</td>
+            <td>Plausible is ~£7/mo, cookieless, and needs no consent banner interaction — which on a UK site is worth more than the fee. GA4 is free but must stay consent-gated.</td>
+          </tr>
+          <tr>
+            <td class="pick">Reviews</td>
+            <td>Trustpilot free</td>
+            <td class="free">£0 tier</td>
+            <td>The name UK buyers already look for. The free tier collects and displays; paid adds automation. Start free.</td>
+          </tr>
+          <tr>
+            <td class="pick">Error monitoring</td>
+            <td>Sentry</td>
+            <td class="free">5k events/mo</td>
+            <td>You currently see server errors and nothing at all from a real customer's browser.</td>
+          </tr>
+          <tr>
+            <td class="pick">Payments</td>
+            <td>Stripe</td>
+            <td class="free">pay per txn</td>
+            <td>~1.5% + 20p on UK cards. Klarna and Clearpay resold through the same integration, so the instalment options the product page advertises become real.</td>
+          </tr>
+          <tr>
+            <td class="pick">Shipping labels</td>
+            <td>Royal Mail Click &amp; Drop</td>
+            <td class="free">free tool</td>
+            <td>API-driven labels, and battery-certified carriage which phones legally require.</td>
+          </tr>
+          <tr>
+            <td class="pick">Stolen-device checks</td>
+            <td>CheckMEND</td>
+            <td class="free">~£1–2/check</td>
+            <td>Non-negotiable once trade-ins are live. Cheap insurance against buying stolen stock.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Email, specifically</h2>
+    <p>You asked what to do about marketing email. The short version: <strong>send fewer, better-timed messages, and keep the two kinds apart.</strong></p>
+
+    <ul>
+      <li><strong>Two sending subdomains.</strong> <code>mail.lehart.co.uk</code> for receipts, <code>news.lehart.co.uk</code> for marketing. Reputation is tracked per domain — this is what stops a bad campaign taking order confirmations down with it.</li>
+      <li><strong>The flows worth building, in order:</strong> abandoned basket → post-purchase care → review request at day 7 → back-in-stock → trade-in follow-up → win-back at 18 months, when a phone starts feeling slow.</li>
+      <li><strong>Your existing list cannot be mailed.</strong> The addresses collected before this week have no consent record, timestamp or source. New signups now store all three. Re-permission the old ones with a single opt-in request or drop them — an unprovable list is a liability, not an asset.</li>
+      <li><strong>One-click unsubscribe headers are mandatory</strong>, not polite, for bulk senders to Gmail and Yahoo. Keep spam complaints under 0.3% or delivery degrades sharply.</li>
+      <li><strong>Warm the domain up.</strong> Blasting a cold sending domain with a full list on day one is the classic way to land in spam permanently.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>What I would do in the next 30 days</h2>
+    <ul>
+      <li>Add the Brevo API key and turn on order, dispatch and return emails — the code is already written and no-ops until the key exists.</li>
+      <li>Connect Stripe. Nothing else on this page matters while the shop cannot take money.</li>
+      <li>Wire the trade-in form to a real follow-up. It is the cheapest stock you will ever buy.</li>
+      <li>Turn on back-in-stock capture for sold-out listings.</li>
+      <li>Ship the abandoned-basket sequence.</li>
+      <li>Ask your first fifty delivered customers for a review. By hand if necessary.</li>
+    </ul>
+  </section>
+
+  <div class="caveat">
+    <p class="eyebrow">On the numbers here</p>
+    <p>Conversion and recovery figures above are industry rules of thumb, not measurements of your shop — you have no traffic history yet to measure against. Treat them as reasons to try something, then replace them with your own numbers as soon as you have any. The VAT and consumer-law points need an accountant and a solicitor before you act on them.</p>
+  </div>
+
+</div>

@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useCheckout } from '../context/CheckoutContext';
 import { ArrowLeft, Package, Truck, CheckCircle2, Clock, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import ReturnFlowModal from './ReturnFlowModal';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
+import { useAuth } from '../context/AuthContext';
+import { listMyReturns, isReturnable, RETURN_STATUS_LABEL, WARRANTY_MONTHS } from '../lib/returns';
+import type { ReturnItem, ReturnRequest } from '../types';
 
 export default function OrderHistoryPage() {
   useSeo({
@@ -15,7 +18,26 @@ export default function OrderHistoryPage() {
   });
   const { orders } = useCheckout();
   const navigate = useNavigate();
-  const [returnOrderId, setReturnOrderId] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
+  const [returnOrder, setReturnOrder] = useState<{ id: string; createdAt: string; items: ReturnItem[] } | null>(null);
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
+
+  // Existing returns are shown against their order so a customer cannot raise
+  // a second request for something already in progress — the commonest way a
+  // returns queue fills with duplicates.
+  const loadReturns = useCallback(async () => {
+    if (!isAuthenticated || !user || user.isGuest) { setReturns([]); return; }
+    try {
+      setReturns(await listMyReturns(user.id));
+    } catch {
+      setReturns([]);
+    }
+  }, [isAuthenticated, user]);
+
+  useEffect(() => { loadReturns(); }, [loadReturns]);
+
+  const returnFor = (orderId: string) =>
+    returns.find(r => r.orderId === orderId && r.status !== 'cancelled' && r.status !== 'rejected');
 
   const getStatusIcon = (status: string) => {
     const common = { size: 16 };
@@ -162,13 +184,49 @@ export default function OrderHistoryPage() {
                 </div>
 
                 {/* Post-purchase actions */}
-                <div style={{ borderTop: '1px solid var(--grey-10)', marginTop: '24px', paddingTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => setReturnOrderId(order.id)}
-                    className="btn btn-secondary btn-md"
-                  >
-                    <RotateCcw size={14} /> Start a return
-                  </button>
+                <div style={{ borderTop: '1px solid var(--grey-10)', marginTop: '24px', paddingTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {(() => {
+                    const existing = returnFor(order.id);
+                    if (existing) {
+                      return (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 34,
+                          padding: '0 12px', borderRadius: 'var(--radius-full)',
+                          background: 'var(--color-brand-subtle)', border: '1px solid rgba(161,98,7,0.25)',
+                          fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, color: 'var(--brand-cyan-hover)',
+                        }}>
+                          <RotateCcw size={14} />
+                          {existing.id} · {RETURN_STATUS_LABEL[existing.status]}
+                        </span>
+                      );
+                    }
+                    if (!isReturnable(order.createdAt)) {
+                      return (
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-50)' }}>
+                          This order is past its {WARRANTY_MONTHS}-month warranty period.
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => setReturnOrder({
+                          id: order.id,
+                          createdAt: order.createdAt,
+                          items: order.items.map((i: any) => ({
+                            productId: String(i.id ?? i.productId ?? ''),
+                            model: String(i.model ?? ''),
+                            brand: String(i.brand ?? ''),
+                            quantity: Number(i.quantity ?? 1),
+                            price: Number(i.price ?? 0),
+                            imageUrl: i.imageUrl ?? null,
+                          })),
+                        })}
+                        className="btn btn-secondary btn-md"
+                      >
+                        <RotateCcw size={14} /> Start a return
+                      </button>
+                    );
+                  })()}
                 </div>
               </motion.div>
             ))}
@@ -177,9 +235,12 @@ export default function OrderHistoryPage() {
       </div>
 
       <ReturnFlowModal
-        orderId={returnOrderId ?? ''}
-        isOpen={!!returnOrderId}
-        onClose={() => setReturnOrderId(null)}
+        orderId={returnOrder?.id ?? ''}
+        orderDate={returnOrder?.createdAt ?? new Date().toISOString()}
+        items={returnOrder?.items ?? []}
+        isOpen={!!returnOrder}
+        onClose={() => setReturnOrder(null)}
+        onCreated={loadReturns}
       />
     </div>
   );

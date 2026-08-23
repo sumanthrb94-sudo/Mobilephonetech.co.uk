@@ -25,6 +25,8 @@ export default function AdminLayout() {
             {/* `end` on the index link, or it stays active on every child route. */}
             <NavLink to="/admin" end style={navLinkStyle}>Dashboard</NavLink>
             <NavLink to="/admin/inventory" style={navLinkStyle}>Inventory</NavLink>
+            <NavLink to="/admin/returns" style={navLinkStyle}>Returns</NavLink>
+            <NavLink to="/admin/support" style={navLinkStyle}>Support</NavLink>
           </nav>
 
           <Link to="/" style={{ ...navLinkStyle({ isActive: false }), marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}>

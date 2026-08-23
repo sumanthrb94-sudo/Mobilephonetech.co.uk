@@ -110,6 +110,62 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+
+    // ── Returns / RMA ───────────────────────────────────────
+    // A customer raises a return against their own order and can withdraw it
+    // while it is still untouched; everything after that belongs to staff.
+    // Letting a shopper move their own return to "resolved" would let them
+    // mark themselves refunded, so status transitions are admin-only.
+    match /returns/{rmaId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.userId == request.auth.uid);
+
+      allow create: if signedIn()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'requested'
+                    && request.resource.data.outcome in ['refund', 'replacement', 'repair']
+                    && request.resource.data.orderId is string
+                    && request.resource.data.items.size() > 0;
+
+      // The customer's only permitted edit is cancelling a request staff have
+      // not yet acted on.
+      allow update: if isAdmin()
+                    || (signedIn()
+                        && resource.data.userId == request.auth.uid
+                        && resource.data.status == 'requested'
+                        && request.resource.data.status == 'cancelled');
+
+      allow delete: if false;
+    }
+
+    // ── Support conversations ───────────────────────────────
+    // One thread per customer, keyed by uid, so a customer can only ever
+    // address the document that is their own id. Messages are append-only:
+    // a support thread is evidence of what was promised, and neither side
+    // gets to rewrite it after the fact.
+    match /conversations/{convId} {
+      allow read: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      allow create: if signedIn()
+                    && convId == request.auth.uid
+                    && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin() || (signedIn() && convId == request.auth.uid);
+
+        // The sender field is the thing worth guarding: without this check a
+        // customer could post a message labelled as staff and manufacture a
+        // promise the shop never made.
+        allow create: if (isAdmin() && request.resource.data.sender == 'admin')
+                      || (signedIn()
+                          && convId == request.auth.uid
+                          && request.resource.data.sender == 'customer');
+
+        allow update, delete: if false;
+      }
+    }
+
     // Anything not matched above is denied. Firestore already defaults to
     // deny, but stating it means a new collection cannot be reached by
     // accident before its rules are written.
