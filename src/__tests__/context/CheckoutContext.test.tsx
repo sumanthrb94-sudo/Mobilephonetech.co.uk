@@ -289,88 +289,24 @@ describe('CheckoutContext', () => {
       await act(async () => { await result.current.createOrder(makeOrder()); });
       expect(result.current.appliedCoupon).toBeNull();
     });
-    it('createOrder writes the order to Firestore under its own id', async () => {
-      const { setDoc, doc } = await import('firebase/firestore');
-
-      const order = makeOrder({
-        id: 'order-spy-001',
-        userId: 'user-abc',
-        subtotal: 649,
-        shippingCost: 9.99,
-        discount: 20,
-        total: 638.99,
-        status: 'confirmed',
-        paymentMethod: { ...MOCK_PAYMENT, brand: 'Visa' },
-      });
+    it('createOrder posts to the server instead of writing Firestore', async () => {
+      const { setDoc } = await import('firebase/firestore');
+      const fetchSpy = vi.fn(async (..._args: unknown[]) => ({ ok: true, json: async () => ({ order: { id: 'ORD-SERVER' } }) }));
+      vi.stubGlobal('fetch', fetchSpy);
 
       const { result } = renderHook(() => useCheckout(), { wrapper });
-      await act(async () => { await result.current.createOrder(order); });
+      await act(async () => {
+        await result.current.createOrder(makeOrder({ id: 'order-spy-001', userId: 'user-abc' }));
+      });
 
-      // setDoc with the caller's id rather than addDoc: the order number is
-      // already on the confirmation screen, so the document must use it.
-      expect(doc).toHaveBeenCalledWith(expect.anything(), 'orders', 'order-spy-001');
-      expect(setDoc).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          userId: 'user-abc',
-          guestEmail: MOCK_ADDRESS.email,
-          status: 'confirmed',
-          subtotal: 649,
-          shippingCost: 9.99,
-          discount: 20,
-          total: 638.99,
-          shippingAddress: MOCK_ADDRESS,
-          paymentMethod: 'Visa',
-        }),
+      // Prices from the browser are prices an attacker chooses, so `orders` is
+      // closed to client writes and the server does the pricing.
+      expect(fetchSpy.mock.calls.at(-1)?.[0]).toBe('/api/orders');
+      const orderWrites = vi.mocked(setDoc).mock.calls.filter(
+        c => JSON.stringify(c[1] ?? {}).includes('shippingAddress'),
       );
-    });
-
-    it('embeds the line items on the order document rather than a second collection', async () => {
-      const { setDoc } = await import('firebase/firestore');
-
-      const order = makeOrder({
-        id: 'order-items-001',
-        items: [
-          {
-            id: 'iphone-15-pro',
-            model: 'iPhone 15 Pro',
-            brand: 'Apple',
-            price: 649,
-            originalPrice: 899,
-            quantity: 1,
-            imageUrl: '/img/iphone.jpg',
-            selectedColor: 'Black',
-            selectedStorage: '256GB',
-            selectedCondition: 'Excellent',
-          },
-        ],
-      });
-
-      const { result } = renderHook(() => useCheckout(), { wrapper });
-      await act(async () => { await result.current.createOrder(order); });
-
-      const written = vi.mocked(setDoc).mock.calls.at(-1)?.[1] as Record<string, unknown>;
-      expect(written.items).toEqual([
-        expect.objectContaining({
-          id: 'iphone-15-pro',
-          model: 'iPhone 15 Pro',
-          brand: 'Apple',
-          price: 649,
-          quantity: 1,
-          selectedColor: 'Black',
-          selectedStorage: '256GB',
-        }),
-      ]);
-    });
-
-    it('never writes undefined, which Firestore rejects outright', async () => {
-      const { setDoc } = await import('firebase/firestore');
-
-      const { result } = renderHook(() => useCheckout(), { wrapper });
-      await act(async () => { await result.current.createOrder(makeOrder({ id: 'order-undef' })); });
-
-      const written = vi.mocked(setDoc).mock.calls.at(-1)?.[1] as Record<string, unknown>;
-      expect(Object.values(written).every(v => v !== undefined)).toBe(true);
+      expect(orderWrites).toHaveLength(0);
+      vi.unstubAllGlobals();
     });
 
     it('createOrder succeeds locally even when the Firestore write throws', async () => {

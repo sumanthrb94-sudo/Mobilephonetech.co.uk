@@ -316,10 +316,15 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (selectedVariant) {
+      // The variant id becomes the cart line's id, so the base product id has
+      // to travel separately — the server prices the order from the catalogue
+      // and cannot look up a composed variant id as a document.
       const cartProduct = {
         ...phone, ...selectedVariant, price: selectedVariant.price,
         originalPrice: selectedVariant.originalPrice, stock: selectedVariant.stock,
         batteryHealth: selectedVariant.batteryHealth ?? phone.batteryHealth,
+        productId: phone.id,
+        variantId: selectedVariant.id,
       };
       addToCart(cartProduct, quantity);
     } else {

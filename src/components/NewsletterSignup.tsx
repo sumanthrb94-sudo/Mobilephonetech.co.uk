@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, CheckCircle2, Tag, Bell } from 'lucide-react';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { db, COL } from '../lib/firebase';
 
 const STORAGE_KEY = 'mt_newsletter_email';
 
@@ -24,14 +22,16 @@ export default function NewsletterSignup() {
     }
     setIsSubmitting(true);
     try {
-      // The email is the document id, so re-subscribing overwrites rather
-       // than creating a duplicate — the equivalent of the old unique index.
-      // Lowercased so Foo@x.com and foo@x.com are one subscriber.
-      await setDoc(
-        doc(db, COL.newsletter, trimmed.toLowerCase()),
-        { email: trimmed.toLowerCase(), isActive: true, subscribedAt: serverTimestamp() },
-        { merge: true },
-      );
+      // Through the API, not straight into Firestore. Writing direct from the
+      // browser skipped the rate limit and, worse, skipped the consent record
+      // — timestamp, source and policy version — that is what makes this list
+      // lawfully mailable. Client writes to the collection are now refused by
+      // the security rules, so this is the only path in.
+      await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: trimmed, source: 'homepage-newsletter' }),
+      });
     } catch { /* non-fatal — still show success */ }
     try { window.localStorage.setItem(STORAGE_KEY, trimmed); } catch { /* ignore */ }
     setIsSubmitting(false);

@@ -278,3 +278,59 @@ export async function attemptReturnReadAs(email, rmaId) {
   );
   return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
 }
+
+// ── Raw REST helpers for the security audit ────────────────────
+// Deliberately generic: the audit needs to send requests the UI would never
+// construct, because that is exactly what an attacker does.
+
+export { toFields };
+
+/** Sign in and return a real ID token for the given account. */
+export async function tokenFor(email) {
+  return signInForToken(email);
+}
+
+/** POST a document as a given user. Returns ALLOWED or DENIED:<status>. */
+export async function attemptCreateAs(email, path, data, docId) {
+  const idToken = await signInForToken(email);
+  const qs = docId ? `?documentId=${encodeURIComponent(docId)}` : '';
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${path}${qs}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ fields: toFields(data) }),
+    },
+  );
+  return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
+}
+
+/** PATCH specific fields of a document as a given user. */
+export async function attemptUpdateAs(email, path, fields) {
+  const idToken = await signInForToken(email);
+  const mask = Object.keys(fields).map(k => `updateMask.fieldPaths=${k}`).join('&');
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${path}?${mask}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify({ fields: toFields(fields) }),
+    },
+  );
+  return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
+}
+
+/** GET a document as a given user (or anonymously when email is null). */
+export async function attemptReadAs(email, path) {
+  const headers = {};
+  if (email) headers.Authorization = `Bearer ${await signInForToken(email)}`;
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${path}`, { headers },
+  );
+  return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
+}
+
+/** Write a document with privileged access, for setting up an attack target. */
+export async function seedDoc(collection, id, data) {
+  return writeDoc(collection, id, data);
+}

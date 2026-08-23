@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
-import { db, COL } from '../lib/firebase';
-import { stripUndefined } from '../lib/productMapper';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { auth, db, COL } from '../lib/firebase';
+
 import { useAuth } from './AuthContext';
 
 const ADDRESS_KEY = 'mt_shipping_address';
@@ -194,37 +194,40 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     // Persist — fire-and-forget, so a write failure never blocks the
     // confirmation screen for an order the shopper has already paid for.
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const items = order.items.map((item: any) => stripUndefined({
-        id: item.id ?? null,
-        model: item.model,
-        brand: item.brand,
-        selectedColor: item.selectedColor ?? null,
-        selectedStorage: item.selectedStorage ?? item.storage ?? null,
-        selectedCondition: item.selectedCondition ?? item.grade ?? null,
-        price: item.price,
-        originalPrice: item.originalPrice,
-        quantity: item.quantity,
-        imageUrl: item.imageUrl ?? null,
-      }));
-
-      // setDoc with the caller's id, not addDoc: the order number is already
-      // on the confirmation screen, so the document has to use it.
-      await setDoc(doc(db, COL.orders, order.id), stripUndefined({
-        userId: order.userId ?? null,
-        guestEmail: order.shippingAddress.email ?? null,
-        status: order.status,
-        subtotal: order.subtotal,
-        shippingCost: order.shippingCost,
-        discount: order.discount ?? 0,
-        total: order.total,
-        shippingAddress: order.shippingAddress,
-        paymentMethod: order.paymentMethod.brand,
-        items,
-        createdAt: order.createdAt ?? new Date().toISOString(),
-      }));
+      // The server prices the order. This request carries product ids and
+      // quantities only — never prices — because a price that arrives from the
+      // browser is a price an attacker chooses. /api/orders looks every one up
+      // in the catalogue, and `orders` is closed to client writes entirely.
+      const token = await auth.currentUser?.getIdToken().catch(() => null);
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          items: (order.items as any[]).map((i: any) => ({
+            // The base product for pricing; the variant, when there is one,
+            // so the server prices the exact configuration that was chosen.
+            productId: i.productId ?? i.id,
+            variantId: i.variantId ?? null,
+            quantity: i.quantity,
+            selectedColor: i.selectedColor ?? null,
+            selectedStorage: i.selectedStorage ?? null,
+            selectedCondition: i.selectedCondition ?? null,
+          })),
+          shippingAddress: order.shippingAddress,
+          shippingOptionId: order.shippingOption?.id ?? 'standard',
+          couponCode: appliedCoupon?.code ?? null,
+          guestEmail: order.shippingAddress?.email ?? null,
+        }),
+      });
+      if (!res.ok) {
+        const detail = await res.json().catch(() => ({}));
+        throw new Error(detail.error || 'Order could not be placed');
+      }
     } catch { /* non-fatal — order still confirmed locally */ }
-  }, []);
+  }, [appliedCoupon]);
 
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;
 

@@ -48,6 +48,17 @@ export async function getAdminApp(): Promise<App | null> {
 
     if (getApps().length) { cachedApp = getApp(); return cachedApp; }
 
+    // Against the emulator suite there are no real credentials to present, and
+    // demanding them would leave the server-side routes — including order
+    // pricing, which is now a security boundary — untestable end to end.
+    // FIRESTORE_EMULATOR_HOST is only ever set by a local emulator run.
+    if (process.env.FIRESTORE_EMULATOR_HOST) {
+      cachedApp = initializeApp({
+        projectId: process.env.GCLOUD_PROJECT || 'demo-lehart',
+      });
+      return cachedApp;
+    }
+
     const creds = loadCredentials();
     if (!creds) {
       initError = 'FIREBASE_SERVICE_ACCOUNT is not set';
