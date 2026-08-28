@@ -37,6 +37,7 @@ vi.mock('firebase/auth', () => ({
   },
   signOut: vi.fn(() => Promise.resolve()),
   sendPasswordResetEmail: vi.fn(() => Promise.resolve()),
+  sendEmailVerification: vi.fn(() => Promise.resolve()),
   updateProfile: vi.fn(() => Promise.resolve()),
   updatePassword: vi.fn(() => Promise.resolve()),
   fetchSignInMethodsForEmail: vi.fn(() => Promise.resolve([] as string[])),

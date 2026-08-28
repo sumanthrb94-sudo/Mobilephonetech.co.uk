@@ -125,17 +125,34 @@ a failed send, not a wrong account.
 - The code field uses `autocomplete="one-time-code"`, so iOS and Android offer
   the code straight from the notification. That is most of the ergonomic win.
 
+## Email verification
+
+Signup sends a confirmation link, and the modal then shows a screen naming the
+address it really went to. That address is the thing worth catching: a typo
+takes the order confirmation with it, and the customer never finds out.
+
+**It is not a gate.** The customer is signed in the moment the account exists,
+and the screen's button just closes the modal. Blocking checkout on an
+unconfirmed address would cost far more in abandoned orders than the typos it
+catches, so `user.emailVerified` is informational only — nothing in the app
+reads it as permission.
+
+Two things to know:
+
+- **The link comes from Firebase, not Brevo.** It uses Firebase's own template
+  and sender, so it does not carry the LeHart styling the order emails do.
+  Firebase Console → Authentication → Templates is where that wording and the
+  sender address live.
+- **The return URL is `window.location.origin`**, not a fixed env var, so a
+  preview deployment sends people back to that preview rather than production.
+  It must be an authorised domain, which it is by definition if the customer is
+  looking at it.
+
+A failure to send never fails the signup — the account exists and works, and
+`resendVerification()` retries from the modal or anywhere else. Firebase
+rate-limits resends per address, which is normal to hit rather than a fault.
+
 ## What is deliberately not built
-
-**Email verification on signup.** `createUserWithEmailAndPassword` signs the
-user in immediately and sends nothing. The modal previously claimed a
-confirmation link had been sent and told an already-signed-in customer to sign
-in — both untrue, a leftover from Supabase, and enough to make a *successful*
-registration look broken. That copy is gone.
-
-The gap it leaves is real and worth closing later: a typo'd address takes the
-order confirmation with it. `sendEmailVerification` plus a banner on the
-account page is the natural next step.
 
 **Gmail alias folding.** `j.smith@gmail.com` and `jsmith@gmail.com` reach the
 same inbox but are different identities to Firebase, as are `+tag` addresses.

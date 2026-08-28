@@ -13,6 +13,7 @@ import {
   linkWithCredential,
   signInWithPhoneNumber,
   linkWithPhoneNumber,
+  sendEmailVerification,
   RecaptchaVerifier,
   type ConfirmationResult,
   type AuthCredential,
@@ -25,6 +26,15 @@ import { toE164, formatPhoneForDisplay } from '../utils/phoneNumber';
 export interface User {
   id: string;
   email: string;
+  /**
+   * Whether the address has been confirmed by clicking the link.
+   *
+   * Informational, never a gate. Blocking checkout on an unverified address
+   * would cost far more in abandoned orders than it saves — the point is to
+   * catch a typo before the order confirmation goes to nobody, not to police
+   * anyone. A phone-only account has no email, so this is false and irrelevant.
+   */
+  emailVerified?: boolean;
   /** E.164, present only once a number has been verified by SMS. */
   phoneNumber?: string | null;
   fullName: string;
@@ -108,6 +118,13 @@ interface AuthContextType {
   pendingPhone: string | null;
   /** Drop a pending phone verification and tear down its reCAPTCHA. */
   cancelPhoneSignIn: () => void;
+  /**
+   * Re-send the address confirmation link to the signed-in user.
+   *
+   * Resolves quietly when there is nobody signed in or the address is already
+   * confirmed — a second click on "resend" should never produce an error.
+   */
+  resendVerification: () => Promise<void>;
   continueAsGuest: (email: string) => void;
   /** Force-refresh the ID token, e.g. right after a role change. */
   refreshClaims: () => Promise<void>;
@@ -129,6 +146,7 @@ async function toUser(fbUser: FirebaseUser): Promise<User> {
   return {
     id: fbUser.uid,
     email: fbUser.email ?? '',
+    emailVerified: fbUser.emailVerified ?? false,
     phoneNumber: fbUser.phoneNumber ?? null,
     // A phone-only account has no email and no display name, so the masked
     // number is the only thing left to greet them by.
@@ -200,13 +218,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await ensureProfile(cred.user);
   };
 
+  /**
+   * The link is sent by Firebase itself, from its own template, NOT through
+   * Brevo — so it does not carry the LeHart styling the other emails do.
+   * Firebase Console → Authentication → Templates is where that wording lives.
+   *
+   * The return URL is the current origin rather than a fixed env var, so a
+   * preview deployment sends people back to that preview instead of
+   * production. It has to be an authorised domain either way, which it is by
+   * definition if the customer is looking at it.
+   */
+  const sendVerification = async (fbUser: FirebaseUser) => {
+    try {
+      await sendEmailVerification(fbUser, {
+        url: typeof window !== 'undefined' ? window.location.origin : 'https://lehart.co.uk',
+        handleCodeInApp: false,
+      });
+    } catch (err) {
+      // A verification email that does not send must never fail the signup —
+      // the account exists and works, and the address can be confirmed later
+      // from the account page. Firebase also rate-limits this per address,
+      // which is a normal thing to hit and not worth an error screen.
+      console.warn('[auth] verification email not sent:', (err as Error).message);
+    }
+  };
+
   const signup = async (email: string, password: string, fullName: string) => {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     // Firebase stores no metadata at creation, so the display name is a
     // second call. Do it before the profile write so both agree.
     if (fullName) await updateProfile(cred.user, { displayName: fullName });
     await ensureProfile(cred.user, fullName);
+    // Catches the typo'd address before the first order confirmation goes to
+    // nobody. Deliberately not a gate: the customer is signed in either way.
+    await sendVerification(cred.user);
     setUser(await toUser(cred.user));
+  };
+
+  const resendVerification = async () => {
+    const current = auth.currentUser;
+    // Nothing to do, and saying so as an error would make a second click on
+    // "resend" look broken.
+    if (!current || current.emailVerified) return;
+    await sendVerification(current);
   };
 
   /**
@@ -424,6 +478,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       confirmPhoneCode,
       pendingPhone,
       cancelPhoneSignIn,
+      resendVerification,
       continueAsGuest,
       refreshClaims,
     }}>

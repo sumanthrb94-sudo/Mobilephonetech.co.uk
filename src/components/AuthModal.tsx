@@ -11,7 +11,7 @@ import { isValidPhone, formatPhoneForDisplay } from '../utils/phoneNumber';
  * Uses the app's cyan primary and shared design tokens.
  */
 
-type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code';
+type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify';
 
 /** Where the invisible reCAPTCHA mounts. Firebase needs a real element id. */
 const RECAPTCHA_ID = 'auth-recaptcha-container';
@@ -133,6 +133,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     login, signup, signInWithGoogle, resetPassword,
     signInMethodsFor, pendingLinkEmail, completeGoogleLink, cancelGoogleLink,
     startPhoneSignIn, confirmPhoneCode, pendingPhone, cancelPhoneSignIn,
+    resendVerification,
   } = useAuth();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
@@ -221,13 +222,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         onSuccess?.();
         onClose();
       } else {
-        // createUserWithEmailAndPassword signs the new user in immediately and
-        // sends nothing — the modal simply closes, the same as a sign-in. The
-        // message that used to sit here promised a confirmation email that was
-        // never sent and told an already-signed-in customer to sign in.
+        // The customer is signed in the moment this resolves — the verify
+        // screen is a courtesy, not a gate, and its button just closes the
+        // modal. Blocking checkout on an unconfirmed address would cost more
+        // in abandoned orders than the typos it catches.
         await signup(email, password, fullName);
-        onSuccess?.();
-        onClose();
+        setPassword('');
+        setMode('verify');
       }
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code ?? '';
@@ -281,6 +282,23 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     setError('');
     setInfo('');
     setMode('login');
+  };
+
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    setResending(true);
+    setError('');
+    try {
+      await resendVerification();
+      setInfo(`Sent again to ${email}. Give it a minute, and check your spam folder.`);
+    } catch {
+      // Firebase rate-limits this per address, which is normal to hit rather
+      // than a fault worth alarming anyone about.
+      setError('Could not send just now. Wait a minute and try again.');
+    } finally {
+      setResending(false);
+    }
   };
 
   /** Drop a pending SMS verification and its reCAPTCHA. */
@@ -338,6 +356,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'reset' ? 'Reset your password'
                   : mode === 'phone' ? 'Sign in with your mobile'
                   : mode === 'code' ? 'Enter your code'
+                  : mode === 'verify' ? 'Check your email'
                   : 'Connect your Google account'}
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
@@ -346,11 +365,50 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'reset' ? 'Enter your email and we will send you a link to set a new one.'
                   : mode === 'phone' ? 'We will text you a 6-digit code. No password needed.'
                   : mode === 'code' ? `Sent to ${pendingPhone ? formatPhoneForDisplay(pendingPhone) : 'your mobile'}. It expires in a few minutes.`
+                  : mode === 'verify' ? `Your account is ready and you are signed in. We have sent a link to ${email} to confirm the address.`
                   : `${pendingLinkEmail ?? 'That address'} already has a password. Enter it once and Google will sign you in from now on.`}
               </p>
             </div>
 
             <div style={{ padding: 'var(--spacing-32)' }}>
+              {mode === 'verify' ? (
+                <div>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.65, color: 'var(--grey-60)', margin: '0 0 4px' }}>
+                    Confirming it means your order updates and delivery emails
+                    reach you. You can shop straight away either way.
+                  </p>
+
+                  {info && (
+                    <p role="status" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: '#0a7c5c', background: '#e6f7f2', borderRadius: '6px', padding: '10px 12px', textAlign: 'center', margin: '14px 0 0' }}>{info}</p>
+                  )}
+                  {error && (
+                    <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--color-sale)', textAlign: 'center', margin: '14px 0 0' }}>{error}</p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => { onSuccess?.(); onClose(); }}
+                    className="btn btn-primary btn-lg btn-full"
+                    style={{ marginTop: '20px' }}
+                  >
+                    Start shopping <ArrowRight size={16} />
+                  </button>
+
+                  <div style={{ marginTop: '14px', textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resending}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: resending ? 'wait' : 'pointer' }}
+                      onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
+                    >
+                      {resending ? 'Sending…' : "Didn't arrive? Send it again"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+              <>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {mode === 'signup' && (
                   <div style={{ position: 'relative' }}>
@@ -588,6 +646,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     : 'Cancel and sign in another way'}
                 </button>
               </div>
+              </>
+              )}
             </div>
           </motion.div>
         </div>

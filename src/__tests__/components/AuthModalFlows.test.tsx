@@ -29,6 +29,7 @@ const signInMethodsFor = vi.fn<(email: string) => Promise<string[]>>();
 const startPhoneSignIn = vi.fn();
 const confirmPhoneCode = vi.fn();
 const cancelPhoneSignIn = vi.fn();
+const resendVerification = vi.fn();
 let pendingLinkEmail: string | null = null;
 let pendingPhone: string | null = null;
 
@@ -41,6 +42,7 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
       login, signup, signInWithGoogle, resetPassword,
       signInMethodsFor, completeGoogleLink, cancelGoogleLink, pendingLinkEmail,
       startPhoneSignIn, confirmPhoneCode, cancelPhoneSignIn, pendingPhone,
+      resendVerification,
       logout: vi.fn(), continueAsGuest: vi.fn(), refreshClaims: vi.fn(),
     }),
   };
@@ -59,6 +61,22 @@ function renderModal(initialMode: 'login' | 'signup' = 'login') {
 
 const err = (code: string) => Object.assign(new Error(code), { code });
 
+/**
+ * Fill and submit the signup form.
+ *
+ * The wait matters: the modal focuses its first field on a 30 ms timer, so
+ * typing that starts before it fires gets torn in half — the tail of "Jordan"
+ * lands in the email box and the assertion reads danjordan@example.com. Wait
+ * for focus to settle and the typing is deterministic.
+ */
+async function signUp(email = 'jordan@example.com') {
+  await waitFor(() => expect(screen.getByPlaceholderText('Email Address')).toHaveFocus());
+  await userEvent.type(screen.getByPlaceholderText('Full Name'), 'Jordan');
+  await userEvent.type(screen.getByPlaceholderText('Email Address'), email);
+  await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
+  await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   pendingLinkEmail = null;
@@ -67,20 +85,53 @@ beforeEach(() => {
 });
 
 describe('signup no longer lies about a confirmation email', () => {
-  it('closes on success instead of promising mail that was never sent', async () => {
+  it('confirms the address it really sent to, and never says "then sign in"', async () => {
+    signup.mockResolvedValue(undefined);
+    renderModal('signup');
+
+    await signUp();
+
+    expect(await screen.findByRole('heading', { name: /check your email/i })).toBeInTheDocument();
+    // A link really is sent now, so saying so is honest — but the customer is
+    // already signed in, and the old "then sign in" was the false half.
+    expect(screen.getByText(/signed in/i)).toBeInTheDocument();
+    expect(screen.queryByText(/check your inbox, then sign in/i)).not.toBeInTheDocument();
+  });
+
+  it('lets the customer shop without confirming first', async () => {
     signup.mockResolvedValue(undefined);
     const { onClose, onSuccess } = renderModal('signup');
 
-    await userEvent.type(screen.getByPlaceholderText('Full Name'), 'Jordan');
-    await userEvent.type(screen.getByPlaceholderText('Email Address'), 'jordan@example.com');
-    await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await signUp();
 
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    // Verification is a courtesy, not a gate — blocking checkout on it would
+    // cost more in abandoned orders than the typos it catches.
+    await userEvent.click(await screen.findByRole('button', { name: /start shopping/i }));
     expect(onSuccess).toHaveBeenCalled();
-    // The old copy promised a link and told them to sign in; both were false.
-    expect(screen.queryByText(/confirmation link/i)).not.toBeInTheDocument();
-    expect(screen.queryByText(/check your inbox, then sign in/i)).not.toBeInTheDocument();
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('resends the link on request', async () => {
+    signup.mockResolvedValue(undefined);
+    resendVerification.mockResolvedValue(undefined);
+    renderModal('signup');
+
+    await signUp();
+
+    await userEvent.click(await screen.findByRole('button', { name: /send it again/i }));
+    await waitFor(() => expect(resendVerification).toHaveBeenCalled());
+    expect(await screen.findByText(/sent again to jordan@example.com/i)).toBeInTheDocument();
+  });
+
+  it('reports a rate-limited resend calmly', async () => {
+    signup.mockResolvedValue(undefined);
+    resendVerification.mockRejectedValue(new Error('too many'));
+    renderModal('signup');
+
+    await signUp();
+
+    await userEvent.click(await screen.findByRole('button', { name: /send it again/i }));
+    expect(await screen.findByText(/wait a minute/i)).toBeInTheDocument();
   });
 
   it('names the existing provider when the address is already registered', async () => {
@@ -88,10 +139,7 @@ describe('signup no longer lies about a confirmation email', () => {
     signInMethodsFor.mockResolvedValue(['google.com']);
     renderModal('signup');
 
-    await userEvent.type(screen.getByPlaceholderText('Full Name'), 'Jordan');
-    await userEvent.type(screen.getByPlaceholderText('Email Address'), 'jordan@example.com');
-    await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
-    await userEvent.click(screen.getByRole('button', { name: /create account/i }));
+    await signUp();
 
     // Telling them exactly which method they used is what stops the duplicate
     // account they would otherwise create with a second address.
