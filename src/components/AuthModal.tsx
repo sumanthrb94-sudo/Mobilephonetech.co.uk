@@ -1,16 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { X, Mail, Lock, User, ArrowRight, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Spinner } from './ui/Loading';
 import { useAuth } from '../context/AuthContext';
 import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginIdentifier';
+import { isValidPhone, formatPhoneForDisplay } from '../utils/phoneNumber';
 
 /**
  * AuthModal — centred floating modal for sign-in / sign-up.
  * Uses the app's cyan primary and shared design tokens.
  */
 
-type Mode = 'login' | 'signup' | 'reset' | 'link';
+type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code';
+
+/** Where the invisible reCAPTCHA mounts. Firebase needs a real element id. */
+const RECAPTCHA_ID = 'auth-recaptcha-container';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -128,7 +132,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const {
     login, signup, signInWithGoogle, resetPassword,
     signInMethodsFor, pendingLinkEmail, completeGoogleLink, cancelGoogleLink,
+    startPhoneSignIn, confirmPhoneCode, pendingPhone, cancelPhoneSignIn,
   } = useAuth();
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
   const [googleBusy, setGoogleBusy] = useState(false);
 
   const handleGoogle = async () => {
@@ -177,6 +184,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       return;
     }
 
+    if (mode === 'phone' && !isValidPhone(phone)) {
+      setError('Enter a UK mobile number, e.g. 07700 900123.');
+      return;
+    }
+    if (mode === 'code' && !/^\d{6}$/.test(code.trim())) {
+      setError('Enter the 6-digit code from the text message.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -194,6 +210,14 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         setPassword('');
       } else if (mode === 'link') {
         await completeGoogleLink(password);
+        onSuccess?.();
+        onClose();
+      } else if (mode === 'phone') {
+        await startPhoneSignIn(phone, RECAPTCHA_ID);
+        setCode('');
+        setMode('code');
+      } else if (mode === 'code') {
+        await confirmPhoneCode(code);
         onSuccess?.();
         onClose();
       } else {
@@ -221,6 +245,23 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         setError(hint ?? 'An account already exists for that email. Sign in instead.');
       } else if (mode === 'link' && (code === 'auth/invalid-credential' || code === 'auth/wrong-password')) {
         setError('That password does not match the existing account. Try again, or reset it.');
+      } else if (code === 'auth/invalid-verification-code') {
+        setError('That code is not right. Check the message and try again.');
+      } else if (code === 'auth/code-expired') {
+        setError('That code has expired. Go back and request a new one.');
+      } else if (code === 'auth/invalid-phone-number' || code === 'app/invalid-phone') {
+        setError('That does not look like a valid mobile number.');
+      } else if (code === 'auth/credential-already-in-use' || code === 'auth/account-exists-with-different-credential') {
+        // Linking a number that already belongs to a different account. The
+        // alternative — silently switching them to that other account — would
+        // be worse: it looks like their data vanished.
+        setError('That mobile number is already on another account. Sign in with that account, or use a different number.');
+      } else if (code === 'auth/provider-already-linked') {
+        setError('This account already has a mobile number.');
+      } else if (code === 'auth/captcha-check-failed') {
+        setError('The security check failed. Reload the page and try again.');
+      } else if (code === 'auth/quota-exceeded') {
+        setError('Too many codes requested right now. Please try again later.');
       } else if (code === 'auth/too-many-requests') {
         setError('Too many attempts. Wait a few minutes and try again.');
       } else if (code === 'auth/weak-password') {
@@ -240,6 +281,15 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     setError('');
     setInfo('');
     setMode('login');
+  };
+
+  /** Drop a pending SMS verification and its reCAPTCHA. */
+  const abandonPhone = (back: Mode = 'login') => {
+    cancelPhoneSignIn();
+    setCode('');
+    setError('');
+    setInfo('');
+    setMode(back);
   };
 
   const inputStyle = {
@@ -286,12 +336,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 {mode === 'login' ? 'Welcome back'
                   : mode === 'signup' ? 'Create your account'
                   : mode === 'reset' ? 'Reset your password'
+                  : mode === 'phone' ? 'Sign in with your mobile'
+                  : mode === 'code' ? 'Enter your code'
                   : 'Connect your Google account'}
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
                 {mode === 'login' ? 'Sign in to access your orders and wishlist.'
                   : mode === 'signup' ? 'Join lehart.co.uk for a certified experience.'
                   : mode === 'reset' ? 'Enter your email and we will send you a link to set a new one.'
+                  : mode === 'phone' ? 'We will text you a 6-digit code. No password needed.'
+                  : mode === 'code' ? `Sent to ${pendingPhone ? formatPhoneForDisplay(pendingPhone) : 'your mobile'}. It expires in a few minutes.`
                   : `${pendingLinkEmail ?? 'That address'} already has a password. Enter it once and Google will sign you in from now on.`}
               </p>
             </div>
@@ -304,7 +358,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <input type="text" required placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
-                {mode !== 'link' && (
+                {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
                     <input ref={firstFieldRef} type={mode === 'signup' ? 'email' : 'text'} required placeholder={mode === 'signup' ? 'Email Address' : 'Email or username'} autoComplete={mode === 'signup' ? 'email' : 'username'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
@@ -312,10 +366,65 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 )}
                 {/* A reset needs no password — asking for one would be asking
                     for the thing the user is here because they do not have. */}
-                {mode !== 'reset' && (
+                {(mode === 'login' || mode === 'signup' || mode === 'link') && (
                   <div style={{ position: 'relative' }}>
                     <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
                     <input ref={mode === 'link' ? firstFieldRef : undefined} type="password" required placeholder={mode === 'link' ? 'Your existing password' : 'Password'} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  </div>
+                )}
+
+                {mode === 'phone' && (
+                  <div style={{ position: 'relative' }}>
+                    <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                    <input
+                      ref={firstFieldRef}
+                      type="tel"
+                      required
+                      placeholder="07700 900123"
+                      autoComplete="tel"
+                      inputMode="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      style={inputStyle}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                    />
+                  </div>
+                )}
+
+                {mode === 'code' && (
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      ref={firstFieldRef}
+                      type="text"
+                      required
+                      placeholder="123456"
+                      /* one-time-code lets iOS and Android offer the code straight
+                         from the notification, which is the whole ergonomic win
+                         of SMS sign-in. */
+                      autoComplete="one-time-code"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                      style={{ ...inputStyle, paddingLeft: '16px', textAlign: 'center', fontSize: '22px', fontWeight: 700, letterSpacing: '0.4em' }}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                    />
+                  </div>
+                )}
+
+                {mode === 'code' && (
+                  <div style={{ textAlign: 'center', marginTop: '-4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => abandonPhone('phone')}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer' }}
+                      onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
+                    >
+                      Wrong number, or no code? Send again
+                    </button>
                   </div>
                 )}
 
@@ -354,12 +463,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                       label={mode === 'login' ? 'Signing in'
                         : mode === 'signup' ? 'Creating your account'
                         : mode === 'reset' ? 'Sending your link'
+                        : mode === 'phone' ? 'Texting your code'
+                        : mode === 'code' ? 'Checking your code'
                         : 'Connecting Google'}
                     />
                   ) : (
                     <>{mode === 'login' ? 'Sign in'
                       : mode === 'signup' ? 'Create account'
                       : mode === 'reset' ? 'Send reset link'
+                      : mode === 'phone' ? 'Text me a code'
+                      : mode === 'code' ? 'Verify and sign in'
                       : 'Connect and sign in'} <ArrowRight size={16} /></>
                   )}
                 </button>
@@ -416,13 +529,49 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   </>
                 )}
               </button>
+
+              <button
+                type="button"
+                onClick={() => { setMode('phone'); setError(''); setInfo(''); }}
+                aria-label="Continue with mobile number"
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  marginTop: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  background: 'var(--grey-0)',
+                  border: '1px solid var(--grey-20)',
+                  borderRadius: 'var(--radius-full)',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: 'var(--black)',
+                  cursor: 'pointer',
+                  transition: 'background var(--duration-fast), border-color var(--duration-fast)',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--grey-5)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--grey-0)'; }}
+              >
+                <Smartphone size={18} aria-hidden="true" />
+                Continue with mobile
+              </button>
               </>
               )}
+
+              {/* Invisible reCAPTCHA mounts here. It must exist in the DOM
+                  before startPhoneSignIn runs, and must stay mounted for the
+                  whole phone flow — unmounting it mid-verification leaves
+                  Firebase holding a reference to a detached node. */}
+              <div id={RECAPTCHA_ID} />
 
               <div style={{ marginTop: 'var(--spacing-32)', textAlign: 'center' }}>
                 <button
                   onClick={() => {
                     if (mode === 'link') { abandonLink(); return; }
+                    if (mode === 'phone' || mode === 'code') { abandonPhone('login'); return; }
                     if (mode === 'reset') { setMode('login'); setError(''); setInfo(''); return; }
                     setMode(mode === 'login' ? 'signup' : 'login');
                     setError('');
@@ -435,6 +584,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   {mode === 'login' ? "Don't have an account? Sign up"
                     : mode === 'signup' ? 'Already have an account? Sign in'
                     : mode === 'reset' ? 'Back to sign in'
+                    : (mode === 'phone' || mode === 'code') ? 'Use email instead'
                     : 'Cancel and sign in another way'}
                 </button>
               </div>

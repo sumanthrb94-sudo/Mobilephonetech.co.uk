@@ -40,6 +40,15 @@ vi.mock('firebase/auth', () => ({
   updateProfile: vi.fn(() => Promise.resolve()),
   updatePassword: vi.fn(() => Promise.resolve()),
   fetchSignInMethodsForEmail: vi.fn(() => Promise.resolve([] as string[])),
+  // Phone sign-in. confirm() resolves with a user carrying a phoneNumber, so
+  // toUser() can fall back to it when there is no email or display name.
+  signInWithPhoneNumber: vi.fn(() => Promise.resolve({
+    confirm: vi.fn(() => Promise.resolve({ user: { uid: 'p1', email: null, phoneNumber: '+447700900123', providerData: [{ providerId: 'phone' }] } })),
+  })),
+  linkWithPhoneNumber: vi.fn(() => Promise.resolve({
+    confirm: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', phoneNumber: '+447700900123', providerData: [{ providerId: 'password' }, { providerId: 'phone' }] } })),
+  })),
+  RecaptchaVerifier: class { constructor() {} clear() {} render() { return Promise.resolve(0); } },
   linkWithCredential: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'password' }, { providerId: 'google.com' }] } })),
 }));
 

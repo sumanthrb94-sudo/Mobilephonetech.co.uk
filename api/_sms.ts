@@ -18,6 +18,20 @@
  * spending credits.
  */
 
+import { normalisePhone } from '../src/utils/phoneNumber.js';
+
+/**
+ * Normalise a UK number to the international form Brevo expects: digits only,
+ * no plus, country code included.
+ *
+ * Re-exported from the shared implementation so a number normalises
+ * identically here and in the browser. That matters more than avoiding a few
+ * duplicated lines: the same function decides the identity a phone sign-in is
+ * keyed on, and two normalisers that disagreed would hand one person two
+ * accounts.
+ */
+export const toInternational = normalisePhone;
+
 const ENDPOINT = 'https://api.brevo.com/v3/transactionalSMS/sms';
 
 export interface SmsResult {
@@ -33,28 +47,6 @@ export function smsConfigured(): boolean {
   return Boolean(process.env.BREVO_API_KEY && process.env.SMS_SENDER);
 }
 
-/**
- * Normalise a UK number to the international form Brevo expects: digits only,
- * no plus, country code included.
- *
- * Returns null for anything that does not look like a real number, because a
- * malformed recipient is a wasted credit and a silent non-delivery rather
- * than an error you would notice.
- */
-export function toInternational(raw: unknown, defaultCountry = '44'): string | null {
-  let digits = String(raw ?? '').replace(/[^\d+]/g, '');
-  if (!digits) return null;
-
-  if (digits.startsWith('+')) digits = digits.slice(1);
-  // 07700 900123 → 447700900123
-  else if (digits.startsWith('0')) digits = defaultCountry + digits.slice(1);
-  // A bare 7700900123 is a UK mobile missing both the trunk 0 and the country
-  // code; anything already starting with the country code is left alone.
-  else if (!digits.startsWith(defaultCountry)) digits = defaultCountry + digits;
-
-  // Shortest plausible international number is 8 digits, longest is 15 (E.164).
-  return digits.length >= 8 && digits.length <= 15 ? digits : null;
-}
 
 export async function sendSms(params: { to: unknown; content: string; tag?: string }): Promise<SmsResult> {
   if (!smsConfigured()) {

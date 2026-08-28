@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import AuthModal from '../../components/AuthModal';
 
 /**
- * The three flows that were previously broken or missing:
+ * The four flows that were previously broken or missing:
  *
  *  1. Signup claimed it had sent a confirmation email and told an
  *     already-signed-in customer to sign in. Neither was true —
@@ -16,6 +16,7 @@ import AuthModal from '../../components/AuthModal';
  *  3. Google sign-in against an address that already had a password ended at
  *     "use your password instead", which is a dead end for anyone who owns
  *     both. It now links the two.
+ *  4. Mobile sign-in did not exist at all.
  */
 
 const login = vi.fn();
@@ -25,7 +26,11 @@ const resetPassword = vi.fn();
 const completeGoogleLink = vi.fn();
 const cancelGoogleLink = vi.fn();
 const signInMethodsFor = vi.fn<(email: string) => Promise<string[]>>();
+const startPhoneSignIn = vi.fn();
+const confirmPhoneCode = vi.fn();
+const cancelPhoneSignIn = vi.fn();
 let pendingLinkEmail: string | null = null;
+let pendingPhone: string | null = null;
 
 vi.mock('../../context/AuthContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../context/AuthContext')>();
@@ -35,6 +40,7 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
       user: null, session: null, isAuthenticated: false, isLoading: false,
       login, signup, signInWithGoogle, resetPassword,
       signInMethodsFor, completeGoogleLink, cancelGoogleLink, pendingLinkEmail,
+      startPhoneSignIn, confirmPhoneCode, cancelPhoneSignIn, pendingPhone,
       logout: vi.fn(), continueAsGuest: vi.fn(), refreshClaims: vi.fn(),
     }),
   };
@@ -56,6 +62,7 @@ const err = (code: string) => Object.assign(new Error(code), { code });
 beforeEach(() => {
   vi.clearAllMocks();
   pendingLinkEmail = null;
+  pendingPhone = null;
   signInMethodsFor.mockResolvedValue([]);
 });
 
@@ -242,5 +249,141 @@ describe('sign-in failures point at the right method', () => {
     await userEvent.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     expect(await screen.findByText(/too many attempts/i)).toBeInTheDocument();
+  });
+});
+
+describe('mobile sign-in', () => {
+  it('is offered on the sign-in form', () => {
+    renderModal('login');
+    expect(screen.getByRole('button', { name: /continue with mobile/i })).toBeInTheDocument();
+  });
+
+  it('mounts the reCAPTCHA container Firebase requires', () => {
+    const { container } = render(
+      <MemoryRouter><AuthModal isOpen onClose={vi.fn()} onSuccess={vi.fn()} /></MemoryRouter>,
+    );
+    // Without this element in the DOM, signInWithPhoneNumber throws before any
+    // SMS is sent.
+    expect(container.querySelector('#auth-recaptcha-container')).toBeTruthy();
+  });
+
+  it('asks for a number, then a code', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    expect(screen.getByRole('heading', { name: /sign in with your mobile/i })).toBeInTheDocument();
+    // No password anywhere in this flow — that is the point of it.
+    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument();
+
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('07700900123', 'auth-recaptcha-container'));
+    expect(await screen.findByRole('heading', { name: /enter your code/i })).toBeInTheDocument();
+  });
+
+  it('rejects a junk number before spending an SMS', async () => {
+    renderModal('login');
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '12');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    expect(await screen.findByText(/enter a uk mobile number/i)).toBeInTheDocument();
+    expect(startPhoneSignIn).not.toHaveBeenCalled();
+  });
+
+  it('verifies the code and signs in', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    confirmPhoneCode.mockResolvedValue(undefined);
+    pendingPhone = '+447700900123';
+    const { onClose, onSuccess } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    await waitFor(() => expect(confirmPhoneCode).toHaveBeenCalledWith('123456'));
+    expect(onSuccess).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('refuses a short code without calling Firebase', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    expect(await screen.findByText(/6-digit code/i)).toBeInTheDocument();
+    expect(confirmPhoneCode).not.toHaveBeenCalled();
+  });
+
+  it('strips non-digits as the code is typed', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('login');
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    const field = await screen.findByPlaceholderText('123456');
+    await userEvent.type(field, '12a34b56');
+    expect((field as HTMLInputElement).value).toBe('123456');
+  });
+
+  it('explains a number already tied to another account', async () => {
+    startPhoneSignIn.mockRejectedValue(err('auth/credential-already-in-use'));
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    // Silently switching them to the other account would look like their data
+    // vanished, so the message says what happened instead.
+    expect(await screen.findByText(/already on another account/i)).toBeInTheDocument();
+  });
+
+  it('names an expired or wrong code precisely', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    confirmPhoneCode.mockRejectedValue(err('auth/invalid-verification-code'));
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '999999');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    expect(await screen.findByText(/code is not right/i)).toBeInTheDocument();
+  });
+
+  it('lets the user go back and resend', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /send again/i }));
+
+    expect(cancelPhoneSignIn).toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: /sign in with your mobile/i })).toBeInTheDocument();
+  });
+
+  it('releases the pending verification when switching back to email', async () => {
+    renderModal('login');
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.click(screen.getByRole('button', { name: /use email instead/i }));
+
+    expect(cancelPhoneSignIn).toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
   });
 });

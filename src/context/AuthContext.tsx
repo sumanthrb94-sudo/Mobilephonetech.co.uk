@@ -11,15 +11,22 @@ import {
   updateProfile,
   fetchSignInMethodsForEmail,
   linkWithCredential,
+  signInWithPhoneNumber,
+  linkWithPhoneNumber,
+  RecaptchaVerifier,
+  type ConfirmationResult,
   type AuthCredential,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, COL } from '../lib/firebase';
+import { toE164, formatPhoneForDisplay } from '../utils/phoneNumber';
 
 export interface User {
   id: string;
   email: string;
+  /** E.164, present only once a number has been verified by SMS. */
+  phoneNumber?: string | null;
   fullName: string;
   isGuest?: boolean;
   /** From the `admin` custom claim on the ID token, not a database field. */
@@ -82,6 +89,25 @@ interface AuthContextType {
   completeGoogleLink: (password: string) => Promise<void>;
   /** Abandon a pending link, e.g. the user closed the modal. */
   cancelGoogleLink: () => void;
+  /**
+   * Send a one-time code by SMS and hold the confirmation until it is entered.
+   *
+   * `containerId` is the id of an element the invisible reCAPTCHA can mount
+   * into. Firebase requires one; without it signInWithPhoneNumber throws
+   * before any SMS is sent.
+   *
+   * When someone is already signed in this LINKS the number to their existing
+   * account rather than starting a new one — the whole point, since a phone
+   * sign-in that ignored the current session would mint a second uid for a
+   * customer who already has one.
+   */
+  startPhoneSignIn: (phone: string, containerId: string) => Promise<void>;
+  /** Verify the SMS code, completing either the sign-in or the link. */
+  confirmPhoneCode: (code: string) => Promise<void>;
+  /** The number a code was sent to, in E.164, or null if none is pending. */
+  pendingPhone: string | null;
+  /** Drop a pending phone verification and tear down its reCAPTCHA. */
+  cancelPhoneSignIn: () => void;
   continueAsGuest: (email: string) => void;
   /** Force-refresh the ID token, e.g. right after a role change. */
   refreshClaims: () => Promise<void>;
@@ -103,7 +129,12 @@ async function toUser(fbUser: FirebaseUser): Promise<User> {
   return {
     id: fbUser.uid,
     email: fbUser.email ?? '',
-    fullName: fbUser.displayName ?? (fbUser.email ? fbUser.email.split('@')[0] : 'User'),
+    phoneNumber: fbUser.phoneNumber ?? null,
+    // A phone-only account has no email and no display name, so the masked
+    // number is the only thing left to greet them by.
+    fullName: fbUser.displayName
+      ?? (fbUser.email ? fbUser.email.split('@')[0] : null)
+      ?? (fbUser.phoneNumber ? formatPhoneForDisplay(fbUser.phoneNumber) : 'User'),
     isAdmin,
     // Optional chain: providerData is always present on a real Firebase user,
     // but a missing one must not take sign-in down over a display detail.
@@ -264,6 +295,88 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setPendingLinkEmail(null);
   };
 
+  // ── Phone sign-in ────────────────────────────────────────────────
+  //
+  // Firebase treats a phone number as an identity in its own right, NOT as an
+  // attribute of an email account. That is the duplicate trap: a customer who
+  // already has an email account and then "signs in" with their phone gets a
+  // second uid, a second profile document, and a second order history — and
+  // Firebase's one-account-per-email setting does nothing about it, because no
+  // email is involved.
+  //
+  // So the branch below is the important line in this file: when there is a
+  // current user we LINK, and only start a fresh account when nobody is
+  // signed in. See docs/AUTH.md.
+
+  const confirmationRef = useRef<ConfirmationResult | null>(null);
+  const recaptchaRef = useRef<RecaptchaVerifier | null>(null);
+  const [pendingPhone, setPendingPhone] = useState<string | null>(null);
+
+  /** reCAPTCHA cannot be reused once solved, so each attempt gets a fresh one. */
+  const teardownRecaptcha = () => {
+    try {
+      recaptchaRef.current?.clear();
+    } catch {
+      // Already torn down, or the container left the DOM first. Either way the
+      // next attempt builds a new one, so there is nothing to recover.
+    }
+    recaptchaRef.current = null;
+  };
+
+  const startPhoneSignIn = async (phone: string, containerId: string) => {
+    const e164 = toE164(phone);
+    if (!e164) throw Object.assign(new Error('Enter a valid mobile number.'), { code: 'app/invalid-phone' });
+
+    teardownRecaptcha();
+    const verifier = new RecaptchaVerifier(auth, containerId, { size: 'invisible' });
+    recaptchaRef.current = verifier;
+
+    try {
+      const current = auth.currentUser;
+      confirmationRef.current = current
+        // Attach to the account they already have rather than minting another.
+        ? await linkWithPhoneNumber(current, e164, verifier)
+        : await signInWithPhoneNumber(auth, e164, verifier);
+      setPendingPhone(e164);
+    } catch (err) {
+      // A failed attempt leaves a solved-but-unusable widget behind; clearing
+      // it is what lets the user simply press send again.
+      teardownRecaptcha();
+      throw err;
+    }
+  };
+
+  const confirmPhoneCode = async (code: string) => {
+    const confirmation = confirmationRef.current;
+    if (!confirmation) throw new Error('There is no code waiting to be confirmed.');
+
+    const cred = await confirmation.confirm(code.trim());
+
+    confirmationRef.current = null;
+    setPendingPhone(null);
+    teardownRecaptcha();
+
+    await ensureProfile(cred.user);
+    // Record the number on the profile so staff can find an order by it. The
+    // authoritative copy stays on the auth record; this is a convenience.
+    try {
+      await setDoc(
+        doc(db, COL.users, cred.user.uid),
+        { phoneNumber: cred.user.phoneNumber ?? null, updatedAt: serverTimestamp() },
+        { merge: true },
+      );
+    } catch {
+      // A profile write must not undo a completed sign-in.
+    }
+    setUser(await toUser(cred.user));
+  };
+
+  const cancelPhoneSignIn = () => {
+    confirmationRef.current = null;
+    setPendingPhone(null);
+    teardownRecaptcha();
+  };
+
   const logout = async () => {
     await signOut(auth);
     setUser(null);
@@ -307,6 +420,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       pendingLinkEmail,
       completeGoogleLink,
       cancelGoogleLink,
+      startPhoneSignIn,
+      confirmPhoneCode,
+      pendingPhone,
+      cancelPhoneSignIn,
       continueAsGuest,
       refreshClaims,
     }}>
