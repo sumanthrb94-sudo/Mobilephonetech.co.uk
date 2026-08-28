@@ -30,6 +30,32 @@ export function emailConfigured(): boolean {
   return Boolean(process.env.BREVO_API_KEY && process.env.EMAIL_FROM);
 }
 
+/**
+ * Mailbox providers whose domains you cannot authenticate as a sender.
+ *
+ * This is the misconfiguration that produces no error anywhere. Brevo accepts
+ * the message and reports success, because the fault is not Brevo's: a From:
+ * address at gmail.com sent from Brevo's servers cannot align with gmail.com's
+ * DMARC record, so the receiving side — Gmail most of all — treats it as
+ * spoofing and files or drops it. Every log in the chain says "sent". Nothing
+ * arrives. The only fix is a From: address at a domain you control and have
+ * authenticated in Brevo.
+ */
+const UNAUTHENTICATABLE_SENDER_DOMAINS = [
+  'gmail.com', 'googlemail.com', 'yahoo.com', 'yahoo.co.uk', 'outlook.com',
+  'hotmail.com', 'hotmail.co.uk', 'live.com', 'aol.com', 'icloud.com', 'me.com',
+];
+
+/** Non-null when EMAIL_FROM is set to an address that cannot be authenticated. */
+export function senderDomainWarning(): string | null {
+  const from = String(process.env.EMAIL_FROM ?? '').toLowerCase();
+  const domain = from.split('@')[1];
+  if (!domain || !UNAUTHENTICATABLE_SENDER_DOMAINS.includes(domain)) return null;
+  return `EMAIL_FROM is at ${domain}, which cannot be DKIM/SPF-aligned for this sender. `
+    + 'Brevo will accept every message and most will be junked or dropped by the '
+    + 'recipient. Use an address at a domain you control and have authenticated in Brevo.';
+}
+
 /** Very small allow-list check — enough to refuse obvious rubbish. */
 export function looksLikeEmail(value: unknown): value is string {
   return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
@@ -82,6 +108,11 @@ export async function sendEmail(params: {
     }
 
     const body = (await res.json().catch(() => ({}))) as { messageId?: string };
+    // Log the id, never the recipient. Brevo accepting a message is not the
+    // same as a mailbox receiving it, and without this there is no way to join
+    // "the route ran" to a row in Brevo → Transactional → Logs, where the
+    // delivered / soft-bounced / blocked verdict actually lives.
+    console.log(`[email] ${params.tag ?? 'untagged'} accepted by Brevo as ${body.messageId ?? 'unknown'}`);
     return { sent: true, messageId: body.messageId };
   } catch (err) {
     // A failed send must not take the calling request down with it.

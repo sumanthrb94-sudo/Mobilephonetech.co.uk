@@ -194,3 +194,21 @@ describe('missing data', () => {
     expect(built.html).not.toContain('Delivering to');
   });
 });
+
+describe('the sender that fails silently', () => {
+  it('warns when EMAIL_FROM is at a domain that cannot be authenticated', async () => {
+    const { senderDomainWarning } = await import('../../../api/_email.js');
+    const before = process.env.EMAIL_FROM;
+
+    // The exact configuration that produced "Brevo says sent, nothing arrives":
+    // a gmail.com From: address relayed by Brevo cannot align with gmail.com's
+    // DMARC record, so Gmail treats it as spoofing.
+    process.env.EMAIL_FROM = 'sumanthrb94@gmail.com';
+    expect(senderDomainWarning()).toMatch(/gmail\.com/);
+
+    process.env.EMAIL_FROM = 'orders@lehart.co.uk';
+    expect(senderDomainWarning()).toBeNull();
+
+    process.env.EMAIL_FROM = before;
+  });
+});

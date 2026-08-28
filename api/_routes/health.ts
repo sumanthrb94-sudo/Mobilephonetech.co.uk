@@ -1,5 +1,5 @@
 import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
-import { emailConfigured } from '../_email.js';
+import { emailConfigured, senderDomainWarning } from '../_email.js';
 
 /**
  * Deployment health check.
@@ -32,6 +32,11 @@ export default async function handler(req: any, res: any) {
     emailFrom: process.env.EMAIL_FROM ?? null,
     smsConfigured: Boolean(process.env.BREVO_API_KEY && process.env.SMS_SENDER),
   };
+
+  // Configuration that is present, accepted everywhere, and still wrong. These
+  // are the failures with no error to find: every log says the mail was sent.
+  const warnings = [senderDomainWarning()].filter(Boolean);
+  if (warnings.length) checks.warnings = warnings;
 
   const db = await adminDb();
   if (!db) {

@@ -763,12 +763,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               </>
               )}
 
-              {/* Invisible reCAPTCHA mounts here. It must exist in the DOM
-                  before startPhoneSignIn runs, and must stay mounted for the
-                  whole phone flow — unmounting it mid-verification leaves
-                  Firebase holding a reference to a detached node. */}
-              <div id={RECAPTCHA_ID} />
-
               <div style={{ marginTop: 'var(--spacing-32)', textAlign: 'center' }}>
                 <button
                   onClick={() => {
@@ -794,6 +788,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               </div>
               </>
               )}
+
+              {/* Invisible reCAPTCHA mounts here. OUTSIDE the verify/other
+                  ternary, deliberately: it must exist in the DOM before
+                  startPhoneSignIn runs, and "Add your mobile" lives on the
+                  verify screen. While this sat in the other branch, every
+                  attempt from that screen threw auth/argument-error before an
+                  SMS was ever requested — the RecaptchaVerifier constructor
+                  was handed an element id that resolved to nothing. It must
+                  also stay mounted for the whole flow: unmounting it
+                  mid-verification leaves Firebase holding a detached node. */}
+              <div id={RECAPTCHA_ID} />
             </div>
           </motion.div>
         </div>

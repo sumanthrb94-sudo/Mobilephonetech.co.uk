@@ -336,3 +336,43 @@ released again when nothing reached Brevo at all, so accounts created while the
 key was unset are not permanently excluded — but an account that was stamped by
 a build *before* that fix still holds it. Clear that one field to let it send,
 or test with a fresh address.
+
+## "Brevo says it sent, nothing arrives"
+
+This is the failure mode with no error anywhere, and it is a configuration
+fault rather than a bug. On 28 August the runtime logs showed
+`POST /api/account-welcome 200` with no error line and no skip line, meaning
+`sendEmail` returned `sent: true` — **Brevo accepted the message**. The
+end-to-end journey test proves the same thing offline: welcome, confirmation,
+dispatch and doorstep all build correctly and all address the right customer.
+
+The cause was the sender. `EMAIL_FROM` was `sumanthrb94@gmail.com`. A `From:`
+address at gmail.com relayed through Brevo's servers cannot be SPF- or
+DKIM-aligned with gmail.com's DMARC record, so the receiving side — Gmail above
+all — reads it as spoofing and junks or drops it. Nothing in the chain reports
+a failure, because nothing in the chain failed.
+
+`EMAIL_FROM` must be an address at a domain you control and have authenticated
+in Brevo → Senders, Domains & Dedicated IPs: add the domain, publish the DKIM
+and SPF records it gives you, wait for it to show Verified, then use
+`orders@yourdomain`. `/api/health` now returns a `warnings` array naming this
+if the sender is at a free-mail domain.
+
+To trace an individual send, look for `[email] <tag> accepted by Brevo as
+<messageId>` in the Vercel runtime logs and search that id in Brevo →
+Transactional → Logs, which carries the real verdict: delivered, soft bounce,
+blocked, or spam complaint.
+
+## The end-to-end journey test
+
+`src/__tests__/e2e/customerJourney.test.ts` walks signup → welcome → order →
+confirmation → dispatch → out-for-delivery through the real handlers, with an
+in-memory Firestore and a fake Brevo that records the exact payload.
+
+It exists because every individual piece was already covered and the journey
+still did not work. Unit tests mock `sendEmail` and assert it was called; they
+cannot see a recipient read from the wrong field, a browser that never calls
+the route, or a sender the provider will accept and the world will refuse. It
+also pins the two properties that are easy to break and invisible when broken:
+every message carries a plain-text part, and the confirmation quotes the same
+arrival date checkout showed.
