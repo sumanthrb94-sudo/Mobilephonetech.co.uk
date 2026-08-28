@@ -166,11 +166,34 @@ reset only** — signup still requires a real address, because inventing one
 would send a customer's mail into a domain they do not own. It cannot create a
 duplicate: it resolves to the same address either way.
 
+## The project
+
+`lehart-1b9ef`. Pinned in three places, all of which must agree:
+
+| Where | Value |
+|---|---|
+| `.firebaserc` | `lehart-1b9ef` — so `npx firebase deploy` needs no `--project` flag |
+| `vercel.json` CSP `frame-src` | `https://lehart-1b9ef.firebaseapp.com` — the Google sign-in popup is framed from this domain, and a stale entry here blocks it **silently** |
+| Vercel `VITE_FIREBASE_*` | from Project settings → General → Your apps |
+
+An earlier project id (`mobilephonemarket-2764d`) was carried in the first two
+for a while. If sign-in ever fails in a way that looks like nothing at all
+happening, check these three still name the same project before anything else.
+
+### New-project limits worth knowing
+
+- **SMS is capped at 10/day** until a billing account is attached. That is
+  enough to test mobile sign-in and nowhere near enough to launch on it.
+  Firebase Console → Authentication → Sign-in method shows the current cap.
+- The project is on **Spark (no-cost)**. Firestore and Auth are fine there;
+  raising the SMS cap requires Blaze.
+
 ## If sign-in is failing entirely
 
 Check these before reading any code:
 
-1. **The six `VITE_FIREBASE_*` variables are set in the deployment.**
+1. **The six `VITE_FIREBASE_*` variables are set in the deployment, and name
+   `lehart-1b9ef`.**
    `src/lib/firebase.ts` deliberately boots with placeholder values when they
    are missing — that stops a blank page, but it means every auth call fails
    while the app looks fine. "Signup is broken" and "env vars are missing" are

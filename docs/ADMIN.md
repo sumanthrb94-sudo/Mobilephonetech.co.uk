@@ -33,7 +33,7 @@ it from the client.
 
 ```bash
 npx firebase deploy --only firestore:rules,firestore:indexes,storage \
-  --project mobilephonemarket-2764d
+  --project lehart-1b9ef
 ```
 
 `firestore.rules` and `storage.rules` are the authorization boundary — until
