@@ -29,7 +29,7 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
 }));
 
 // Import after mock
-const { default: handler } = await import('../../../api/newsletter');
+const { default: handler } = await import('../../../api/_routes/newsletter');
 
 function req(method: string, body: unknown = {}) {
   return { method, body };

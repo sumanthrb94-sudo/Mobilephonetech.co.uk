@@ -1,4 +1,4 @@
-import { adminDb } from './_firebaseAdmin.js';
+import { adminDb } from '../_firebaseAdmin.js';
 
 const VALID_SORTS = ['price_asc', 'price_desc', 'newest', 'discount'] as const;
 type SortMode = (typeof VALID_SORTS)[number];

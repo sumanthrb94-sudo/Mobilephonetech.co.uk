@@ -31,7 +31,7 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
   getAdminInitError: () => null,
 }));
 
-const { default: handler } = await import('../../../api/bootstrap-admin');
+const { default: handler } = await import('../../../api/_routes/bootstrap-admin');
 
 function res() {
   let _code = 200;

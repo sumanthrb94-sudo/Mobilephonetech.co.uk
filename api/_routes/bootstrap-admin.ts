@@ -1,5 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
-import { adminAuth, adminDb, getAdminInitError } from './_firebaseAdmin.js';
+import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
 
 /**
  * One-time admin promotion, for when running scripts/create-users.mjs is not

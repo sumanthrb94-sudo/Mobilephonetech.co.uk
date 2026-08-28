@@ -18,7 +18,7 @@ import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const API_DIR = join(ROOT, 'api');
+const API_DIR = join(ROOT, 'api', '_routes');
 const PORT = Number(process.env.E2E_API_PORT || 4174);
 
 // Collect top-level and nested route files, skipping shared _helpers.

@@ -28,7 +28,7 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
   callerIsAdmin: () => Promise.resolve(false),
 }));
 
-const { default: handler } = await import('../../../api/trade-in');
+const { default: handler } = await import('../../../api/_routes/trade-in');
 
 function req(method: string, body: unknown = {}) {
   return { method, body };

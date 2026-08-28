@@ -1,5 +1,5 @@
-import { adminDb } from './_firebaseAdmin.js';
-import { enforceRateLimit, clientIp } from './_rateLimit.js';
+import { adminDb } from '../_firebaseAdmin.js';
+import { enforceRateLimit, clientIp } from '../_rateLimit.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

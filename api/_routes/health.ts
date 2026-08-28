@@ -1,4 +1,4 @@
-import { adminAuth, adminDb, getAdminInitError } from './_firebaseAdmin.js';
+import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
 
 /**
  * Deployment health check.

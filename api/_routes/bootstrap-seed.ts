@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto';
-import { adminDb, getAdminInitError } from './_firebaseAdmin.js';
-import { MOCK_PHONES } from '../src/data.js';
+import { adminDb, getAdminInitError } from '../_firebaseAdmin.js';
+import { MOCK_PHONES } from '../../src/data.js';
 
 /**
  * One-time catalogue seed, for when running scripts/seed-firestore.mjs is not

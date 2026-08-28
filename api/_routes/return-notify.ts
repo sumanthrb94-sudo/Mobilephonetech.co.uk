@@ -1,6 +1,6 @@
-import { adminDb, verifyCaller, callerIsAdmin } from './_firebaseAdmin.js';
-import { sendEmail, emailConfigured, layout, esc } from './_email.js';
-import { enforceRateLimit } from './_rateLimit.js';
+import { adminDb, verifyCaller, callerIsAdmin } from '../_firebaseAdmin.js';
+import { sendEmail, emailConfigured, layout, esc } from '../_email.js';
+import { enforceRateLimit } from '../_rateLimit.js';
 
 /**
  * Emails the customer about one return.

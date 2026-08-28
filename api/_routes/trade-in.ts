@@ -1,5 +1,5 @@
-import { adminDb } from './_firebaseAdmin.js';
-import { enforceRateLimit } from './_rateLimit.js';
+import { adminDb } from '../_firebaseAdmin.js';
+import { enforceRateLimit } from '../_rateLimit.js';
 
 const VALID_CONDITIONS = ['Pristine', 'Excellent', 'Good', 'Fair'] as const;
 type Condition = (typeof VALID_CONDITIONS)[number];
