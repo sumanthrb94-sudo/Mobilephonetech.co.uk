@@ -4,12 +4,19 @@ import { sendEmail } from '../_email.js';
 import { abandonedCartEmail } from '../_templates.js';
 
 /**
- * Hourly sweep: email anyone who started a checkout, did not finish, and has
+ * Daily sweep: email anyone who started a checkout, did not finish, and has
  * not already been reminded.
  *
  * Invoked by the Vercel cron declared in vercel.json. Because every route is
  * dispatched through the one catch-all function, adding this costs no extra
  * Serverless Function against the Hobby plan's limit of twelve.
+ *
+ * The schedule is DAILY, not hourly, and that is a plan limit rather than a
+ * preference: Hobby permits a cron only once a day, and an hourly expression
+ * makes Vercel refuse the whole deployment at creation — no build, no logs,
+ * just a failed commit status. On Pro, "0 * * * *" is the better schedule,
+ * because a reminder that lands four hours after the basket was abandoned
+ * converts far better than one that lands the next morning.
  *
  * Three rules keep this from becoming spam:
  *
@@ -26,6 +33,9 @@ import { abandonedCartEmail } from '../_templates.js';
  * customers is not something to leave lying around.
  */
 
+// With a daily sweep the delay is a floor rather than a target: a cart
+// abandoned at noon is reminded the next morning either way. Kept at 4 so the
+// behaviour is right the moment the schedule can be tightened.
 const DELAY_HOURS = Number(process.env.ABANDONED_CART_DELAY_HOURS ?? 4);
 const CUTOFF_HOURS = Number(process.env.ABANDONED_CART_CUTOFF_HOURS ?? 48);
 /** Well under Brevo's 300/day so a backlog can never exhaust the quota that
@@ -91,7 +101,7 @@ export default async function handler(req: any, res: any) {
       continue;
     }
     if (String(cart.startedAt ?? '') < tooOld) {
-      // Close it so the query stops returning it every hour forever.
+      // Close it so the query stops returning it on every run forever.
       await doc.ref.set({ status: 'expired', updatedAt: new Date().toISOString() }, { merge: true });
       tally.expired++;
       continue;

@@ -258,11 +258,18 @@ removed from a list can still be caught by an automation.
 | Piece | What it does |
 |---|---|
 | `POST /api/cart-events` | Records a started checkout once an email is known |
-| `GET /api/cron-abandoned-cart` | Hourly sweep, sends one reminder per cart |
+| `GET /api/cron-abandoned-cart` | Daily sweep, sends one reminder per cart |
 
 Declared as a Vercel cron in `vercel.json`. Because every route is dispatched
 through the one catch-all function, this costs **no extra Serverless Function**
 against the Hobby limit.
+
+> **The schedule must be daily on Hobby.** That plan allows a cron to run only
+> once a day, and an hourly expression like `0 * * * *` does not warn — Vercel
+> refuses the entire deployment at creation, with no build, no logs, and only a
+> failed commit status to go on. This cost seven hours of failed deploys once
+> already. On Pro, switch it to `0 * * * *`: a reminder four hours after the
+> basket is abandoned converts far better than one the next morning.
 
 Three rules stop it becoming spam: one reminder per cart ever (`reminderSentAt`
 is stamped *before* the send, so a crash cannot double-send); a delay
