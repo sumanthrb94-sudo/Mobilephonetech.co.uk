@@ -1,0 +1,365 @@
+<title>Brevo Integration</title>
+<style>
+  :root {
+    --display: "Bitstream Charter", Charter, Georgia, serif;
+    --body: "Liberation Sans", "DejaVu Sans", -apple-system, sans-serif;
+    --mono: "Liberation Mono", "DejaVu Sans Mono", monospace;
+    --ink: #0c0a09;
+    --ink-soft: #44403c;
+    --muted: #78716c;
+    --rule: #e7e5e4;
+    --gold: #a16207;
+    --gold-deep: #854d0e;
+    --gold-wash: #fffbeb;
+    --green: #047857;
+    --green-wash: #f0fdf4;
+    --amber-wash: #fff7ed;
+    --amber-line: #fed7aa;
+    --page: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 40px 34px 56px;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 13.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  /* ── Masthead ── */
+  .mast { border-bottom: 2.5px solid var(--ink); padding-bottom: 18px; margin-bottom: 26px; }
+  .brand { font-family: var(--body); font-size: 20px; font-weight: 800; letter-spacing: -0.025em; }
+  .brand span { color: var(--gold); }
+  h1 {
+    font-family: var(--display);
+    font-size: 33px;
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    margin: 13px 0 8px;
+    font-weight: 700;
+  }
+  .standfirst { font-size: 14.5px; color: var(--ink-soft); margin: 0; max-width: 60ch; }
+  .meta { margin-top: 13px; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 21px;
+    letter-spacing: -0.015em;
+    margin: 34px 0 4px;
+    padding-top: 15px;
+    border-top: 1px solid var(--rule);
+    font-weight: 700;
+  }
+  h2:first-of-type { border-top: 0; padding-top: 0; }
+  h3 {
+    font-size: 14px;
+    font-weight: 800;
+    margin: 20px 0 6px;
+    letter-spacing: -0.005em;
+  }
+  h3 .tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--gold-deep);
+    background: var(--gold-wash);
+    border: 1px solid #fde68a;
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 7px;
+    white-space: nowrap;
+  }
+  p { margin: 0 0 11px; }
+  .lede { font-size: 14px; color: var(--ink-soft); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.875em;
+    background: #f5f5f4;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.5px 4px;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin: 12px 0 16px; font-size: 12.5px; }
+  th {
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1.5px solid var(--ink);
+    padding: 0 9px 6px 0;
+    font-weight: 800;
+  }
+  td { padding: 8px 9px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td:last-child, th:last-child { padding-right: 0; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .callout {
+    border-left: 3px solid var(--gold);
+    background: var(--gold-wash);
+    padding: 12px 15px;
+    margin: 15px 0;
+    border-radius: 0 7px 7px 0;
+    font-size: 13px;
+  }
+  .callout.warn { border-left-color: #ea580c; background: var(--amber-wash); }
+  .callout.good { border-left-color: var(--green); background: var(--green-wash); }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout strong { display: block; margin-bottom: 3px; font-size: 12px; letter-spacing: 0.02em; }
+
+  ul { margin: 0 0 12px; padding-left: 19px; }
+  li { margin-bottom: 5px; }
+
+  .grid2 { display: flex; gap: 16px; margin: 14px 0; }
+  .card {
+    flex: 1;
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    padding: 13px 15px;
+    background: #fcfcfb;
+  }
+  .card h4 { margin: 0 0 6px; font-size: 12.5px; font-weight: 800; }
+  .card p { margin: 0; font-size: 12.5px; color: var(--ink-soft); }
+
+  .stats { display: flex; gap: 10px; margin: 18px 0 22px; }
+  .stat {
+    flex: 1;
+    border: 1px solid var(--rule);
+    border-radius: 9px;
+    padding: 12px 13px;
+    text-align: center;
+    background: #fcfcfb;
+  }
+  .stat b { display: block; font-family: var(--display); font-size: 25px; line-height: 1.05; letter-spacing: -0.02em; }
+  .stat span { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-top: 4px; }
+
+  .flow { margin: 14px 0 18px; }
+  .step { display: flex; gap: 11px; margin-bottom: 9px; align-items: flex-start; }
+  .step .n {
+    flex: 0 0 21px; height: 21px; border-radius: 50%;
+    background: var(--ink); color: #fff;
+    font-size: 11px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .step .t { flex: 1; font-size: 12.5px; }
+  .step .t b { display: block; }
+
+  footer {
+    margin-top: 34px; padding-top: 13px;
+    border-top: 1px solid var(--rule);
+    font-size: 10.5px; color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+
+  @media print {
+    h2 { break-after: avoid; page-break-after: avoid; }
+    h3 { break-after: avoid; page-break-after: avoid; }
+    table, .callout, .grid2, .stats, .flow { break-inside: avoid; page-break-inside: avoid; }
+    tr { break-inside: avoid; }
+  }
+</style>
+
+<div class="wrap">
+
+<div class="mast">
+  <div class="brand">Le<span>Hart</span></div>
+  <h1>What Brevo now does for the shop</h1>
+  <p class="standfirst">Everything built on the free Brevo tier — five customer emails, list management,
+  bounce handling, abandoned-cart recovery and delivery SMS — and what each one actually buys you.</p>
+  <div class="meta">Implementation record &nbsp;·&nbsp; Branch <code>claude/analyze-ui-design-5kPX1</code></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><b>5</b><span>Customer emails</span></div>
+  <div class="stat"><b>4</b><span>Brevo capabilities</span></div>
+  <div class="stat"><b>543</b><span>Tests passing</span></div>
+  <div class="stat"><b>1</b><span>Vercel function</span></div>
+</div>
+
+<h2>The shape of it</h2>
+
+<p class="lede">Brevo does two separate jobs here, and keeping them separate is deliberate.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h4>Transactional — the REST API</h4>
+    <p>Messages a customer's own action triggers: welcome, order confirmed, dispatched,
+    out for delivery, basket reminder. These must send instantly and must never be
+    blocked by a marketing tool being down.</p>
+  </div>
+  <div class="card">
+    <h4>Campaigns — the SMTP relay</h4>
+    <p>Newsletters and promotions, composed by a person and sent to a list. Needs
+    segmentation, open tracking and an unsubscribe link that transactional mail
+    must <em>not</em> carry.</p>
+  </div>
+</div>
+
+<p>Both hand off to the same Brevo account on purpose. One sending domain, one DKIM
+signature, one reputation. Splitting them across two providers is what gets order
+confirmations filed as spam because a promotional blast annoyed people last week.</p>
+
+<h2>1 · The five customer emails</h2>
+
+<p>All built from the storefront's own design system — stone neutrals against the gold
+accent, the LeHart wordmark, the same 14px card. Not a second visual language invented
+for email.</p>
+
+<table>
+  <thead><tr><th style="width:29%">Email</th><th style="width:33%">Fires when</th><th>What it does for you</th></tr></thead>
+  <tbody>
+    <tr><td><b>Welcome</b></td><td>Newsletter signup</td><td>Delivers the WELCOME20 code and sets expectations, so the first campaign is not a cold approach.</td></tr>
+    <tr><td><b>Order confirmation</b></td><td>Order written successfully</td><td>Itemised receipt with server-computed totals. The single most-opened email a shop sends.</td></tr>
+    <tr><td><b>Dispatched</b></td><td>Staff marks it dispatched</td><td>Carries the courier and tracking number, which is what removes the "where is my phone" support ticket.</td></tr>
+    <tr><td><b>Out for delivery</b></td><td>Staff marks it out</td><td>Tells the customer to be in. Fewer failed deliveries, fewer redelivery costs.</td></tr>
+    <tr><td><b>Abandoned cart</b></td><td>Hourly sweep, 4h after</td><td>The only one that directly recovers revenue.</td></tr>
+  </tbody>
+</table>
+
+<p>Every message ships a plain-text part alongside the HTML, a hidden preheader so the
+inbox preview is not just the word "LeHart", and a four-stop delivery tracker on the
+order emails. Everything customer-supplied is HTML-escaped.</p>
+
+<div class="callout">
+  <strong>Why tables and not modern CSS</strong>
+  <p>Outlook renders through Word's HTML engine, which supports neither flexbox nor grid.
+  A div-based layout collapses into a single column there. Every rule is inlined on the
+  element it styles, because email has no stylesheet and no cascade worth relying on.</p>
+</div>
+
+<h2>2 · Bounce and complaint handling <span class="tag">the important one</span></h2>
+
+<p class="lede">Before this, nothing in the shop noticed when an email bounced or someone
+marked it as spam.</p>
+
+<p>That is a slow-motion failure. Keep mailing a dead address and providers read it as a
+list you do not maintain. Collect spam complaints and they stop trusting the domain for
+<em>everything</em> — order confirmations included. You do not see it happen; you just
+watch delivery quietly decline.</p>
+
+<table>
+  <thead><tr><th style="width:46%">Brevo event</th><th>Action taken</th></tr></thead>
+  <tbody>
+    <tr><td><code>hard_bounce</code>, <code>blocked</code>, <code>spam</code>, <code>complaint</code>, <code>unsubscribed</code>, <code>invalid_email</code></td>
+        <td>Suppressed in <b>all three</b> systems at once — Firestore, Brevo and Listmonk.</td></tr>
+    <tr><td><code>delivered</code>, <code>opened</code>, <code>click</code>, <code>soft_bounce</code>, <code>deferred</code></td>
+        <td>Logged only. Open and click rates are your read on whether the templates work.</td></tr>
+  </tbody>
+</table>
+
+<p>A soft bounce never suppresses — it is transient, and a temporarily full mailbox is not
+a dead customer.</p>
+
+<div class="callout warn">
+  <strong>Brevo does not sign its webhooks</strong>
+  <p>There is no HMAC to verify, so the secret in the URL is the entire authentication
+  boundary. It is compared in constant time, and with the secret unset the route returns
+  404 rather than defaulting open — an endpoint that suppresses addresses, left open, is
+  a denial-of-service against your own customers. Rotate it if the URL ever leaks.</p>
+</div>
+
+<h2>3 · Contacts and campaigns</h2>
+
+<p>Newsletter signups now land in Brevo contacts as well as Listmonk. Both are
+<em>projections</em>; Firestore stays the source of truth, holding the consent record —
+timestamp, source, policy version, truncated IP — that makes the list lawfully mailable
+under UK GDPR and PECR.</p>
+
+<p>That design means the decision you have not made yet stays open: whether campaigns go
+out from Brevo (no server to run) or Listmonk (no per-contact ceiling) can change later
+without touching the signup path at all.</p>
+
+<p>Suppression sets Brevo's <code>emailBlacklisted</code> flag rather than removing the
+contact from a list, because a contact merely taken off a list can still be picked up by
+an automation.</p>
+
+<h2>4 · Abandoned cart recovery</h2>
+
+<p class="lede">The only piece here that directly makes money.</p>
+
+<div class="flow">
+  <div class="step"><div class="n">1</div><div class="t"><b>Checkout starts</b>The basket is recorded the moment an email address is known — the earliest point recovery is possible at all.</div></div>
+  <div class="step"><div class="n">2</div><div class="t"><b>Four hours pass</b>Someone who wandered off for ten minutes is still shopping. An email then is an interruption, not a service.</div></div>
+  <div class="step"><div class="n">3</div><div class="t"><b>One reminder sends</b>Stamped before the send, so a crash mid-batch cannot produce a second email. Losing a reminder is far cheaper than sending two.</div></div>
+  <div class="step"><div class="n">4</div><div class="t"><b>After 48 hours, nothing</b>A three-day-old basket is a different decision, and mailing about it reads as surveillance.</div></div>
+</div>
+
+<div class="callout good">
+  <strong>Deliberately no discount code</strong>
+  <p>Handing one to everyone who hesitates teaches customers to abandon on purpose, and
+  costs margin on the ones who were coming back anyway. For refurbished phones the doubt
+  being answered is "is this thing any good" — so the email carries the warranty, the
+  60-point inspection and the returns window instead.</p>
+</div>
+
+<p>The stored basket is <b>display-only</b>. Real prices are recomputed server-side when
+the order is actually placed. Quoting a browser-supplied total in a recovery email would
+reintroduce exactly the price-tampering hole the order route was rewritten to close.</p>
+
+<h2>5 · Delivery SMS</h2>
+
+<p>Wired to the out-for-delivery message only — the one notification where nobody is
+checking their inbox. Opt-in per call, never automatic.</p>
+
+<div class="callout warn">
+  <strong>SMS is not part of the free tier</strong>
+  <p>It bills prepaid credits separately from email. With no sender configured every send
+  is a silent no-op, so a shop that has not deliberately turned SMS on can never
+  accidentally spend. Messages truncate at 160 characters — one GSM-7 segment — so a
+  runaway template cannot quietly cost several credits per send.</p>
+</div>
+
+<h2>The 300-a-day ceiling</h2>
+
+<p>The free tier's daily allowance is shared between transactional and marketing mail.
+For current volumes that is comfortable, but the failure mode matters: a large campaign
+or a recovery backlog could in principle crowd out an order confirmation, which is the
+worst thing that can happen to a shop's email.</p>
+
+<p>The abandoned-cart sweep is therefore capped at 25 messages an hour by default,
+specifically so a backlog can never eat the quota the order emails depend on. Check the
+remaining allowance in the dashboard before your first large campaign.</p>
+
+<h2>Everything fails softly</h2>
+
+<p>Every integration here is a logged no-op when its keys are missing, and none of them
+can fail a customer's action:</p>
+
+<ul>
+  <li>An order is durably written before the confirmation is attempted. A dead mail
+      provider must never turn a successful purchase into an error the customer would
+      reasonably retry — that is how you get two orders and one angry email.</li>
+  <li>A subscription is recorded before the welcome email or either list sync runs.</li>
+  <li>A failed SMS never affects the email that already went, or the order status.</li>
+</ul>
+
+<h2>What is left to do</h2>
+
+<table>
+  <thead><tr><th style="width:32%">Step</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><b>Rotate the API key</b></td><td>The key shared in chat should be treated as compromised. Generate a new one and add it to Vercel only.</td></tr>
+    <tr><td><b>Verify a sender domain</b></td><td>Until DKIM and SPF are set on the sending domain, everything is far more likely to land in spam.</td></tr>
+    <tr><td><b>Set the environment variables</b></td><td>Every feature here stays dormant until its keys reach the deployment.</td></tr>
+    <tr><td><b>Point the webhook at the site</b></td><td>Bounce handling only starts working once Brevo knows where to post.</td></tr>
+    <tr><td><b>Merge to the deployed branch</b></td><td>This work sits on a branch Vercel does not build. Until it is merged, none of it is live.</td></tr>
+  </tbody>
+</table>
+
+<footer>
+  <span>LeHart — Brevo integration record</span>
+  <span>Full technical detail in <code>docs/EMAIL.md</code></span>
+</footer>
+
+</div>

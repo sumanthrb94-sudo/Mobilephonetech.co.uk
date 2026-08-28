@@ -33,7 +33,8 @@
     "e2e:api": "node e2e/api-server.mjs",
     "email:preview": "tsx scripts/preview-emails.ts",
     "listmonk:sync": "node scripts/listmonk-sync.mjs",
-    "lint:api": "tsc -p tsconfig.api.json --noEmit"
+    "lint:api": "tsc -p tsconfig.api.json --noEmit",
+    "pdf:brevo": "node scripts/make-brevo-pdf.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
