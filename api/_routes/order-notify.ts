@@ -2,6 +2,7 @@ import { adminDb, callerIsAdmin } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
 import { sendEmail, emailConfigured } from '../_email.js';
 import { orderConfirmationEmail, orderDispatchedEmail, outForDeliveryEmail } from '../_templates.js';
+import { sendSms, smsConfigured } from '../_sms.js';
 import type { OrderLike, DispatchInfo } from '../_templates.js';
 
 /**
@@ -129,6 +130,25 @@ export default async function handler(req: any, res: any) {
     tag: `order-${kind}`,
   });
 
+  // ── Optional SMS, only for the doorstep message ──
+  // This is the one notification where a text genuinely beats an email: nobody
+  // checks their inbox to find out whether to stay in. It costs Brevo credits,
+  // so it is opt-in per call rather than automatic, and a failure here never
+  // affects the email that already went.
+  let sms;
+  if (kind === 'out-for-delivery' && req.body?.sendSms === true) {
+    const phone = order.shippingAddress?.phone;
+    const arriving = info.estimatedDelivery?.trim() || 'today';
+    sms = await sendSms({
+      to: phone,
+      content: `LeHart: your order ${orderId} is out for delivery and arriving ${arriving}.${
+        info.trackingUrl ? ` Track: ${info.trackingUrl}` : ''
+      }`,
+      tag: 'out-for-delivery',
+    });
+    if (sms.error) console.error(`[api/order-notify] sms for ${orderId}:`, sms.error);
+  }
+
   // The status change stuck either way, so a failed send is reported as 502
   // with the new status included — the caller needs to know not to retry the
   // status, only the mail.
@@ -137,5 +157,7 @@ export default async function handler(req: any, res: any) {
     orderId,
     status: STATUS_FOR[kind],
     configured: emailConfigured(),
+    ...(sms ? { sms: { sent: sms.sent, skipped: sms.skipped, error: sms.error, creditsUsed: sms.creditsUsed } } : {}),
+    smsAvailable: smsConfigured(),
   });
 }

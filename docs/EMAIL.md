@@ -205,3 +205,96 @@ The subscriber list is the asset. Before any upgrade:
 cd deploy/listmonk
 docker compose exec -T db pg_dump -U listmonk listmonk | gzip > listmonk-$(date +%F).sql.gz
 ```
+
+---
+
+## Brevo beyond sending
+
+Four further capabilities are wired up. All are off until their environment
+variables are set, and all fail softly when they are not.
+
+### Delivery-event webhook — `POST /api/brevo-webhook`
+
+The most important of the four. Before this, nothing in the shop noticed a
+bounce or a spam complaint. Mailing a hard-bounced address repeatedly tells
+providers you do not maintain your list; complaints cost you the domain's
+reputation for *everything*, order confirmations included.
+
+Configure in Brevo → Transactional → Settings → Webhooks (and again under
+Contacts → Settings for marketing events):
+
+```
+https://lehart.co.uk/api/brevo-webhook?secret=<BREVO_WEBHOOK_SECRET>
+```
+
+**Brevo does not sign its webhooks** — there is no HMAC — so that query-string
+secret is the entire authentication. It is compared in constant time, and with
+`BREVO_WEBHOOK_SECRET` unset the route 404s rather than defaulting open.
+Anyone who learns it can suppress arbitrary addresses, so rotate it if the URL
+leaks.
+
+| Event | Effect |
+|---|---|
+| `hard_bounce`, `blocked`, `spam`, `complaint`, `unsubscribed`, `invalid_email` | Suppressed in Firestore, Brevo *and* Listmonk |
+| `delivered`, `opened`, `click`, `soft_bounce`, `deferred` | Logged to `emailEvents` only |
+
+A soft bounce never suppresses — it is transient, and a full mailbox is not a
+dead address. Every event is logged either way, keyed by
+`email_event_messageId`, so Brevo's retries overwrite their own row instead of
+inflating the counts.
+
+### Contacts — `api/_brevoContacts.ts`
+
+Newsletter signups now land in Brevo contacts as well as Listmonk. Both are
+projections of Firestore; which one you send campaigns from stays a decision
+you can change without touching the signup path. Set `BREVO_LIST_ID` to file
+them on a list.
+
+Suppression uses `emailBlacklisted`, not list removal — a contact merely
+removed from a list can still be caught by an automation.
+
+### Abandoned cart recovery
+
+| Piece | What it does |
+|---|---|
+| `POST /api/cart-events` | Records a started checkout once an email is known |
+| `GET /api/cron-abandoned-cart` | Hourly sweep, sends one reminder per cart |
+
+Declared as a Vercel cron in `vercel.json`. Because every route is dispatched
+through the one catch-all function, this costs **no extra Serverless Function**
+against the Hobby limit.
+
+Three rules stop it becoming spam: one reminder per cart ever (`reminderSentAt`
+is stamped *before* the send, so a crash cannot double-send); a delay
+(`ABANDONED_CART_DELAY_HOURS`, default 4) so it does not interrupt someone
+still shopping; and a cutoff (`ABANDONED_CART_CUTOFF_HOURS`, default 48) after
+which it reads as surveillance. `ABANDONED_CART_MAX_PER_RUN` caps each run at
+25 so a backlog cannot eat the daily quota order confirmations depend on.
+
+The stored basket is **display-only**. Real prices are recomputed server-side
+by `orders.ts` when the order is placed — quoting a browser-supplied total in
+a recovery email would reintroduce the price-tampering hole `orders.ts` was
+rewritten to close.
+
+The email deliberately carries **no discount code**. Handing one to everyone
+who hesitates teaches customers to abandon on purpose and costs margin on the
+ones who were returning anyway; for refurbished phones the doubt is "is this
+any good", so the reassurance block answers that instead.
+
+### Transactional SMS
+
+Wired into `POST /api/order-notify` for the out-for-delivery message only —
+the one notification where nobody is checking email. Opt in per call with
+`"sendSms": true`; the number comes from the stored order's shipping address.
+
+**SMS is not free.** It bills prepaid Brevo credits, separate from the email
+tier, so with `SMS_SENDER` unset every send is a logged no-op. Messages are
+truncated to 160 characters (one GSM-7 segment) so a runaway template cannot
+quietly cost several credits per send.
+
+### The 300/day ceiling
+
+The free tier's daily limit is shared. `ABANDONED_CART_MAX_PER_RUN` exists
+precisely so a recovery backlog can never crowd out an order confirmation —
+the worst possible failure for a shop. Before your first large campaign,
+check the remaining allowance in the Brevo dashboard.

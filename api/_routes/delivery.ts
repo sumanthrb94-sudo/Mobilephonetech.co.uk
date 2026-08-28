@@ -73,7 +73,20 @@ export default function handler(req: any, res: any) {
   const hour = now.getHours();
   const orderBeforeCutoff = hour < CUTOFF_HOUR;
 
-  const options = [];
+  /**
+   * Typed explicitly: an empty literal infers as never[], so every push below
+   * was an error the moment api/ was brought under tsc. `available` is only
+   * present on next-day, hence optional.
+   */
+  const options: Array<{
+    id: string;
+    name: string;
+    price: number;
+    estimatedDate: string;
+    displayDate: string;
+    cutoffNote: string | null;
+    available?: boolean;
+  }> = [];
 
   // Standard (free)
   const stdDays = location.days;

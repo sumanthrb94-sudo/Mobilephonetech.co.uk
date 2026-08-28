@@ -22,6 +22,7 @@ import {
   orderConfirmationEmail,
   orderDispatchedEmail,
   outForDeliveryEmail,
+  abandonedCartEmail,
   type OrderLike,
 } from '../api/_templates.js';
 
@@ -81,6 +82,16 @@ const PAGES = [
   { file: 'order-confirmation', label: 'Order confirmation', built: orderConfirmationEmail(SAMPLE_ORDER) },
   { file: 'dispatched', label: 'Dispatched', built: orderDispatchedEmail(SAMPLE_ORDER, DISPATCH) },
   { file: 'out-for-delivery', label: 'Out for delivery', built: outForDeliveryEmail(SAMPLE_ORDER, DISPATCH) },
+  {
+    file: 'abandoned-cart',
+    label: 'Abandoned cart',
+    built: abandonedCartEmail({
+      items: SAMPLE_ORDER.items,
+      total: SAMPLE_ORDER.total,
+      name: 'Jordan',
+      unsubscribeUrl: 'https://lehart.co.uk/unsubscribe?t=demo',
+    }),
+  },
 ];
 
 mkdirSync(OUT, { recursive: true });
@@ -90,7 +101,7 @@ for (const page of PAGES) {
   writeFileSync(join(OUT, `${page.file}.txt`), `Subject: ${page.built.subject}\n\n${page.built.text}\n`, 'utf8');
 }
 
-// One page showing all four side by side, which is how you spot that the
+// One page showing them all side by side, which is how you spot that the
 // headline sizes or the card widths have drifted apart.
 const index = `<!doctype html>
 <html lang="en-GB"><head><meta charset="utf-8">

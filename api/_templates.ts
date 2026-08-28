@@ -150,6 +150,8 @@ export interface OrderLike {
   contactEmail?: string;
   shippingAddress?: {
     fullName?: string;
+    /** Optional at checkout; the SMS notification needs it when present. */
+    phone?: string | null;
     addressLine1?: string;
     addressLine2?: string | null;
     city?: string;
@@ -549,6 +551,85 @@ export function outForDeliveryEmail(order: OrderLike, info: DispatchInfo = {}): 
       preview: `On the van${courier ? ` with ${courier}` : ''} and due today.`,
       headline: 'Arriving today',
       body,
+    }),
+    text,
+  };
+}
+
+/** ── 5. Abandoned cart ───────────────────────────────────────────── */
+
+/**
+ * The recovery email, sent once, some hours after a checkout was started and
+ * not finished.
+ *
+ * Deliberately not a discount. Handing a code to everyone who hesitates
+ * teaches customers to abandon on purpose, and it costs margin on the ones
+ * who were coming back anyway. The reassurance — warranty, returns window,
+ * stock — is what actually closes a refurbished-phone sale, because the doubt
+ * being answered is "is this thing any good", not "is this £20 cheaper".
+ */
+export function abandonedCartEmail(cart: {
+  items?: OrderItem[];
+  total?: number;
+  recoveryUrl?: string;
+  name?: string | null;
+  unsubscribeUrl?: string;
+}): Built {
+  const first = (cart.name ?? '').trim().split(/\s+/)[0];
+  const items = cart.items ?? [];
+  const url = cart.recoveryUrl || `${SHOP_URL}/cart`;
+  const lead = items.length === 1 ? 'It is still in your basket' : 'They are still in your basket';
+
+  const body = [
+    p(`${first ? `${esc(first)}, you` : 'You'} left something behind. ${lead}, and we have held it for you.`),
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;border-top:1px solid ${PALETTE.border};">${itemRows(
+      items,
+    )}</table>`,
+    Number(cart.total ?? 0) > 0
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+          <tr>
+            <td style="font-family:${FONT};font-size:15.5px;font-weight:800;color:${PALETTE.ink};">Basket total</td>
+            <td align="right" style="font-family:${FONT};font-size:17px;font-weight:800;color:${PALETTE.ink};">${money(
+              cart.total,
+            )}</td>
+          </tr>
+        </table>`
+      : '',
+    button('Finish your order', url),
+    `<div style="margin-top:24px;padding:15px 17px;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};border-radius:11px;font-family:${FONT};font-size:13px;line-height:1.7;color:${PALETTE.inkSoft};">
+      <strong style="color:${PALETTE.ink};">Every LeHart phone comes with</strong><br>
+      A 60-point inspection · 12-month warranty · 30-day returns · Free UK delivery
+    </div>`,
+    p(
+      `<span style="font-size:13px;color:${PALETTE.muted};">Stock moves quickly on popular models, so we cannot hold a basket forever.</span>`,
+    ),
+  ].join('');
+
+  const text = [
+    first ? `${first}, you left something behind.` : 'You left something behind.',
+    '',
+    ...items.map((i) => {
+      const variant = variantLine(i);
+      return `- ${`${i.brand ?? ''} ${i.model ?? ''}`.trim()}${variant ? ` (${variant})` : ''} x${i.quantity ?? 1}`;
+    }),
+    Number(cart.total ?? 0) > 0 ? `\nBasket total: ${money(cart.total)}` : '',
+    '',
+    `Finish your order: ${url}`,
+    '',
+    'Every LeHart phone: 60-point inspection, 12-month warranty, 30-day returns, free UK delivery.',
+    '',
+    cart.unsubscribeUrl ? `Unsubscribe: ${cart.unsubscribeUrl}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    subject: items.length === 1 ? 'You left something in your basket' : 'Your basket is waiting',
+    html: shell({
+      preview: 'We have held it for you — 12-month warranty and 30-day returns as standard.',
+      headline: 'Still thinking it over?',
+      body,
+      unsubscribeUrl: cart.unsubscribeUrl,
     }),
     text,
   };

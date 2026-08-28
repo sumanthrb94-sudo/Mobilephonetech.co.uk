@@ -2,6 +2,7 @@ import { adminDb } from '../_firebaseAdmin.js';
 import { enforceRateLimit, clientIp } from '../_rateLimit.js';
 import { sendEmail } from '../_email.js';
 import { upsertSubscriber } from '../_listmonk.js';
+import { upsertContact } from '../_brevoContacts.js';
 import { welcomeEmail } from '../_templates.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,13 +70,13 @@ export default async function handler(req: any, res: any) {
     }, { merge: true });
 
     // Firestore now holds the consent record, so the signup has succeeded no
-    // matter what the next two calls do. Both are deliberately best-effort:
-    // Listmonk is a projection that scripts/listmonk-sync.mjs can rebuild, and
+    // matter what the next three calls do. All are deliberately best-effort:
+    // both list systems are projections that can be rebuilt from Firestore, and
     // a welcome email nobody receives is not worth failing a subscription over.
     const consentSource =
       typeof source === 'string' && source.trim() ? source.trim().slice(0, 60) : 'website-signup';
 
-    const [listed, welcomed] = await Promise.all([
+    const [listed, contacted, welcomed] = await Promise.all([
       upsertSubscriber({
         email: normalised,
         name: name?.trim() ?? null,
@@ -86,6 +87,14 @@ export default async function handler(req: any, res: any) {
           consent_method: 'single-opt-in',
           subscribed_at: new Date().toISOString(),
         },
+      }),
+      // Brevo contacts are what an automation built there can target, so the
+      // subscriber lands in both list systems. Which one campaigns actually go
+      // out from stays a decision for later.
+      upsertContact({
+        email: normalised,
+        firstName: name?.trim().split(/\s+/)[0] ?? null,
+        attributes: { SIGNUP_SOURCE: consentSource, POLICY_VERSION: PRIVACY_POLICY_VERSION },
       }),
       (async () => {
         const mail = welcomeEmail({ name: name?.trim() ?? null });
@@ -101,12 +110,14 @@ export default async function handler(req: any, res: any) {
     ]);
 
     if (listed.error) console.error('[api/newsletter] listmonk:', listed.error);
+    if (contacted.error) console.error('[api/newsletter] brevo contact:', contacted.error);
     if (welcomed.error) console.error('[api/newsletter] welcome email:', welcomed.error);
 
     return res.status(200).json({
       success: true,
       message: 'Subscribed successfully',
       listmonk: listed.synced ? listed.action : (listed.skipped ?? 'failed'),
+      brevoContact: contacted.synced ? 'synced' : (contacted.skipped ?? 'failed'),
       welcomeEmail: welcomed.sent ? 'sent' : (welcomed.skipped ?? 'failed'),
     });
   } catch (err) {

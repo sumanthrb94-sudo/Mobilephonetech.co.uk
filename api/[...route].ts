@@ -25,7 +25,10 @@ type Handler = (req: any, res: any) => unknown | Promise<unknown>;
 const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'bootstrap-admin': () => import('./_routes/bootstrap-admin.js'),
   'bootstrap-seed': () => import('./_routes/bootstrap-seed.js'),
+  'brevo-webhook': () => import('./_routes/brevo-webhook.js'),
+  'cart-events': () => import('./_routes/cart-events.js'),
   'coupons/validate': () => import('./_routes/coupons/validate.js'),
+  'cron-abandoned-cart': () => import('./_routes/cron-abandoned-cart.js'),
   delivery: () => import('./_routes/delivery.js'),
   'gemini-chat': () => import('./_routes/gemini-chat.js'),
   'gemini-image': () => import('./_routes/gemini-image.js'),

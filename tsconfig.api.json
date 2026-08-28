@@ -1,0 +1,29 @@
+{
+  "// why": [
+    "The root tsconfig excludes api/ because that code is Node, not browser:",
+    "it has no DOM, no vite/client types, and is bundled by Vercel rather than",
+    "Vite. Excluding it left the serverless handlers entirely untypechecked —",
+    "`npm run lint` was green while api/ could reference fields that did not",
+    "exist. This config checks that half under Node's own lib and types.",
+    "Run both with `npm run lint`."
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["api/**/*.ts", "src/config/company.ts", "src/data.ts", "src/types.ts"]
+}
