@@ -23,6 +23,15 @@ import { accountWelcomeEmail } from '../_templates.js';
  *    customer refreshing mid-signup cannot produce a second copy. Losing a
  *    welcome is a much cheaper mistake than sending two.
  *
+ *    The stamp is released again when nothing was handed to Brevo at all —
+ *    the key is unset, or the address is unusable. That case is not "already
+ *    sent", it is "never attempted", and leaving the stamp on made the first
+ *    signup after a misconfiguration permanently unwelcomeable: configure
+ *    Brevo an hour later and that customer still gets nothing, forever, with
+ *    no error anywhere to explain it. A send that Brevo *refused* keeps its
+ *    stamp, because a failure after handoff cannot be told apart from a
+ *    delivery, and that is exactly the ambiguity the stamp exists for.
+ *
  * Marketing consent is deliberately NOT implied. Creating an account is not
  * subscribing to a newsletter, so nothing here adds the address to Brevo's
  * contact list or Listmonk — the signup box on the site is where that consent
@@ -80,6 +89,13 @@ export default async function handler(req: any, res: any) {
   });
 
   if (result.error) console.error(`[api/account-welcome] ${caller.uid}:`, result.error);
+
+  // Nothing reached Brevo, so this account has not had its welcome. Release
+  // the stamp rather than recording a send that did not happen.
+  if (result.skipped) {
+    console.warn(`[api/account-welcome] ${caller.uid}: ${result.skipped}`);
+    await ref.set({ welcomeEmailSentAt: null }, { merge: true }).catch(() => {});
+  }
 
   // 200 even on a failed send: the account exists and works, and the caller
   // must never surface this as a signup problem.

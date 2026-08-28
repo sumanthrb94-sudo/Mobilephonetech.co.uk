@@ -305,3 +305,34 @@ The free tier's daily limit is shared. `ABANDONED_CART_MAX_PER_RUN` exists
 precisely so a recovery backlog can never crowd out an order confirmation —
 the worst possible failure for a shop. Before your first large campaign,
 check the remaining allowance in the Brevo dashboard.
+
+## If the account welcome does not arrive
+
+The signup welcome is `POST /api/account-welcome`, called by the browser
+straight after `createUserWithEmailAndPassword`. It answers **200 whatever
+happens** — a mail failure must never look to a customer like a broken signup —
+so a 200 in the Vercel logs is not evidence that anything was sent.
+
+Check `GET /api/health` first:
+
+```json
+"emailConfigured": true, "emailFrom": "orders@lehart.co.uk"
+```
+
+`emailConfigured: false` means `BREVO_API_KEY` or `EMAIL_FROM` is missing from
+that deployment's environment, and `sendEmail` turned every send into a no-op.
+That is deliberate — a missing key must not fail a customer's order — but it
+means the *only* symptom is mail that never arrives. This is what happened on
+28 August: the route ran, returned 200, and never called Brevo.
+
+If it is configured and mail still does not arrive, look for
+`[api/account-welcome]` in the runtime logs. A `Brevo responded 401` is the
+key; a `400` naming the sender is `EMAIL_FROM` not being a **verified sender**
+in Brevo → Senders, Domains & Dedicated IPs.
+
+**One account only ever gets one welcome.** `users/{uid}.welcomeEmailSentAt` is
+stamped before the send so a retry cannot produce a second copy. The stamp is
+released again when nothing reached Brevo at all, so accounts created while the
+key was unset are not permanently excluded — but an account that was stamped by
+a build *before* that fix still holds it. Clear that one field to let it send,
+or test with a fresh address.

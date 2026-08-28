@@ -46,8 +46,13 @@ const call = async (body: unknown = {}, method = 'POST') => {
   return res;
 };
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.clearAllMocks();
+  // The limiter's counters are module-level and survive between tests, so
+  // without this the suite silently starts 429ing once it grows past the
+  // route's limit of ten — as a failure in whichever test happens to be last.
+  const { resetRateLimits } = await import('../../../api/_rateLimit.js');
+  resetRateLimits();
   userDoc.get.mockResolvedValue({ exists: false, data: () => ({}) } as never);
   sendEmail.mockResolvedValue({ sent: true, messageId: 'm1' } as never);
   vi.mocked(verifyCaller).mockResolvedValue({ uid: 'u1', email: 'jordan@example.com' } as never);
@@ -137,6 +142,23 @@ describe('failures never look like a signup problem', () => {
 
     expect(res.code).toBe(200);
     expect(res.body.skipped).toBeTruthy();
+  });
+
+  it('releases the once-only stamp when nothing was handed to Brevo', async () => {
+    // The first real signup happened while BREVO_API_KEY was unset. Leaving
+    // the stamp on would mark that account welcomed forever, so configuring
+    // Brevo an hour later would still send them nothing, silently.
+    sendEmail.mockResolvedValue({ sent: false, skipped: 'BREVO_API_KEY not set' } as never);
+    await call();
+
+    expect(userDoc.set).toHaveBeenLastCalledWith({ welcomeEmailSentAt: null }, { merge: true });
+  });
+
+  it('keeps the stamp when Brevo refused, because delivery is then unknown', async () => {
+    sendEmail.mockResolvedValue({ sent: false, error: 'Brevo responded 400' } as never);
+    await call();
+
+    expect(userDoc.set).not.toHaveBeenCalledWith({ welcomeEmailSentAt: null }, { merge: true });
   });
 });
 
