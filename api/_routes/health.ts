@@ -1,4 +1,5 @@
 import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
+import { emailConfigured } from '../_email.js';
 
 /**
  * Deployment health check.
@@ -21,6 +22,15 @@ export default async function handler(req: any, res: any) {
     projectId: process.env.VITE_FIREBASE_PROJECT_ID ?? null,
     webConfigured: Boolean(process.env.VITE_FIREBASE_API_KEY && process.env.VITE_FIREBASE_PROJECT_ID),
     serviceAccountConfigured: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT),
+    // Whether transactional mail can actually go out. Without this the only
+    // symptom of an unset BREVO_API_KEY is a welcome email that never arrives,
+    // and sendEmail turns a missing key into a silent no-op by design — so
+    // there is nothing anywhere to distinguish "not configured" from "Brevo
+    // rejected it". The sender address is in the header of every email we
+    // send, so naming it here reveals nothing; the key itself is never shown.
+    emailConfigured: emailConfigured(),
+    emailFrom: process.env.EMAIL_FROM ?? null,
+    smsConfigured: Boolean(process.env.BREVO_API_KEY && process.env.SMS_SENDER),
   };
 
   const db = await adminDb();

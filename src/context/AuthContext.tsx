@@ -22,7 +22,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, COL } from '../lib/firebase';
-import { toE164, formatPhoneForDisplay } from '../utils/phoneNumber';
+import { toE164, formatPhoneForDisplay, DEFAULT_COUNTRY } from '../utils/phoneNumber';
 
 export interface User {
   id: string;
@@ -112,7 +112,8 @@ interface AuthContextType {
    * sign-in that ignored the current session would mint a second uid for a
    * customer who already has one.
    */
-  startPhoneSignIn: (phone: string, containerId: string) => Promise<void>;
+  /** `country` is the dial code the customer picked, e.g. '44' or '91'. */
+  startPhoneSignIn: (phone: string, containerId: string, country?: string) => Promise<void>;
   /**
    * Verify the SMS code, completing either the sign-in or the link.
    *
@@ -419,8 +420,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     recaptchaRef.current = null;
   };
 
-  const startPhoneSignIn = async (phone: string, containerId: string) => {
-    const e164 = toE164(phone);
+  const startPhoneSignIn = async (phone: string, containerId: string, country = DEFAULT_COUNTRY) => {
+    // The country comes from the picker rather than from a guess about the
+    // digits. Guessing is what sent an Indian 9700144003 to +449700144003.
+    const e164 = toE164(phone, country);
     if (!e164) throw Object.assign(new Error('Enter a valid mobile number.'), { code: 'app/invalid-phone' });
 
     teardownRecaptcha();

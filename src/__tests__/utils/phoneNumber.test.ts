@@ -1,3 +1,4 @@
+import { describePhoneProblem, countryForIso } from '../../utils/phoneNumber';
 import { describe, it, expect } from 'vitest';
 import {
   normalisePhone, toE164, formatPhoneForDisplay, maskPhone, isValidPhone,
@@ -81,5 +82,61 @@ describe('isValidPhone', () => {
   it('accepts a real mobile and refuses junk', () => {
     expect(isValidPhone('07700 900123')).toBe(true);
     expect(isValidPhone('12')).toBe(false);
+  });
+});
+
+describe('the country is an input, not a guess', () => {
+  // The regression this whole country picker exists for. Typed from India on
+  // 28 August: the number was rewritten to a +44 number that exists nowhere,
+  // and the only symptom was Firebase's auth/internal-error.
+  it('does not send an Indian mobile to +44', () => {
+    expect(toE164('9700144003', '91')).toBe('+919700144003');
+    expect(toE164('9700144003', '44')).not.toBe('+919700144003');
+  });
+
+  it('reads a national-length number as national, even when it starts with the country code', () => {
+    // 9198765432 is a real 10-digit Indian subscriber number. Treating its
+    // leading "91" as the country code would text a different handset.
+    expect(toE164('9198765432', '91')).toBe('+919198765432');
+  });
+
+  it('leaves a number that states its own country alone', () => {
+    // The picker must never override an explicit +, in either direction.
+    expect(toE164('+919700144003', '44')).toBe('+919700144003');
+    expect(toE164('+447700900123', '91')).toBe('+447700900123');
+  });
+
+  it('strips the trunk 0 against the chosen country', () => {
+    expect(toE164('0412 345 678', '61')).toBe('+61412345678');
+  });
+});
+
+describe('describePhoneProblem', () => {
+  it('says nothing about a number that is fine', () => {
+    expect(describePhoneProblem('07700 900123', '44')).toBeNull();
+    expect(describePhoneProblem('9700144003', '91')).toBeNull();
+  });
+
+  it('catches the digit that was dropped', () => {
+    // 779934943 — nine digits, typed on the verify screen. The old length-only
+    // check accepted it and Firebase refused the send.
+    expect(describePhoneProblem('779934943', '44')).toMatch(/10 digits.*Yours has 9/i);
+  });
+
+  it('names the country mismatch rather than blaming the number', () => {
+    expect(describePhoneProblem('9700144003', '44')).toMatch(/not a United Kingdom mobile/i);
+  });
+
+  it('accepts a country it does not model rather than refusing it', () => {
+    // +49 is not in the picker; the network is the right place to decide.
+    expect(describePhoneProblem('+4915112345678', '44')).toBeNull();
+  });
+});
+
+describe('countryForIso', () => {
+  it('falls back to the UK for anything unrecognised', () => {
+    expect(countryForIso('IN').dial).toBe('91');
+    expect(countryForIso('zz').iso).toBe('GB');
+    expect(countryForIso(undefined).iso).toBe('GB');
   });
 });

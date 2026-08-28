@@ -331,7 +331,7 @@ describe('mobile sign-in', () => {
     await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
     await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
 
-    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('07700900123', 'auth-recaptcha-container'));
+    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('07700900123', 'auth-recaptcha-container', '44'));
     expect(await screen.findByRole('heading', { name: /enter your code/i })).toBeInTheDocument();
   });
 
@@ -341,8 +341,45 @@ describe('mobile sign-in', () => {
     await userEvent.type(screen.getByPlaceholderText('07700 900123'), '12');
     await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
 
-    expect(await screen.findByText(/enter a uk mobile number/i)).toBeInTheDocument();
+    expect(await screen.findByText(/does not look like a mobile number/i)).toBeInTheDocument();
     expect(startPhoneSignIn).not.toHaveBeenCalled();
+  });
+
+  // A real failure, from a real test from India: 9700144003 was rewritten to
+  // +449700144003 — a number that exists nowhere — and Firebase answered with
+  // auth/internal-error, which named neither the country nor the rewrite.
+  it('sends an Indian number to +91, not +44', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.selectOptions(screen.getByLabelText(/country/i), 'IN');
+    await userEvent.type(screen.getByPlaceholderText('97001 44003'), '9700144003');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('9700144003', 'auth-recaptcha-container', '91'));
+  });
+
+  it('refuses an Indian number left on the UK country, rather than texting nobody', async () => {
+    renderModal('login');
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '9700144003');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    expect(await screen.findByText(/not a united kingdom mobile number/i)).toBeInTheDocument();
+    expect(startPhoneSignIn).not.toHaveBeenCalled();
+  });
+
+  it('names the real cause when Firebase refuses to send', async () => {
+    startPhoneSignIn.mockRejectedValue(Object.assign(new Error('x'), { code: 'auth/quota-exceeded' }));
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    // Not "check the number" — the number was fine.
+    expect(await screen.findByText(/daily limit for text messages/i)).toBeInTheDocument();
   });
 
   it('verifies the code and signs in', async () => {
@@ -473,7 +510,7 @@ describe('each signup route asks for the other contact method', () => {
     await userEvent.type(await screen.findByPlaceholderText('07700 900123'), '07700900123');
     await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
 
-    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('07700900123', 'auth-recaptcha-container'));
+    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('07700900123', 'auth-recaptcha-container', '44'));
     expect(await screen.findByRole('heading', { name: /enter your code/i })).toBeInTheDocument();
   });
 
@@ -485,7 +522,7 @@ describe('each signup route asks for the other contact method', () => {
     await userEvent.type(await screen.findByPlaceholderText('07700 900123'), '12');
     await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
 
-    expect(await screen.findByText(/enter a uk mobile number/i)).toBeInTheDocument();
+    expect(await screen.findByText(/does not look like a mobile number/i)).toBeInTheDocument();
     expect(startPhoneSignIn).not.toHaveBeenCalled();
   });
 

@@ -105,12 +105,34 @@ handed, so `07700 900123` and `+44 7700 900123` normalising differently would
 hand one person two accounts. One normaliser, used everywhere, tested for
 exactly that collapse.
 
-It is UK-first: a bare number with no country code is assumed to be UK. A
-number that already carries a country code is left alone. It is deliberately
-not libphonenumber — that is ~150 kB for validation this does not need — so it
-accepts some numbers that are not dialable. Firebase and Brevo both reject
-those at send time, which is the right place for it: the cost of being wrong is
-a failed send, not a wrong account.
+**The country is picked, never inferred.** The field has a country selector
+beside it and its value is passed through to `toE164`. This was not the
+original design, and the original design failed in the worst way available: it
+assumed every bare number was British, so an Indian mobile typed as
+`9700144003` was rewritten to `+449700144003` — a number that exists nowhere —
+and Firebase's only reply was `auth/internal-error`. Nothing named the country,
+and nothing revealed that the app had changed what was typed.
+
+A leading `+` always wins over the picker. Someone who states their own country
+code means it, and overriding that would be the same silent rewrite again.
+
+Ordering inside `normalisePhone` matters: a bare number whose length matches
+the chosen country's national format is treated as national **before** the
+starts-with-the-dial-code test. Otherwise a real Indian subscriber number
+beginning `91…` would have its first two digits read as a country code and the
+code would go to a different handset.
+
+`describePhoneProblem` returns the reason rather than a boolean, because
+"that does not look like a valid mobile number" tells someone whose only
+mistake was leaving the country on United Kingdom nothing they can act on. It
+checks length and the mobile prefix per country, and passes anything from a
+country it does not model straight through — the network is the right place to
+refuse those.
+
+It is deliberately not libphonenumber — that is ~150 kB for validation this
+does not need — so it still accepts some numbers that are not dialable.
+Firebase and Brevo reject those at send time, which is the right place for it:
+the cost of being wrong is a failed send, not a wrong account.
 
 ### Operational notes
 
@@ -124,6 +146,17 @@ a failed send, not a wrong account.
   bills beyond it. `auth/quota-exceeded` is surfaced with its own message.
 - The code field uses `autocomplete="one-time-code"`, so iOS and Android offer
   the code straight from the notification. That is most of the ergonomic win.
+- **Every send failure is reported by its Firebase code**, through the shared
+  `describeAuthError`. The "add your mobile" step used to catch its own errors
+  and collapse all of them into *"Could not send the code. Check the number and
+  try again"* — which told a customer to re-check a number that was fine while
+  hiding an unenabled provider, a blocked country, an exhausted daily SMS
+  allowance and a failed reCAPTCHA behind one sentence. Being told the wrong
+  cause is worse than being shown a raw error code.
+- **A country must be allowed in the Firebase SMS region policy before it will
+  send.** Authentication → Settings → SMS region policy. `auth/internal-error`
+  is what a blocked country looks like from the browser, which is why the
+  message for it names both possibilities.
 
 ## Each route asks for the other method
 

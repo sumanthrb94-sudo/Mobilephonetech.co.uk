@@ -4,7 +4,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Spinner } from './ui/Loading';
 import { useAuth } from '../context/AuthContext';
 import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginIdentifier';
-import { isValidPhone, formatPhoneForDisplay } from '../utils/phoneNumber';
+import {
+  describePhoneProblem, formatPhoneForDisplay,
+  COUNTRIES, DEFAULT_COUNTRY_ISO, countryForIso,
+} from '../utils/phoneNumber';
 
 /**
  * AuthModal — centred floating modal for sign-in / sign-up.
@@ -15,6 +18,58 @@ type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify' 
 
 /** Where the invisible reCAPTCHA mounts. Firebase needs a real element id. */
 const RECAPTCHA_ID = 'auth-recaptcha-container';
+
+/**
+ * A Firebase auth error code turned into something a customer can act on.
+ *
+ * Module-level and shared on purpose. The "add your mobile" step on the verify
+ * screen used to catch its own errors and collapse every one of them into
+ * "Could not send the code. Check the number and try again." — which told a
+ * customer to re-check a number that was fine, while hiding an unenabled
+ * provider, a blocked country, an exhausted daily SMS allowance and a failed
+ * reCAPTCHA behind the same sentence. Being told the wrong cause is worse than
+ * being told a raw error code.
+ */
+export function describeAuthError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? '';
+  const msg = (err as { message?: string })?.message ?? '';
+
+  switch (code) {
+    case 'auth/invalid-verification-code':
+      return 'That code is not right. Check the message and try again.';
+    case 'auth/code-expired':
+      return 'That code has expired. Go back and request a new one.';
+    case 'auth/invalid-phone-number':
+    case 'app/invalid-phone':
+      return 'That does not look like a valid mobile number.';
+    case 'auth/credential-already-in-use':
+    case 'auth/account-exists-with-different-credential':
+      // Linking a number that already belongs to a different account. The
+      // alternative — silently switching them to that other account — would
+      // be worse: it looks like their data vanished.
+      return 'That mobile number is already on another account. Sign in with that account, or use a different number.';
+    case 'auth/provider-already-linked':
+      return 'This account already has a mobile number.';
+    case 'auth/captcha-check-failed':
+    case 'auth/invalid-app-credential':
+      return 'The security check failed. Reload the page and try again.';
+    case 'auth/operation-not-allowed':
+      return 'Mobile sign-in is not switched on for this site yet.';
+    case 'auth/quota-exceeded':
+      return 'The daily limit for text messages has been reached. Please try again tomorrow, or use email.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Wait a few minutes and try again.';
+    case 'auth/weak-password':
+      return 'Please choose a password of at least six characters.';
+    case 'auth/internal-error':
+      // Genuinely ambiguous: Firebase returns this both for a number it cannot
+      // parse and for a country the project has not allowed. Naming both is
+      // more use than picking one and being wrong.
+      return 'We could not send a code to that number. Check the country next to the field matches it — and if the country is right, texts to it may not be enabled yet.';
+    default:
+      return msg || 'Something went wrong. Please try again.';
+  }
+}
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -136,6 +191,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     resendVerification, linkEmailPassword,
   } = useAuth();
   const [phone, setPhone] = useState('');
+  const [countryIso, setCountryIso] = useState(DEFAULT_COUNTRY_ISO);
+  const country = countryForIso(countryIso);
+  const dialCode = country.dial;
   const [code, setCode] = useState('');
   const [googleBusy, setGoogleBusy] = useState(false);
 
@@ -189,9 +247,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       setError('Enter a valid email address.');
       return;
     }
-    if (mode === 'phone' && !isValidPhone(phone)) {
-      setError('Enter a UK mobile number, e.g. 07700 900123.');
-      return;
+    if (mode === 'phone') {
+      const problem = describePhoneProblem(phone, dialCode);
+      if (problem) { setError(problem); return; }
     }
     if (mode === 'code' && !/^\d{6}$/.test(code.trim())) {
       setError('Enter the 6-digit code from the text message.');
@@ -222,7 +280,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         onSuccess?.();
         onClose();
       } else if (mode === 'phone') {
-        await startPhoneSignIn(phone, RECAPTCHA_ID);
+        await startPhoneSignIn(phone, RECAPTCHA_ID, dialCode);
         setCode('');
         setMode('code');
       } else if (mode === 'code') {
@@ -250,7 +308,6 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       }
     } catch (err: unknown) {
       const code = (err as { code?: string })?.code ?? '';
-      const msg = (err as { message?: string })?.message ?? '';
 
       // A failed sign-in is very often the right person using the wrong
       // method, so say which method the address actually has rather than
@@ -264,31 +321,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         setError(hint ?? 'An account already exists for that email. Sign in instead.');
       } else if (mode === 'link' && (code === 'auth/invalid-credential' || code === 'auth/wrong-password')) {
         setError('That password does not match the existing account. Try again, or reset it.');
-      } else if (code === 'auth/invalid-verification-code') {
-        setError('That code is not right. Check the message and try again.');
-      } else if (code === 'auth/code-expired') {
-        setError('That code has expired. Go back and request a new one.');
-      } else if (code === 'auth/invalid-phone-number' || code === 'app/invalid-phone') {
-        setError('That does not look like a valid mobile number.');
-      } else if (code === 'auth/credential-already-in-use' || code === 'auth/account-exists-with-different-credential') {
-        // Linking a number that already belongs to a different account. The
-        // alternative — silently switching them to that other account — would
-        // be worse: it looks like their data vanished.
-        setError('That mobile number is already on another account. Sign in with that account, or use a different number.');
       } else if (mode === 'add-email' && code === 'auth/email-already-in-use') {
         setError('That email already has an account. Sign in to it instead, or use a different address.');
-      } else if (code === 'auth/provider-already-linked') {
-        setError('This account already has a mobile number.');
-      } else if (code === 'auth/captcha-check-failed') {
-        setError('The security check failed. Reload the page and try again.');
-      } else if (code === 'auth/quota-exceeded') {
-        setError('Too many codes requested right now. Please try again later.');
-      } else if (code === 'auth/too-many-requests') {
-        setError('Too many attempts. Wait a few minutes and try again.');
-      } else if (code === 'auth/weak-password') {
-        setError('Please choose a password of at least six characters.');
       } else {
-        setError(msg || 'Something went wrong. Please try again.');
+        setError(describeAuthError(err));
       }
     } finally {
       setIsLoading(false);
@@ -328,6 +364,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     setError('');
     setInfo('');
     setMode(back);
+  };
+
+  const countrySelectStyle = {
+    padding: '14px 10px', background: 'var(--grey-5)', border: '1px solid var(--grey-20)',
+    borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)', fontSize: '14px',
+    fontWeight: 600, color: 'var(--black)', outline: 'none', cursor: 'pointer',
+    boxSizing: 'border-box' as const, flexShrink: 0,
   };
 
   const inputStyle = {
@@ -420,35 +463,49 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--grey-50)', margin: '0 0 12px' }}>
                       For delivery updates, and so you can sign in with a code instead of a password.
                     </p>
-                    <div style={{ position: 'relative' }}>
-                      <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                      <input
-                        type="tel"
-                        placeholder="07700 900123"
-                        autoComplete="tel"
-                        inputMode="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        style={inputStyle}
-                        onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
-                        onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
-                      />
+                    {/* The country is picked, never inferred. A bare
+                        9700144003 used to be rewritten to +449700144003 —
+                        a number that exists nowhere — and the only clue was
+                        Firebase's auth/internal-error. */}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        aria-label="Country"
+                        value={countryIso}
+                        onChange={(e) => setCountryIso(e.target.value)}
+                        style={countrySelectStyle}
+                      >
+                        {COUNTRIES.map((c) => (
+                          <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>
+                        ))}
+                      </select>
+                      <div style={{ position: 'relative', flex: 1 }}>
+                        <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                        <input
+                          type="tel"
+                          placeholder={country.example}
+                          autoComplete="tel"
+                          inputMode="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          style={inputStyle}
+                          onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                          onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                        />
+                      </div>
                     </div>
                     <button
                       type="button"
                       disabled={isLoading}
                       onClick={async () => {
-                        if (!isValidPhone(phone)) { setError('Enter a UK mobile number, e.g. 07700 900123.'); return; }
+                        const problem = describePhoneProblem(phone, dialCode);
+                        if (problem) { setError(problem); return; }
                         setError(''); setInfo(''); setIsLoading(true);
                         try {
-                          await startPhoneSignIn(phone, RECAPTCHA_ID);
+                          await startPhoneSignIn(phone, RECAPTCHA_ID, dialCode);
                           setCode('');
                           setMode('code');
                         } catch (err) {
-                          const c = (err as { code?: string })?.code ?? '';
-                          setError(c === 'auth/credential-already-in-use'
-                            ? 'That mobile number is already on another account.'
-                            : 'Could not send the code. Check the number and try again.');
+                          setError(describeAuthError(err));
                         } finally { setIsLoading(false); }
                       }}
                       className="btn btn-secondary btn-full"
@@ -505,21 +562,33 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 )}
 
                 {mode === 'phone' && (
-                  <div style={{ position: 'relative' }}>
-                    <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                    <input
-                      ref={firstFieldRef}
-                      type="tel"
-                      required
-                      placeholder="07700 900123"
-                      autoComplete="tel"
-                      inputMode="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      style={inputStyle}
-                      onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
-                      onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
-                    />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      aria-label="Country"
+                      value={countryIso}
+                      onChange={(e) => setCountryIso(e.target.value)}
+                      style={countrySelectStyle}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>
+                      ))}
+                    </select>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                      <input
+                        ref={firstFieldRef}
+                        type="tel"
+                        required
+                        placeholder={country.example}
+                        autoComplete="tel"
+                        inputMode="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        style={inputStyle}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                        onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                      />
+                    </div>
                   </div>
                 )}
 
