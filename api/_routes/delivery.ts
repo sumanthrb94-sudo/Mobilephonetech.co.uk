@@ -1,51 +1,11 @@
-// UK postcode prefix → { region, baseDeliveryDays }
-const UK_DELIVERY_MAP: Record<string, { region: string; days: number }> = {
-  // London — next-day guaranteed
-  EC: { region: 'Central London', days: 1 }, WC: { region: 'Central London', days: 1 },
-  E:  { region: 'East London',    days: 1 }, N:  { region: 'North London',   days: 1 },
-  NW: { region: 'North London',   days: 1 }, SE: { region: 'South London',   days: 1 },
-  SW: { region: 'South London',   days: 1 }, W:  { region: 'West London',    days: 1 },
-  // Greater London & South East
-  BR: { region: 'Bromley',     days: 1 }, CR: { region: 'Croydon',    days: 1 },
-  DA: { region: 'Dartford',    days: 1 }, EN: { region: 'Enfield',    days: 1 },
-  HA: { region: 'Harrow',      days: 1 }, IG: { region: 'Ilford',     days: 1 },
-  KT: { region: 'Kingston',    days: 1 }, RM: { region: 'Romford',    days: 1 },
-  SM: { region: 'Sutton',      days: 1 }, TW: { region: 'Twickenham', days: 1 },
-  UB: { region: 'Uxbridge',    days: 1 }, WD: { region: 'Watford',    days: 1 },
-  // Major English cities
-  M:  { region: 'Manchester',  days: 1 }, B:  { region: 'Birmingham', days: 1 },
-  LS: { region: 'Leeds',       days: 1 }, S:  { region: 'Sheffield',  days: 1 },
-  L:  { region: 'Liverpool',   days: 1 }, BS: { region: 'Bristol',    days: 1 },
-  NG: { region: 'Nottingham',  days: 1 }, LE: { region: 'Leicester',  days: 1 },
-  NE: { region: 'Newcastle',   days: 1 }, CV: { region: 'Coventry',   days: 2 },
-  // Scotland
-  G:  { region: 'Glasgow',     days: 2 }, EH: { region: 'Edinburgh',  days: 2 },
-  AB: { region: 'Aberdeen',    days: 2 }, DD: { region: 'Dundee',     days: 2 },
-  IV: { region: 'Inverness',   days: 3 }, HS: { region: 'Hebrides',   days: 3 },
-  ZE: { region: 'Shetland',    days: 4 }, KW: { region: 'Orkney',     days: 4 },
-  // Wales
-  CF: { region: 'Cardiff',     days: 1 }, SA: { region: 'Swansea',    days: 2 },
-  LL: { region: 'Llandudno',   days: 2 }, NP: { region: 'Newport',    days: 2 },
-  // Northern Ireland
-  BT: { region: 'Belfast',     days: 3 },
-};
-
-const CUTOFF_HOUR = 14; // 2 PM
-
-function addWorkdays(from: Date, days: number): Date {
-  const d = new Date(from);
-  let added = 0;
-  while (added < days) {
-    d.setDate(d.getDate() + 1);
-    const dow = d.getDay();
-    if (dow !== 0 && dow !== 6) added++; // skip weekends
-  }
-  return d;
-}
-
-function formatDate(d: Date): string {
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
-}
+/**
+ * Delivery options and dates for a postcode.
+ *
+ * The map and the workday arithmetic live in api/_deliveryEstimate.ts so the
+ * order emails quote the same date this quotes. Two copies that drifted apart
+ * would show one day at checkout and another in the inbox.
+ */
+import { UK_DELIVERY_MAP, CUTOFF_HOUR, addWorkdays, formatDate } from '../_deliveryEstimate.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function handler(req: any, res: any) {

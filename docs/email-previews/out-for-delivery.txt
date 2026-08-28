@@ -1,8 +1,11 @@
-Subject: Out for delivery — your order ORD-1756382400123 arrives today
+Subject: Arriving today — order ORD-1756382400123
 
-Your order ORD-1756382400123 is out for delivery with Royal Mail.
-Arriving: Tomorrow, before 6pm
+Arriving today
+Order ORD-1756382400123 · Royal Mail
+Expected: Tomorrow, before 6pm
 Tracking number: AB123456789GB
 Follow it live: https://www.royalmail.com/track-your-item#/tracking-results/AB123456789GB
 Not going to be in? Most couriers let you redirect or reschedule from the tracking page.
-View your order: https://lehart.co.uk/orders
+Your orders: https://lehart.co.uk/orders
+Returns: https://lehart.co.uk/returns
+Help: https://lehart.co.uk/faq

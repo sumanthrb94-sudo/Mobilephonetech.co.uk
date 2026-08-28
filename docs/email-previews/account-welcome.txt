@@ -1,15 +1,14 @@
 Subject: Your LeHart account is ready
 
-Welcome, Jordan.
-
-Your LeHart account is set up. It keeps your order history, delivery addresses and wishlist in one place.
-
-WHAT YOUR ACCOUNT GIVES YOU
+Your account is ready
+jordan@example.com
+Start browsing: https://lehart.co.uk/products
+WHAT YOUR ACCOUNT DOES
 - Track every order from dispatch to doorstep
 - Start a return in a couple of taps, within 30 days
 - Keep a wishlist and get told when the price drops
 - Your 12-month warranty tied to the order
-
-Start browsing: https://lehart.co.uk/products
-
 Want stock alerts and subscriber-only codes? Add your address to the newsletter at the bottom of any page — we will not add you without being asked.
+Your orders: https://lehart.co.uk/orders
+Returns: https://lehart.co.uk/returns
+Help: https://lehart.co.uk/faq

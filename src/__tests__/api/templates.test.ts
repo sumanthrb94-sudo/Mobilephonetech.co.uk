@@ -102,11 +102,18 @@ describe('order confirmation', () => {
 });
 
 describe('dispatch and delivery', () => {
-  it('leads with the tracking number when there is one', () => {
+  it('shows the tracking number and names the courier', () => {
     const built = orderDispatchedEmail(ORDER, { courier: 'Royal Mail', trackingNumber: 'AB123456789GB' });
     expect(built.html).toContain('AB123456789GB');
-    expect(built.html).toContain('Royal Mail tracking number');
+    expect(built.html).toContain('Royal Mail');
     expect(built.text).toContain('AB123456789GB');
+  });
+
+  it('leads with the arrival date, not the order number', () => {
+    const built = orderDispatchedEmail(ORDER, { estimatedDelivery: 'Thursday 4 Sep' });
+    // The date is what the email is opened for; the id only matters to support.
+    expect(built.subject.indexOf('Arriving')).toBeLessThan(built.subject.indexOf('ORD-123'));
+    expect(built.html).toContain('Arriving Thursday 4 Sep');
   });
 
   it('falls back to the order number when the courier gave us nothing', () => {
@@ -121,9 +128,30 @@ describe('dispatch and delivery', () => {
     expect(orderDispatchedEmail(ORDER, {}).html).toContain('View your order');
   });
 
-  it('says when it is arriving, defaulting to end of day', () => {
-    expect(outForDeliveryEmail(ORDER, {}).html).toContain('Before end of day');
-    expect(outForDeliveryEmail(ORDER, { estimatedDelivery: 'Today, 2-4pm' }).html).toContain('Today, 2-4pm');
+  it('states the day plainly, and a window only when the courier gave one', () => {
+    const bare = outForDeliveryEmail(ORDER, {});
+    expect(bare.html).toContain('Arriving today');
+    // No invented window. Quoting one the courier never gave is a promise the
+    // shop cannot keep and did not make.
+    expect(bare.html).not.toMatch(/Expected:/);
+
+    const windowed = outForDeliveryEmail(ORDER, { estimatedDelivery: 'Today, 2-4pm' });
+    expect(windowed.html).toContain('Today, 2-4pm');
+    expect(windowed.html).toContain('Expected:');
+  });
+
+  it('ends every order email with the utility links', () => {
+    for (const built of [
+      orderConfirmationEmail(ORDER),
+      orderDispatchedEmail(ORDER, {}),
+      outForDeliveryEmail(ORDER, {}),
+    ]) {
+      // Where is it, how do I return it, who do I ask — the three reasons
+      // these get opened, and the three things support gets asked.
+      expect(built.html).toContain('Your orders');
+      expect(built.html).toContain('Returns');
+      expect(built.html).toContain('Help');
+    }
   });
 
   it('advances the progress tracker one stop between the two', () => {

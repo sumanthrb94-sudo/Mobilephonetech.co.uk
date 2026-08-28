@@ -1,4 +1,5 @@
 import { esc } from './_email.js';
+import { estimateArrival } from './_deliveryEstimate.js';
 import { COMPANY } from '../src/config/company.js';
 
 /**
@@ -166,6 +167,8 @@ export interface OrderLike {
   tax?: number;
   total?: number;
   couponCode?: string | null;
+  /** ISO timestamp the order was written; the estimate is dated from it. */
+  createdAt?: string;
 }
 
 /** "128GB · Midnight · Excellent" — only the parts that exist. */
@@ -276,9 +279,31 @@ function highlight(label: string, value: string, tone: 'gold' | 'green' = 'gold'
  * fields are still blank, rather than a placeholder that would be a false
  * statement on a legal document.
  */
+/**
+ * The row of plain links every order email ends with.
+ *
+ * Utilitarian on purpose. A customer opening one of these usually wants one of
+ * exactly three things — where is it, how do I send it back, who do I ask —
+ * and making them hunt the site for those is what turns a delivery question
+ * into a support ticket.
+ */
+function utilityLinks(): string {
+  const link = (label: string, href: string) =>
+    `<a href="${esc(href)}" style="color:${PALETTE.goldDeep};text-decoration:none;font-weight:600;">${esc(label)}</a>`;
+  return `<div style="margin-top:26px;padding-top:16px;border-top:1px solid ${PALETTE.border};font-family:${FONT};font-size:12.5px;color:${PALETTE.muted};">
+    ${link('Your orders', `${SHOP_URL}/orders`)}
+    &nbsp;·&nbsp; ${link('Returns', `${SHOP_URL}/returns`)}
+    &nbsp;·&nbsp; ${link('Help', `${SHOP_URL}/faq`)}
+  </div>`;
+}
+
 function shell(opts: {
   preview: string;
+  /** Small uppercase label above the headline: "ORDER CONFIRMED". */
+  kicker?: string;
   headline: string;
+  /** Small line under the headline — order number, item count. */
+  subline?: string;
   body: string;
   unsubscribeUrl?: string;
 }): string {
@@ -312,10 +337,24 @@ ${preheader(opts.preview)}
       </a>
     </td></tr>
 
-    <tr><td style="padding:28px 28px 30px;">
-      <h1 style="margin:0 0 16px;font-family:${FONT};font-size:22px;line-height:1.28;font-weight:800;letter-spacing:-0.02em;color:${PALETTE.ink};">${esc(
+    <tr><td style="padding:26px 28px 30px;">
+      ${
+        opts.kicker
+          ? `<div style="font-family:${FONT};font-size:11px;font-weight:800;letter-spacing:0.09em;text-transform:uppercase;color:${PALETTE.muted};margin-bottom:8px;">${esc(
+              opts.kicker,
+            )}</div>`
+          : ''
+      }
+      <h1 style="margin:0 0 ${opts.subline ? '6px' : '16px'};font-family:${FONT};font-size:26px;line-height:1.2;font-weight:800;letter-spacing:-0.025em;color:${PALETTE.ink};">${esc(
         opts.headline,
       )}</h1>
+      ${
+        opts.subline
+          ? `<div style="font-family:${FONT};font-size:13px;color:${PALETTE.muted};margin-bottom:18px;">${esc(
+              opts.subline,
+            )}</div>`
+          : ''
+      }
       ${opts.body}
     </td></tr>
 
@@ -396,29 +435,45 @@ export function welcomeEmail(opts: { name?: string | null; unsubscribeUrl?: stri
 /** ── 2. Order confirmation ───────────────────────────────────────── */
 
 export function orderConfirmationEmail(order: OrderLike): Built {
-  const first = (order.shippingAddress?.fullName ?? '').trim().split(/\s+/)[0];
   const items = order.items ?? [];
+  const count = items.reduce((n, i) => n + Number(i.quantity ?? 1), 0);
+
+  // The date is the answer to the only question this email is really opened
+  // for, so it is the headline. The order number matters when contacting
+  // support and nowhere else, which is why it is demoted to the subline.
+  const arrival = estimateArrival({
+    postcode: order.shippingAddress?.postalCode,
+    shippingMethod: order.shippingMethod,
+    from: order.createdAt,
+  });
+
+  const headline = arrival ? `Arriving ${arrival.label}` : 'Your order is confirmed';
+  const subline = `Order ${order.id} · ${count} item${count === 1 ? '' : 's'}`;
 
   const body = [
-    p(
-      `${
-        first ? `Thanks, ${esc(first)} — your` : 'Your'
-      } order is confirmed and we are getting it ready. We will email you again the moment it leaves us.`,
-    ),
     progress('confirmed'),
-    highlight('Order number', order.id),
-    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:6px;border-top:1px solid ${PALETTE.border};">${itemRows(
+    button('View your order', `${SHOP_URL}/orders`),
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:22px;border-top:1px solid ${PALETTE.border};">${itemRows(
       items,
     )}</table>`,
     totalsBlock(order),
     addressBlock(order),
-    button('View your order', `${SHOP_URL}/orders`),
+    // An estimate presented as a promise is a complaint waiting to happen.
+    arrival
+      ? p(
+          `<span style="font-size:12.5px;color:${PALETTE.muted};">Delivery estimate for ${esc(
+            arrival.region,
+          )} by ${esc(order.shippingMethod || 'Standard Delivery')}. We will email you when it is dispatched.</span>`,
+        )
+      : p(
+          `<span style="font-size:12.5px;color:${PALETTE.muted};">We will email you when your order is dispatched.</span>`,
+        ),
+    utilityLinks(),
   ].join('');
 
   const text = [
-    first ? `Thanks, ${first} — your order is confirmed.` : 'Your order is confirmed.',
-    '',
-    `Order number: ${order.id}`,
+    headline,
+    subline,
     '',
     ...items.map((i) => {
       const variant = variantLine(i);
@@ -433,16 +488,22 @@ export function orderConfirmationEmail(order: OrderLike): Built {
     `VAT (20%): ${money(order.tax)}`,
     `Total: ${money(order.total)}`,
     '',
-    `View your order: ${SHOP_URL}/orders`,
+    `Your orders: ${SHOP_URL}/orders`,
+    `Returns: ${SHOP_URL}/returns`,
+    `Help: ${SHOP_URL}/faq`,
   ]
     .filter(Boolean)
     .join('\n');
 
   return {
-    subject: `Order confirmed — ${order.id}`,
+    // The inbox list truncates hard, so the date goes first: it is what the
+    // customer is scanning for, and the order id means nothing at a glance.
+    subject: arrival ? `Arriving ${arrival.label} — order ${order.id} confirmed` : `Order confirmed — ${order.id}`,
     html: shell({
-      preview: `We have your order ${order.id} and we are packing it now.`,
-      headline: 'Your order is confirmed',
+      preview: arrival ? `Arriving ${arrival.label}. ${count} item${count === 1 ? '' : 's'}.` : `We have your order ${order.id}.`,
+      kicker: 'Order confirmed',
+      headline,
+      subline,
       body,
     }),
     text,
@@ -463,45 +524,64 @@ export function orderDispatchedEmail(order: OrderLike, info: DispatchInfo = {}):
   const items = order.items ?? [];
   const courier = info.courier?.trim();
 
+  // Given a courier estimate, use it verbatim — they know where the van is.
+  // Otherwise fall back to our own, which is still better than saying nothing.
+  const own = estimateArrival({
+    postcode: order.shippingAddress?.postalCode,
+    shippingMethod: order.shippingMethod,
+    from: order.createdAt,
+  });
+  const arriving = info.estimatedDelivery?.trim() || (own ? own.label : '');
+
+  const headline = arriving ? `Arriving ${arriving}` : 'Your order is on its way';
+  const subline = [`Order ${order.id}`, courier].filter(Boolean).join(' · ');
+
   const body = [
-    p(
-      `Your order has left our warehouse${
-        courier ? ` with ${esc(courier)}` : ''
-      }. Here is everything you need to follow it.`,
-    ),
     progress('dispatched'),
-    info.trackingNumber
-      ? highlight(courier ? `${courier} tracking number` : 'Tracking number', info.trackingNumber)
-      : highlight('Order number', order.id),
-    info.estimatedDelivery ? p(`<strong style="color:${PALETTE.ink};">Estimated delivery:</strong> ${esc(info.estimatedDelivery)}`) : '',
+    // One dominant action. Tracking is what this email is for; everything
+    // else on the page is reference material.
     info.trackingUrl ? button('Track your parcel', info.trackingUrl) : button('View your order', `${SHOP_URL}/orders`),
+    info.trackingNumber
+      ? p(
+          `<span style="font-size:13px;color:${PALETTE.muted};">${esc(
+            courier || 'Tracking',
+          )} number</span><br><strong style="font-family:${FONT};font-size:16px;color:${PALETTE.ink};letter-spacing:0.02em;">${esc(
+            info.trackingNumber,
+          )}</strong>`,
+        )
+      : '',
     `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border-top:1px solid ${PALETTE.border};">${itemRows(
       items,
     )}</table>`,
     addressBlock(order),
+    utilityLinks(),
   ].join('');
 
   const text = [
-    `Your order ${order.id} has been dispatched${courier ? ` with ${courier}` : ''}.`,
+    headline,
+    subline,
     '',
     info.trackingNumber ? `Tracking number: ${info.trackingNumber}` : '',
     info.trackingUrl ? `Track it: ${info.trackingUrl}` : '',
-    info.estimatedDelivery ? `Estimated delivery: ${info.estimatedDelivery}` : '',
     '',
     ...items.map((i) => `- ${`${i.brand ?? ''} ${i.model ?? ''}`.trim()} x${i.quantity ?? 1}`),
     '',
-    `View your order: ${SHOP_URL}/orders`,
+    `Your orders: ${SHOP_URL}/orders`,
+    `Returns: ${SHOP_URL}/returns`,
+    `Help: ${SHOP_URL}/faq`,
   ]
     .filter(Boolean)
     .join('\n');
 
   return {
-    subject: `Dispatched — your order ${order.id} is on its way`,
+    subject: arriving ? `Arriving ${arriving} — order ${order.id} dispatched` : `Dispatched — your order ${order.id} is on its way`,
     html: shell({
       preview: info.trackingNumber
-        ? `Track it with ${courier || 'the courier'}: ${info.trackingNumber}`
+        ? `${courier || 'Tracking'} ${info.trackingNumber}`
         : 'Your order has left our warehouse.',
-      headline: 'Your order is on its way',
+      kicker: 'Dispatched',
+      headline,
+      subline,
       body,
     }),
     text,
@@ -512,44 +592,54 @@ export function orderDispatchedEmail(order: OrderLike, info: DispatchInfo = {}):
 
 export function outForDeliveryEmail(order: OrderLike, info: DispatchInfo = {}): Built {
   const courier = info.courier?.trim();
+  const window = info.estimatedDelivery?.trim();
 
   const body = [
-    p(
-      `Good news — your order is on the van and due today${
-        courier ? `, with ${esc(courier)}` : ''
-      }. Someone should be there to take it in if you can manage it.`,
-    ),
     progress('out'),
-    highlight('Arriving today', info.estimatedDelivery?.trim() || 'Before end of day', 'green'),
-    info.trackingNumber
-      ? p(`<strong style="color:${PALETTE.ink};">Tracking number:</strong> ${esc(info.trackingNumber)}`)
-      : '',
     info.trackingUrl ? button('Follow it live', info.trackingUrl) : button('View your order', `${SHOP_URL}/orders`),
+    window
+      ? p(`<strong style="color:${PALETTE.ink};">Expected:</strong> ${esc(window)}`)
+      : '',
+    info.trackingNumber
+      ? p(
+          `<span style="font-size:13px;color:${PALETTE.muted};">${esc(
+            courier || 'Tracking',
+          )} number</span><br><strong style="font-family:${FONT};font-size:16px;color:${PALETTE.ink};letter-spacing:0.02em;">${esc(
+            info.trackingNumber,
+          )}</strong>`,
+        )
+      : '',
     addressBlock(order),
     p(
-      `<span style="font-size:13px;color:${PALETTE.muted};">Not going to be in? Most couriers let you redirect or reschedule from the tracking page above.</span>`,
+      `<span style="font-size:12.5px;color:${PALETTE.muted};">Not going to be in? Most couriers let you redirect or reschedule from the tracking page.</span>`,
     ),
+    utilityLinks(),
   ].join('');
 
   const text = [
-    `Your order ${order.id} is out for delivery${courier ? ` with ${courier}` : ''}.`,
+    'Arriving today',
+    [`Order ${order.id}`, courier].filter(Boolean).join(' · '),
     '',
-    `Arriving: ${info.estimatedDelivery?.trim() || 'Before end of day'}`,
+    window ? `Expected: ${window}` : '',
     info.trackingNumber ? `Tracking number: ${info.trackingNumber}` : '',
     info.trackingUrl ? `Follow it live: ${info.trackingUrl}` : '',
     '',
     'Not going to be in? Most couriers let you redirect or reschedule from the tracking page.',
     '',
-    `View your order: ${SHOP_URL}/orders`,
+    `Your orders: ${SHOP_URL}/orders`,
+    `Returns: ${SHOP_URL}/returns`,
+    `Help: ${SHOP_URL}/faq`,
   ]
     .filter(Boolean)
     .join('\n');
 
   return {
-    subject: `Out for delivery — your order ${order.id} arrives today`,
+    subject: `Arriving today — order ${order.id}`,
     html: shell({
-      preview: `On the van${courier ? ` with ${courier}` : ''} and due today.`,
+      preview: `On the van${courier ? ` with ${courier}` : ''}${window ? `, ${window}` : ''}.`,
+      kicker: 'Out for delivery',
       headline: 'Arriving today',
+      subline: [`Order ${order.id}`, courier].filter(Boolean).join(' · '),
       body,
     }),
     text,
@@ -653,12 +743,14 @@ export function abandonedCartEmail(cart: {
  */
 export function accountWelcomeEmail(opts: { name?: string | null; email?: string }): Built {
   const first = (opts.name ?? '').trim().split(/\s+/)[0];
-  const greeting = first ? `Welcome, ${first}.` : 'Your account is ready.';
 
+  // Same hierarchy as the order emails: state the fact, give the action, then
+  // the reference material. A welcome that opens with a paragraph of warmth
+  // buries the one thing the reader can act on.
   const body = [
-    p('Your LeHart account is set up. It keeps your order history, delivery addresses and wishlist in one place, so checking out next time takes a few seconds.'),
-    `<div style="margin:20px 0;padding:16px 18px;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};border-radius:11px;">
-      <div style="font-family:${FONT};font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:${PALETTE.muted};margin-bottom:9px;">What your account gives you</div>
+    button('Start browsing', `${SHOP_URL}/products`),
+    `<div style="margin:22px 0 0;padding:16px 18px;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};border-radius:11px;">
+      <div style="font-family:${FONT};font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:${PALETTE.muted};margin-bottom:9px;">What your account does</div>
       <div style="font-family:${FONT};font-size:13.5px;line-height:1.8;color:${PALETTE.inkSoft};">
         Track every order from dispatch to doorstep<br>
         Start a return in a couple of taps, within 30 days<br>
@@ -666,33 +758,40 @@ export function accountWelcomeEmail(opts: { name?: string | null; email?: string
         Your 12-month warranty tied to the order, not a receipt you have to find
       </div>
     </div>`,
-    button('Start browsing', `${SHOP_URL}/products`),
     p(
-      `<span style="font-size:13px;color:${PALETTE.muted};">Want stock alerts and the occasional subscriber-only code? Add your address to the newsletter at the bottom of any page — we will not add you without being asked.</span>`,
+      `<span style="font-size:12.5px;color:${PALETTE.muted};">Want stock alerts and the occasional subscriber-only code? Add your address to the newsletter at the bottom of any page — we will not add you without being asked.</span>`,
     ),
+    utilityLinks(),
   ].join('');
 
   const text = [
-    greeting,
+    'Your account is ready',
+    opts.email ?? '',
     '',
-    'Your LeHart account is set up. It keeps your order history, delivery addresses and wishlist in one place.',
+    `Start browsing: ${SHOP_URL}/products`,
     '',
-    'WHAT YOUR ACCOUNT GIVES YOU',
+    'WHAT YOUR ACCOUNT DOES',
     '- Track every order from dispatch to doorstep',
     '- Start a return in a couple of taps, within 30 days',
     '- Keep a wishlist and get told when the price drops',
     '- Your 12-month warranty tied to the order',
     '',
-    `Start browsing: ${SHOP_URL}/products`,
-    '',
     'Want stock alerts and subscriber-only codes? Add your address to the newsletter at the bottom of any page — we will not add you without being asked.',
-  ].join('\n');
+    '',
+    `Your orders: ${SHOP_URL}/orders`,
+    `Returns: ${SHOP_URL}/returns`,
+    `Help: ${SHOP_URL}/faq`,
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return {
     subject: 'Your LeHart account is ready',
     html: shell({
       preview: 'Order tracking, returns and your wishlist, all in one place.',
-      headline: greeting,
+      kicker: first ? `Welcome, ${first}` : 'Welcome',
+      headline: 'Your account is ready',
+      subline: opts.email,
       body,
     }),
     text,
