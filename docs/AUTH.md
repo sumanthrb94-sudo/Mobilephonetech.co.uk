@@ -125,6 +125,27 @@ a failed send, not a wrong account.
 - The code field uses `autocomplete="one-time-code"`, so iOS and Android offer
   the code straight from the notification. That is most of the ergonomic win.
 
+## Each route asks for the other method
+
+Signing up with an email offers a mobile straight after; signing up with a
+mobile asks for an email. Both steps are skippable.
+
+This is the duplicate defence doing its real work rather than only reacting.
+A number attached at signup means a later phone sign-in **links** to that
+account instead of minting a second one — the `startPhoneSignIn` branch has an
+existing session to attach to, so the trap never opens. Waiting until the
+customer tries phone sign-in months later means racing that branch against
+their memory of which method they used.
+
+The reverse matters for a different reason: **a phone-only account has nowhere
+to receive an order confirmation, a receipt, or a return update.** It is not a
+tidiness problem, it is a customer who cannot be told their order shipped. So
+the email is asked for while they are still in the modal, not at checkout.
+
+Both are optional on purpose. Making either mandatory would cost more signups
+than the duplicates and unreachable accounts it prevents, and both can be added
+later from the account page.
+
 ## Email verification
 
 Signup sends a confirmation link, and the modal then shows a screen naming the

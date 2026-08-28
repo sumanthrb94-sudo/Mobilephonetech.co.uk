@@ -14,6 +14,7 @@ import {
   signInWithPhoneNumber,
   linkWithPhoneNumber,
   sendEmailVerification,
+  EmailAuthProvider,
   RecaptchaVerifier,
   type ConfirmationResult,
   type AuthCredential,
@@ -112,8 +113,14 @@ interface AuthContextType {
    * customer who already has one.
    */
   startPhoneSignIn: (phone: string, containerId: string) => Promise<void>;
-  /** Verify the SMS code, completing either the sign-in or the link. */
-  confirmPhoneCode: (code: string) => Promise<void>;
+  /**
+   * Verify the SMS code, completing either the sign-in or the link.
+   *
+   * Reports whether the resulting account has an email address. A phone-only
+   * account cannot receive an order confirmation, a receipt or a return
+   * update — so the caller uses this to decide whether to ask for one.
+   */
+  confirmPhoneCode: (code: string) => Promise<{ hasEmail: boolean }>;
   /** The number a code was sent to, in E.164, or null if none is pending. */
   pendingPhone: string | null;
   /** Drop a pending phone verification and tear down its reCAPTCHA. */
@@ -125,6 +132,15 @@ interface AuthContextType {
    * confirmed — a second click on "resend" should never produce an error.
    */
   resendVerification: () => Promise<void>;
+  /**
+   * Attach an email and password to the account someone is already signed into
+   * — the mirror of adding a mobile to an email account.
+   *
+   * This is what stops a phone-first customer being unreachable: without an
+   * address there is nowhere to send an order confirmation, and without a
+   * password they can only ever get back in by burning another SMS.
+   */
+  linkEmailPassword: (email: string, password: string) => Promise<void>;
   continueAsGuest: (email: string) => void;
   /** Force-refresh the ID token, e.g. right after a role change. */
   refreshClaims: () => Promise<void>;
@@ -426,7 +442,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const confirmPhoneCode = async (code: string) => {
+  const confirmPhoneCode = async (code: string): Promise<{ hasEmail: boolean }> => {
     const confirmation = confirmationRef.current;
     if (!confirmation) throw new Error('There is no code waiting to be confirmed.');
 
@@ -449,6 +465,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // A profile write must not undo a completed sign-in.
     }
     setUser(await toUser(cred.user));
+    return { hasEmail: Boolean(cred.user.email) };
+  };
+
+  const linkEmailPassword = async (email: string, password: string) => {
+    const current = auth.currentUser;
+    if (!current) throw new Error('You need to be signed in to add an email address.');
+
+    const credential = EmailAuthProvider.credential(email.trim().toLowerCase(), password);
+    const linked = await linkWithCredential(current, credential);
+
+    await ensureProfile(linked.user);
+    // Now that there is an address, both the things an address is for.
+    await sendVerification(linked.user);
+    await sendAccountWelcome(linked.user);
+    setUser(await toUser(linked.user));
   };
 
   const cancelPhoneSignIn = () => {
@@ -505,6 +536,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       pendingPhone,
       cancelPhoneSignIn,
       resendVerification,
+      linkEmailPassword,
       continueAsGuest,
       refreshClaims,
     }}>

@@ -11,7 +11,7 @@ import { isValidPhone, formatPhoneForDisplay } from '../utils/phoneNumber';
  * Uses the app's cyan primary and shared design tokens.
  */
 
-type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify';
+type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify' | 'add-email';
 
 /** Where the invisible reCAPTCHA mounts. Firebase needs a real element id. */
 const RECAPTCHA_ID = 'auth-recaptcha-container';
@@ -133,7 +133,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     login, signup, signInWithGoogle, resetPassword,
     signInMethodsFor, pendingLinkEmail, completeGoogleLink, cancelGoogleLink,
     startPhoneSignIn, confirmPhoneCode, pendingPhone, cancelPhoneSignIn,
-    resendVerification,
+    resendVerification, linkEmailPassword,
   } = useAuth();
   const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
@@ -185,6 +185,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       return;
     }
 
+    if (mode === 'add-email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.');
+      return;
+    }
     if (mode === 'phone' && !isValidPhone(phone)) {
       setError('Enter a UK mobile number, e.g. 07700 900123.');
       return;
@@ -213,14 +217,28 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         await completeGoogleLink(password);
         onSuccess?.();
         onClose();
+      } else if (mode === 'add-email') {
+        await linkEmailPassword(email, password);
+        onSuccess?.();
+        onClose();
       } else if (mode === 'phone') {
         await startPhoneSignIn(phone, RECAPTCHA_ID);
         setCode('');
         setMode('code');
       } else if (mode === 'code') {
-        await confirmPhoneCode(code);
-        onSuccess?.();
-        onClose();
+        const { hasEmail } = await confirmPhoneCode(code);
+        if (hasEmail) {
+          // Adding a mobile to an existing account — nothing left to collect.
+          onSuccess?.();
+          onClose();
+        } else {
+          // Phone-first account. Without an address there is nowhere to send an
+          // order confirmation, a receipt or a return update, so ask now while
+          // they are still here rather than at checkout.
+          setPassword('');
+          setEmail('');
+          setMode('add-email');
+        }
       } else {
         // The customer is signed in the moment this resolves — the verify
         // screen is a courtesy, not a gate, and its button just closes the
@@ -257,6 +275,8 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         // alternative — silently switching them to that other account — would
         // be worse: it looks like their data vanished.
         setError('That mobile number is already on another account. Sign in with that account, or use a different number.');
+      } else if (mode === 'add-email' && code === 'auth/email-already-in-use') {
+        setError('That email already has an account. Sign in to it instead, or use a different address.');
       } else if (code === 'auth/provider-already-linked') {
         setError('This account already has a mobile number.');
       } else if (code === 'auth/captcha-check-failed') {
@@ -357,6 +377,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'phone' ? 'Sign in with your mobile'
                   : mode === 'code' ? 'Enter your code'
                   : mode === 'verify' ? 'Check your email'
+                  : mode === 'add-email' ? 'Add your email'
                   : 'Connect your Google account'}
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
@@ -366,6 +387,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'phone' ? 'We will text you a 6-digit code. No password needed.'
                   : mode === 'code' ? `Sent to ${pendingPhone ? formatPhoneForDisplay(pendingPhone) : 'your mobile'}. It expires in a few minutes.`
                   : mode === 'verify' ? `Your account is ready and you are signed in. We have sent a link to ${email} to confirm the address.`
+                  : mode === 'add-email' ? 'Order confirmations, receipts and return updates go to your email. Without one we have no way to reach you about an order.'
                   : `${pendingLinkEmail ?? 'That address'} already has a password. Enter it once and Google will sign you in from now on.`}
               </p>
             </div>
@@ -385,11 +407,62 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--color-sale)', textAlign: 'center', margin: '14px 0 0' }}>{error}</p>
                   )}
 
+                  {/* Asking for the mobile here, rather than at checkout, is
+                      what keeps one customer to one account: a number attached
+                      now means a later phone sign-in LINKS to this account
+                      instead of minting a second one. Optional on purpose —
+                      making it mandatory would cost more signups than the
+                      duplicates it prevents. */}
+                  <div style={{ marginTop: '22px', paddingTop: '18px', borderTop: '1px solid var(--grey-10)' }}>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '4px' }}>
+                      Add your mobile
+                    </div>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--grey-50)', margin: '0 0 12px' }}>
+                      For delivery updates, and so you can sign in with a code instead of a password.
+                    </p>
+                    <div style={{ position: 'relative' }}>
+                      <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                      <input
+                        type="tel"
+                        placeholder="07700 900123"
+                        autoComplete="tel"
+                        inputMode="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        style={inputStyle}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                        onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={async () => {
+                        if (!isValidPhone(phone)) { setError('Enter a UK mobile number, e.g. 07700 900123.'); return; }
+                        setError(''); setInfo(''); setIsLoading(true);
+                        try {
+                          await startPhoneSignIn(phone, RECAPTCHA_ID);
+                          setCode('');
+                          setMode('code');
+                        } catch (err) {
+                          const c = (err as { code?: string })?.code ?? '';
+                          setError(c === 'auth/credential-already-in-use'
+                            ? 'That mobile number is already on another account.'
+                            : 'Could not send the code. Check the number and try again.');
+                        } finally { setIsLoading(false); }
+                      }}
+                      className="btn btn-secondary btn-full"
+                      style={{ marginTop: '10px' }}
+                    >
+                      Text me a code
+                    </button>
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => { onSuccess?.(); onClose(); }}
                     className="btn btn-primary btn-lg btn-full"
-                    style={{ marginTop: '20px' }}
+                    style={{ marginTop: '18px' }}
                   >
                     Start shopping <ArrowRight size={16} />
                   </button>
@@ -416,18 +489,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <input type="text" required placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
-                {(mode === 'login' || mode === 'signup' || mode === 'reset') && (
+                {(mode === 'login' || mode === 'signup' || mode === 'reset' || mode === 'add-email') && (
                   <div style={{ position: 'relative' }}>
                     <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                    <input ref={firstFieldRef} type={mode === 'signup' ? 'email' : 'text'} required placeholder={mode === 'signup' ? 'Email Address' : 'Email or username'} autoComplete={mode === 'signup' ? 'email' : 'username'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                    <input ref={firstFieldRef} type={mode === 'signup' || mode === 'add-email' ? 'email' : 'text'} required placeholder={mode === 'signup' || mode === 'add-email' ? 'Email Address' : 'Email or username'} autoComplete={mode === 'signup' || mode === 'add-email' ? 'email' : 'username'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
                 {/* A reset needs no password — asking for one would be asking
                     for the thing the user is here because they do not have. */}
-                {(mode === 'login' || mode === 'signup' || mode === 'link') && (
+                {(mode === 'login' || mode === 'signup' || mode === 'link' || mode === 'add-email') && (
                   <div style={{ position: 'relative' }}>
                     <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                    <input ref={mode === 'link' ? firstFieldRef : undefined} type="password" required placeholder={mode === 'link' ? 'Your existing password' : 'Password'} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                    <input ref={mode === 'link' ? firstFieldRef : undefined} type="password" required placeholder={mode === 'link' ? 'Your existing password' : 'Password'} autoComplete={mode === 'signup' || mode === 'add-email' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
 
@@ -523,6 +596,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                         : mode === 'reset' ? 'Sending your link'
                         : mode === 'phone' ? 'Texting your code'
                         : mode === 'code' ? 'Checking your code'
+                        : mode === 'add-email' ? 'Saving your email'
                         : 'Connecting Google'}
                     />
                   ) : (
@@ -531,6 +605,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                       : mode === 'reset' ? 'Send reset link'
                       : mode === 'phone' ? 'Text me a code'
                       : mode === 'code' ? 'Verify and sign in'
+                      : mode === 'add-email' ? 'Save and finish'
                       : 'Connect and sign in'} <ArrowRight size={16} /></>
                   )}
                 </button>
@@ -629,6 +704,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <button
                   onClick={() => {
                     if (mode === 'link') { abandonLink(); return; }
+                    if (mode === 'add-email') { onSuccess?.(); onClose(); return; }
                     if (mode === 'phone' || mode === 'code') { abandonPhone('login'); return; }
                     if (mode === 'reset') { setMode('login'); setError(''); setInfo(''); return; }
                     setMode(mode === 'login' ? 'signup' : 'login');
@@ -642,6 +718,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   {mode === 'login' ? "Don't have an account? Sign up"
                     : mode === 'signup' ? 'Already have an account? Sign in'
                     : mode === 'reset' ? 'Back to sign in'
+                    : mode === 'add-email' ? 'Skip for now'
                     : (mode === 'phone' || mode === 'code') ? 'Use email instead'
                     : 'Cancel and sign in another way'}
                 </button>

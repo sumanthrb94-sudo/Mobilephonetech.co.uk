@@ -27,9 +27,10 @@ const completeGoogleLink = vi.fn();
 const cancelGoogleLink = vi.fn();
 const signInMethodsFor = vi.fn<(email: string) => Promise<string[]>>();
 const startPhoneSignIn = vi.fn();
-const confirmPhoneCode = vi.fn();
+const confirmPhoneCode = vi.fn<(code: string) => Promise<{ hasEmail: boolean }>>();
 const cancelPhoneSignIn = vi.fn();
 const resendVerification = vi.fn();
+const linkEmailPassword = vi.fn();
 let pendingLinkEmail: string | null = null;
 let pendingPhone: string | null = null;
 
@@ -42,7 +43,7 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
       login, signup, signInWithGoogle, resetPassword,
       signInMethodsFor, completeGoogleLink, cancelGoogleLink, pendingLinkEmail,
       startPhoneSignIn, confirmPhoneCode, cancelPhoneSignIn, pendingPhone,
-      resendVerification,
+      resendVerification, linkEmailPassword,
       logout: vi.fn(), continueAsGuest: vi.fn(), refreshClaims: vi.fn(),
     }),
   };
@@ -82,6 +83,9 @@ beforeEach(() => {
   pendingLinkEmail = null;
   pendingPhone = null;
   signInMethodsFor.mockResolvedValue([]);
+  // Adding a mobile to an account that already has an email is the default
+  // case; the phone-first path overrides this.
+  confirmPhoneCode.mockResolvedValue({ hasEmail: true });
 });
 
 describe('signup no longer lies about a confirmation email', () => {
@@ -343,7 +347,7 @@ describe('mobile sign-in', () => {
 
   it('verifies the code and signs in', async () => {
     startPhoneSignIn.mockResolvedValue(undefined);
-    confirmPhoneCode.mockResolvedValue(undefined);
+    confirmPhoneCode.mockResolvedValue({ hasEmail: true });
     pendingPhone = '+447700900123';
     const { onClose, onSuccess } = renderModal('login');
 
@@ -433,5 +437,147 @@ describe('mobile sign-in', () => {
 
     expect(cancelPhoneSignIn).toHaveBeenCalled();
     expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
+  });
+});
+
+describe('each signup route asks for the other contact method', () => {
+  it('offers a mobile field once an email account is created', async () => {
+    signup.mockResolvedValue(undefined);
+    renderModal('signup');
+    await signUp();
+
+    await screen.findByRole('heading', { name: /check your email/i });
+    // Attaching the number now is what makes a later phone sign-in LINK to
+    // this account rather than mint a second one.
+    expect(screen.getByPlaceholderText('07700 900123')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /text me a code/i })).toBeInTheDocument();
+  });
+
+  it('lets the customer skip the mobile and shop anyway', async () => {
+    signup.mockResolvedValue(undefined);
+    const { onClose } = renderModal('signup');
+    await signUp();
+
+    // Mandatory would cost more signups than the duplicates it prevents.
+    await userEvent.click(await screen.findByRole('button', { name: /start shopping/i }));
+    expect(onClose).toHaveBeenCalled();
+    expect(startPhoneSignIn).not.toHaveBeenCalled();
+  });
+
+  it('sends a code for the mobile added after an email signup', async () => {
+    signup.mockResolvedValue(undefined);
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('signup');
+    await signUp();
+
+    await userEvent.type(await screen.findByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalledWith('07700900123', 'auth-recaptcha-container'));
+    expect(await screen.findByRole('heading', { name: /enter your code/i })).toBeInTheDocument();
+  });
+
+  it('rejects a bad number on that step without sending', async () => {
+    signup.mockResolvedValue(undefined);
+    renderModal('signup');
+    await signUp();
+
+    await userEvent.type(await screen.findByPlaceholderText('07700 900123'), '12');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    expect(await screen.findByText(/enter a uk mobile number/i)).toBeInTheDocument();
+    expect(startPhoneSignIn).not.toHaveBeenCalled();
+  });
+
+  it('asks a phone-first account for an email, since it has nowhere to write', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    // No email on the new account — it cannot receive an order confirmation.
+    confirmPhoneCode.mockResolvedValue({ hasEmail: false });
+    pendingPhone = '+447700900123';
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    expect(await screen.findByRole('heading', { name: /add your email/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Email Address')).toBeInTheDocument();
+  });
+
+  it('closes instead when the phone was added to an account that has an email', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    confirmPhoneCode.mockResolvedValue({ hasEmail: true });
+    pendingPhone = '+447700900123';
+    const { onClose } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    // Nothing left to collect.
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(screen.queryByRole('heading', { name: /add your email/i })).not.toBeInTheDocument();
+  });
+
+  it('links the email a phone-first account supplies', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    confirmPhoneCode.mockResolvedValue({ hasEmail: false });
+    linkEmailPassword.mockResolvedValue(undefined);
+    pendingPhone = '+447700900123';
+    const { onClose } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    await userEvent.type(await screen.findByPlaceholderText('Email Address'), 'jordan@example.com');
+    await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
+    await userEvent.click(screen.getByRole('button', { name: /save and finish/i }));
+
+    await waitFor(() => expect(linkEmailPassword).toHaveBeenCalledWith('jordan@example.com', 'hunter22'));
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('explains when that email already belongs to someone', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    confirmPhoneCode.mockResolvedValue({ hasEmail: false });
+    linkEmailPassword.mockRejectedValue(err('auth/email-already-in-use'));
+    pendingPhone = '+447700900123';
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    await userEvent.type(await screen.findByPlaceholderText('Email Address'), 'taken@example.com');
+    await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
+    await userEvent.click(screen.getByRole('button', { name: /save and finish/i }));
+
+    expect(await screen.findByText(/already has an account/i)).toBeInTheDocument();
+  });
+
+  it('lets a phone-first account skip the email too', async () => {
+    startPhoneSignIn.mockResolvedValue(undefined);
+    confirmPhoneCode.mockResolvedValue({ hasEmail: false });
+    pendingPhone = '+447700900123';
+    const { onClose } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with mobile/i }));
+    await userEvent.type(screen.getByPlaceholderText('07700 900123'), '07700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
+    await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
+
+    await userEvent.click(await screen.findByRole('button', { name: /skip for now/i }));
+    expect(onClose).toHaveBeenCalled();
+    expect(linkEmailPassword).not.toHaveBeenCalled();
   });
 });
