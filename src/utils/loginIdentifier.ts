@@ -1,5 +1,5 @@
 /**
- * Supabase Auth identifies users by email address — there is no separate
+ * Firebase Auth identifies users by email address — there is no separate
  * username field. Staff still want to sign in as plain `admin`, so a value
  * with no "@" is treated as the local part of a staff address.
  *

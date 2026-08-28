@@ -7,6 +7,12 @@ import AuthModal from '../../components/AuthModal';
 const signInWithGoogle = vi.fn();
 const login = vi.fn();
 const signup = vi.fn();
+const resetPassword = vi.fn();
+const signInMethodsFor = vi.fn(async () => [] as string[]);
+const completeGoogleLink = vi.fn();
+const cancelGoogleLink = vi.fn();
+let pendingLinkEmail: string | null = null;
+export const setPendingLinkEmail = (v: string | null) => { pendingLinkEmail = v; };
 
 vi.mock('../../context/AuthContext', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../context/AuthContext')>();
@@ -14,8 +20,9 @@ vi.mock('../../context/AuthContext', async (importOriginal) => {
     ...actual,
     useAuth: () => ({
       user: null, session: null, isAuthenticated: false, isLoading: false,
-      login, signup, signInWithGoogle,
-      logout: vi.fn(), resetPassword: vi.fn(), continueAsGuest: vi.fn(),
+      login, signup, signInWithGoogle, resetPassword,
+      signInMethodsFor, completeGoogleLink, cancelGoogleLink, pendingLinkEmail,
+      logout: vi.fn(), continueAsGuest: vi.fn(),
       refreshClaims: vi.fn(),
     }),
   };
@@ -30,7 +37,11 @@ function renderModal(onClose = vi.fn(), onSuccess = vi.fn()) {
   return { onClose, onSuccess };
 }
 
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => {
+  vi.clearAllMocks();
+  pendingLinkEmail = null;
+  signInMethodsFor.mockResolvedValue([]);
+});
 
 describe('AuthModal — Google sign-in', () => {
   /**

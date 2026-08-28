@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -9,6 +9,9 @@ import {
   signOut,
   sendPasswordResetEmail,
   updateProfile,
+  fetchSignInMethodsForEmail,
+  linkWithCredential,
+  type AuthCredential,
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -50,8 +53,35 @@ interface AuthContextType {
    * Resolves with what actually happened, because the caller has to react
    * differently: 'signed-in' should close the modal, 'cancelled' should leave
    * it open untouched, and 'redirecting' means the page is about to unload.
+   * 'needs-link' means the address already has a password account — see
+   * pendingLinkEmail and completeGoogleLink below.
    */
-  signInWithGoogle: () => Promise<'signed-in' | 'cancelled' | 'redirecting'>;
+  signInWithGoogle: () => Promise<'signed-in' | 'cancelled' | 'redirecting' | 'needs-link'>;
+  /**
+   * Which providers an address is already registered with, e.g. ['password']
+   * or ['google.com'].
+   *
+   * Returns [] when it cannot tell, which is the common case rather than the
+   * exception: Firebase's Email Enumeration Protection — on by default for
+   * projects created since late 2023 — makes this endpoint return nothing so
+   * that a stranger cannot probe which addresses have accounts. Callers must
+   * treat [] as "unknown" and fall back to generic wording, never as "no
+   * account exists".
+   */
+  signInMethodsFor: (email: string) => Promise<string[]>;
+  /**
+   * Set when signInWithGoogle returned 'needs-link': the address whose
+   * existing password account has to be proved before Google can be attached.
+   */
+  pendingLinkEmail: string | null;
+  /**
+   * Finish the link started by a 'needs-link' outcome — verify the password on
+   * the existing account, then attach the held Google credential so either
+   * method signs in from now on.
+   */
+  completeGoogleLink: (password: string) => Promise<void>;
+  /** Abandon a pending link, e.g. the user closed the modal. */
+  cancelGoogleLink: () => void;
   continueAsGuest: (email: string) => void;
   /** Force-refresh the ID token, e.g. right after a role change. */
   refreshClaims: () => Promise<void>;
@@ -148,7 +178,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(await toUser(cred.user));
   };
 
-  const signInWithGoogle = async (): Promise<'signed-in' | 'cancelled' | 'redirecting'> => {
+  /**
+   * The Google credential Firebase refused because the address already has a
+   * password account, held until the password proves the two are the same
+   * person. A ref rather than state: it must survive re-renders but nothing
+   * renders from it, and it must never be serialised anywhere.
+   */
+  const pendingCredentialRef = useRef<AuthCredential | null>(null);
+  const [pendingLinkEmail, setPendingLinkEmail] = useState<string | null>(null);
+
+  const signInWithGoogle = async (): Promise<'signed-in' | 'cancelled' | 'redirecting' | 'needs-link'> => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
@@ -169,8 +208,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       // Closing the popup is a deliberate cancel, not an error.
       if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return 'cancelled';
+
+      // The address already has a password account. Firebase's "one account
+      // per email address" setting is what stops this becoming a second,
+      // duplicate identity — but on its own it just fails, leaving a customer
+      // who genuinely owns both stuck at a dead end. Hold the Google
+      // credential so one password entry can attach it to the existing
+      // account instead.
+      if (code === 'auth/account-exists-with-different-credential') {
+        const held = GoogleAuthProvider.credentialFromError(err as never);
+        const email = (err as { customData?: { email?: string } })?.customData?.email ?? '';
+        if (held && email) {
+          pendingCredentialRef.current = held;
+          setPendingLinkEmail(email);
+          return 'needs-link';
+        }
+        // No recoverable credential (older SDK shapes, or a provider we did
+        // not initiate) — fall through so the caller shows the plain message.
+      }
       throw err;
     }
+  };
+
+  const signInMethodsFor = async (email: string): Promise<string[]> => {
+    try {
+      return await fetchSignInMethodsForEmail(auth, email.trim().toLowerCase());
+    } catch {
+      // Enumeration protection, an offline client, or a malformed address —
+      // all of them mean "cannot tell", never "no account".
+      return [];
+    }
+  };
+
+  const completeGoogleLink = async (password: string) => {
+    const credential = pendingCredentialRef.current;
+    const email = pendingLinkEmail;
+    if (!credential || !email) throw new Error('There is no sign-in waiting to be linked.');
+
+    // Proving the password is what authorises the link. Without it anyone who
+    // knew an address could attach their own Google account to it and take
+    // the account over.
+    const signedIn = await signInWithEmailAndPassword(auth, email, password);
+    await linkWithCredential(signedIn.user, credential);
+
+    pendingCredentialRef.current = null;
+    setPendingLinkEmail(null);
+
+    await ensureProfile(signedIn.user);
+    // Re-read after linking so providers[] reflects both methods immediately.
+    setUser(await toUser(signedIn.user));
+  };
+
+  const cancelGoogleLink = () => {
+    pendingCredentialRef.current = null;
+    setPendingLinkEmail(null);
   };
 
   const logout = async () => {
@@ -212,6 +303,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       resetPassword,
       signInWithGoogle,
+      signInMethodsFor,
+      pendingLinkEmail,
+      completeGoogleLink,
+      cancelGoogleLink,
       continueAsGuest,
       refreshClaims,
     }}>

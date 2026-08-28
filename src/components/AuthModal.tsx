@@ -10,11 +10,32 @@ import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginId
  * Uses the app's cyan primary and shared design tokens.
  */
 
+type Mode = 'login' | 'signup' | 'reset' | 'link';
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
   initialMode?: 'login' | 'signup';
+}
+
+/**
+ * Turn Firebase's provider ids into something a customer can act on.
+ *
+ * Returns null when the list is empty, which Firebase's Email Enumeration
+ * Protection makes the normal case rather than the exception — it deliberately
+ * reports nothing so a stranger cannot probe which addresses have accounts. A
+ * null here means "say something generic", never "no account exists".
+ */
+function describeProviders(methods: string[]): string | null {
+  if (!methods.length) return null;
+  if (methods.includes('google.com') && !methods.includes('password')) {
+    return 'This email is registered with Google. Use “Continue with Google” below.';
+  }
+  if (methods.includes('password') && !methods.includes('google.com')) {
+    return 'This email is registered with a password. Enter it above, or reset it if you have forgotten.';
+  }
+  return null;
 }
 
 /**
@@ -46,7 +67,12 @@ function describeGoogleError(err: unknown): string {
 }
 
 export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }: AuthModalProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  /**
+   * 'reset' sends a password-reset email; 'link' is entered only when Google
+   * sign-in hit an address that already has a password account, and asks for
+   * that password once so the two can be joined.
+   */
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
@@ -99,7 +125,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
-  const { login, signup, signInWithGoogle } = useAuth();
+  const {
+    login, signup, signInWithGoogle, resetPassword,
+    signInMethodsFor, pendingLinkEmail, completeGoogleLink, cancelGoogleLink,
+  } = useAuth();
   const [googleBusy, setGoogleBusy] = useState(false);
 
   const handleGoogle = async () => {
@@ -120,6 +149,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       // 'redirecting' — the page is about to unload, so leave the busy state.
       if (outcome === 'redirecting') return;
 
+      // The address already has a password account. Rather than the dead end
+      // of "use your password instead", ask for it once and attach Google to
+      // the existing account so either method works from now on.
+      if (outcome === 'needs-link') {
+        setMode('link');
+        setPassword('');
+        setGoogleBusy(false);
+        return;
+      }
+
       // 'cancelled' — the user closed the popup. Not an error; just reset.
       setGoogleBusy(false);
     } catch (err) {
@@ -133,7 +172,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     setError('');
     setInfo('');
 
-    if (mode === 'login' && !isValidLoginIdentifier(email)) {
+    if ((mode === 'login' || mode === 'reset') && !isValidLoginIdentifier(email)) {
       setError('Enter your email address, or your staff username.');
       return;
     }
@@ -146,24 +185,61 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         await login(resolveLoginIdentifier(email), password);
         onSuccess?.();
         onClose();
-      } else {
-        await signup(email, password, fullName);
-        // Supabase requires email confirmation by default — tell the user
-        setInfo(`We've sent a confirmation link to ${email}. Please check your inbox, then sign in.`);
-        setMode('login');
+      } else if (mode === 'reset') {
+        await resetPassword(resolveLoginIdentifier(email));
+        // Worded so it reveals nothing either way. Confirming that an address
+        // does have an account turns this form into a way of testing which of
+        // a leaked address list are customers here.
+        setInfo(`If an account exists for ${email}, a reset link is on its way. Check your inbox and spam folder.`);
         setPassword('');
+      } else if (mode === 'link') {
+        await completeGoogleLink(password);
+        onSuccess?.();
+        onClose();
+      } else {
+        // createUserWithEmailAndPassword signs the new user in immediately and
+        // sends nothing — the modal simply closes, the same as a sign-in. The
+        // message that used to sit here promised a confirmation email that was
+        // never sent and told an already-signed-in customer to sign in.
+        await signup(email, password, fullName);
+        onSuccess?.();
+        onClose();
       }
     } catch (err: unknown) {
+      const code = (err as { code?: string })?.code ?? '';
       const msg = (err as { message?: string })?.message ?? '';
-      const lower = msg.toLowerCase();
-      if (lower.includes('email not confirmed') || lower.includes('confirm your email') || lower.includes('not confirmed')) {
-        setError('Please check your inbox and confirm your email address before signing in.');
+
+      // A failed sign-in is very often the right person using the wrong
+      // method, so say which method the address actually has rather than
+      // "invalid credentials" — that is the difference between a customer
+      // recovering and a customer creating a duplicate account.
+      if (mode === 'login' && (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found')) {
+        const hint = describeProviders(await signInMethodsFor(resolveLoginIdentifier(email)));
+        setError(hint ?? 'That email and password do not match. Try again, or reset your password.');
+      } else if (mode === 'signup' && code === 'auth/email-already-in-use') {
+        const hint = describeProviders(await signInMethodsFor(email));
+        setError(hint ?? 'An account already exists for that email. Sign in instead.');
+      } else if (mode === 'link' && (code === 'auth/invalid-credential' || code === 'auth/wrong-password')) {
+        setError('That password does not match the existing account. Try again, or reset it.');
+      } else if (code === 'auth/too-many-requests') {
+        setError('Too many attempts. Wait a few minutes and try again.');
+      } else if (code === 'auth/weak-password') {
+        setError('Please choose a password of at least six characters.');
       } else {
         setError(msg || 'Something went wrong. Please try again.');
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /** Leave link mode without attaching Google, e.g. the user changed their mind. */
+  const abandonLink = () => {
+    cancelGoogleLink();
+    setPassword('');
+    setError('');
+    setInfo('');
+    setMode('login');
   };
 
   const inputStyle = {
@@ -207,12 +283,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <X size={16} />
               </button>
               <h2 id="auth-modal-title" style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: '0 0 8px 0', paddingRight: '32px' }}>
-                {mode === 'login' ? 'Welcome back' : 'Create your account'}
+                {mode === 'login' ? 'Welcome back'
+                  : mode === 'signup' ? 'Create your account'
+                  : mode === 'reset' ? 'Reset your password'
+                  : 'Connect your Google account'}
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
-                {mode === 'login'
-                  ? 'Sign in to access your orders and wishlist.'
-                  : 'Join lehart.co.uk for a certified experience.'}
+                {mode === 'login' ? 'Sign in to access your orders and wishlist.'
+                  : mode === 'signup' ? 'Join lehart.co.uk for a certified experience.'
+                  : mode === 'reset' ? 'Enter your email and we will send you a link to set a new one.'
+                  : `${pendingLinkEmail ?? 'That address'} already has a password. Enter it once and Google will sign you in from now on.`}
               </p>
             </div>
 
@@ -224,14 +304,34 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <input type="text" required placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
-                <div style={{ position: 'relative' }}>
-                  <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                  <input ref={firstFieldRef} type={mode === 'login' ? 'text' : 'email'} required placeholder={mode === 'login' ? 'Email or username' : 'Email Address'} autoComplete={mode === 'login' ? 'username' : 'email'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                  <input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
-                </div>
+                {mode !== 'link' && (
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                    <input ref={firstFieldRef} type={mode === 'signup' ? 'email' : 'text'} required placeholder={mode === 'signup' ? 'Email Address' : 'Email or username'} autoComplete={mode === 'signup' ? 'email' : 'username'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  </div>
+                )}
+                {/* A reset needs no password — asking for one would be asking
+                    for the thing the user is here because they do not have. */}
+                {mode !== 'reset' && (
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                    <input ref={mode === 'link' ? firstFieldRef : undefined} type="password" required placeholder={mode === 'link' ? 'Your existing password' : 'Password'} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  </div>
+                )}
+
+                {mode === 'login' && (
+                  <div style={{ textAlign: 'right', marginTop: '-4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setMode('reset'); setError(''); setInfo(''); }}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer' }}
+                      onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
+                )}
 
                 {info && (
                   <p role="status" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: '#0a7c5c', background: '#e6f7f2', borderRadius: '6px', padding: '10px 12px', textAlign: 'center', margin: '4px 0 0 0' }}>{info}</p>
@@ -251,15 +351,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <Spinner
                       size="sm"
                       tone="current"
-                      label={mode === 'login' ? 'Signing in' : 'Creating your account'}
+                      label={mode === 'login' ? 'Signing in'
+                        : mode === 'signup' ? 'Creating your account'
+                        : mode === 'reset' ? 'Sending your link'
+                        : 'Connecting Google'}
                     />
                   ) : (
-                    <>{mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={16} /></>
+                    <>{mode === 'login' ? 'Sign in'
+                      : mode === 'signup' ? 'Create account'
+                      : mode === 'reset' ? 'Send reset link'
+                      : 'Connect and sign in'} <ArrowRight size={16} /></>
                   )}
                 </button>
               </form>
 
-              {/* ── Google OAuth ───────────────────────────────── */}
+              {/* ── Google OAuth ─────────────────────────────────
+                  Hidden while resetting (nothing to sign in with yet) and
+                  while linking (the Google attempt is what got us here, so
+                  offering it again would loop). */}
+              {(mode === 'login' || mode === 'signup') && (
+              <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
                 <span style={{ flex: 1, height: '1px', background: 'var(--grey-20)' }} />
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-40)' }}>or</span>
@@ -305,15 +416,26 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   </>
                 )}
               </button>
+              </>
+              )}
 
               <div style={{ marginTop: 'var(--spacing-32)', textAlign: 'center' }}>
                 <button
-                  onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                  onClick={() => {
+                    if (mode === 'link') { abandonLink(); return; }
+                    if (mode === 'reset') { setMode('login'); setError(''); setInfo(''); return; }
+                    setMode(mode === 'login' ? 'signup' : 'login');
+                    setError('');
+                    setInfo('');
+                  }}
                   style={{ background: 'none', border: 'none', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer', transition: 'color var(--duration-fast)' }}
                   onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
                   onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
                 >
-                  {mode === 'login' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  {mode === 'login' ? "Don't have an account? Sign up"
+                    : mode === 'signup' ? 'Already have an account? Sign in'
+                    : mode === 'reset' ? 'Back to sign in'
+                    : 'Cancel and sign in another way'}
                 </button>
               </div>
             </div>

@@ -27,11 +27,20 @@ vi.mock('firebase/auth', () => ({
   createUserWithEmailAndPassword: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'password' }] } })),
   signInWithPopup: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'google.com' }] } })),
   signInWithRedirect: vi.fn(() => Promise.resolve()),
-  GoogleAuthProvider: class { setCustomParameters() {} },
+  // credentialFromError is a static on the real provider — it is how the
+  // Google credential is recovered from an
+  // auth/account-exists-with-different-credential failure so it can be linked
+  // to the existing password account instead of being thrown away.
+  GoogleAuthProvider: class {
+    setCustomParameters() {}
+    static credentialFromError = vi.fn(() => ({ providerId: 'google.com' }));
+  },
   signOut: vi.fn(() => Promise.resolve()),
   sendPasswordResetEmail: vi.fn(() => Promise.resolve()),
   updateProfile: vi.fn(() => Promise.resolve()),
   updatePassword: vi.fn(() => Promise.resolve()),
+  fetchSignInMethodsForEmail: vi.fn(() => Promise.resolve([] as string[])),
+  linkWithCredential: vi.fn(() => Promise.resolve({ user: { uid: 'u1', email: 'a@b.c', providerData: [{ providerId: 'password' }, { providerId: 'google.com' }] } })),
 }));
 
 vi.mock('firebase/firestore', () => {
