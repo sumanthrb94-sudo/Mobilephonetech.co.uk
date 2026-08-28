@@ -1,6 +1,7 @@
 import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
-import { looksLikeEmail } from '../_email.js';
+import { looksLikeEmail, sendEmail } from '../_email.js';
+import { orderConfirmationEmail } from '../_templates.js';
 
 /**
  * Create an order. The server prices it; the browser never does.
@@ -201,5 +202,22 @@ export default async function handler(req: any, res: any) {
     return res.status(500).json({ error: 'Could not save your order', detail: (err as Error).message });
   }
 
-  return res.status(201).json({ order });
+  // The confirmation is a courtesy on top of an order that is already durably
+  // written. A dead mail provider must not turn a successful purchase into a
+  // 500 the customer would reasonably retry — which is how you get two orders
+  // and one angry email. sendEmail swallows its own failures; this await is
+  // still needed because the runtime can freeze the instance the moment the
+  // response is sent, cancelling anything left in flight.
+  const confirmation = orderConfirmationEmail(order);
+  const emailed = await sendEmail({
+    to: contactEmail,
+    toName: order.shippingAddress.fullName,
+    subject: confirmation.subject,
+    html: confirmation.html,
+    text: confirmation.text,
+    tag: 'order-confirmation',
+  });
+  if (emailed.error) console.error(`[api/orders] confirmation for ${orderId}:`, emailed.error);
+
+  return res.status(201).json({ order, confirmationEmail: { sent: emailed.sent, skipped: emailed.skipped } });
 }

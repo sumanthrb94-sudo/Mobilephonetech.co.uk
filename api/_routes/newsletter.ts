@@ -1,5 +1,8 @@
 import { adminDb } from '../_firebaseAdmin.js';
 import { enforceRateLimit, clientIp } from '../_rateLimit.js';
+import { sendEmail } from '../_email.js';
+import { upsertSubscriber } from '../_listmonk.js';
+import { welcomeEmail } from '../_templates.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -65,7 +68,47 @@ export default async function handler(req: any, res: any) {
       doubleOptInConfirmed: false,
     }, { merge: true });
 
-    return res.status(200).json({ success: true, message: 'Subscribed successfully' });
+    // Firestore now holds the consent record, so the signup has succeeded no
+    // matter what the next two calls do. Both are deliberately best-effort:
+    // Listmonk is a projection that scripts/listmonk-sync.mjs can rebuild, and
+    // a welcome email nobody receives is not worth failing a subscription over.
+    const consentSource =
+      typeof source === 'string' && source.trim() ? source.trim().slice(0, 60) : 'website-signup';
+
+    const [listed, welcomed] = await Promise.all([
+      upsertSubscriber({
+        email: normalised,
+        name: name?.trim() ?? null,
+        // Mirrored so a campaign can segment on them without reading Firestore.
+        attribs: {
+          source: consentSource,
+          policy_version: PRIVACY_POLICY_VERSION,
+          consent_method: 'single-opt-in',
+          subscribed_at: new Date().toISOString(),
+        },
+      }),
+      (async () => {
+        const mail = welcomeEmail({ name: name?.trim() ?? null });
+        return sendEmail({
+          to: normalised,
+          toName: name?.trim(),
+          subject: mail.subject,
+          html: mail.html,
+          text: mail.text,
+          tag: 'newsletter-welcome',
+        });
+      })(),
+    ]);
+
+    if (listed.error) console.error('[api/newsletter] listmonk:', listed.error);
+    if (welcomed.error) console.error('[api/newsletter] welcome email:', welcomed.error);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Subscribed successfully',
+      listmonk: listed.synced ? listed.action : (listed.skipped ?? 'failed'),
+      welcomeEmail: welcomed.sent ? 'sent' : (welcomed.skipped ?? 'failed'),
+    });
   } catch (err) {
     console.error('[api/newsletter]', err);
     return res.status(500).json({ error: 'Failed to subscribe' });

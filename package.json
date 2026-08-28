@@ -30,7 +30,9 @@
     "e2e:checkout": "node e2e/checkout.mjs",
     "e2e:parallel": "node e2e/parallel.mjs",
     "audit:security": "node e2e/security-audit.mjs",
-    "e2e:api": "node e2e/api-server.mjs"
+    "e2e:api": "node e2e/api-server.mjs",
+    "email:preview": "tsx scripts/preview-emails.ts",
+    "listmonk:sync": "node scripts/listmonk-sync.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
