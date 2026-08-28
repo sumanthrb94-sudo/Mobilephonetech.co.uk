@@ -634,3 +634,67 @@ export function abandonedCartEmail(cart: {
     text,
   };
 }
+
+/** ── 6. Account welcome ──────────────────────────────────────────── */
+
+/**
+ * Sent when someone creates an account, which is a different event from
+ * subscribing to the newsletter and deserves different words.
+ *
+ * Deliberately NOT the newsletter welcome. That one promises price drops and
+ * subscriber codes, which are marketing; this one is transactional — it
+ * confirms an account exists and says what it is for. Sending marketing copy
+ * to someone who only registered to check out would be assuming a consent they
+ * never gave, and under PECR that assumption is the whole offence.
+ *
+ * So the newsletter gets an invitation here rather than an enrolment: the
+ * signup box on the site is where consent is actually recorded, with the
+ * evidence api/_routes/newsletter.ts writes.
+ */
+export function accountWelcomeEmail(opts: { name?: string | null; email?: string }): Built {
+  const first = (opts.name ?? '').trim().split(/\s+/)[0];
+  const greeting = first ? `Welcome, ${first}.` : 'Your account is ready.';
+
+  const body = [
+    p('Your LeHart account is set up. It keeps your order history, delivery addresses and wishlist in one place, so checking out next time takes a few seconds.'),
+    `<div style="margin:20px 0;padding:16px 18px;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};border-radius:11px;">
+      <div style="font-family:${FONT};font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:${PALETTE.muted};margin-bottom:9px;">What your account gives you</div>
+      <div style="font-family:${FONT};font-size:13.5px;line-height:1.8;color:${PALETTE.inkSoft};">
+        Track every order from dispatch to doorstep<br>
+        Start a return in a couple of taps, within 30 days<br>
+        Keep a wishlist and get told when the price drops<br>
+        Your 12-month warranty tied to the order, not a receipt you have to find
+      </div>
+    </div>`,
+    button('Start browsing', `${SHOP_URL}/products`),
+    p(
+      `<span style="font-size:13px;color:${PALETTE.muted};">Want stock alerts and the occasional subscriber-only code? Add your address to the newsletter at the bottom of any page — we will not add you without being asked.</span>`,
+    ),
+  ].join('');
+
+  const text = [
+    greeting,
+    '',
+    'Your LeHart account is set up. It keeps your order history, delivery addresses and wishlist in one place.',
+    '',
+    'WHAT YOUR ACCOUNT GIVES YOU',
+    '- Track every order from dispatch to doorstep',
+    '- Start a return in a couple of taps, within 30 days',
+    '- Keep a wishlist and get told when the price drops',
+    '- Your 12-month warranty tied to the order',
+    '',
+    `Start browsing: ${SHOP_URL}/products`,
+    '',
+    'Want stock alerts and subscriber-only codes? Add your address to the newsletter at the bottom of any page — we will not add you without being asked.',
+  ].join('\n');
+
+  return {
+    subject: 'Your LeHart account is ready',
+    html: shell({
+      preview: 'Order tracking, returns and your wishlist, all in one place.',
+      headline: greeting,
+      body,
+    }),
+    text,
+  };
+}

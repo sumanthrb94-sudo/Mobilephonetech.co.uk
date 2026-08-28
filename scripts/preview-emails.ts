@@ -23,6 +23,7 @@ import {
   orderDispatchedEmail,
   outForDeliveryEmail,
   abandonedCartEmail,
+  accountWelcomeEmail,
   type OrderLike,
 } from '../api/_templates.js';
 
@@ -82,6 +83,11 @@ const PAGES = [
   { file: 'order-confirmation', label: 'Order confirmation', built: orderConfirmationEmail(SAMPLE_ORDER) },
   { file: 'dispatched', label: 'Dispatched', built: orderDispatchedEmail(SAMPLE_ORDER, DISPATCH) },
   { file: 'out-for-delivery', label: 'Out for delivery', built: outForDeliveryEmail(SAMPLE_ORDER, DISPATCH) },
+  {
+    file: 'account-welcome',
+    label: 'Account welcome',
+    built: accountWelcomeEmail({ name: 'Jordan', email: 'jordan@example.com' }),
+  },
   {
     file: 'abandoned-cart',
     label: 'Abandoned cart',

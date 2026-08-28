@@ -252,7 +252,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Catches the typo'd address before the first order confirmation goes to
     // nobody. Deliberately not a gate: the customer is signed in either way.
     await sendVerification(cred.user);
+    await sendAccountWelcome(cred.user);
     setUser(await toUser(cred.user));
+  };
+
+  /**
+   * Ask the server for the branded welcome.
+   *
+   * Signup is a pure client-side Firebase call, so without this the only mail
+   * a new customer receives is Firebase's plain verification link. The ID
+   * token is what proves to the route which address to write to — it never
+   * takes an address from the request body.
+   *
+   * Best-effort in every direction: a failure here must not surface as a
+   * signup error, because the account exists and works regardless.
+   */
+  const sendAccountWelcome = async (fbUser: FirebaseUser) => {
+    try {
+      const token = await fbUser.getIdToken();
+      const res = await fetch('/api/account-welcome', {
+        method: 'POST',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ name: fbUser.displayName ?? '' }),
+      });
+      if (!res.ok) console.warn('[auth] welcome email not sent:', res.status);
+    } catch (err) {
+      console.warn('[auth] welcome email not sent:', (err as Error).message);
+    }
   };
 
   const resendVerification = async () => {
