@@ -26,6 +26,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'account-welcome': () => import('./_routes/account-welcome.js'),
   'bootstrap-admin': () => import('./_routes/bootstrap-admin.js'),
   'bootstrap-seed': () => import('./_routes/bootstrap-seed.js'),
+  analytics: () => import('./_routes/analytics.js'),
   'brevo-webhook': () => import('./_routes/brevo-webhook.js'),
   'cart-events': () => import('./_routes/cart-events.js'),
   'coupons/validate': () => import('./_routes/coupons/validate.js'),
@@ -41,6 +42,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'return-notify': () => import('./_routes/return-notify.js'),
   reviews: () => import('./_routes/reviews.js'),
   search: () => import('./_routes/search.js'),
+  track: () => import('./_routes/track.js'),
   'trade-in': () => import('./_routes/trade-in.js'),
 };
 

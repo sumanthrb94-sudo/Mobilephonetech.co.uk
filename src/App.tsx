@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { trackPageView } from './lib/analytics';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
@@ -65,6 +66,7 @@ const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('./components/admin/DashboardPage'));
 const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
 const ReturnsPage = lazy(() => import('./components/admin/ReturnsPage'));
+const AnalyticsPage = lazy(() => import('./components/admin/AnalyticsPage'));
 const SupportInbox = lazy(() => import('./components/admin/SupportInbox'));
 const ProductEditor = lazy(() => import('./components/admin/ProductEditor'));
 
@@ -160,6 +162,12 @@ function AppContent() {
   // The admin console keeps the navbar (admins still browse the shop) but drops
   // the marketing footer and the shopper tab bar, which are only noise there.
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // One page view per navigation. Counts only — no cookie, no identifier, so
+  // this measures every visitor rather than only those who accept a banner.
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   // Toggle a root class so CSS can strip the mobile-reserved bottom
   // padding (which normally makes room for the fixed tab bar).
@@ -341,6 +349,7 @@ function AppContent() {
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="returns" element={<ReturnsPage />} />
                 <Route path="support" element={<SupportInbox />} />
               </Route>

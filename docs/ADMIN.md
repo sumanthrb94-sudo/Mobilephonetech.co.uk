@@ -161,3 +161,77 @@ Both matter. A deny-only check would still pass if the rules denied everybody,
 including the admin — a broken shop that looked secure.
 
 Requires Java (the Firestore emulator runs on the JVM).
+
+## The catalogue comes from the stock list
+
+`data/inventory.csv` is the export from the inventory system, and
+`scripts/import-inventory.mjs` is the only thing that writes the catalogue.
+
+```
+export FIREBASE_SERVICE_ACCOUNT="$(base64 -w0 serviceAccountKey.json)"
+node scripts/import-inventory.mjs --dry-run    # report, write nothing
+node scripts/import-inventory.mjs --reset      # replace the catalogue
+```
+
+`--reset` deletes `products` and `stockUnits` and nothing else. Orders, users,
+returns and support threads are never touched — a catalogue import that could
+destroy order history is a footgun with no safety on it.
+
+### Two collections, and why
+
+| | |
+|---|---|
+| `products/{id}` | what a customer chooses between: model + capacity, with a variant per condition and colour carrying its own price and stock count |
+| `stockUnits/{imei}` | one document per physical handset — cost, supplier, arrival date, grade, and which listing it belongs to |
+
+The second is the thing the shop could not do before. Until stock is per-unit
+you cannot run the VAT margin scheme, cannot answer "which handset did we send
+them" against a warranty claim, and cannot price by real condition.
+
+### What the importer decides, and what it refuses to
+
+**It merges spellings.** "Galaxy A32 5G", "SAMSUNG GALAXY A32 5G" and
+"GALAXY A32 5G" are one product typed by three people. Left alone they are
+three listings splitting one pool of stock. It does **not** merge "A32" with
+"A32 5G" — those are different phones and merging them sells the wrong one.
+
+**It will not list stock that is not in the building.** SHS rows are awaiting
+delivery and carry no IMEI; returned units have not been re-graded. Both are
+excluded.
+
+**It does not call an opened unit new.** Supplier grade ONU becomes *Pristine*,
+never *New* — "new" is a claim about a sealed device.
+
+**Prices are derived, and that is a decision you should change.** The export
+has a buy price and no sell price. `MARKUP` in `scripts/lib/catalogue.mjs` is a
+grade-keyed multiplier landing around 38% gross margin before VAT. It is a
+starting point, not a pricing strategy. Add an `SP` or `Price` column to the
+export and the importer uses it instead and ignores the table entirely.
+
+**Images are drawn, not photographed.** There is no lawful way to bulk-fetch
+manufacturer press shots for seventy listings, and a broken image on every
+product is worse than an honest placeholder. Each listing gets an SVG in its
+real colour with the model and capacity. **Replace them with photographs of the
+actual handset** — the real scratches on the real unit are what a refurbished
+buyer wants to see, and the admin image upload writes over these.
+
+## Analytics
+
+`/admin/analytics`. Traffic, revenue, stock value and — the reason the page
+exists — **attention without sales**: listings people look at and do not buy.
+A revenue table cannot show you those, because they earn nothing and so appear
+nowhere, yet they are the most fixable rows in the console.
+
+Counting is cookieless and identifier-free: no cookie, no device id, no IP, no
+fingerprint. `api/_routes/track.ts` increments counters in one document per
+day. Nothing can be tied back to a person, which is what puts it outside the
+consent requirement rather than merely arguing it should be — so the numbers
+describe every visitor, not only those who accept a banner.
+
+The cost is real: no sessions, no per-user funnels, no returning-visitor rate.
+What it does answer is what a shop this size acts on — which products draw
+attention, which draw attention and no orders, and whether yesterday was busier
+than the day before.
+
+Admin traffic is excluded. Counting staff looking at their own shop makes every
+quiet day look busier than it was.

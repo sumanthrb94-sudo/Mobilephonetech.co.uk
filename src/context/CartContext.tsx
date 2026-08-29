@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { trackAddToCart } from '../lib/analytics';
 import { Product } from '../types';
 import { mergeLocalCart, readCart, writeCartItem, deleteCartProduct, clearCartRemote } from '../lib/userData';
 import { useAuth } from './AuthContext';
@@ -108,6 +109,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     quantity = 1,
     opts: { color?: string; storage?: string; condition?: string } = {}
   ) => {
+    // Outside setItems on purpose: React runs the updater twice in StrictMode,
+    // which would double every count in development and make the numbers a
+    // liar exactly where they are easiest to trust.
+    trackAddToCart(product.id);
+
     setItems(prev => {
       const key = `${product.id}__${opts.color ?? ''}__${opts.storage ?? ''}__${opts.condition ?? ''}`;
       const existing = prev.find(i =>

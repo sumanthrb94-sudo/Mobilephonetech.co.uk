@@ -191,6 +191,25 @@ service cloud.firestore {
       }
     }
 
+    // Per-unit stock: what each handset cost, who supplied it, when it
+    // arrived. Buy prices are commercially sensitive in a way the catalogue is
+    // not, so this is staff-read-only. Writes come from the Admin SDK — the
+    // import script and the order route — which bypasses rules entirely, so
+    // nothing here needs a client write path.
+    match /stockUnits/{imei} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Cookieless traffic counters, one document per day. Written only by
+    // api/_routes/track.ts through the Admin SDK: a client-writable counter is
+    // a counter anyone can inflate, and analytics you cannot trust are worse
+    // than none. Read is staff-only because traffic is not public.
+    match /analyticsDaily/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // Anything not matched above is denied. Firestore already defaults to
     // deny, but stating it means a new collection cannot be reached by
     // accident before its rules are written.

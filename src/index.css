@@ -2172,3 +2172,93 @@ textarea,
   padding: 11px 13px;
   border-bottom: 1px solid var(--grey-10);
 }
+
+/* ── Analytics ─────────────────────────────────────────────────
+   Additions for /admin/analytics. Everything else on that page reuses the
+   Operations Hub classes above, so the two read as one console rather than
+   two products that happen to share a header. */
+
+.ops-note {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--grey-50);
+  margin: 0;
+}
+
+.ops-two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.ops-bar-count {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Wider than the dashboard's, because a supplier name and a product model
+   both need more room than a brand name does. */
+.ops-bars .ops-bar-row { grid-template-columns: minmax(7rem, 11rem) 1fr minmax(3.5rem, auto); }
+
+.ops-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--grey-60);
+}
+
+.ops-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ops-legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+.ops-axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10px;
+  color: var(--grey-50);
+  margin-top: 2px;
+}
+
+.ops-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+}
+
+.ops-table th {
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--grey-50);
+  font-weight: 600;
+  padding: 0 8px 7px 0;
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.ops-table td {
+  padding: 8px 8px 8px 0;
+  border-bottom: 1px solid var(--grey-10);
+  color: var(--grey-70);
+  font-variant-numeric: tabular-nums;
+}
+
+.ops-table td:first-child { font-weight: 600; color: var(--black); }
+.ops-table th:not(:first-child), .ops-table td:not(:first-child) { text-align: right; padding-right: 0; }
+
+/* The table is the one thing here that cannot reflow — six numeric columns
+   need their width — so it scrolls inside its panel rather than pushing the
+   page sideways on a phone. */
+.ops-panel > .ops-table { display: block; overflow-x: auto; }

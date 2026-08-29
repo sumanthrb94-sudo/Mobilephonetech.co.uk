@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { trackProductView } from '../lib/analytics';
 import {
   ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
   Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X
@@ -211,6 +212,11 @@ export default function ProductDetail() {
   const averageRating  = reviewCount
     ? productReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : 0;
+
+  // One count per listing viewed. No identifier is sent — see src/lib/analytics.ts.
+  React.useEffect(() => {
+    if (phone?.id) trackProductView(phone.id);
+  }, [phone?.id]);
 
   React.useEffect(() => {
     if (!id) { setPhone(null); return; }
