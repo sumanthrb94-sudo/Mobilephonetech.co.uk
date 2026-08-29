@@ -34,7 +34,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   analyticsModuleLoads = 0;
   localStorage.clear();
-  vi.stubEnv('VITE_FIREBASE_MEASUREMENT_ID', 'G-FXQZDRTB3Y');
+  vi.stubEnv('VITE_FIREBASE_MEASUREMENT_ID', 'G-VD4XXNZ0QV');
 });
 
 describe('nothing loads before consent', () => {

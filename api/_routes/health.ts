@@ -20,6 +20,13 @@ export default async function handler(req: any, res: any) {
 
   const checks: Record<string, unknown> = {
     projectId: process.env.VITE_FIREBASE_PROJECT_ID ?? null,
+    // Which registered web app this deployment identifies as. Public — it is
+    // inlined into the browser bundle either way — and worth surfacing because
+    // an appId naming a web app that has since been deleted in the Firebase
+    // console fails at the SDK layer, not at the config layer: the values all
+    // look present and correct, and Installations and Analytics simply stop.
+    webAppId: process.env.VITE_FIREBASE_APP_ID ?? null,
+    analyticsId: process.env.VITE_FIREBASE_MEASUREMENT_ID ?? null,
     webConfigured: Boolean(process.env.VITE_FIREBASE_API_KEY && process.env.VITE_FIREBASE_PROJECT_ID),
     serviceAccountConfigured: Boolean(process.env.FIREBASE_SERVICE_ACCOUNT),
     // Whether transactional mail can actually go out. Without this the only

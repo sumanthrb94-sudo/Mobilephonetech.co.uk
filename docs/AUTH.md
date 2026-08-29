@@ -230,6 +230,20 @@ duplicate: it resolves to the same address either way.
 | `vercel.json` CSP `frame-src` | `https://lehart-1b9ef.firebaseapp.com` — the Google sign-in popup is framed from this domain, and a stale entry here blocks it **silently** |
 | Vercel `VITE_FIREBASE_*` | from Project settings → General → Your apps |
 
+The **registered web app** matters as much as the project. A project can hold
+several, and each has its own `appId` and its own GA4 data stream while sharing
+one set of users and one database. Two were registered here on 29 August; the
+survivor is `1:26865890918:web:55bb53c4b4b9cb5afddfa7`
+(`G-VD4XXNZ0QV`), and the other was deleted.
+
+An `appId` naming a deleted web app is a bad failure because it does not look
+like one: every value is present, `webConfigured` is true, and the config is
+syntactically perfect. It breaks below that, at the SDK layer — Installations
+and Analytics stop, and other services can follow. `/api/health` therefore
+reports `webAppId` and `analyticsId`, so a deployment can be checked against
+the console rather than assumed. Both are public: they are inlined into the
+browser bundle either way.
+
 An earlier project id (`mobilephonemarket-2764d`) was carried in the first two
 for a while. If sign-in ever fails in a way that looks like nothing at all
 happening, check these three still name the same project before anything else.
