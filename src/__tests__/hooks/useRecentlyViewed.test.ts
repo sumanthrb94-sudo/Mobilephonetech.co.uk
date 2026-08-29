@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
 
-const LS_KEY = 'mobilephonemarket:recently-viewed';
+const LS_KEY = 'lehart:recently-viewed';
 
 describe('useRecentlyViewed', () => {
   beforeEach(() => {

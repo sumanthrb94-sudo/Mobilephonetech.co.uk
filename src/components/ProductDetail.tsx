@@ -1,5 +1,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { trackProductView } from '../lib/analytics';
 import {
   ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
   Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X
@@ -25,12 +26,15 @@ import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { addDoc, collection, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { db, COL } from '../lib/firebase';
+import { docToProduct } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 import { generateProductDescription } from '../utils/productDescription';
 
 import type { Product } from '../types';
+import CountUp from './ui/CountUp';
 
 type Tab = 'overview' | 'specs' | 'reviews';
 
@@ -47,15 +51,20 @@ function TabPanel({ phone }: { phone: Product }) {
       date: new Date().toISOString(),
     };
     setReviews(prev => [newReview, ...prev]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('reviews') as any).insert({
-      product_id: phone.id,
-      user_id: user?.id ?? null,
-      rating: review.rating,
-      comment: review.comment,
-      user_name: review.userName,
-      is_verified: false,
-    });
+    try {
+      await addDoc(collection(db, COL.reviews), {
+        productId: phone.id,
+        userId: user?.id ?? null,
+        rating: review.rating,
+        comment: review.comment,
+        userName: review.userName,
+        isVerified: false,
+        createdAt: serverTimestamp(),
+      });
+    } catch {
+      // The review is already shown optimistically; a failed write should not
+      // yank it back out from under the person who just typed it.
+    }
   };
 
   const tabs: { id: Tab; label: string }[] = [
@@ -105,8 +114,10 @@ function TabPanel({ phone }: { phone: Product }) {
 
       {/* Tab content */}
       <div style={{ padding: 'var(--spacing-32) 0' }}>
+        {/* No inline gridTemplateColumns below: it would outrank
+            lg:grid-cols-2. A bare `display: grid` is single-column anyway. */}
         {tab === 'overview' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
+          <div style={{ display: 'grid', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
             {/* Product description — always shown */}
             <div style={{ gridColumn: '1 / -1' }}>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-70)', lineHeight: 1.75, margin: 0 }}>
@@ -202,6 +213,11 @@ export default function ProductDetail() {
     ? productReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : 0;
 
+  // One count per listing viewed. No identifier is sent — see src/lib/analytics.ts.
+  React.useEffect(() => {
+    if (phone?.id) trackProductView(phone.id);
+  }, [phone?.id]);
+
   React.useEffect(() => {
     if (!id) { setPhone(null); return; }
     // Render straight from the shared catalogue instead of showing a skeleton
@@ -213,35 +229,13 @@ export default function ProductDetail() {
 
     (async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (supabase.from('products') as any)
-          .select('*')
-          .eq('id', id)
-          .single();
-
-        if (!error && data) {
-          const row = data as Record<string, unknown>;
-          setPhone({
-            id: row.id as string,
-            model: row.model as string,
-            brand: row.brand as string,
-            category: row.category as Product['category'],
-            storage: (row.storage as string) ?? undefined,
-            price: row.price as number,
-            originalPrice: (row.original_price as number) ?? (row.price as number),
-            grade: row.grade as Product['grade'],
-            batteryHealth: (row.battery_health as number) ?? 100,
-            warrantyMonths: (row.warranty_months as number) ?? 12,
-            returnDays: (row.return_days as number) ?? 30,
-            imageUrl: (row.image_url as string) ?? '',
-            isCertified: (row.is_certified as boolean) ?? false,
-            stock: (row.stock as number) ?? 0,
-            specs: (row.specs as Product['specs']) ?? {},
-          });
+        const snap = await getDoc(doc(db, COL.products, id));
+        if (snap.exists()) {
+          setPhone(docToProduct(snap.id, snap.data()));
           return;
         }
       } catch {
-        // Supabase unavailable — fall through to mock data
+        // Firestore unreachable — fall through to the catalogue copy.
       }
 
       // The query failed; keep the catalogue copy if we seeded one, otherwise
@@ -290,7 +284,7 @@ export default function ProductDetail() {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
         <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--spacing-32)' }} className="lg:grid-cols-2">
+          <div style={{ display: 'grid', gap: 'var(--spacing-32)' }} className="lg:grid-cols-2">
             <div style={{ aspectRatio: '1/1', borderRadius: 'var(--radius-xl)', background: 'var(--grey-10)', animation: 'pulse 1.5s ease-in-out infinite' }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[80, 50, 40, 100, 60].map((w, i) => (
@@ -328,10 +322,15 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (selectedVariant) {
+      // The variant id becomes the cart line's id, so the base product id has
+      // to travel separately — the server prices the order from the catalogue
+      // and cannot look up a composed variant id as a document.
       const cartProduct = {
         ...phone, ...selectedVariant, price: selectedVariant.price,
         originalPrice: selectedVariant.originalPrice, stock: selectedVariant.stock,
         batteryHealth: selectedVariant.batteryHealth ?? phone.batteryHealth,
+        productId: phone.id,
+        variantId: selectedVariant.id,
       };
       addToCart(cartProduct, quantity);
     } else {
@@ -384,14 +383,12 @@ export default function ProductDetail() {
           <ArrowLeft size={16} /> Back
         </button>
 
-        {/* Main Grid: Mobile-First Stacking */}
-        <div 
-          style={{ 
-            display: 'grid', 
-            gridTemplateColumns: '1fr', 
-            gap: 'var(--spacing-32)' 
-          }} 
-          className="lg:grid-cols-2 lg:gap-16 items-start mb-16"
+        {/* Main Grid: Mobile-First Stacking. Columns live in CSS
+            (.lg:pdp-grid) — an inline gridTemplateColumns would outrank the
+            Tailwind breakpoint class and flatten this back to one column. */}
+        <div
+          style={{ display: 'grid', gap: 'var(--spacing-32)' }}
+          className="lg:pdp-grid lg:gap-16 items-start mb-16"
         >
           
           {/* ── Left Column: Claude-designed 6-frame gallery ─ */}
@@ -569,6 +566,20 @@ export default function ProductDetail() {
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
                 )}
               </div>
+
+              {savings > 0 && (
+                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--color-trust-text)' }}>
+                  {/* Keyed on the variant so switching storage re-counts to the
+                      new saving rather than leaving the previous figure. */}
+                  You save{' '}
+                  <CountUp
+                    key={`saving-${selectedVariant?.id ?? phone.id}-${savings}`}
+                    to={savings}
+                    prefix="£"
+                    duration={900}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Urgency + price-match cue row */}

@@ -8,7 +8,7 @@ vi.mock('@google/genai', () => ({
   },
 }));
 
-const { default: handler } = await import('../../../api/gemini-chat');
+const { default: handler } = await import('../../../api/_routes/gemini-chat');
 
 function req(method: string, body: unknown = {}) {
   return { method, body };

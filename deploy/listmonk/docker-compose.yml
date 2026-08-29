@@ -1,0 +1,84 @@
+# Listmonk — the open-source campaign side of LeHart's email.
+#
+#   cd deploy/listmonk
+#   cp .env.example .env      # then fill it in
+#   docker compose up -d
+#
+# Two containers and nothing else: Listmonk itself and the Postgres it stores
+# subscribers, campaigns and analytics in. Listmonk does not deliver mail — it
+# hands every message to the Brevo SMTP relay configured below, which is the
+# same account and the same warmed sender domain the transactional email in
+# api/_email.ts already uses.
+#
+# Postgres data lives in a named volume. Back it up before any upgrade:
+#   docker compose exec -T db pg_dump -U listmonk listmonk | gzip > backup.sql.gz
+#
+# The admin UI is bound to 127.0.0.1 on purpose. Put a reverse proxy with TLS
+# in front of it (Caddy is two lines) rather than exposing 9000 to the world —
+# it is a login form with your whole subscriber list behind it.
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: listmonk
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: listmonk
+    volumes:
+      - listmonk-db:/var/lib/postgresql/data
+    healthcheck:
+      # Listmonk fails its own migration if it starts before Postgres accepts
+      # connections, so the app waits on this rather than on the container
+      # merely existing.
+      test: ['CMD-SHELL', 'pg_isready -U listmonk -d listmonk']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  app:
+    image: listmonk/listmonk:v4.1.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:9000:9000'
+    environment:
+      LISTMONK_app__address: '0.0.0.0:9000'
+      LISTMONK_db__host: db
+      LISTMONK_db__port: '5432'
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: ${POSTGRES_PASSWORD}
+      LISTMONK_db__database: listmonk
+      LISTMONK_db__ssl_mode: disable
+
+      # First-run admin. Change the password in the UI afterwards; this only
+      # exists so the first login does not need a shell.
+      LISTMONK_ADMIN_USER: ${LISTMONK_ADMIN_USER:-admin}
+      LISTMONK_ADMIN_PASSWORD: ${LISTMONK_ADMIN_PASSWORD:?set LISTMONK_ADMIN_PASSWORD in .env}
+
+      # ── Brevo SMTP relay ──
+      # Note these are the SMTP credentials, NOT the REST API key used by
+      # api/_email.ts. Brevo → SMTP & API → SMTP tab: the login looks like
+      # 8a1b2c001@smtp-brevo.com and the password is an SMTP key you generate
+      # there. Pasting the v3 API key here fails authentication with a message
+      # that does not say why.
+      LISTMONK_smtp__0__enabled: 'true'
+      LISTMONK_smtp__0__host: smtp-relay.brevo.com
+      LISTMONK_smtp__0__port: '587'
+      LISTMONK_smtp__0__auth_protocol: login
+      LISTMONK_smtp__0__username: ${BREVO_SMTP_USER:?set BREVO_SMTP_USER in .env}
+      LISTMONK_smtp__0__password: ${BREVO_SMTP_PASSWORD:?set BREVO_SMTP_PASSWORD in .env}
+      # STARTTLS on 587. Brevo also offers implicit TLS on 465, which needs
+      # tls_type: TLS instead.
+      LISTMONK_smtp__0__tls_type: STARTTLS
+      LISTMONK_smtp__0__tls_skip_verify: 'false'
+      # Brevo's free tier is 300 messages a day. Well under any rate ceiling,
+      # but keeping concurrency modest avoids tripping their throttle on a
+      # large send.
+      LISTMONK_smtp__0__max_conns: '4'
+    command: [sh, -c, './listmonk --install --idempotent --yes --config "" && ./listmonk --config ""']
+
+volumes:
+  listmonk-db:

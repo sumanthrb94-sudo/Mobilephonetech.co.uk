@@ -12,6 +12,13 @@ import { defineConfig } from 'vite';
  * Zone ReferenceError at runtime and crashes the app on load.
  */
 
+const apiProxy = {
+  '/api': {
+    target: `http://127.0.0.1:${process.env.E2E_API_PORT || 4174}`,
+    changeOrigin: true,
+  },
+};
+
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
@@ -45,6 +52,15 @@ export default defineConfig(() => {
     server: {
       hmr: process.env.DISABLE_HMR !== 'true',
       allowedHosts: true,
+      proxy: apiProxy,
+    },
+    // `vite preview` serves static files only, so the /api routes Vercel runs
+    // as functions do not exist under it. E2E starts e2e/api-server.mjs and
+    // proxies to it, so the suites exercise the real handlers — which matters
+    // now that order pricing happens server-side.
+    preview: {
+      allowedHosts: true,
+      proxy: apiProxy,
     },
   };
 });

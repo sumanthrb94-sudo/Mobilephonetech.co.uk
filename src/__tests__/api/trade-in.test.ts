@@ -1,21 +1,34 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { resetRateLimits } from '../../../api/_rateLimit.js';
 
-vi.mock('@supabase/supabase-js', () => ({
-  createClient: () => ({
-    from: () => ({
-      insert: () => ({
-        select: () => ({
-          single: () => Promise.resolve({
-            data: { id: 'quote-uuid-001', estimated_value: 700, status: 'quoted' },
-            error: null,
-          }),
-        }),
+// Mock the Admin SDK wrapper before importing the handler. Mocking our own
+// module rather than firebase-admin keeps the stub to the one function the
+// route actually uses.
+const added: Record<string, unknown>[] = [];
+const setDocs: Record<string, unknown>[] = [];
+
+vi.mock('../../../api/_firebaseAdmin.js', () => ({
+  adminDb: () => ({
+    collection: () => ({
+      add: (data: Record<string, unknown>) => {
+        added.push(data);
+        return Promise.resolve({ id: 'mock-id' });
+      },
+      doc: () => ({
+        set: (data: Record<string, unknown>) => {
+          setDocs.push(data);
+          return Promise.resolve();
+        },
       }),
     }),
   }),
+  adminAuth: () => null,
+  getAdminInitError: () => null,
+  verifyCaller: () => Promise.resolve(null),
+  callerIsAdmin: () => Promise.resolve(false),
 }));
 
-const { default: handler } = await import('../../../api/trade-in');
+const { default: handler } = await import('../../../api/_routes/trade-in');
 
 function req(method: string, body: unknown = {}) {
   return { method, body };
@@ -28,6 +41,7 @@ function res() {
     get body() { return _body; },
     status(code: number) { _code = code; return this; },
     json(data: unknown) { _body = data; return this; },
+    setHeader() { return this; },
   };
 }
 
@@ -39,6 +53,10 @@ const VALID_BODY = {
 };
 
 describe('POST /api/trade-in', () => {
+  // Every test is one fake client, which trips the per-IP limiter across a
+  // file — reset between tests so each starts from a clean window.
+  beforeEach(() => resetRateLimits());
+
   it('returns 405 for GET requests', async () => {
     const r = res();
     await handler(req('GET'), r);

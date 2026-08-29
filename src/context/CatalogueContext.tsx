@@ -1,14 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Product } from '../types';
 import { MOCK_PHONES } from '../data';
-import { supabase } from '../lib/supabase';
-import { rowToProduct } from '../hooks/useProducts';
+import { fetchCatalogue } from '../hooks/useProducts';
 
 interface CatalogueValue {
   /** Live inventory when the database is reachable, bundled sample data otherwise. */
   products: Product[];
   isLoading: boolean;
-  /** False means `products` is the MOCK_PHONES fallback, not live stock. */
+  /**
+   * False means `products` is the MOCK_PHONES fallback, not live stock.
+   * Named for Supabase originally; the question it answers — live or bundled —
+   * is unchanged after the move to Firestore, so the name stayed.
+   */
   fromSupabase: boolean;
 }
 
@@ -38,17 +41,11 @@ export function CatalogueProvider({ children }: { children: React.ReactNode }) {
 
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(CATALOGUE_LIMIT);
-
-        if (error) throw error;
-        if (!data || data.length === 0) throw new Error('empty');
+        const rows = await fetchCatalogue(CATALOGUE_LIMIT);
+        if (rows.length === 0) throw new Error('empty');
         if (cancelled) return;
 
-        setProducts(data.map(r => rowToProduct(r as Record<string, unknown>)));
+        setProducts(rows);
         setFromSupabase(true);
       } catch {
         // Keep the bundled catalogue already in state — the storefront stays

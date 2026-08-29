@@ -20,7 +20,7 @@ import ProductImage from './ProductImage';
 
 export default function CartPage() {
   useSeo({
-    title: 'Your basket | MobilePhoneMarket',
+    title: 'Your basket | LeHart',
     description: 'Review the refurbished devices in your basket before checkout.',
     canonical: `${SITE_ORIGIN}/cart`,
     noindex: true,
@@ -476,21 +476,8 @@ export default function CartPage() {
               {/* Amazon-style yellow CTA */}
               <button
                 onClick={handleCheckout}
-                className="btn btn-lg btn-full"
-                style={{
-                  background: '#FFD814',
-                  borderColor: '#FCD200',
-                  color: '#0F1111',
-                  fontWeight: 800,
-                  boxShadow: '0 2px 5px rgba(213,217,217,0.5)',
-                  marginBottom: '10px',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = '#F7CA00';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = '#FFD814';
-                }}
+                className="btn btn-buy btn-lg btn-full"
+                style={{ marginBottom: '10px' }}
               >
                 Proceed to checkout <ArrowRight size={16} />
               </button>

@@ -1,0 +1,757 @@
+<title>LeHart Go-Live Checklist</title>
+
+<style>
+  :root {
+    --paper:        #F2F3EF;
+    --surface:      #FBFBF9;
+    --surface-sunk: #EAEBE5;
+    --ink:          #15181A;
+    --ink-2:        #4A5158;
+    --ink-3:        #79817F;
+    --rule:         #DDE0D9;
+    --rule-strong:  #C2C7BC;
+    --accent:       #0E5259;
+    --accent-soft:  #E0EAE8;
+    --done:         #3B6742;
+    --done-soft:    #E4EDE3;
+    --todo:         #7E5C0E;
+    --todo-soft:    #F4EEDC;
+    --blocker:      #9C3623;
+    --blocker-soft: #F6E7E3;
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  :root:not([data-theme="light"]) { color-scheme: light; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:        #111413;
+      --surface:      #191D1C;
+      --surface-sunk: #0C0F0E;
+      --ink:          #E9EBE6;
+      --ink-2:        #A7AFAB;
+      --ink-3:        #7B8480;
+      --rule:         #2A2F2D;
+      --rule-strong:  #3D4441;
+      --accent:       #5FB3B3;
+      --accent-soft:  #14302F;
+      --done:         #7FB587;
+      --done-soft:    #1A2A1D;
+      --todo:         #D6B063;
+      --todo-soft:    #2C2617;
+      --blocker:      #E08872;
+      --blocker-soft: #331F1A;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:        #111413;
+    --surface:      #191D1C;
+    --surface-sunk: #0C0F0E;
+    --ink:          #E9EBE6;
+    --ink-2:        #A7AFAB;
+    --ink-3:        #7B8480;
+    --rule:         #2A2F2D;
+    --rule-strong:  #3D4441;
+    --accent:       #5FB3B3;
+    --accent-soft:  #14302F;
+    --done:         #7FB587;
+    --done-soft:    #1A2A1D;
+    --todo:         #D6B063;
+    --todo-soft:    #2C2617;
+    --blocker:      #E08872;
+    --blocker-soft: #331F1A;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 1.25rem 6rem;
+  }
+
+  .wrap { max-width: 58rem; margin: 0 auto; }
+
+  /* ── Masthead ─────────────────────────────── */
+
+  header.masthead {
+    padding: 3.5rem 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
+    line-height: 1.05;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 36rem;
+    margin: 0;
+  }
+
+  /* ── Overall progress ─────────────────────── */
+
+  .overall {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    padding: 1rem 1.15rem;
+    margin-top: 1.75rem;
+  }
+
+  .overall-count {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .rail {
+    flex: 1 1 12rem;
+    height: 8px;
+    background: var(--surface-sunk);
+    border-radius: 99px;
+    overflow: hidden;
+    min-width: 8rem;
+  }
+
+  .rail span {
+    display: block;
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.25s ease;
+  }
+
+  .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  button.ctl {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.5rem 0.8rem;
+    min-height: 32px;
+    background: transparent;
+    color: var(--ink-2);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button.ctl:hover { background: var(--surface-sunk); }
+  button.ctl[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  button.ctl:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Sections ─────────────────────────────── */
+
+  section.group { margin-top: 2.75rem; }
+
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+
+  .group-head h2 {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  .group-count {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    margin-left: auto;
+  }
+
+  .group-note {
+    font-size: 0.92rem;
+    color: var(--ink-2);
+    margin: 0.75rem 0 0;
+    max-width: 44rem;
+  }
+
+  ul.items { list-style: none; margin: 0.4rem 0 0; padding: 0; }
+
+  li.item {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.15rem 0.75rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  li.item.hidden { display: none; }
+
+  li.item input[type="checkbox"] {
+    grid-row: 1 / span 3;
+    width: 18px;
+    height: 18px;
+    margin: 0.22rem 0 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  li.item input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .item-title {
+    font-weight: 600;
+    font-size: 0.98rem;
+    cursor: pointer;
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  li.item.checked .item-title { color: var(--ink-3); text-decoration: line-through; }
+
+  .item-detail {
+    font-size: 0.88rem;
+    color: var(--ink-2);
+    margin: 0.12rem 0 0;
+  }
+
+  .item-detail code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.02em 0.3em;
+  }
+
+  .chip {
+    font-family: var(--mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2em 0.5em;
+    border-radius: 3px;
+    white-space: nowrap;
+    border: 1px solid;
+  }
+
+  .chip-done    { background: var(--done-soft);    color: var(--done);    border-color: var(--done); }
+  .chip-todo    { background: var(--todo-soft);    color: var(--todo);    border-color: var(--todo); }
+  .chip-blocker { background: var(--blocker-soft); color: var(--blocker); border-color: var(--blocker); }
+  .chip-part    { background: var(--accent-soft);  color: var(--accent);  border-color: var(--accent); }
+
+  .empty-note {
+    font-size: 0.9rem;
+    color: var(--ink-3);
+    font-style: italic;
+    padding: 0.8rem 0;
+  }
+
+  /* ── Footer note ──────────────────────────── */
+
+  .caveat {
+    margin-top: 3rem;
+    padding: 1.15rem 1.3rem;
+    background: var(--todo-soft);
+    border: 1px solid var(--todo);
+    font-size: 0.9rem;
+    color: var(--ink-2);
+  }
+
+  .caveat p { margin: 0 0 0.5rem; }
+  .caveat p:last-child { margin-bottom: 0; }
+  .caveat .eyebrow { color: var(--todo); margin-bottom: 0.5rem; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Pre-launch</p>
+    <h1>LeHart Go-Live Checklist</h1>
+    <p class="standfirst">Everything between the current build and legally taking money from a UK customer. Statuses marked <em>done</em> were verified in the repository or against the live deployment.</p>
+  </header>
+
+  <div class="overall">
+    <span class="overall-count"><span id="done-n">0</span> / <span id="total-n">0</span></span>
+    <span class="rail"><span id="overall-rail" style="width:0%"></span></span>
+    <span class="controls">
+      <button type="button" class="ctl" id="filter-btn" aria-pressed="false">Outstanding only</button>
+      <button type="button" class="ctl" id="reset-btn">Reset ticks</button>
+    </span>
+  </div>
+
+  <main id="groups"></main>
+
+  <div class="caveat">
+    <p class="eyebrow">Read this before you rely on it</p>
+    <p>The legal, tax and compliance items are enough to know what to ask about — they are not advice. Take the VAT margin scheme, your returns obligations and your published company details to an accountant and a solicitor before launch, and confirm current thresholds and fees at source.</p>
+    <p>Ticks are stored in this browser only. They are not shared with anyone, do not sync between devices, and will disappear if you clear site data.</p>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var GROUPS = [
+    {
+      title: "0 · Blockers",
+      note: "Nothing else matters until these are cleared. Each one either stops money moving or actively exposes you.",
+      items: [
+        { t: "Delete the raw card-number field from checkout", s: "done",
+          d: "Removed. The payment step now records only which method was chosen — no card number, expiry or CVC input exists anywhere in the DOM, and a note in the code forbids adding them back outside the PSP's hosted fields." },
+        { t: "Connect a payment provider", s: "blocker",
+          d: "There is no processor at all today. Nothing charges, authorises or settles." },
+        { t: "Seed the production catalogue", s: "done",
+          d: "Seeded: 133 products created, <code>/api/health</code> now reports <code>ok</code> with <code>productRows: 133</code>. The storefront and the admin console read the same database at last." },
+        { t: "Buy lehart.co.uk and attach it to Vercel", s: "blocker",
+          d: "Checked 28 Aug: <strong>lehart.co.uk is available</strong> (<code>lehart.com</code> is taken). Buy that one rather than anything else — every canonical tag, Open Graph URL, sitemap entry and the <code>PUBLIC_SITE_URL</code> default already name it, so it is the only domain that costs no code change. Live traffic is still on <code>mobilephonetech-co-uk.vercel.app</code>, and until this is done you are telling search engines your content lives at a dead address. It also unblocks the sending domain below, which is why it now gates email as well as SEO." },
+        { t: "Rotate the Postgres password shared in chat", s: "blocker",
+          d: "Treat it as public. Rotate even though Postgres is no longer used, if that database still exists anywhere." },
+        { t: "Delete and reissue the Firebase service-account key", s: "blocker",
+          d: "The key file was shared in conversation. Revoke it in the Google Cloud console, issue a new one, and update the Vercel environment variable." },
+        { t: "Delete BOOTSTRAP_SECRET from Vercel after seeding", s: "todo",
+          d: "It gates both the admin-promotion and catalogue-seed routes. With it unset both 404." },
+        { t: "Confirm FIREBASE_SERVICE_ACCOUNT has no VITE_ prefix", s: "todo",
+          d: "A <code>VITE_</code> prefix inlines the value into the browser bundle. That would publish your private key to every visitor." }
+      ]
+    },
+    {
+      title: "1 · Payments",
+      note: "Stripe assumed. Refurbished electronics is a high-chargeback category, so expect underwriting questions and possibly a rolling reserve — start the account application early, it is not same-day.",
+      items: [
+        { t: "Stripe account created and business verified", s: "todo",
+          d: "UK entity, bank account, company details. Verification can take days." },
+        { t: "Use Stripe's hosted fields or Checkout", s: "todo",
+          d: "Card details never touch your server or your DOM, which keeps you in the lightest PCI bracket (SAQ-A). This is the whole reason the raw card field has to go." },
+        { t: "Strong Customer Authentication working", s: "todo",
+          d: "3D Secure is handled for you by Payment Intents, but you must test the challenge flow, not just the happy path." },
+        { t: "Webhook endpoint with signature verification", s: "todo",
+          d: "Never mark an order paid from a browser redirect — the customer can close the tab. The webhook is the source of truth." },
+        { t: "Idempotency keys on charge creation", s: "todo",
+          d: "A retried request must not double-charge." },
+        { t: "Refunds issued through the API against the original charge", s: "todo",
+          d: "Wire this to the returns flow so a refund is one action, not a manual dashboard job someone forgets." },
+        { t: "Stripe Radar rules reviewed", s: "todo",
+          d: "Baseline: address verification on, extra scrutiny when billing and delivery differ on a first order." },
+        { t: "Apple Pay domain verified, Google Pay configured", s: "todo",
+          d: "The express-pay buttons are currently decorative." },
+        { t: "Klarna / Clearpay enabled if wanted", s: "todo",
+          d: "Resold through Stripe, so one integration. The product page already advertises instalments — either make it real or remove the claim." },
+        { t: "Statement descriptor set to something recognisable", s: "todo",
+          d: "An unrecognised descriptor is a leading cause of chargebacks." },
+        { t: "Currency and pricing confirmed as GBP inclusive of VAT", s: "todo",
+          d: "Consumer prices must be shown inclusive." },
+        { t: "Tested with declines, 3DS challenges and expired cards", s: "todo",
+          d: "Not only the success card. Test what the customer sees when it fails." }
+      ]
+    },
+    {
+      title: "2 · Transactional email",
+      note: "Resend is a good fit — developer-friendly, cheap at this volume. Postmark is the alternative if deliverability of receipts is the thing you care about most. Keep this <em>separate</em> from marketing: a receipt that lands in spam becomes a support ticket, and marketing reputation problems must never take order confirmations down with them.",
+      items: [
+        { t: "Brevo account created and key set", s: "done",
+          d: "On the free 300/day tier. <code>BREVO_API_KEY</code> and <code>EMAIL_FROM</code> are set in Vercel and <code>/api/health</code> reports <code>emailConfigured: true</code>. Brevo is accepting messages — production logs show sends returning <code>sent: true</code>." },
+        { t: "EMAIL_FROM at a domain you control", s: "blocker",
+          d: "<strong>This is why no email arrives.</strong> <code>EMAIL_FROM</code> is <code>sumanthrb94@gmail.com</code>. A From: address at gmail.com relayed through Brevo cannot be SPF- or DKIM-aligned with gmail.com's DMARC record, so Gmail reads it as spoofing and junks or drops it. Brevo accepts every message and reports success; nothing in the chain reports a failure, because nothing in the chain fails. <code>/api/health</code> now returns a <code>warnings</code> array naming this. Fixed only by buying the domain above and sending from an address on it." },
+        { t: "Send from a dedicated subdomain", s: "blocker",
+          d: "For example <code>mail.lehart.co.uk</code>, kept apart from the marketing subdomain. Reputation is tracked per sending domain — this is what stops a bad campaign blocking receipts." },
+        { t: "SPF, DKIM and DMARC published for that subdomain", s: "blocker",
+          d: "Start DMARC at <code>p=none</code> to collect reports, then move to <code>quarantine</code> and finally <code>reject</code> once you can see nothing legitimate is failing." },
+        { t: "Order confirmation email", s: "done",
+          d: "Built, branded, and sent by <code>api/_routes/orders.ts</code> the moment the order is written. Leads with the arrival date, and the end-to-end journey test proves it quotes the same date checkout showed. Still confirm with a solicitor that the wording carries the cancellation-right information a durable medium must." },
+        { t: "Dispatch email with tracking", s: "done",
+          d: "<code>api/_routes/order-notify.ts</code>, staff-only, writes the status and sends in one operation so an order cannot be marked dispatched with the customer never told. Tracking URLs are scheme-checked before they are rendered as the call to action. Out-for-delivery is a separate message." },
+        { t: "Refund confirmation email", s: "todo", d: "" },
+        { t: "Return instructions and label email", s: "part",
+          d: "Templates written and sent on every status change (received / approved / declined / resolved), with the recipient read from the stored return so the route cannot be used as an open relay. Needs the API key to actually leave the building." },
+        { t: "Password reset and email verification", s: "part",
+          d: "Firebase Auth sends these by default from its own domain. Rebrand them or route them through your sender." },
+        { t: "Reply-to points at a monitored inbox", s: "blocker",
+          d: "Customers reply to receipts. If nobody reads that address you are losing complaints and gaining chargebacks. <strong>Brevo sends but does not receive</strong> — a support mailbox needs email hosting on the new domain (Zoho Mail has a free single-domain tier; Google Workspace is the paid standard). Buying the domain is not enough on its own." },
+        { t: "Plain-text alternative on every send", s: "done",
+          d: "Every template returns both parts and the end-to-end journey test asserts a non-trivial text body on all four messages, so a send cannot regress to HTML-only unnoticed." },
+        { t: "Bounce and complaint webhooks feed a suppression list", s: "part",
+          d: "<code>api/_routes/brevo-webhook.ts</code> is built and tested, authenticated by <code>BREVO_WEBHOOK_SECRET</code> (unset = 404, closed by default). Still needs the URL registering in Brevo once the domain is live." },
+        { t: "Deliverability tested before launch", s: "blocker",
+          d: "Send to Gmail, Outlook, Yahoo and an iCloud address and check what actually arrives — including the spam folder. Currently failing: several messages were accepted by Brevo on 28 Aug and none reached an inbox." }
+      ]
+    },
+    {
+      title: "3 · Marketing email",
+      note: "Klaviyo is the ecommerce standard — segmentation and flows are its whole point. Brevo is cheaper, EU-based and already connected to this workspace if budget matters more than flow sophistication.",
+      items: [
+        { t: "Klaviyo (or Brevo) account, separate sending subdomain", s: "todo",
+          d: "For example <code>news.lehart.co.uk</code>. Separate from the transactional subdomain, for the reason above." },
+        { t: "SPF, DKIM and DMARC for the marketing subdomain", s: "todo", d: "" },
+        { t: "Do not import the existing Firestore newsletter list as-is", s: "blocker",
+          d: "New signups now store an evidenced consent record — timestamp, source, policy version, method. Addresses collected before this change still have none of that: re-permission those or drop them. The blocker applies to the old rows, not the new ones." },
+        { t: "Double opt-in on new signups", s: "todo",
+          d: "Gives you a timestamped, evidenced consent record — the thing the current list lacks." },
+        { t: "One-click unsubscribe headers", s: "todo",
+          d: "<code>List-Unsubscribe</code> and <code>List-Unsubscribe-Post</code>. Required by Gmail and Yahoo for bulk senders, not merely good manners." },
+        { t: "Unsubscribe link in every marketing send", s: "todo", d: "" },
+        { t: "Preference centre rather than only all-or-nothing", s: "todo",
+          d: "People who can reduce frequency unsubscribe less often." },
+        { t: "Warm the sending domain up gradually", s: "todo",
+          d: "Blasting a cold domain with a full list on day one is the classic way to land in spam permanently." },
+        { t: "Suppression synced between marketing and transactional", s: "todo",
+          d: "Two vendors means two lists. An unsubscribe in one must not be mailable from the other." },
+        { t: "Spam complaint rate monitored below 0.3%", s: "todo",
+          d: "Gmail's published threshold. Above it, delivery degrades sharply." },
+        { t: "Welcome flow", s: "todo", d: "" },
+        { t: "Abandoned basket flow", s: "todo",
+          d: "Usually the highest-revenue flow in a refurbished shop, where people compare prices for days." },
+        { t: "Browse abandonment flow", s: "todo", d: "" },
+        { t: "Post-purchase and review-request flow", s: "todo",
+          d: "Request reviews only after delivery, and never incentivise without disclosure — see the DMCC item below." },
+        { t: "Back-in-stock notifications", s: "todo",
+          d: "Especially valuable when stock is single-unit and sells out." },
+        { t: "Trade-in follow-up flow", s: "todo",
+          d: "Quotes are already captured and currently go nowhere." }
+      ]
+    },
+    {
+      title: "4 · UK selling law",
+      note: "These are the ones that catch shops selling second-hand electronics to UK consumers.",
+      items: [
+        { t: "Publish company details on the site", s: "blocker",
+          d: "The footer and legal pages now render the registered name, company number, registered office and VAT number from <code>src/config/company.ts</code> — one file to fill in. Until the real values are entered nothing shows, and the invented \"LeHart.co.uk Ltd — Registered in England & Wales\" line is gone. Still a blocker: the real details must be filled in." },
+        { t: "Terms of sale, distinct from terms of use", s: "part",
+          d: "<code>/terms</code> exists. Check it actually covers the contract of sale: when the contract forms, pricing errors, stock availability, delivery and title." },
+        { t: "Returns and cancellation policy page", s: "done",
+          d: "<code>/returns</code> is live: the 14-day cancellation right, refund timescales, diminished-value handling and free prepaid returns, linked from the footer." },
+        { t: "Provide a model cancellation form", s: "done",
+          d: "Included on <code>/returns</code> as copyable text, as the distance-selling rules require." },
+        { t: "State the 30-day right to reject faulty goods", s: "done",
+          d: "On <code>/returns</code>, kept explicitly separate from the change-of-mind right, including the six-month burden-of-proof point." },
+        { t: "Warranty terms published", s: "done",
+          d: "The 12-month warranty scope — what it covers and what it does not — is published on <code>/returns</code>." },
+        { t: "Delivery policy with realistic timescales", s: "done",
+          d: "<code>/delivery</code> is live and matches the site chrome's next-day promise, with the NI/Highlands caveat and the lost-parcel position. Confirm operationally that the courier arrangement can meet it." },
+        { t: "Total price shown up front", s: "todo",
+          d: "Recent consumer law bans drip pricing — mandatory charges belong in the headline price, not revealed at checkout." },
+        { t: "No fake or undisclosed-incentive reviews", s: "part",
+          d: "The fabricated 4.8-from-342 aggregate rating found in the product structured data is removed. What remains is a policy point: only publish reviews from verified purchasers once collection starts." },
+        { t: "Condition grading definitions published", s: "done",
+          d: "The grading explainer is built and linked from product pages." },
+        { t: "WEEE take-back obligation handled", s: "todo",
+          d: "Selling electricals brings a duty to take back old equipment." },
+        { t: "Waste batteries take-back handled", s: "todo",
+          d: "Phones contain them, so this applies to you." },
+        { t: "VAT registration position decided", s: "todo",
+          d: "And whether you are using the second-hand margin scheme — see the operations section, because it changes what the database must store." },
+        { t: "Product liability and stock insurance", s: "todo",
+          d: "High-value small items are the most stolen thing in the parcel network." },
+        { t: "Second-hand dealer registration checked with your council", s: "todo",
+          d: "Requirements vary by local authority." }
+      ]
+    },
+    {
+      title: "5 · Data protection",
+      items: [
+        { t: "ICO registration and annual fee paid", s: "todo",
+          d: "Required for almost every business processing personal data. It is cheap and public — not registering is an easy complaint to make against you." },
+        { t: "Privacy policy matches what you actually do", s: "part",
+          d: "Now names the real processors (Firebase, Vercel, the future PSP) and no longer claims an invented ICO registration — that number renders only once the real one is set in <code>src/config/company.ts</code>. Retention periods still need writing once decided." },
+        { t: "Cookie policy page", s: "done",
+          d: "<code>/cookies</code> lists exactly what the site stores — and states plainly that no analytics or ad cookies exist today. The banner links to it." },
+        { t: "Cookie banner actually gates what it claims to", s: "part",
+          d: "The banner is built and offers \"Reject non-essential\", which is the right shape. No analytics or ad scripts are installed yet, so nothing is currently mis-gated — but the moment you add GA4 or a pixel, it must not load before consent." },
+        { t: "Data processing agreements with every processor", s: "todo",
+          d: "Google/Firebase, Stripe, Klaviyo, Resend, Vercel. Usually accepted inside each vendor's dashboard." },
+        { t: "Record of processing activities written", s: "todo", d: "" },
+        { t: "Data retention policy defined and enforced", s: "todo",
+          d: "Orders have a tax-driven retention period; marketing contacts do not need keeping forever." },
+        { t: "Subject access request process", s: "todo",
+          d: "One month to respond. Know in advance how you would export one customer's data." },
+        { t: "Breach notification process", s: "todo",
+          d: "72 hours to report a qualifying breach to the ICO. Decide now who makes that call." }
+      ]
+    },
+    {
+      title: "6 · Operations",
+      note: "The items that decide whether the shop can actually run, as opposed to whether the website works.",
+      items: [
+        { t: "Per-IMEI stock records", s: "blocker",
+          d: "Products currently carry one grade, one battery health and a <code>stock</code> count — a model for identical new boxes. You sell serialised items. Until stock is per-unit you cannot run the VAT margin scheme, cannot answer \"which handset did we send them\", and cannot price by real condition. Your InventoryManager repo already has an IMEI migration spec — port that model rather than designing it twice." },
+        { t: "Stolen-device checks on trade-in intake", s: "todo",
+          d: "CheckMEND is the UK standard. Record the result against the IMEI so you can prove you checked." },
+        { t: "Courier account set up for lithium batteries", s: "todo",
+          d: "Phones ship with batteries installed — a declared dangerous-goods category with packaging rules and air restrictions." },
+        { t: "Tracked, insured, signed-for shipping", s: "todo", d: "" },
+        { t: "Returns portal that creates a record", s: "done",
+          d: "Real RMA system: the customer picks a reason, chooses refund / replacement / repair, uploads evidence photos, and gets a spoken-aloud-safe reference (no I, O, 0 or 1). Stored in Firestore under rules that let staff move the status and the customer only withdraw an untouched request." },
+        { t: "Inspection and outcome workflow for returns", s: "done",
+          d: "Staff queue with a guarded status machine: requested → approved → received → resolved, with decline available at each step and a mandatory reason. Resolved cannot be reached without passing through received, so a refund cannot be issued before the device is in hand." },
+        { t: "Prepaid return labels", s: "todo",
+          d: "The flow tells the customer to wait for a label and the emails reference it; generating the label needs the courier account." },
+        { t: "Margin-scheme stock book feeding your accounts", s: "todo",
+          d: "Purchase price and sale price per individual item. Check your accounting software supports the scheme before you commit to it." },
+        { t: "Stock reconciliation routine", s: "todo",
+          d: "Weekly at first. Divergence between the database and the shelf is the normal failure mode." },
+        { t: "Support inbox with order context", s: "done",
+          d: "Live customer↔staff chat built into the app — one thread per customer keyed by uid, real-time both ways, with unread counts. No per-seat fee and no customer data leaving the project. Messages are append-only, and a rules probe proves a customer cannot post one labelled as staff." }
+      ]
+    },
+    {
+      title: "7 · Security and infrastructure",
+      items: [
+        { t: "Firestore and Storage security rules written and tested", s: "done",
+          d: "Rules enforce admin access via custom claims, and the admin E2E suite runs against the Firebase emulator so the rules under test are the ones actually enforced — including an explicit check that a non-admin write is refused." },
+        { t: "Security headers", s: "done",
+          d: "Full set now including <code>Content-Security-Policy</code>, verified by a dedicated suite that serves the build with the exact production header and fails on any violation event — which is how the Firebase Auth <code>www.google.com</code> beacon was caught before deploy." },
+        { t: "Firebase App Check enabled", s: "todo",
+          d: "Without it, anyone can call your Firestore directly with your public config. Rules limit what they can do; App Check limits who can ask." },
+        { t: "Rate limiting on API routes", s: "done",
+          d: "Newsletter, trade-in and review submissions are rate-limited per client with 429 + Retry-After, unit-tested. Per-instance limits — a durable shared store is the upgrade path if abuse outruns it." },
+        { t: "Scheduled Firestore backups", s: "todo",
+          d: "There is no export configured. A bad admin action or a bad script currently has no undo." },
+        { t: "Error monitoring", s: "todo",
+          d: "Vercel shows runtime errors for serverless functions but nothing catches client-side exceptions in a real user's browser." },
+        { t: "Uptime monitoring with alerting", s: "todo", d: "" },
+        { t: "Decide which branch is production", s: "todo",
+          d: "Pushes build a preview and sit there until someone promotes by hand, which has repeatedly meant a fix was written, merged and still not live. Set Vercel → Settings → Git → Production Branch deliberately, or merge to <code>main</code> and use that." },
+        { t: "Firestore composite indexes deployed", s: "todo",
+          d: "Two are still missing on <code>lehart-1b9ef</code>: <code>orders</code> by <code>userId</code> + <code>createdAt desc</code>, and <code>reviews</code> by <code>productId</code> + <code>createdAt desc</code>. Order history and product reviews fail their query without them." },
+        { t: "Storage rules deployed to lehart-1b9ef", s: "todo",
+          d: "Firestore rules deployed; Storage rules did not, so image uploads are governed by whatever default the bucket carries." },
+        { t: "Admin accounts use strong unique passwords", s: "todo",
+          d: "The credentials discussed in setup were examples and should not survive into production." }
+      ]
+    },
+    {
+      title: "8 · SEO, analytics and acquisition",
+      items: [
+        { t: "robots.txt and sitemap.xml published", s: "done",
+          d: "Both exist and the admin console is disallowed and marked noindex." },
+        { t: "Canonical domain live and consistent", s: "blocker",
+          d: "Canonicals point at <code>lehart.co.uk</code>, which does not resolve. Until the domain is attached you are telling search engines your content lives at a dead address." },
+        { t: "Google Search Console and Bing Webmaster verified", s: "todo", d: "" },
+        { t: "Analytics installed and consent-gated", s: "todo",
+          d: "Nothing is installed today. Whatever you choose must not load before consent." },
+        { t: "Product structured data", s: "done",
+          d: "Product + Offer JSON-LD with <code>RefurbishedCondition</code>, GBP pricing, availability, returns and shipping details on every product page — and the invented 4.8/342 aggregateRating that was hiding in it is removed, with a test that keeps it out." },
+        { t: "Google Merchant Center feed", s: "todo",
+          d: "Requires accurate stock and price — so it depends on the catalogue actually coming from the database." },
+        { t: "Trustpilot or equivalent review collection", s: "todo",
+          d: "Genuine reviews only. Second-hand buyers check reputation before price." },
+        { t: "Ad pixels consent-gated if used", s: "todo", d: "" }
+      ]
+    },
+    {
+      title: "9 · Pre-launch verification",
+      note: "Do these in order, on the real production deployment, the week you go live.",
+      items: [
+        { t: "Full test suite green", s: "done",
+          d: "672 unit and integration tests pass, both TypeScript projects typecheck, the production build succeeds. Now includes an end-to-end journey test walking signup → welcome → order → confirmation → dispatch → doorstep through the real handlers. Re-run against the release build before launch." },
+        { t: "Place a real order with a real card", s: "todo",
+          d: "Your own card, smallest item. Then refund it. This is the only way to know the whole chain works." },
+        { t: "Confirm every transactional email arrives and renders", s: "blocker",
+          d: "Check on a phone, not only a desktop client, and check spam. Attempted 28 Aug: nothing arrived. The chain builds and addresses all four messages correctly — the sender domain is the fault, not the code." },
+        { t: "Walk the returns path end to end", s: "todo", d: "" },
+        { t: "Mobile sign-in works from the UK and India", s: "todo",
+          d: "The country picker, per-country validation and the reCAPTCHA container fix are written and deployed to preview. Firebase → Authentication → Settings → SMS region policy must allow GB and IN, and the new project is capped at 10 SMS/day until billing is attached — enough to test, nowhere near enough to launch on." },
+        { t: "SMS is a complement to email, not a replacement", s: "todo",
+          d: "Brevo SMS costs credits and is not part of the free email tier (<code>SMS_SENDER</code> is unset, so every send is a logged no-op). It is worth having for the doorstep message, where nobody checks an inbox to decide whether to stay in. It cannot carry the order confirmation: UK distance-selling rules require the contract confirmed on a durable medium with the cancellation-right information, which does not fit a text." },
+        { t: "Test on real iOS and Android hardware", s: "part",
+          d: "Emulated mobile viewports are covered by the suites. Real devices catch what emulation does not — keyboard behaviour, Safari quirks, actual tap accuracy." },
+        { t: "Check 404 and error pages", s: "part",
+          d: "A wildcard route with noindex is in place. Confirm the server error path too." },
+        { t: "Lighthouse pass on performance and accessibility", s: "todo",
+          d: "The bundle currently trips Vite's size warning." },
+        { t: "Verify admin access works for every staff account", s: "todo",
+          d: "A custom claim only reaches the browser on a fresh sign-in." }
+      ]
+    },
+    {
+      title: "10 · Day one and after",
+      items: [
+        { t: "Watch the payment dashboard for the first orders", s: "todo",
+          d: "Manually verify the first handful end to end rather than trusting the automation on day one." },
+        { t: "Monitor email deliverability for the first sends", s: "todo", d: "" },
+        { t: "Check error monitoring daily for the first fortnight", s: "todo", d: "" },
+        { t: "Reconcile stock weekly", s: "todo", d: "" },
+        { t: "Review chargebacks and disputes as they arrive", s: "todo",
+          d: "Record the dispatched IMEI so you can evidence exactly what you sent." }
+      ]
+    }
+  ];
+
+  var KEY = "lehart-golive-v1";
+  var state = {};
+  var filterOn = false;
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) state = JSON.parse(raw) || {};
+    } catch (e) { state = {}; }
+  }
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  }
+
+  function idFor(g, i) { return "g" + g + "i" + i; }
+
+  var CHIP = {
+    done:    ["chip-done", "done"],
+    todo:    ["chip-todo", "to do"],
+    blocker: ["chip-blocker", "blocker"],
+    part:    ["chip-part", "partial"]
+  };
+
+  function render() {
+    var root = document.getElementById("groups");
+    root.textContent = "";
+    var total = 0, done = 0;
+
+    GROUPS.forEach(function (g, gi) {
+      var sec = document.createElement("section");
+      sec.className = "group";
+
+      var head = document.createElement("div");
+      head.className = "group-head";
+      var h2 = document.createElement("h2");
+      h2.textContent = g.title;
+      var cnt = document.createElement("span");
+      cnt.className = "group-count";
+      head.appendChild(h2);
+      head.appendChild(cnt);
+      sec.appendChild(head);
+
+      if (g.note) {
+        var note = document.createElement("p");
+        note.className = "group-note";
+        note.innerHTML = g.note;
+        sec.appendChild(note);
+      }
+
+      var ul = document.createElement("ul");
+      ul.className = "items";
+      var gDone = 0, gVisible = 0;
+
+      g.items.forEach(function (it, ii) {
+        var id = idFor(gi, ii);
+        // Items already verified as done start ticked, but stay the user's to change.
+        var checked = Object.prototype.hasOwnProperty.call(state, id)
+          ? !!state[id]
+          : it.s === "done";
+        total += 1;
+        if (checked) { done += 1; gDone += 1; }
+
+        var li = document.createElement("li");
+        li.className = "item" + (checked ? " checked" : "");
+        if (filterOn && checked) li.className += " hidden"; else gVisible += 1;
+
+        var box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = checked;
+        box.id = id;
+        box.addEventListener("change", function () {
+          state[id] = box.checked;
+          save();
+          render();
+        });
+
+        var label = document.createElement("label");
+        label.className = "item-title";
+        label.htmlFor = id;
+        label.appendChild(document.createTextNode(it.t));
+        var chip = document.createElement("span");
+        chip.className = "chip " + CHIP[it.s][0];
+        chip.textContent = CHIP[it.s][1];
+        label.appendChild(chip);
+
+        li.appendChild(box);
+        li.appendChild(label);
+
+        if (it.d) {
+          var det = document.createElement("p");
+          det.className = "item-detail";
+          det.innerHTML = it.d;
+          li.appendChild(det);
+        }
+
+        ul.appendChild(li);
+      });
+
+      sec.appendChild(ul);
+      cnt.textContent = gDone + " / " + g.items.length;
+
+      if (filterOn && gVisible === 0) {
+        var e = document.createElement("p");
+        e.className = "empty-note";
+        e.textContent = "All clear in this section.";
+        sec.appendChild(e);
+      }
+
+      root.appendChild(sec);
+    });
+
+    document.getElementById("done-n").textContent = done;
+    document.getElementById("total-n").textContent = total;
+    document.getElementById("overall-rail").style.width =
+      (total ? Math.round((done / total) * 100) : 0) + "%";
+  }
+
+  document.getElementById("filter-btn").addEventListener("click", function () {
+    filterOn = !filterOn;
+    this.setAttribute("aria-pressed", String(filterOn));
+    this.textContent = filterOn ? "Show all" : "Outstanding only";
+    render();
+  });
+
+  document.getElementById("reset-btn").addEventListener("click", function () {
+    state = {};
+    save();
+    render();
+  });
+
+  load();
+  render();
+})();
+</script>

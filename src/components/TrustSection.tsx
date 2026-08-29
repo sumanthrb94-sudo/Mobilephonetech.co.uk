@@ -64,7 +64,7 @@ export default function TrustSection() {
   return (
     <section
       className="section-y"
-      style={{ background: '#f8fafc' }}
+      style={{ background: 'var(--grey-5)' }}
       id="why-us"
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>

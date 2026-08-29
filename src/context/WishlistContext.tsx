@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Product } from '../types';
-import { supabase } from '../lib/supabase';
+import { readWishlist, addWishlistItem, removeWishlistItem, mergeLocalWishlist, clearWishlistRemote } from '../lib/userData';
+import { useCatalogue } from './CatalogueContext';
 import { useAuth } from './AuthContext';
 
 interface WishlistContextType {
@@ -22,7 +23,8 @@ function loadLocal(): string[] {
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const { user, session } = useAuth();
-  // Store full product objects locally; only IDs go to Supabase
+  const { products: catalogue } = useCatalogue();
+  // Store full product objects locally; only ids are persisted remotely.
   const [items, setItems] = useState<Product[]>([]);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
 
@@ -31,50 +33,27 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem(WISHLIST_KEY, JSON.stringify(items.map(i => i.id)));
   }, [items]);
 
-  // On login: push local IDs, fetch Supabase wishlist
+  // On login: push local IDs, then read the merged set back.
+  //
+  // Firestore stores only the product ids — the Postgres version joined back to
+  // products, but the catalogue is already loaded in memory here (this provider
+  // sits inside CatalogueProvider), so resolving from it costs nothing instead
+  // of one document read per wishlisted item.
   const syncFromSupabase = useCallback(async (userId: string) => {
-    const localIds = loadLocal();
+    try {
+      const localIds = loadLocal();
+      if (localIds.length > 0) await mergeLocalWishlist(userId, localIds);
 
-    if (localIds.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('wishlist_items') as any).upsert(
-        localIds.map((id: string) => ({ user_id: userId, product_id: id })),
-        { onConflict: 'user_id,product_id', ignoreDuplicates: true }
-      );
+      const ids = await readWishlist(userId);
+      const byId = new Map(catalogue.map(p => [p.id, p]));
+      const synced = ids.map(id => byId.get(id)).filter(Boolean) as Product[];
+
+      setItems(synced);
+    } catch {
+      // Keep whatever is in local state rather than clearing the wishlist on a
+      // transient failure.
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase.from('wishlist_items') as any)
-      .select('product_id, products(*)')
-      .eq('user_id', userId);
-
-    if (!data) return;
-
-    const synced: Product[] = (data as Record<string, unknown>[])
-      .filter((row: Record<string, unknown>) => row.products)
-      .map((row: Record<string, unknown>) => {
-        const p = row.products as Record<string, unknown>;
-        return {
-          id: p.id as string,
-          model: p.model as string,
-          brand: p.brand as string,
-          category: p.category as Product['category'],
-          storage: (p.storage as string) ?? undefined,
-          price: p.price as number,
-          originalPrice: p.original_price as number,
-          grade: p.grade as Product['grade'],
-          batteryHealth: p.battery_health as number,
-          warrantyMonths: p.warranty_months as number,
-          returnDays: p.return_days as number,
-          imageUrl: (p.image_url as string) ?? '',
-          isCertified: p.is_certified as boolean,
-          stock: p.stock as number,
-          specs: (p.specs as Product['specs']) ?? {},
-        };
-      });
-
-    setItems(synced);
-  }, []);
+  }, [catalogue]);
 
   useEffect(() => {
     if (session && user && !user.isGuest && user.id !== syncedUserId) {
@@ -88,20 +67,14 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
     if (items.find(i => i.id === product.id)) return;
     setItems(prev => [...prev, product]);
     if (session && user && !user.isGuest) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from('wishlist_items') as any)
-        .upsert({ user_id: user.id, product_id: product.id }, { ignoreDuplicates: true });
+      void addWishlistItem(user.id, product.id).catch(() => { /* local state stands */ });
     }
   };
 
   const removeFromWishlist = (productId: string) => {
     setItems(prev => prev.filter(i => i.id !== productId));
     if (session && user && !user.isGuest) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from('wishlist_items') as any)
-        .delete()
-        .eq('user_id', user.id)
-        .eq('product_id', productId);
+      void removeWishlistItem(user.id, productId).catch(() => { /* local state stands */ });
     }
   };
 
@@ -110,7 +83,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const clearWishlist = async () => {
     setItems([]);
     if (session && user && !user.isGuest) {
-      await supabase.from('wishlist_items').delete().eq('user_id', user.id);
+      try { await clearWishlistRemote(user.id); } catch { /* local already cleared */ }
     }
   };
 

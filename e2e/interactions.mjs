@@ -7,9 +7,10 @@
 //
 // Exits non-zero on any FAIL.
 import { chromium, devices } from 'playwright';
+import { resolveChromium } from './chromium-path.mjs';
 
 const BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
-const EXE  = process.env.E2E_CHROMIUM || undefined;
+const EXE  = resolveChromium();
 const OUT  = process.env.E2E_SHOTS || 'e2e/screenshots';
 
 const results = [];

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" role="img" aria-label="Apple iPad 7th Gen WiFi">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBFBF9"/><stop offset="1" stop-color="#EFF0EC"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#D9DBDD"/>
+      <stop offset="1" stop-color="#D9DBDD" stop-opacity="0.82"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <ellipse cx="600" cy="896" rx="193.2" ry="16" fill="#000" opacity="0.07"/>
+  <rect x="370" y="250" width="460" height="620" rx="26" fill="url(#body)" stroke="#C9CBC6" stroke-width="3"/>
+  <rect x="386" y="266" width="428" height="588" rx="14" fill="#0A0A0A" opacity="0.30"/>
+  <rect x="562" y="280" width="76" height="12" rx="6" fill="#0A0A0A" opacity="0.45"/>
+  <text x="600" y="150" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="600" fill="#1D1D1F">Apple</text>
+  <text x="600" y="205" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="34" fill="#5A6169">iPad 7th Gen WiFi</text>
+  <text x="600" y="954" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="26" letter-spacing="3" fill="#79817F">32GB  ·  SILVER</text>
+</svg>

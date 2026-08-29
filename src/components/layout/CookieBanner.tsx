@@ -2,25 +2,34 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { CONSENT_KEY, startFirebaseAnalytics, stopFirebaseAnalytics } from '../../lib/firebaseAnalytics';
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('cookie_consent');
-    if (!consent) {
-      setIsVisible(true);
-    }
+    const consent = localStorage.getItem(CONSENT_KEY);
+    if (!consent) setIsVisible(true);
+    // A returning visitor who accepted on a previous visit. This is the ONLY
+    // other place GA4 can start: nothing imports it at module scope, so a page
+    // load with no stored acceptance loads no measurement code at all.
+    if (consent === 'accepted') void startFirebaseAnalytics();
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('cookie_consent', 'accepted');
+    localStorage.setItem(CONSENT_KEY, 'accepted');
     setIsVisible(false);
+    void startFirebaseAnalytics();
   };
 
   const handleDecline = () => {
-    localStorage.setItem('cookie_consent', 'declined');
+    localStorage.setItem(CONSENT_KEY, 'declined');
     setIsVisible(false);
+    // Nothing to tear down on a first visit, because nothing started. This
+    // matters for someone who accepted earlier and has come back to refuse:
+    // the SDK offers no teardown, so the only honest way to stop it is to
+    // reload without it.
+    stopFirebaseAnalytics();
   };
 
   return (
@@ -51,7 +60,11 @@ export default function CookieBanner() {
                 </span>
               </div>
               <p id="cookie-banner-desc" style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.55, margin: 0 }}>
-                We use cookies to keep the site secure, remember your preferences, and understand how it's used. By clicking "Accept all", you agree to our{' '}
+                We use cookies to keep the site secure and remember your preferences. What we
+                store is listed in our{' '}
+                <Link to="/cookies" style={{ color: 'var(--brand-cyan)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                  cookie policy
+                </Link>; how we handle personal data is in our{' '}
                 <Link to="/privacy" style={{ color: 'var(--brand-cyan)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>
                   privacy policy
                 </Link>.

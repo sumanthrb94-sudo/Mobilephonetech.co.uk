@@ -49,7 +49,7 @@ export default function QualityPromise() {
     <section
       aria-label="Our quality promise"
       style={{
-        background: '#0f172a',
+        background: 'var(--black)',
         paddingTop: 'var(--spacing-48)',
         paddingBottom: 'var(--spacing-48)',
       }}
@@ -64,10 +64,10 @@ export default function QualityPromise() {
             fontWeight: 800,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: '#06b6d4',
+            color: 'var(--brand-cyan-on-dark)',
             marginBottom: '8px',
           }}>
-            The MPM Standard
+            The LeHart Standard
           </div>
           <h2
             style={{
@@ -91,7 +91,7 @@ export default function QualityPromise() {
               lineHeight: 1.6,
             }}
           >
-            Every MobilePhoneMarket device clears four engineering standards before it ships. This is what separates a certified refurb from a resell.
+            Every LeHart device clears four engineering standards before it ships. This is what separates a certified refurb from a resell.
           </p>
         </div>
 

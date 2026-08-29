@@ -13,7 +13,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT       = resolve(__dirname, '..');
 const DATA_PATH  = resolve(ROOT, 'src/data.ts');
 const PUBLIC_DIR = resolve(ROOT, 'public');
-const ORIGIN     = 'https://mobilephonetech.co.uk';
+const ORIGIN     = 'https://lehart.co.uk';
 
 const data = readFileSync(DATA_PATH, 'utf8');
 
@@ -43,6 +43,9 @@ const staticRoutes = [
   { path: '/guides',                   priority: '0.5', freq: 'monthly' },
   { path: '/privacy',                  priority: '0.3', freq: 'yearly'  },
   { path: '/terms',                    priority: '0.3', freq: 'yearly'  },
+  { path: '/returns',                  priority: '0.4', freq: 'yearly'  },
+  { path: '/delivery',                 priority: '0.4', freq: 'yearly'  },
+  { path: '/cookies',                  priority: '0.2', freq: 'yearly'  },
 ];
 
 const urls = [
@@ -61,9 +64,12 @@ ${urls.map(u => `  <url>
 </urlset>
 `;
 
-const robots = `# robots.txt — MobileTech UK
+// public/robots.txt is generated, not hand-edited — `prebuild` runs this
+// script and overwrites it, so any change has to be made here to survive.
+const robots = `# robots.txt — LeHart
 User-agent: *
 Allow: /
+Disallow: /admin
 Disallow: /checkout
 Disallow: /cart
 Disallow: /wishlist

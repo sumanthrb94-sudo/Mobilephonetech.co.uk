@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import handler from '../../../api/delivery';
+import handler from '../../../api/_routes/delivery';
 
 function req(method: string, query: Record<string, string> = {}) {
   return { method, query };

@@ -11,8 +11,8 @@ import { useEffect } from 'react';
  * SPA without SSR.
  */
 
-export const SITE_ORIGIN = 'https://mobilephonetech.co.uk';
-export const SITE_NAME = 'MobilePhoneMarket';
+export const SITE_ORIGIN = 'https://lehart.co.uk';
+export const SITE_NAME = 'LeHart';
 
 type JsonLd = Record<string, unknown> | Record<string, unknown>[];
 

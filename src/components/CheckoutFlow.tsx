@@ -10,30 +10,25 @@ import ProductImage from './ProductImage';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode } from '../utils/postcodeLookup';
 
-// Demo-mode payment helpers. Real card tokenisation happens through
-// a PSP widget (Stripe / Adyen) in production — until then the form
-// accepts whatever the user types and falls back to a Visa 4242 stub
-// when fields are blank, so a walkthrough is never blocked by an
-// unfilled card form.
+// Payment method selection only — this form NEVER collects card details.
+//
+// That is deliberate, not a gap. Accepting a card number, expiry or CVC into
+// our own DOM would put the site in a PCI DSS scope it cannot satisfy; card
+// capture belongs exclusively to the payment provider's hosted fields
+// (Stripe Elements / Checkout), which arrive with the PSP integration. Until
+// then the step records which method the customer chose and nothing else.
+// Do not add card inputs back here — wire the PSP instead.
 
 type PaymentTypeKey = 'card' | 'klarna' | 'clearpay' | 'apple_pay' | 'google_pay' | 'paypal';
 
 const PAYMENT_METHOD_LABELS: Record<PaymentTypeKey, { brand: string; last4: string; display: string }> = {
-  card:       { brand: 'Visa',       last4: '4242', display: 'Credit or debit card' },
+  card:       { brand: 'Card',       last4: '····', display: 'Credit or debit card' },
   klarna:     { brand: 'Klarna',     last4: 'PAY3', display: 'Klarna · Pay in 3'    },
   clearpay:   { brand: 'Clearpay',   last4: 'PAY4', display: 'Clearpay · Pay in 4'  },
   apple_pay:  { brand: 'Apple Pay',  last4: 'WLLT', display: 'Apple Pay'            },
   google_pay: { brand: 'Google Pay', last4: 'WLLT', display: 'Google Pay'           },
   paypal:     { brand: 'PayPal',     last4: 'PYPL', display: 'PayPal'               },
 };
-
-function detectCardBrand(cardNumber: string): string {
-  if (/^4/.test(cardNumber)) return 'Visa';
-  if (/^(5[1-5]|2[2-7])/.test(cardNumber)) return 'Mastercard';
-  if (/^3[47]/.test(cardNumber)) return 'Amex';
-  if (/^6(011|5)/.test(cardNumber)) return 'Discover';
-  return 'Card';
-}
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -43,7 +38,7 @@ function detectCardBrand(cardNumber: string): string {
 
 export default function CheckoutFlow() {
   useSeo({
-    title: 'Checkout | MobilePhoneMarket',
+    title: 'Checkout | LeHart',
     description: 'Complete your purchase securely — free next-day UK delivery, 12-month warranty, 30-day returns.',
     canonical: `${SITE_ORIGIN}/checkout`,
     noindex: true,
@@ -66,6 +61,17 @@ export default function CheckoutFlow() {
     try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior }); }
     catch { window.scrollTo(0, 0); }
   }, [currentStep]);
+
+  // currentStep is only advanced past 'cart' by the cart's own CTAs, so
+  // arriving at /checkout any other way — a bookmark, a refresh, a shared
+  // link — left it on 'cart' and rendered an empty column: no form, no
+  // explanation, nothing to click. Being on this page with a basket is
+  // itself the intent to check out.
+  useEffect(() => {
+    if (currentStep === 'cart' && items.length > 0) setCurrentStep('shipping');
+    // Runs on mount and if the cart fills while here; later steps are
+    // untouched because the guard only fires on 'cart'.
+  }, [currentStep, items.length, setCurrentStep]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
@@ -81,7 +87,7 @@ export default function CheckoutFlow() {
     if (shippingAddress) return;
     setShippingAddress({
       fullName:    user?.fullName || 'Alex Morgan',
-      email:       user?.email    || 'alex@mobilephonemarket.co.uk',
+      email:       user?.email    || 'alex@lehart.co.uk',
       phone:       '07700 900123',
       addressLine1:'221B Baker Street',
       addressLine2:'Flat 2',
@@ -161,34 +167,18 @@ export default function CheckoutFlow() {
 
   const handlePaymentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
 
-    // Demo mode: pick whatever method the user selected. If they
-    // bothered to type a card number, we use it — otherwise we ship
-    // a sensible placeholder so the mock order goes through. No
-    // payment method is ever blocking.
-    const cardNumberRaw = String(formData.get('cardNumber') ?? '').replace(/\s+/g, '');
-
-    let method: PaymentMethod;
-    if (paymentType === 'card') {
-      const last4 = cardNumberRaw.length >= 4 ? cardNumberRaw.slice(-4) : '4242';
-      const brand = cardNumberRaw.length >= 4 ? detectCardBrand(cardNumberRaw) : 'Visa';
-      method = {
-        id: Math.random().toString(36).slice(2, 11),
-        type: 'card',
-        last4,
-        brand,
-      };
-    } else {
-      method = {
-        id: Math.random().toString(36).slice(2, 11),
-        type: paymentType === 'apple_pay' || paymentType === 'google_pay' || paymentType === 'paypal'
-          ? paymentType
-          : 'card',
-        last4: PAYMENT_METHOD_LABELS[paymentType].last4,
-        brand: PAYMENT_METHOD_LABELS[paymentType].brand,
-      };
-    }
+    // Selection only. Card capture happens on the payment provider's hosted
+    // page once the PSP is wired — nothing sensitive exists in this form to
+    // read, which is exactly the point.
+    const method: PaymentMethod = {
+      id: Math.random().toString(36).slice(2, 11),
+      type: paymentType === 'apple_pay' || paymentType === 'google_pay' || paymentType === 'paypal'
+        ? paymentType
+        : 'card',
+      last4: PAYMENT_METHOD_LABELS[paymentType].last4,
+      brand: PAYMENT_METHOD_LABELS[paymentType].brand,
+    };
 
     setFormErrors({});
     setPaymentMethod(method);
@@ -210,6 +200,11 @@ export default function CheckoutFlow() {
     const order: Order = {
       id: `ORD-${Date.now()}`, items, shippingAddress, shippingOption, paymentMethod,
       subtotal, shippingCost, tax, total, status: 'confirmed', createdAt: new Date().toISOString(),
+      // Without this the order is unattributable: the Firestore rule requires
+      // userId to equal the caller's uid, so the write was rejected outright —
+      // and order history, which filters on userId, could never have matched
+      // it either. Guests stay null and are matched by email instead.
+      userId: user && !user.isGuest ? user.id : undefined,
     };
 
     createOrder(order);
@@ -221,7 +216,15 @@ export default function CheckoutFlow() {
   const handleGuestCheckout = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const email = new FormData(e.currentTarget).get('guestEmail') as string;
-    if (email) { continueAsGuest(email); setCheckoutMode('shipping'); }
+    if (!email) return;
+    continueAsGuest(email);
+    setCheckoutMode('shipping');
+    // currentStep starts at 'cart' and was only ever advanced by the cart's
+    // own CTAs. Landing on /checkout directly — a bookmark, a refresh, a
+    // shared link — and continuing as a guest left it on 'cart', so neither
+    // branch below matched and the page rendered an empty column with no
+    // shipping form and no explanation.
+    if (currentStep === 'cart') setCurrentStep('shipping');
   };
 
   // ── CONFIRMATION PAGE ──────────────────────────────────────────────────────
@@ -647,76 +650,30 @@ export default function CheckoutFlow() {
                     />
                   </div>
 
-                  {paymentType === 'card' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={labelStyle} htmlFor="checkout-card-number">Card Number <span style={{ color: 'var(--grey-40)', fontWeight: 500 }}>(optional for demo)</span></label>
-                      <input
-                        id="checkout-card-number"
-                        name="cardNumber"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-number"
-                        placeholder="0000 0000 0000 0000"
-                        maxLength={23}
-                        style={{ ...inputStyle, borderColor: formErrors.cardNumber ? 'var(--color-sale)' : inputStyle.border as string }}
-                        aria-invalid={!!formErrors.cardNumber}
-                        aria-describedby={formErrors.cardNumber ? 'err-cardNumber' : undefined}
-                      />
-                      {formErrors.cardNumber && <p id="err-cardNumber" style={errorStyle}>{formErrors.cardNumber}</p>}
-                    </div>
-                    <div>
-                      <label style={labelStyle} htmlFor="checkout-card-expiry">Expiry Date</label>
-                      <input
-                        id="checkout-card-expiry"
-                        name="cardExpiry"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-exp"
-                        placeholder="MM/YY"
-                        maxLength={5}
-                        style={{ ...inputStyle, borderColor: formErrors.cardExpiry ? 'var(--color-sale)' : inputStyle.border as string }}
-                        aria-invalid={!!formErrors.cardExpiry}
-                        aria-describedby={formErrors.cardExpiry ? 'err-cardExpiry' : undefined}
-                      />
-                      {formErrors.cardExpiry && <p id="err-cardExpiry" style={errorStyle}>{formErrors.cardExpiry}</p>}
-                    </div>
-                    <div>
-                      <label style={labelStyle} htmlFor="checkout-card-cvv">CVV</label>
-                      <input
-                        id="checkout-card-cvv"
-                        name="cardCvv"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-csc"
-                        placeholder="123"
-                        maxLength={4}
-                        style={{ ...inputStyle, borderColor: formErrors.cardCvv ? 'var(--color-sale)' : inputStyle.border as string }}
-                        aria-invalid={!!formErrors.cardCvv}
-                        aria-describedby={formErrors.cardCvv ? 'err-cardCvv' : undefined}
-                      />
-                      {formErrors.cardCvv && <p id="err-cardCvv" style={errorStyle}>{formErrors.cardCvv}</p>}
-                    </div>
+                  {/* No card inputs, by design: card details belong to the
+                      payment provider's secure page, never to this site's DOM.
+                      See the PCI note at the top of this file. */}
+                  <div
+                    style={{
+                      display: 'flex', gap: '10px', alignItems: 'flex-start',
+                      padding: '14px 16px',
+                      background: 'var(--color-brand-subtle)',
+                      border: '1px solid rgba(161, 98, 7, 0.25)',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '13px',
+                      color: 'var(--brand-cyan-hover)',
+                      marginTop: 'var(--spacing-16)',
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    <Lock size={15} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
+                    <span>
+                      <strong style={{ fontWeight: 700 }}>{PAYMENT_METHOD_LABELS[paymentType].display}</strong>
+                      {' '}selected. You'll confirm and pay on a secure payment page after reviewing your
+                      order — card details are never entered on this site.
+                    </span>
                   </div>
-                  )}
-
-                  {paymentType !== 'card' && (
-                    <div
-                      style={{
-                        padding: '14px 16px',
-                        background: 'var(--color-brand-subtle)',
-                        border: '1px solid rgba(0,108,73,0.25)',
-                        borderRadius: 'var(--radius-md)',
-                        fontFamily: 'var(--font-body)',
-                        fontSize: '13px',
-                        color: 'var(--brand-cyan-hover)',
-                        marginTop: 'var(--spacing-16)',
-                      }}
-                    >
-                      <strong style={{ fontWeight: 700, marginRight: '4px' }}>{PAYMENT_METHOD_LABELS[paymentType].display}</strong>
-                      selected — you'll be redirected to confirm on the next step.
-                    </div>
-                  )}
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
                     Review Order <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
@@ -774,22 +731,10 @@ export default function CheckoutFlow() {
                     onClick={handlePlaceOrder}
                     disabled={isProcessing}
                     data-loading={isProcessing || undefined}
-                    className="btn btn-lg btn-full"
+                    className="btn btn-buy btn-lg btn-full"
                     style={{
                       marginTop: 'var(--spacing-48)',
-                      background: '#FFD814',
-                      borderColor: '#FCD200',
-                      color: '#0F1111',
-                      fontWeight: 800,
                       fontSize: 'clamp(15px, 2vw, 17px)',
-                      boxShadow: '0 2px 5px rgba(213,217,217,0.5)',
-                      letterSpacing: '-0.01em',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = '#F7CA00';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = '#FFD814';
                     }}
                   >
                     <Lock size={16} /> Place your order · £{total.toFixed(2)}

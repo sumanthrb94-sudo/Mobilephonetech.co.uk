@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeHart email templates</title>
+<style>
+  :root { color-scheme: light only; }
+  body { margin:0; background:#e7e5e4; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,sans-serif; color:#0c0a09; }
+  header { padding:26px 22px 6px; }
+  h1 { margin:0 0 4px; font-size:20px; font-weight:800; letter-spacing:-0.02em; }
+  header p { margin:0; font-size:13px; color:#57534e; }
+  .grid { display:flex; flex-wrap:wrap; gap:22px; padding:22px; align-items:flex-start; }
+  .pane { flex:1 1 560px; min-width:0; background:#fff; border:1px solid #d6d3d1; border-radius:14px; overflow:hidden; }
+  .bar { padding:11px 15px; border-bottom:1px solid #ededeb; background:#fafaf9; display:flex; justify-content:space-between; gap:12px; align-items:baseline; }
+  .bar b { font-size:13px; font-weight:800; }
+  .bar span { font-size:11.5px; color:#78716c; text-align:right; }
+  iframe { display:block; width:100%; height:940px; border:0; background:#fafaf9; }
+</style></head>
+<body>
+<header>
+  <h1>LeHart customer emails</h1>
+  <p>Rendered with sample data by <code>scripts/preview-emails.ts</code>. Plain-text parts sit beside each file as <code>.txt</code>.</p>
+</header>
+<div class="grid">
+  <div class="pane">
+    <div class="bar"><b>Welcome</b><span>Welcome to LeHart — here is £20 off your first order</span></div>
+    <iframe src="./welcome.html" title="Welcome" loading="lazy"></iframe>
+  </div>
+  <div class="pane">
+    <div class="bar"><b>Order confirmation</b><span>Arriving Tuesday 1 Sept — order ORD-1756382400123 confirmed</span></div>
+    <iframe src="./order-confirmation.html" title="Order confirmation" loading="lazy"></iframe>
+  </div>
+  <div class="pane">
+    <div class="bar"><b>Dispatched</b><span>Arriving Tomorrow, before 6pm — order ORD-1756382400123 dispatched</span></div>
+    <iframe src="./dispatched.html" title="Dispatched" loading="lazy"></iframe>
+  </div>
+  <div class="pane">
+    <div class="bar"><b>Out for delivery</b><span>Arriving today — order ORD-1756382400123</span></div>
+    <iframe src="./out-for-delivery.html" title="Out for delivery" loading="lazy"></iframe>
+  </div>
+  <div class="pane">
+    <div class="bar"><b>Account welcome</b><span>Your LeHart account is ready</span></div>
+    <iframe src="./account-welcome.html" title="Account welcome" loading="lazy"></iframe>
+  </div>
+  <div class="pane">
+    <div class="bar"><b>Abandoned cart</b><span>Your basket is waiting</span></div>
+    <iframe src="./abandoned-cart.html" title="Abandoned cart" loading="lazy"></iframe>
+  </div>
+</div>
+</body></html>

@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { trackPageView } from './lib/analytics';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
@@ -36,6 +37,7 @@ import { AuthProvider } from './context/AuthContext';
 import { UIProvider } from './context/UIContext';
 import { CatalogueProvider } from './context/CatalogueContext';
 import Toast from './components/Toast';
+import { PageLoading } from './components/ui/Loading';
 import { useSeo } from './hooks/useSeo';
 import { homeSeo } from './utils/seo';
 
@@ -47,41 +49,26 @@ const WishlistPage = lazy(() => import('./components/WishlistPage'));
 const OrderHistoryPage = lazy(() => import('./components/OrderHistoryPage'));
 const PrivacyPolicy = lazy(() => import('./components/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/legal/TermsOfService'));
+const ReturnsPolicy = lazy(() => import('./components/legal/ReturnsPolicy'));
+const DeliveryPolicy = lazy(() => import('./components/legal/DeliveryPolicy'));
+const CookiePolicy = lazy(() => import('./components/legal/CookiePolicy'));
 const AboutPage = lazy(() => import('./components/content/AboutPage'));
 const SustainabilityPage = lazy(() => import('./components/content/SustainabilityPage'));
 const BuyingGuidesPage = lazy(() => import('./components/content/BuyingGuidesPage'));
 const FaqPage = lazy(() => import('./components/content/FaqPage'));
 const NotFound = lazy(() => import('./components/NotFound'));
 const AIAssistant = lazy(() => import('./components/AIAssistant'));
+const SupportChat = lazy(() => import('./components/SupportChat'));
 const AccountPage = lazy(() => import('./components/AccountPage'));
-
-// Loading state component — on-brand skeleton
-const PageLoader = () => (
-  <div
-    style={{
-      minHeight: '60vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'var(--grey-0)',
-      padding: 'var(--spacing-48) var(--spacing-16)',
-    }}
-  >
-    <div
-      style={{
-        width: '44px',
-        height: '44px',
-        border: '3px solid var(--color-brand-subtle)',
-        borderTopColor: 'var(--brand-cyan)',
-        borderRadius: '50%',
-        animation: 'spin 0.7s linear infinite',
-      }}
-      role="status"
-      aria-label="Loading"
-    />
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </div>
-);
+// Admin console — lazy so the back-store bundle never ships to shoppers.
+const AdminRoute = lazy(() => import('./components/admin/AdminRoute'));
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./components/admin/DashboardPage'));
+const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
+const ReturnsPage = lazy(() => import('./components/admin/ReturnsPage'));
+const AnalyticsPage = lazy(() => import('./components/admin/AnalyticsPage'));
+const SupportInbox = lazy(() => import('./components/admin/SupportInbox'));
+const ProductEditor = lazy(() => import('./components/admin/ProductEditor'));
 
 
 /**
@@ -136,7 +123,7 @@ function HomePage() {
           (QualityPromise) so readers who want depth can dive in. */}
       <HomeBlog />
 
-      {/* MPM-signature Inspected / Tested / Cleaned strip — moved down from
+      {/* LeHart-signature Inspected / Tested / Cleaned strip — moved down from
           just-below-hero to footer-adjacent so product content takes the
           above-the-fold real estate instead. */}
       <QualityPromise />
@@ -172,6 +159,15 @@ function AppContent() {
   const { isCartOpen, setIsCartOpen, cartCount } = useCart();
   const location = useLocation();
   const isCheckoutRoute = location.pathname.startsWith('/checkout');
+  // The admin console keeps the navbar (admins still browse the shop) but drops
+  // the marketing footer and the shopper tab bar, which are only noise there.
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // One page view per navigation. Counts only — no cookie, no identifier, so
+  // this measures every visitor rather than only those who accept a banner.
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
 
   // Toggle a root class so CSS can strip the mobile-reserved bottom
   // padding (which normally makes room for the fixed tab bar).
@@ -242,7 +238,7 @@ function AppContent() {
       */}
       <main id="main-content" style={{ flexGrow: 1 }}>
         <ErrorBoundary>
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<PageLoading />}>
           <AnimatePresence mode="wait">
             <Routes location={location} key={location.pathname}>
               <Route path="/" element={<HomePage />} />
@@ -291,6 +287,21 @@ function AppContent() {
                   <TermsOfService />
                 </AnimatedPage>
               } />
+              <Route path="/returns" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <ReturnsPolicy />
+                </AnimatedPage>
+              } />
+              <Route path="/delivery" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <DeliveryPolicy />
+                </AnimatedPage>
+              } />
+              <Route path="/cookies" element={
+                <AnimatedPage paddingTop="var(--nav-total)">
+                  <CookiePolicy />
+                </AnimatedPage>
+              } />
               <Route path="/about" element={
                 <AnimatedPage paddingTop="var(--nav-total)">
                   <AboutPage />
@@ -327,6 +338,22 @@ function AppContent() {
                 </AnimatedPage>
               } />
 
+              {/* Admin console. AdminRoute wraps the layout rather than each
+                  child so the access check runs once for the whole section. */}
+              <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminLayout />
+                </AdminRoute>
+              }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="inventory" element={<InventoryPage />} />
+                <Route path="inventory/new" element={<ProductEditor />} />
+                <Route path="inventory/:id" element={<ProductEditor />} />
+                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="returns" element={<ReturnsPage />} />
+                <Route path="support" element={<SupportInbox />} />
+              </Route>
+
               {/* Wildcard — catches every unmatched URL so a typo
                   never lands on a blank body. Emits noindex via useSeo. */}
               <Route path="*" element={
@@ -342,14 +369,27 @@ function AppContent() {
 
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <AddedToCartModal />
-      <Suspense fallback={null}>
-        <AIAssistant />
-      </Suspense>
+      {/* The shopping assistant is for shoppers. In the console it is not just
+          irrelevant — its floating bubble sits over the row action buttons. */}
+      {!isAdminRoute && (
+        <Suspense fallback={null}>
+          <AIAssistant />
+        </Suspense>
+      )}
+      {/* Human support, separate from the AI advisor: the assistant answers
+          product questions, this reaches a person about an order. */}
+      {!isAdminRoute && !isCheckoutRoute && (
+        <Suspense fallback={null}>
+          <SupportChat />
+        </Suspense>
+      )}
       <Toast />
       <CookieBanner />
-      {isCheckoutRoute ? <CheckoutFooter /> : <Footer />}
-      {!isCheckoutRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
-      <AnnouncementBar />
+      {isCheckoutRoute ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
+      {!isCheckoutRoute && !isAdminRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
+      {/* Same again for the trust strip: delivery and returns promises are a
+          shopper cue, and pinned to the bottom it covers the last table row. */}
+      {!isAdminRoute && <AnnouncementBar />}
     </div>
   );
 }

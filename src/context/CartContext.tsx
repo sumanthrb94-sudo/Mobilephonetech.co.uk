@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { trackAddToCart } from '../lib/analytics';
 import { Product } from '../types';
-import { supabase } from '../lib/supabase';
+import { mergeLocalCart, readCart, writeCartItem, deleteCartProduct, clearCartRemote } from '../lib/userData';
 import { useAuth } from './AuthContext';
 
 export interface CartItem extends Product {
@@ -57,58 +58,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // ── On login: merge local cart into Supabase, then load ───
   const syncFromSupabase = useCallback(async (userId: string) => {
     // Upsert any local items into Supabase first
-    const local = loadLocalCart();
-    if (local.length > 0) {
-      const inserts: Record<string, unknown>[] = local.map(item => ({
-        user_id: userId,
-        product_id: item.id,
-        quantity: item.quantity,
-        selected_color: item.selectedColor ?? null,
-        selected_storage: item.selectedStorage ?? null,
-        selected_condition: item.selectedCondition ?? null,
-      }));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('cart_items') as any)
-        .upsert(inserts, { onConflict: 'user_id,product_id,selected_color,selected_storage,selected_condition' });
+    try {
+      // Push anything added while signed out, then read the merged result back.
+      const local = loadLocalCart();
+      if (local.length > 0) {
+        await mergeLocalCart(userId, local as unknown as Record<string, unknown>[]);
+      }
+
+      const rows = await readCart(userId);
+      const merged = rows as unknown as CartItem[];
+
+      setItems(merged);
+      saveLocalCart(merged);
+    } catch {
+      // Offline or rules-denied: the local cart stays authoritative rather
+      // than being blown away by an empty remote read.
     }
-
-    // Fetch full cart with product data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('cart_items') as any)
-      .select('*, products(*)')
-      .eq('user_id', userId);
-
-    if (error || !data) return;
-
-    const merged: CartItem[] = (data as Record<string, unknown>[])
-      .filter((row: Record<string, unknown>) => row.products)
-      .map((row: Record<string, unknown>) => {
-        const p = row.products as Record<string, unknown>;
-        return {
-          id: p.id as string,
-          model: p.model as string,
-          brand: p.brand as string,
-          category: p.category as CartItem['category'],
-          storage: (p.storage as string) ?? undefined,
-          price: p.price as number,
-          originalPrice: p.original_price as number,
-          grade: p.grade as CartItem['grade'],
-          batteryHealth: p.battery_health as number,
-          warrantyMonths: p.warranty_months as number,
-          returnDays: p.return_days as number,
-          imageUrl: (p.image_url as string) ?? '',
-          isCertified: p.is_certified as boolean,
-          stock: p.stock as number,
-          specs: (p.specs as CartItem['specs']) ?? {},
-          quantity: row.quantity as number,
-          selectedColor: (row.selected_color as string) ?? undefined,
-          selectedStorage: (row.selected_storage as string) ?? undefined,
-          selectedCondition: (row.selected_condition as string) ?? undefined,
-        };
-      });
-
-    setItems(merged);
-    saveLocalCart(merged);
   }, []);
 
   useEffect(() => {
@@ -121,25 +86,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [session, user, syncedUserId, syncFromSupabase]);
 
-  // ── Supabase upsert helper ─────────────────────────────────
+  // ── Remote write helpers ───────────────────────────────────
+  // Fire-and-forget: a failed sync must not block the optimistic local update,
+  // and the local cart is re-pushed on the next sign-in anyway.
   const upsertSupabaseItem = useCallback(async (item: CartItem) => {
     if (!session || !user || user.isGuest) return;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from('cart_items') as any).upsert({
-      user_id: user.id,
-      product_id: item.id,
-      quantity: item.quantity,
-      selected_color: item.selectedColor ?? null,
-      selected_storage: item.selectedStorage ?? null,
-      selected_condition: item.selectedCondition ?? null,
-    }, { onConflict: 'user_id,product_id,selected_color,selected_storage,selected_condition' });
+    try {
+      await writeCartItem(user.id, item as unknown as Record<string, unknown>);
+    } catch { /* keep the local cart */ }
   }, [session, user]);
 
   const deleteSupabaseItem = useCallback(async (productId: string) => {
     if (!session || !user || user.isGuest) return;
-    await supabase.from('cart_items').delete()
-      .eq('user_id', user.id)
-      .eq('product_id', productId);
+    try {
+      await deleteCartProduct(user.id, productId);
+    } catch { /* keep the local cart */ }
   }, [session, user]);
 
   // ── Public API ─────────────────────────────────────────────
@@ -148,6 +109,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     quantity = 1,
     opts: { color?: string; storage?: string; condition?: string } = {}
   ) => {
+    // Outside setItems on purpose: React runs the updater twice in StrictMode,
+    // which would double every count in development and make the numbers a
+    // liar exactly where they are easiest to trust.
+    trackAddToCart(product.id);
+
     setItems(prev => {
       const key = `${product.id}__${opts.color ?? ''}__${opts.storage ?? ''}__${opts.condition ?? ''}`;
       const existing = prev.find(i =>
@@ -196,7 +162,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clearCart = async () => {
     setItems([]);
     if (session && user && !user.isGuest) {
-      await supabase.from('cart_items').delete().eq('user_id', user.id);
+      try { await clearCartRemote(user.id); } catch { /* local cart already cleared */ }
     }
   };
 

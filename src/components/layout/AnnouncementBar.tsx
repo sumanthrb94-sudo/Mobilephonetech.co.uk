@@ -37,7 +37,7 @@ export default function AnnouncementBar() {
       role="status"
       aria-live="polite"
       style={{
-        background: '#0f172a',
+        background: 'var(--black)',
         height: '36px',
         fontSize: '12px',
         fontWeight: 600,

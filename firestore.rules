@@ -1,0 +1,220 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════
+// LeHart — Firestore security rules
+//
+// These are the authorization boundary. The React guard on /admin only hides
+// the console; everything below is what actually stops a non-admin writing.
+//
+// Admin is the `admin` custom claim on the ID token, set with the Admin SDK
+// (scripts/create-users.mjs). A claim cannot be written by the client, which
+// is why it is used rather than a role field on the user document — a field
+// the user can edit is not an authorization mechanism.
+//
+// Deploy:  firebase deploy --only firestore:rules
+// ═══════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // ── Products ────────────────────────────────────────────
+    // Public catalogue: anyone may read, only an admin may write.
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Users ───────────────────────────────────────────────
+    // A user reads and writes only their own document. `role` is explicitly
+    // immutable from the client: it is display-only, but letting someone set
+    // it to "admin" would be misleading at best and, if any future code ever
+    // trusted it, a privilege escalation.
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      allow create: if isSelf(uid)
+                    && (!request.resource.data.keys().hasAny(['role'])
+                        || request.resource.data.role == 'customer');
+      allow update: if isSelf(uid)
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+      allow delete: if false;
+
+      // Cart and wishlist are private to their owner. Admins are deliberately
+      // excluded — running the shop is no reason to read someone's basket.
+      match /cart/{itemId} {
+        allow read, write: if isSelf(uid);
+      }
+      match /wishlist/{productId} {
+        allow read, write: if isSelf(uid);
+      }
+    }
+
+    // ── Orders ──────────────────────────────────────────────
+    // Readable by the buyer or an admin. Created by the buyer at checkout, but
+    // never edited afterwards from the client: order status belongs to the
+    // back office, and a shopper must not be able to mark their own order paid.
+    match /orders/{orderId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.userId == request.auth.uid);
+
+      // No client creates. Prices used to come from the browser, so a crafted
+      // request could buy a £759 phone for a penny — the rules language has no
+      // loop with which to re-price a basket, so the order is built by
+      // /api/orders instead, which looks every price up in the catalogue.
+      // The Admin SDK bypasses these rules, so the route still works.
+      allow create: if false;
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // ── Reviews ─────────────────────────────────────────────
+    // Public to read. Only a signed-in user may post, and only under their own
+    // id — otherwise reviews could be attributed to anyone. `isVerified` is
+    // forced false on create so a reviewer cannot award themselves the badge.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if signedIn()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.rating is number
+                    && request.resource.data.rating >= 1
+                    && request.resource.data.rating <= 5
+                    && request.resource.data.isVerified == false;
+      // The create rule forces isVerified false, but an update that could set
+      // it true would hand every reviewer the Verified Purchase badge — the
+      // exact trust signal the badge exists to provide. Only staff may move it.
+      allow update: if isAdmin()
+                    || (signedIn()
+                        && resource.data.userId == request.auth.uid
+                        && request.resource.data.isVerified == resource.data.isVerified);
+      allow delete: if isAdmin();
+    }
+
+    // ── Trade-in quotes ─────────────────────────────────────
+    // Anyone may request a quote, including guests — the form is public and
+    // asks for an email rather than an account. Only staff can read them back:
+    // they contain contact details.
+    match /tradeInQuotes/{quoteId} {
+      allow create: if true;
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    // ── Newsletter ──────────────────────────────────────────
+    // Write-only from the client: subscribing is public, but the subscriber
+    // list is not — allowing reads would expose every address to anyone.
+    match /newsletterSubscribers/{email} {
+      // Writes were open to the world, so anyone could overwrite any
+      // subscriber's document — forging or destroying the consent record that
+      // makes the list lawfully mailable, or silently unsubscribing someone.
+      // Signup now goes through /api/newsletter, which rate-limits, validates
+      // and stamps evidenced consent, and writes with the Admin SDK.
+      allow create, update: if false;
+      allow read: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+
+    // ── Returns / RMA ───────────────────────────────────────
+    // A customer raises a return against their own order and can withdraw it
+    // while it is still untouched; everything after that belongs to staff.
+    // Letting a shopper move their own return to "resolved" would let them
+    // mark themselves refunded, so status transitions are admin-only.
+    match /returns/{rmaId} {
+      allow read: if isAdmin()
+                  || (signedIn() && resource.data.userId == request.auth.uid);
+
+      // Ownership of the referenced order is checked against the order itself,
+      // not taken on trust from the request: without this, anyone could raise a
+      // return — and claim a refund — against a stranger's order number.
+      // refundAmount is capped by what that order was actually worth.
+      allow create: if signedIn()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'requested'
+                    && request.resource.data.outcome in ['refund', 'replacement', 'repair']
+                    && request.resource.data.orderId is string
+                    && request.resource.data.items.size() > 0
+                    && request.resource.data.items.size() <= 20
+                    && exists(/databases/$(database)/documents/orders/$(request.resource.data.orderId))
+                    && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.userId == request.auth.uid
+                    && request.resource.data.refundAmount is number
+                    && request.resource.data.refundAmount >= 0
+                    && request.resource.data.refundAmount <= get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.total;
+
+      // The customer's only permitted edit is cancelling a request staff have
+      // not yet acted on.
+      allow update: if isAdmin()
+                    || (signedIn()
+                        && resource.data.userId == request.auth.uid
+                        && resource.data.status == 'requested'
+                        && request.resource.data.status == 'cancelled');
+
+      allow delete: if false;
+    }
+
+    // ── Support conversations ───────────────────────────────
+    // One thread per customer, keyed by uid, so a customer can only ever
+    // address the document that is their own id. Messages are append-only:
+    // a support thread is evidence of what was promised, and neither side
+    // gets to rewrite it after the fact.
+    match /conversations/{convId} {
+      allow read: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      allow create: if signedIn()
+                    && convId == request.auth.uid
+                    && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      allow delete: if isAdmin();
+
+      match /messages/{messageId} {
+        allow read: if isAdmin() || (signedIn() && convId == request.auth.uid);
+
+        // The sender field is the thing worth guarding: without this check a
+        // customer could post a message labelled as staff and manufacture a
+        // promise the shop never made.
+        allow create: if (isAdmin() && request.resource.data.sender == 'admin')
+                      || (signedIn()
+                          && convId == request.auth.uid
+                          && request.resource.data.sender == 'customer');
+
+        allow update, delete: if false;
+      }
+    }
+
+    // Per-unit stock: what each handset cost, who supplied it, when it
+    // arrived. Buy prices are commercially sensitive in a way the catalogue is
+    // not, so this is staff-read-only. Writes come from the Admin SDK — the
+    // import script and the order route — which bypasses rules entirely, so
+    // nothing here needs a client write path.
+    match /stockUnits/{imei} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Cookieless traffic counters, one document per day. Written only by
+    // api/_routes/track.ts through the Admin SDK: a client-writable counter is
+    // a counter anyone can inflate, and analytics you cannot trust are worse
+    // than none. Read is staff-only because traffic is not public.
+    match /analyticsDaily/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Anything not matched above is denied. Firestore already defaults to
+    // deny, but stating it means a new collection cannot be reached by
+    // accident before its rules are written.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

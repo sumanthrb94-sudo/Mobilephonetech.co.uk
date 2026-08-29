@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ArrowLeft, Pause, Play, ShieldCheck, Battery, RotateCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import CountUp from './ui/CountUp';
+import RevealText from './ui/RevealText';
 
 /**
  * Hero — BM spec Section 3
@@ -12,16 +14,16 @@ import { useBreakpoint } from '../hooks/useBreakpoint';
 
 const SLIDES = [
   {
-    eyebrow: 'MPM Certified · 30-point audit',
+    eyebrow: 'LeHart Certified · 30-point audit',
     headline: 'Flagship iPhones.\nAuthentic quality.',
     subline: 'Battery 85%+ guaranteed. 12-month warranty. Up to 70% less than new.',
     ctaLabel: 'Shop iPhones',
     ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-17-pro-max-orange.jpg',
     imageAlt: 'Certified iPhone 17 Pro Max',
-    gradientFrom: '#1e1b4b',
-    gradientTo: '#4338ca',
-    glowColor: 'rgba(139, 92, 246, 0.4)',
+    gradientFrom: '#0c0a09',
+    gradientTo: '#44403c',
+    glowColor: 'rgba(161, 98, 7, 0.45)',
     savings: 'Save up to £600',
   },
   {
@@ -32,9 +34,9 @@ const SLIDES = [
     ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy S24 Ultra',
-    gradientFrom: '#0c1445',
-    gradientTo: '#1e40af',
-    glowColor: 'rgba(59, 130, 246, 0.4)',
+    gradientFrom: '#1c1917',
+    gradientTo: '#57534e',
+    glowColor: 'rgba(168, 162, 158, 0.30)',
     savings: 'From £199',
   },
   {
@@ -45,9 +47,9 @@ const SLIDES = [
     ctaHref: '/products?brand=Google',
     image: '/assets/pixel-8-pro.png',
     imageAlt: 'Google Pixel 8 Pro',
-    gradientFrom: '#064e3b',
-    gradientTo: '#065f46',
-    glowColor: 'rgba(16, 185, 129, 0.4)',
+    gradientFrom: '#0c0a09',
+    gradientTo: '#3f3a35',
+    glowColor: 'rgba(202, 138, 4, 0.38)',
     savings: 'From £249',
   },
   {
@@ -59,12 +61,34 @@ const SLIDES = [
     image: '/assets/iphone-17-pro-max-trio.jpg',
     imageAlt: 'Trade in your phone',
     gradientFrom: '#1c1917',
-    gradientTo: '#44403c',
-    glowColor: 'rgba(217, 119, 6, 0.4)',
+    gradientTo: '#4b443c',
+    glowColor: 'rgba(161, 98, 7, 0.36)',
     savings: 'Best prices guaranteed',
   },
 ] as const;
 
+
+/**
+ * Slide savings read like "Save up to £600" or "From £199" — animate the
+ * figure and leave the words alone. Anything without a number ("Best prices
+ * guaranteed") renders as-is rather than being forced into a counter.
+ */
+function renderSavings(label: string, slideIndex: number) {
+  const match = /^(.*?)£([\d,]+)(.*)$/.exec(label);
+  if (!match) return label;
+
+  const [, before, digits, after] = match;
+  const value = parseInt(digits.replace(/,/g, ''), 10);
+  if (!Number.isFinite(value)) return label;
+
+  return (
+    <>
+      {before}
+      <CountUp key={`savings-${slideIndex}`} to={value} prefix="£" duration={1100} />
+      {after}
+    </>
+  );
+}
 
 export default function Hero() {
   const [current, setCurrent] = useState(0);
@@ -183,16 +207,20 @@ export default function Hero() {
                 {slide.eyebrow}
               </div>
 
-              <h1 style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 'clamp(36px, 5.2vw, 68px)',
-                fontWeight: 900,
-                letterSpacing: '-0.04em', lineHeight: 1.0,
-                color: '#ffffff',
-                marginBottom: 16, whiteSpace: 'pre-line',
-              }}>
+              <RevealText
+                as="h1"
+                key={`headline-${current}`}
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 'clamp(36px, 5.2vw, 68px)',
+                  fontWeight: 900,
+                  letterSpacing: '-0.04em', lineHeight: 1.0,
+                  color: '#ffffff',
+                  marginBottom: 16, whiteSpace: 'pre-line',
+                }}
+              >
                 {slide.headline}
-              </h1>
+              </RevealText>
 
               <p style={{
                 fontFamily: 'var(--font-body)', fontSize: '15px',
@@ -213,7 +241,7 @@ export default function Hero() {
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     height: 50, padding: '0 28px',
-                    background: '#ffffff', color: '#0f172a',
+                    background: '#ffffff', color: 'var(--black)',
                     fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800,
                     letterSpacing: '-0.01em', textDecoration: 'none',
                     borderRadius: '999px',
@@ -236,7 +264,7 @@ export default function Hero() {
                   fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
                   color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap',
                 }}>
-                  {slide.savings}
+                  {renderSavings(slide.savings, current)}
                 </span>
               </div>
 
@@ -267,8 +295,11 @@ export default function Hero() {
             <div
               style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
-                order: isDesktop ? 0 : -1,
-                height: isDesktop ? '360px' : '200px',
+                // On phones the copy leads and the shot follows. The image used
+                // to be ordered first, which pushed the headline and the primary
+                // CTA below the fold on a 390×644 viewport.
+                order: 0,
+                height: isDesktop ? '360px' : '168px',
                 width: '100%',
                 position: 'relative',
               }}
@@ -356,7 +387,7 @@ export default function Hero() {
               width: 36, height: 36, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
               background: 'rgba(255,255,255,0.95)', borderRadius: '50%', cursor: 'pointer',
-              border: 'none', color: '#0f172a',
+              border: 'none', color: 'var(--black)',
               boxShadow: '0 2px 12px rgba(0,0,0,0.30)',
             }}
           >

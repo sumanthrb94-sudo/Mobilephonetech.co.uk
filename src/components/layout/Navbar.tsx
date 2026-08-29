@@ -5,7 +5,7 @@ import {
   Search, Heart, User,
   HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2,
-  ShoppingCart
+  ShoppingCart, Boxes,
 } from 'lucide-react';
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +14,7 @@ import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import BrandMegaMenu from '../BrandMegaMenu';
 import TabletMegaMenu from '../TabletMegaMenu';
+import { useAdmin } from '../../hooks/useAdmin';
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -46,6 +47,7 @@ export default function Navbar(_: NavbarProps) {
 
   const { searchQuery, setSearchQuery } = useSearch();
   const { isAuthenticated } = useAuth();
+  const { isAdmin } = useAdmin();
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -190,11 +192,16 @@ export default function Navbar(_: NavbarProps) {
               <Menu size={22} style={{ color: '#374151' }} />
             </button>
 
-            {/* ── Logo: absolute-centred on mobile, left-aligned flex item on desktop ── */}
+            {/* ── Logo: a normal left-aligned flex item at every width.
+                 It used to be absolutely centred on mobile, which was fine
+                 while only the 30px glyph showed. Now that the wordmark is
+                 visible on phones too, centring floated it over the search
+                 button and swallowed the taps. As a flex item it reserves
+                 its own width and the action icons shuffle right. ── */}
             <Link
               to="/"
               id="navbar-logo"
-              className="navbar-logo flex items-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0"
+              className="navbar-logo flex items-center"
               style={{
                 textDecoration: 'none',
                 pointerEvents: 'auto',
@@ -204,18 +211,21 @@ export default function Navbar(_: NavbarProps) {
               <span className="navbar-logo-tile flex-shrink-0">
                 <RefreshCw className="navbar-logo-icon" color="white" strokeWidth={2.5} />
               </span>
+              {/* Wordmark shows at every width: hiding it below 640px left
+                  phones with a bare glyph and no brand name at all. The CSS
+                  scales it down so it still clears the header icons. */}
               <span
-                className="navbar-logo-wordmark hidden sm:inline"
+                className="navbar-logo-wordmark"
                 style={{
                   fontFamily: 'var(--font-sans)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em',
-                  color: '#0f172a',
+                  color: 'var(--black)',
                   lineHeight: 1,
                   whiteSpace: 'nowrap',
                 }}
               >
-                mobilephonemarket
+                Le<span style={{ color: 'var(--brand-cyan)' }}>Hart</span>
               </span>
             </Link>
 
@@ -337,6 +347,26 @@ export default function Navbar(_: NavbarProps) {
                           Help & Support
                         </span>
                       </button>
+
+                      {isAdmin && (
+                        <Link
+                          to="/admin/inventory"
+                          onClick={() => setIsAccountOpen(false)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '12px',
+                            width: '100%', padding: '12px 16px',
+                            background: 'var(--color-brand-subtle)',
+                            border: 'none', cursor: 'pointer', textAlign: 'left',
+                            borderTop: '1px solid var(--grey-10)',
+                            textDecoration: 'none',
+                          }}
+                        >
+                          <Boxes size={18} style={{ color: 'var(--brand-cyan-hover)' }} />
+                          <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>
+                            Admin
+                          </span>
+                        </Link>
+                      )}
 
                       {isAuthenticated ? (
                         <Link
@@ -643,8 +673,8 @@ export default function Navbar(_: NavbarProps) {
                 className="flex items-center justify-between px-5 py-4"
                 style={{ borderBottom: '1px solid var(--grey-10)', height: '64px' }}
               >
-                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: '#0f172a' }}>
-                  mobile<span style={{ color: 'var(--brand-cyan)' }}>phonemarket</span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 900, fontSize: '18px', letterSpacing: '-0.04em', color: 'var(--black)' }}>
+                  Le<span style={{ color: 'var(--brand-cyan)' }}>Hart</span>
                   <span style={{ color: 'var(--grey-40)', fontWeight: 400, fontSize: '13px' }}>.co.uk</span>
                 </span>
                 <button
@@ -703,6 +733,16 @@ export default function Navbar(_: NavbarProps) {
 
               {/* Auth */}
               <div className="p-4" style={{ borderTop: '1px solid var(--grey-10)' }}>
+                {isAdmin && (
+                  <Link
+                    to="/admin/inventory"
+                    onClick={() => setIsMobileOpen(false)}
+                    className="btn btn-secondary btn-md btn-full"
+                    style={{ textDecoration: 'none', marginBottom: 10 }}
+                  >
+                    <Boxes size={16} /> Admin
+                  </Link>
+                )}
                 {isAuthenticated ? (
                   <Link
                     to="/account"

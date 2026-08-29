@@ -5,10 +5,11 @@
 //
 // Screenshots land in e2e/screenshots. Exits non-zero on any FAIL.
 import { chromium, devices } from 'playwright';
+import { resolveChromium } from './chromium-path.mjs';
 
 const BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
-// Set E2E_CHROMIUM to reuse a preinstalled Chromium instead of Playwright's download.
-const EXE  = process.env.E2E_CHROMIUM || undefined;
+// Set E2E_CHROMIUM to pin a specific binary; otherwise the preinstalled one is found.
+const EXE  = resolveChromium();
 const OUT  = process.env.E2E_SHOTS || 'e2e/screenshots';
 
 const results = [];

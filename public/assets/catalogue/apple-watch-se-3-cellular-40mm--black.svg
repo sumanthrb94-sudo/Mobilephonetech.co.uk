@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" width="1200" height="1200" role="img" aria-label="Apple Watch SE 3 Cellular">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBFBF9"/><stop offset="1" stop-color="#EFF0EC"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1C1C1E"/>
+      <stop offset="1" stop-color="#1C1C1E" stop-opacity="0.82"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1200" fill="url(#bg)"/>
+  <ellipse cx="600" cy="626" rx="126" ry="16" fill="#000" opacity="0.07"/>
+  <rect x="450" y="250" width="300" height="350" rx="70" fill="url(#body)" stroke="rgba(255,255,255,0.16)" stroke-width="3"/>
+  <rect x="466" y="266" width="268" height="318" rx="58" fill="#0A0A0A" opacity="0.30"/>
+  
+  <text x="600" y="150" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="46" font-weight="600" fill="#1D1D1F">Apple</text>
+  <text x="600" y="205" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="34" fill="#5A6169">Watch SE 3 Cellular</text>
+  <text x="600" y="684" text-anchor="middle" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="26" letter-spacing="3" fill="#79817F">BLACK</text>
+</svg>

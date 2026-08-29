@@ -1,0 +1,702 @@
+<title>LeHart Launch Readiness</title>
+
+<style>
+  :root {
+    --paper:        #F2F3EF;
+    --surface:      #FBFBF9;
+    --surface-sunk: #EAEBE5;
+    --ink:          #15181A;
+    --ink-2:        #4A5158;
+    --ink-3:        #79817F;
+    --rule:         #DDE0D9;
+    --rule-strong:  #C2C7BC;
+    --accent:       #0E5259;
+    --accent-soft:  #E0EAE8;
+    --blocker:      #9C3623;
+    --blocker-soft: #F6E7E3;
+    --warn:         #7E5C0E;
+    --warn-soft:    #F4EEDC;
+    --ok:           #3B6742;
+    --ok-soft:      #E4EDE3;
+
+    --display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+
+    --measure: 40rem;
+    --wide: 68rem;
+  }
+
+  :root:not([data-theme="light"]) {
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:        #111413;
+      --surface:      #191D1C;
+      --surface-sunk: #0C0F0E;
+      --ink:          #E9EBE6;
+      --ink-2:        #A7AFAB;
+      --ink-3:        #7B8480;
+      --rule:         #2A2F2D;
+      --rule-strong:  #3D4441;
+      --accent:       #5FB3B3;
+      --accent-soft:  #14302F;
+      --blocker:      #E08872;
+      --blocker-soft: #331F1A;
+      --warn:         #D6B063;
+      --warn-soft:    #2C2617;
+      --ok:           #7FB587;
+      --ok-soft:      #1A2A1D;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:        #111413;
+    --surface:      #191D1C;
+    --surface-sunk: #0C0F0E;
+    --ink:          #E9EBE6;
+    --ink-2:        #A7AFAB;
+    --ink-3:        #7B8480;
+    --rule:         #2A2F2D;
+    --rule-strong:  #3D4441;
+    --accent:       #5FB3B3;
+    --accent-soft:  #14302F;
+    --blocker:      #E08872;
+    --blocker-soft: #331F1A;
+    --warn:         #D6B063;
+    --warn-soft:    #2C2617;
+    --ok:           #7FB587;
+    --ok-soft:      #1A2A1D;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 1.5rem 6rem;
+  }
+
+  .wrap {
+    max-width: var(--wide);
+    margin: 0 auto;
+  }
+
+  .col {
+    max-width: var(--measure);
+  }
+
+  /* ── Masthead ───────────────────────────────── */
+
+  .masthead {
+    padding: 4.5rem 0 2.25rem;
+    border-bottom: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    line-height: 1.04;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin: 0;
+  }
+
+  .standfirst {
+    font-family: var(--display);
+    font-size: clamp(1.1rem, 2.4vw, 1.3rem);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 34rem;
+    margin: 0;
+  }
+
+  .meta {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+    margin: 0;
+  }
+
+  /* ── Sections ───────────────────────────────── */
+
+  section {
+    padding: 3.5rem 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: clamp(1.5rem, 3.4vw, 2rem);
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    margin: 0;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  /* The masthead already closes with a rule; a second one directly under it
+     reads as an accident rather than a section break. */
+  .masthead + section h2 {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  h3 {
+    font-family: var(--body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin: 0.6rem 0 0;
+  }
+
+  p { margin: 0; max-width: var(--measure); }
+
+  a {
+    color: var(--accent);
+    text-underline-offset: 0.15em;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  strong { font-weight: 650; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 0.05em 0.32em;
+  }
+
+  ul { margin: 0; padding-left: 1.15rem; max-width: var(--measure); }
+  li { margin-bottom: 0.45rem; }
+  li::marker { color: var(--ink-3); }
+
+  /* ── Verdict ────────────────────────────────── */
+
+  .verdict {
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-left: 3px solid var(--accent);
+    padding: 1.6rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    max-width: 46rem;
+  }
+
+  .verdict p:first-of-type {
+    font-family: var(--display);
+    font-size: 1.35rem;
+    line-height: 1.38;
+    letter-spacing: -0.01em;
+  }
+
+  .verdict p { max-width: none; }
+
+  /* ── Audit list ─────────────────────────────── */
+
+  .audit {
+    display: grid;
+    gap: 0;
+    max-width: 46rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .audit-item {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.35rem 1.25rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: baseline;
+  }
+
+  .audit-item p { max-width: none; font-size: 0.95rem; color: var(--ink-2); }
+  .audit-item h3 { margin: 0; grid-column: 2; }
+  .audit-item .chip { grid-row: 1; grid-column: 1; }
+  .audit-item p { grid-column: 2; }
+
+  @media (max-width: 34rem) {
+    .audit-item { grid-template-columns: 1fr; }
+    .audit-item h3, .audit-item p, .audit-item .chip { grid-column: 1; }
+    .audit-item .chip { grid-row: auto; justify-self: start; }
+  }
+
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.24em 0.55em;
+    border-radius: 3px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+
+  .chip-live    { background: var(--ok-soft);      color: var(--ok);      border-color: var(--ok); }
+  .chip-demo    { background: var(--blocker-soft); color: var(--blocker); border-color: var(--blocker); }
+  .chip-missing { background: var(--warn-soft);    color: var(--warn);    border-color: var(--warn); }
+
+  /* ── Matrix table ───────────────────────────── */
+
+  .scroller {
+    overflow-x: auto;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 46rem;
+    font-size: 0.9rem;
+  }
+
+  thead th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.63rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    font-weight: 400;
+    padding: 0.8rem 1rem;
+    background: var(--surface-sunk);
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-2);
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.area {
+    font-weight: 650;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  td.pick { color: var(--ink); }
+
+  .sub {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--ink-3);
+    margin-top: 0.15rem;
+  }
+
+  /* ── Options ────────────────────────────────── */
+
+  .options {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    max-width: var(--wide);
+  }
+
+  .option {
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    padding: 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .option.picked { border-color: var(--accent); border-width: 2px; }
+
+  .option h3 { margin: 0; }
+  .option p { font-size: 0.9rem; color: var(--ink-2); max-width: none; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* ── Sequence (a genuine order) ─────────────── */
+
+  .phases { display: flex; flex-direction: column; gap: 0; max-width: 46rem; border-top: 1px solid var(--rule); }
+
+  .phase {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr;
+    gap: 0.3rem 1rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .phase-n {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+    grid-row: 1 / span 3;
+    padding-top: 0.1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .phase h3 { margin: 0; }
+  .phase p { font-size: 0.92rem; color: var(--ink-2); max-width: none; }
+  .phase ul { font-size: 0.92rem; color: var(--ink-2); max-width: none; }
+
+  .phase-when {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  /* ── Caveat ─────────────────────────────────── */
+
+  .caveat {
+    margin-top: 3.5rem;
+    padding: 1.35rem 1.5rem;
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    max-width: 46rem;
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .caveat p { max-width: none; }
+  .caveat .eyebrow { color: var(--warn); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Production readiness</p>
+    <h1>LeHart Launch Readiness</h1>
+    <p class="standfirst">What still stands between the current build and taking real money from a real customer — and whether starting again in .NET would help.</p>
+    <p class="meta">
+      <span>Reviewed against branch <code>claude/lehart-redesign</code></span>
+      <span>UK direct-to-consumer, refurbished handsets</span>
+    </p>
+  </header>
+
+  <section>
+    <h2>The short answer on .NET</h2>
+
+    <div class="verdict">
+      <p>Don't rewrite. A rewrite changes the language of the part that already works and doesn't touch the part that's missing.</p>
+      <p>Nearly everything standing between you and launch is a payment provider, a tax decision, a data-model change, or a legal obligation. None of it is caused by React or Firebase, and none of it gets easier in C#. You'd spend three to six months arriving back where you are now, minus the momentum.</p>
+      <p>There <em>is</em> a real technical change worth making — but it's targeted, not total. See <a href="#fork">the fork</a>.</p>
+    </div>
+
+    <h3>The one case where .NET is the right call</h3>
+    <p>Pick the language of whoever maintains this for the next three years. If that's you, and .NET is where you're fast and confident, then build the <strong>commerce API</strong> in .NET and let the existing React storefront call it. You don't have to choose between them — a storefront and a transactional backend are separate services that talk over HTTP.</p>
+    <p>Rewrite the front end only if you genuinely can't read or hire for it. Not because it feels less serious than a compiled language.</p>
+  </section>
+
+  <section>
+    <h2>Live status</h2>
+    <p>Checked directly against the deployment, not inferred.</p>
+
+    <div class="audit">
+      <div class="audit-item">
+        <span class="chip chip-live">Up</span>
+        <h3>The site is deployed and healthy</h3>
+        <p>Production is served from <code>mobilephonetech-co-uk.vercel.app</code> on Node 24. Firebase is connected, the service account is configured, auth is reachable and has users. No runtime errors in the last seven days.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-demo">Broken</span>
+        <h3>The production database has no products in it</h3>
+        <p><code>/api/health</code> reports <code>productRows: 0</code> and <code>/api/products</code> returns an empty list. The catalogue seed was never run.</p>
+        <p>The shop still looks full, which is why this has gone unnoticed: the storefront falls back to the catalogue bundled into the JavaScript when Firestore returns nothing. So <strong>every shopper is browsing a hardcoded list, while the admin console manages an empty database</strong>. Stock edits, price changes and new products cannot reach customers, because customers are not reading from the database at all.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-missing">Not attached</span>
+        <h3>lehart.co.uk does not point anywhere</h3>
+        <p>The domain is set as the canonical URL throughout the code and in the sitemap, but it is not attached to the Vercel project. Every canonical tag, Open Graph URL and sitemap entry currently advertises an address that does not resolve — which also means search engines are being pointed at a dead domain.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>What's actually built</h2>
+    <p>This matters more than the stack question, because it's the thing that decides your timeline. I went through the code rather than going from memory.</p>
+
+    <div class="audit">
+      <div class="audit-item">
+        <span class="chip chip-live">Working</span>
+        <h3>Catalogue, search, accounts, admin</h3>
+        <p>133 products in Firestore with a working search index, filtering, Firebase auth including Google sign-in, and an inventory console with image upload, stock editing and delete. Cart, wishlist and order records all persist. Trade-in quotes, coupons, delivery estimates and reviews have real endpoints.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-demo">Demo only</span>
+        <h3>Payments — there is no payment processing</h3>
+        <p>Checkout takes a card number in an ordinary text input and fabricates the last four digits. No processor, no authorisation, no money moves. It's a convincing walkthrough, not a till. <strong>The raw card field must be deleted before this site is ever public</strong> — accepting a card number into your own form puts you in a PCI scope you do not want and cannot satisfy.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-demo">Demo only</span>
+        <h3>Returns, express pay, tax</h3>
+        <p>The returns flow shows a three-step modal and then a success message — no record is created, nothing reaches an inbox. Apple Pay, Google Pay and PayPal buttons are visual. Every order is written with <code>tax: 0</code>.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-demo">Demo only</span>
+        <h3>Newsletter</h3>
+        <p>Signups write an email address into Firestore. There's no email platform behind it, no double opt-in, and no unsubscribe route — so as it stands you have a list you can't legally or practically send to.</p>
+      </div>
+
+      <div class="audit-item">
+        <span class="chip chip-missing">Structural</span>
+        <h3>The inventory model is for new goods, not used ones</h3>
+        <p>A product carries one grade, one battery health and a <code>stock</code> count. That describes a shelf of identical boxes. You sell serialised items: this specific handset, this IMEI, this battery health, bought for this much, warranty starting on this date. Until stock is per-unit you can't run the VAT margin scheme, can't answer "which handset did we send them", and can't price by real condition. <strong>This is the deepest gap in the build, and it's a data-model problem — a rewrite in any language reproduces it unless you change the model.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="fork">
+    <h2>The fork that actually matters</h2>
+    <p>Not React versus .NET. <strong>Build the commerce core, or buy it.</strong> Carts, tax, refunds, SCA and PCI scope are a solved commodity problem that is genuinely hard to get right and carries real liability when you get it wrong.</p>
+
+    <div class="options">
+      <div class="option">
+        <span class="tag">Option A</span>
+        <h3>Keep it custom</h3>
+        <p>Add Stripe, move orders to Postgres, build returns and refunds yourself. Total control and no platform fees, but every edge case, every compliance change and every 3am bug is yours.</p>
+        <p><strong>Fits if</strong> the shop's whole appeal is something no platform can express, and you have developer time indefinitely.</p>
+      </div>
+
+      <div class="option picked">
+        <span class="tag">Option B — recommended</span>
+        <h3>Buy the till, build the differentiator</h3>
+        <p>Put the transactional core on Shopify. Payments, tax, refunds, PCI scope, staff admin and order management arrive solved on day one. Keep this React storefront in front of it via the Storefront API, or use it as the marketing site.</p>
+        <p>You then spend your build effort where you're actually different: grading, per-IMEI stock, trade-in, warranty.</p>
+        <p><strong>Honest caveat:</strong> Shopify's stock model is SKU-based too, so serialised inventory still needs custom work — but that's a far smaller gap than building payments and refunds from nothing.</p>
+      </div>
+
+      <div class="option">
+        <span class="tag">Option C</span>
+        <h3>WooCommerce</h3>
+        <p>Cheaper than Shopify and more open, at the cost of hosting, patching and security being your problem. A reasonable middle path if you already run WordPress; otherwise it trades a monthly fee for ongoing maintenance.</p>
+      </div>
+    </div>
+
+    <p>My recommendation is <strong>B</strong> unless you have a specific reason against it. The fastest safe route to taking real money is a system that already knows how to take money.</p>
+  </section>
+
+  <section>
+    <h2>What you need to buy or build</h2>
+    <p>Vendors below are picks, not a survey. Prices move — treat them as orientation and check current rates before committing.</p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Area</th>
+            <th scope="col">Pick</th>
+            <th scope="col">Why, and what to watch</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="area">Payments</td>
+            <td class="pick">Stripe<span class="sub">Adyen at real volume</span></td>
+            <td>UK entity, 3D Secure and SCA handled for you, Apple&nbsp;/&nbsp;Google Pay, Klarna and Clearpay resold through one integration, and a refunds API you'll lean on constantly. Using Stripe's hosted fields keeps you in the lightest PCI bracket. <strong>Watch:</strong> refurbished electronics is a high-chargeback category — expect underwriting questions and possibly a rolling reserve.</td>
+          </tr>
+          <tr>
+            <td class="area">Email marketing</td>
+            <td class="pick">Brevo<span class="sub">Klaviyo if flows matter more than cost</span></td>
+            <td>Brevo is already connected to this workspace, is EU-based which simplifies your GDPR paperwork, and covers marketing, transactional and SMS in one account. Klaviyo has better ecommerce segmentation and abandoned-basket flows for meaningfully more money.</td>
+          </tr>
+          <tr>
+            <td class="area">Transactional email</td>
+            <td class="pick">Brevo, or Postmark<span class="sub">order, dispatch, refund receipts</span></td>
+            <td>Keep receipts separate from marketing in your own head even if one vendor sends both — a receipt that lands in spam becomes a support ticket. Postmark exists specifically because transactional deliverability is a different discipline. Either way: SPF, DKIM and DMARC on <code>lehart.co.uk</code> before your first send.</td>
+          </tr>
+          <tr>
+            <td class="area">SMS</td>
+            <td class="pick">Twilio or Brevo SMS</td>
+            <td>Dispatch and delivery texts cut "where is my order" contacts sharply. <strong>Watch:</strong> UK networks now filter alphanumeric sender IDs that aren't registered on the UK Sender ID protection registry — register "LeHart" before you rely on it. Order updates and marketing texts also sit on different consent bases; don't blur them.</td>
+          </tr>
+          <tr>
+            <td class="area">Phone number</td>
+            <td class="pick">An 03 number<span class="sub">via Twilio or a business VoIP</span></td>
+            <td>03 numbers cost callers the same as a landline and count as basic rate, which is what consumer law expects for post-sale support. Avoid 084 and 087 entirely. Validate customer mobiles as <code>+44 7…</code> at entry — a mistyped number is a failed delivery.</td>
+          </tr>
+          <tr>
+            <td class="area">Shipping</td>
+            <td class="pick">Royal Mail Click &amp; Drop API<span class="sub">DPD or Evri for tracked volume</span></td>
+            <td>Phones ship with lithium batteries installed, which is a declared dangerous-goods category with packaging rules and air restrictions. Your carrier account must be set up for it. Insure to value and use signed-for — high-value small parcels are the most stolen thing in the network.</td>
+          </tr>
+          <tr>
+            <td class="area">Returns &amp; refunds</td>
+            <td class="pick">Build on your order records<span class="sub">plus a tracked returns label</span></td>
+            <td>The dedicated platforms (Loop, ReBOUND) mostly assume Shopify, which is another point for Option B. At your size the essentials are: a return record with a reason and a state, a prepaid tracked label, an inspection step, and a refund fired through the payment provider against the original charge.</td>
+          </tr>
+          <tr>
+            <td class="area">Stolen-device checks</td>
+            <td class="pick">CheckMEND</td>
+            <td>Non-negotiable if you buy trade-ins. Selling a blocked or stolen handset costs you the sale, the stock and the reputation, and the checks are cheap per unit. Record the check result against the IMEI so you can prove you did it.</td>
+          </tr>
+          <tr>
+            <td class="area">Accounting</td>
+            <td class="pick">Xero or QuickBooks<span class="sub">check margin-scheme support first</span></td>
+            <td>Second-hand VAT is unusual enough that it's a genuine selection criterion, not a detail. Ask the question during the trial, not after your first quarter.</td>
+          </tr>
+          <tr>
+            <td class="area">Fraud</td>
+            <td class="pick">Stripe Radar</td>
+            <td>Refurbished phones are among the most targeted categories online. Baseline: address verification on, extra scrutiny where billing and delivery differ on a first order, and record the dispatched IMEI so you can evidence exactly what you sent when a chargeback lands.</td>
+          </tr>
+          <tr>
+            <td class="area">Support</td>
+            <td class="pick">Crisp or Freshdesk<span class="sub">Gorgias if you go Shopify</span></td>
+            <td>One shared inbox with order context attached. The thing that scales badly is answering support from a personal email account, and it scales badly sooner than you'd expect.</td>
+          </tr>
+          <tr>
+            <td class="area">Analytics</td>
+            <td class="pick">GA4 plus your payment data</td>
+            <td>Treat the payment provider as the source of truth for revenue and the analytics tool as the source of truth for behaviour. They will disagree; that's normal, and reconciling them to the penny is wasted effort.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>UK obligations that bite</h2>
+    <p>These are the ones that catch people running this exact kind of shop. Several change what the software has to store, which is why they belong in a build plan and not only in a folder at your accountant's.</p>
+
+    <h3>The VAT margin scheme is the big one</h3>
+    <p>For second-hand goods you can account for VAT on your <em>margin</em> rather than the full sale price, which on refurbished stock is a large cash difference. The conditions shape your database: you must keep a stock book recording purchase price and sale price <strong>per individual item</strong>, and your invoices must not show VAT as a separate line. That's the second independent reason your inventory has to be per-IMEI rather than a stock count.</p>
+
+    <h3>Returns are two overlapping rights, not one</h3>
+    <ul>
+      <li><strong>Distance selling.</strong> Customers can cancel within 14 days of delivery for any reason at all, and you refund within 14 days of getting the goods back.</li>
+      <li><strong>Faulty goods.</strong> A separate short-term right to reject in the first 30 days, then repair or replacement — and for the first six months the burden is on you to show a fault wasn't there at delivery.</li>
+    </ul>
+    <p>Refurbished stock generates far more faulty-goods claims than new stock, so build the returns flow around inspection and outcome, not just "money back".</p>
+
+    <h3>Also on the list</h3>
+    <ul>
+      <li><strong>Total price up front.</strong> Recent consumer law bans drip pricing — mandatory charges have to be in the headline price, not revealed at checkout.</li>
+      <li><strong>Reviews must be genuine.</strong> Fake or incentivised-without-disclosure reviews are now explicitly prohibited, with real penalties.</li>
+      <li><strong>Electrical and battery waste.</strong> Selling electricals brings take-back obligations for old equipment and for batteries. Small, boring, enforced.</li>
+      <li><strong>Data protection.</strong> ICO registration and annual fee, a privacy notice that matches what you actually do, and a written processor agreement with each vendor above.</li>
+      <li><strong>Email consent.</strong> Marketing needs consent or a narrow existing-customer exemption; every send carries an unsubscribe; keep proof of when and how each address was collected. Your current Firestore list has none of this attached to it.</li>
+      <li><strong>Insurance.</strong> Product liability plus stock cover. Also check whether your council requires second-hand dealer registration — it varies.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Sequence</h2>
+    <p>In dependency order — each phase is only sensible once the one above it is done. Durations assume one experienced developer and are rough.</p>
+
+    <div class="phases">
+      <div class="phase">
+        <span class="phase-n">01</span>
+        <span class="phase-when">Before a single real order · 4–8 weeks</span>
+        <h3>Be able to take money, safely</h3>
+        <ul>
+          <li>Delete the raw card field. First, before anything else.</li>
+          <li>Real payments through a provider's hosted fields, with SCA.</li>
+          <li>Decide build-versus-buy — everything downstream depends on it.</li>
+          <li>Per-item inventory with IMEI, so stock, VAT and warranty all have something to hang on.</li>
+          <li>An order that has real states, and a refund path that can reverse a real charge.</li>
+          <li>Order and dispatch emails that actually send.</li>
+          <li>Terms, returns policy and privacy notice that describe what the software does.</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <span class="phase-n">02</span>
+        <span class="phase-when">Before volume · 3–5 weeks</span>
+        <h3>Be able to run the shop</h3>
+        <ul>
+          <li>Returns that create a record with a reason, an inspection and an outcome.</li>
+          <li>Shipping labels generated from the order, with tracking sent to the customer.</li>
+          <li>IMEI recorded at dispatch — your evidence in every dispute.</li>
+          <li>Stolen-device checks wired into trade-in intake.</li>
+          <li>A shared support inbox.</li>
+          <li>Margin-scheme stock book feeding your accounts.</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <span class="phase-n">03</span>
+        <span class="phase-when">Once orders are steady · ongoing</span>
+        <h3>Grow demand</h3>
+        <ul>
+          <li>Email platform with double opt-in, replacing the raw Firestore list.</li>
+          <li>Abandoned basket, post-purchase and trade-in follow-up sequences.</li>
+          <li>Dispatch and delivery SMS.</li>
+          <li>Genuine review collection, after delivery.</li>
+          <li>Analytics you actually read, and paid acquisition once the margin supports it.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>How far this scales</h2>
+    <p>Further than the business will need for a long time. Vercel and Firestore will serve thousands of orders a month without strain, and hosting will cost tens of pounds, not hundreds. The technical ceiling isn't what limits this shop.</p>
+    <p>What limits it is working capital to buy stock, capacity to process returns, someone to answer the phone, and reputation. Those are the constraints worth planning against.</p>
+    <p>Two things <em>do</em> break before the traffic does, and both are database-shaped rather than language-shaped:</p>
+    <ul>
+      <li><strong>Money doesn't belong in Firestore.</strong> Orders, refunds, VAT records and stock ledgers want transactions, joins and ad-hoc queries you can hand an accountant. Firestore gives you none of those. This is the one genuine argument for changing technology — and the change is "put the transactional core on Postgres or a commerce platform", not "rewrite the site".</li>
+      <li><strong>Reporting.</strong> The first time someone asks "what was our average margin on Samsung stock last quarter" you will want SQL.</li>
+    </ul>
+    <p>If you'd enjoy writing that transactional core in .NET, that's a perfectly good reason to write it in .NET. Just build it as a service the existing storefront calls, rather than as a reason to throw away work that already passes its tests.</p>
+  </section>
+
+  <div class="caveat">
+    <p class="eyebrow">Before you act on this</p>
+    <p>The tax, consumer-law and licensing points above are orientation — enough to know what to ask about, not a substitute for asking. Take the VAT margin scheme and your returns obligations to an accountant and a solicitor before launch, and confirm current thresholds, fees and provider rates directly with the source. They move, and I'd rather you check than take my word for a number.</p>
+  </div>
+
+</div>

@@ -52,7 +52,7 @@ export default function AIAssistant() {
       );
 
       const prompt = `
-        You are the Shopping Assistant for "MobilePhoneMarket", a global retail store for refurbished mobile technology.
+        You are the Shopping Assistant for "LeHart", a global retail store for refurbished mobile technology.
         Your goal is to help users navigate our catalog of smartphones, chargers, and accessories.
 
         CATALOG HIGHLIGHTS (OUR INVENTORY):

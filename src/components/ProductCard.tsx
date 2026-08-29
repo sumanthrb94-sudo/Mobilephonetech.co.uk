@@ -141,15 +141,23 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             : '0 1px 4px rgba(0,0,0,0.05)',
         }}
       >
-        {/* ── Image zone ── */}
+        {/* ── Image zone ──
+            White, not a dark panel. Catalogue photography is shot on white,
+            so a dark background produced a visible white square floating
+            inside a dark box inside the white card — three nested boxes for
+            one product. Amazon and Back Market both put the shot straight
+            onto the card, and a hairline is enough to separate it from the
+            details below. Less padding too: the dark box was doing the
+            framing, so the product itself can now be bigger. */}
         <div style={{
           position: 'relative',
-          background: '#111827',
+          background: 'var(--grey-0)',
+          borderBottom: '1px solid var(--grey-10)',
           aspectRatio: '1 / 1',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '32px',
+          padding: '18px',
           overflow: 'hidden',
         }}>
           <ProductImage
@@ -168,6 +176,9 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               position: 'absolute', top: 12, left: 12,
               display: 'inline-flex', alignItems: 'center', gap: 4,
               background: GRADE_BG[phone.grade],
+              // The tints are pale by design; on white they need an outline
+              // or the badge disappears into the card.
+              border: `1px solid ${GRADE_DOT[phone.grade]}33`,
               padding: '4px 9px', borderRadius: '999px',
               fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
               letterSpacing: '0.06em', textTransform: 'uppercase',
@@ -202,11 +213,10 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               position: 'absolute', top: 10, right: 10,
               width: 34, height: 34,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.92)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: 'var(--grey-0)',
+              border: '1px solid var(--grey-20)',
               borderRadius: '50%', cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              boxShadow: '0 1px 3px rgba(12,10,9,0.10)',
             }}
           >
             <Heart

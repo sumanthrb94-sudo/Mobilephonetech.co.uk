@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ShieldCheck, Mail, MapPin } from 'lucide-react';
+import { COMPANY } from '../../config/company';
 
 export default function PrivacyPolicy() {
   useEffect(() => {
@@ -37,10 +38,21 @@ export default function PrivacyPolicy() {
           <section>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>1. Introduction</h2>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6, marginBottom: '12px' }}>
-              At MobilePhoneMarket.co.uk ("we", "our", or "us"), we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.
+              At LeHart.co.uk ("we", "our", or "us"), we respect your privacy and are committed to protecting your personal data. This privacy policy will inform you as to how we look after your personal data when you visit our website (regardless of where you visit it from) and tell you about your privacy rights and how the law protects you.
             </p>
+            {/* Rendered only when the real reference is set in src/config/company.ts —
+                publishing an invented ICO number is a false statement, not a placeholder. */}
+            {COMPANY.icoRegistration && (
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
+                We are registered with the Information Commissioner's Office (ICO) under registration number: <strong>{COMPANY.icoRegistration}</strong>.
+              </p>
+            )}
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
-              We are registered with the Information Commissioner's Office (ICO) under registration number: <strong>ZA123456</strong> (Mock Registration).
+              The services that process personal data on our behalf are: <strong>Google Firebase</strong> (accounts,
+              sign-in and our database, including Google sign-in), <strong>Vercel</strong> (website hosting), and our
+              payment provider once checkout goes live — card details are entered on the payment provider's secure
+              page and never touch this site. If we introduce an email service for order confirmations or marketing,
+              it will be named here before it receives any personal data.
             </p>
           </section>
 
@@ -95,11 +107,11 @@ export default function PrivacyPolicy() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Mail size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>dpo@mobilephonemarket.co.uk</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>dpo@lehart.co.uk</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <MapPin size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>MobilePhoneMarket Ltd, 124 Tech Hub, London, EC1A 1BB, United Kingdom</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>LeHart Ltd, 124 Tech Hub, London, EC1A 1BB, United Kingdom</span>
               </div>
             </div>
           </section>

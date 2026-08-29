@@ -1,12 +1,75 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Mail, Lock, User, ArrowRight, Loader2 } from 'lucide-react';
+import { X, Mail, Lock, User, ArrowRight, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Spinner } from './ui/Loading';
 import { useAuth } from '../context/AuthContext';
+import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginIdentifier';
+import {
+  describePhoneProblem, formatPhoneForDisplay,
+  COUNTRIES, DEFAULT_COUNTRY_ISO, countryForIso,
+} from '../utils/phoneNumber';
 
 /**
  * AuthModal — centred floating modal for sign-in / sign-up.
  * Uses the app's cyan primary and shared design tokens.
  */
+
+type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify' | 'add-email';
+
+/** Where the invisible reCAPTCHA mounts. Firebase needs a real element id. */
+const RECAPTCHA_ID = 'auth-recaptcha-container';
+
+/**
+ * A Firebase auth error code turned into something a customer can act on.
+ *
+ * Module-level and shared on purpose. The "add your mobile" step on the verify
+ * screen used to catch its own errors and collapse every one of them into
+ * "Could not send the code. Check the number and try again." — which told a
+ * customer to re-check a number that was fine, while hiding an unenabled
+ * provider, a blocked country, an exhausted daily SMS allowance and a failed
+ * reCAPTCHA behind the same sentence. Being told the wrong cause is worse than
+ * being told a raw error code.
+ */
+export function describeAuthError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? '';
+  const msg = (err as { message?: string })?.message ?? '';
+
+  switch (code) {
+    case 'auth/invalid-verification-code':
+      return 'That code is not right. Check the message and try again.';
+    case 'auth/code-expired':
+      return 'That code has expired. Go back and request a new one.';
+    case 'auth/invalid-phone-number':
+    case 'app/invalid-phone':
+      return 'That does not look like a valid mobile number.';
+    case 'auth/credential-already-in-use':
+    case 'auth/account-exists-with-different-credential':
+      // Linking a number that already belongs to a different account. The
+      // alternative — silently switching them to that other account — would
+      // be worse: it looks like their data vanished.
+      return 'That mobile number is already on another account. Sign in with that account, or use a different number.';
+    case 'auth/provider-already-linked':
+      return 'This account already has a mobile number.';
+    case 'auth/captcha-check-failed':
+    case 'auth/invalid-app-credential':
+      return 'The security check failed. Reload the page and try again.';
+    case 'auth/operation-not-allowed':
+      return 'Mobile sign-in is not switched on for this site yet.';
+    case 'auth/quota-exceeded':
+      return 'The daily limit for text messages has been reached. Please try again tomorrow, or use email.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Wait a few minutes and try again.';
+    case 'auth/weak-password':
+      return 'Please choose a password of at least six characters.';
+    case 'auth/internal-error':
+      // Genuinely ambiguous: Firebase returns this both for a number it cannot
+      // parse and for a country the project has not allowed. Naming both is
+      // more use than picking one and being wrong.
+      return 'We could not send a code to that number. Check the country next to the field matches it — and if the country is right, texts to it may not be enabled yet.';
+    default:
+      return msg || 'Something went wrong. Please try again.';
+  }
+}
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,13 +78,73 @@ interface AuthModalProps {
   initialMode?: 'login' | 'signup';
 }
 
+/**
+ * Turn Firebase's provider ids into something a customer can act on.
+ *
+ * Returns null when the list is empty, which Firebase's Email Enumeration
+ * Protection makes the normal case rather than the exception — it deliberately
+ * reports nothing so a stranger cannot probe which addresses have accounts. A
+ * null here means "say something generic", never "no account exists".
+ */
+function describeProviders(methods: string[]): string | null {
+  if (!methods.length) return null;
+  if (methods.includes('google.com') && !methods.includes('password')) {
+    return 'This email is registered with Google. Use “Continue with Google” below.';
+  }
+  if (methods.includes('password') && !methods.includes('google.com')) {
+    return 'This email is registered with a password. Enter it above, or reset it if you have forgotten.';
+  }
+  return null;
+}
+
+/**
+ * Firebase reports auth failures as `auth/...` codes wrapped in a generic
+ * "Firebase: Error (auth/...)" message, which tells the user nothing. The two
+ * that actually happen in deployment are worth naming precisely, because both
+ * are console configuration rather than anything the user did wrong.
+ */
+function describeGoogleError(err: unknown): string {
+  const code = (err as { code?: string })?.code ?? '';
+  const message = (err as { message?: string })?.message ?? '';
+
+  switch (code) {
+    case 'auth/operation-not-allowed':
+      return 'Google sign-in is not enabled for this project yet. Please use email and password.';
+    case 'auth/unauthorized-domain':
+      // By far the most common one on a new deployment: the domain has to be
+      // listed under Firebase Auth -> Settings -> Authorized domains.
+      return 'This site is not an authorised domain for Google sign-in. Please use email and password.';
+    case 'auth/account-exists-with-different-credential':
+      return 'An account already exists with that email. Sign in with your password instead.';
+    case 'auth/network-request-failed':
+      return 'Could not reach Google. Check your connection and try again.';
+    case 'auth/internal-error':
+      return 'Google sign-in failed unexpectedly. Please use email and password.';
+    default:
+      return message || 'Could not start Google sign-in. Please try again.';
+  }
+}
+
 export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }: AuthModalProps) {
-  const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
+  /**
+   * 'reset' sends a password-reset email; 'link' is entered only when Google
+   * sign-in hit an address that already has a password account, and asks for
+   * that password once so the two can be joined.
+   */
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
+
+  // onClose is a fresh closure on every parent render, so keeping it in the
+  // effect's dependencies tore the effect down and re-ran it constantly while
+  // the modal was open — re-capturing lastFocusedRef each time, usually onto
+  // the modal's own first field. A ref keeps the latest callback reachable
+  // without making the effect depend on its identity.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
 
   // Focus management: remember the trigger, focus the first field on
   // open, restore focus on close. Esc closes from anywhere in the modal.
@@ -30,65 +153,224 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     lastFocusedRef.current = (document.activeElement as HTMLElement) ?? null;
     const t = window.setTimeout(() => firstFieldRef.current?.focus(), 30);
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+      if (e.key === 'Escape') { e.preventDefault(); onCloseRef.current(); }
     };
     document.addEventListener('keydown', onKey);
     return () => {
       window.clearTimeout(t);
       document.removeEventListener('keydown', onKey);
-      lastFocusedRef.current?.focus?.();
+
+      // The trigger is often inside a menu that closed itself on the way in,
+      // which leaves a detached node whose .focus() silently does nothing —
+      // dropping focus to <body>, so the next Tab restarts at the top of the
+      // page. Fall back to any still-connected sign-in control, then to the
+      // main landmark, so focus always lands somewhere navigable.
+      const previous = lastFocusedRef.current;
+      const restore = previous?.isConnected
+        ? previous
+        : (document.querySelector('[data-auth-trigger]') as HTMLElement | null)
+          ?? (document.getElementById('main-content') as HTMLElement | null);
+
+      if (restore) {
+        // main is not focusable by default; -1 lets it receive focus
+        // programmatically without adding it to the tab order.
+        if (restore.id === 'main-content' && !restore.hasAttribute('tabindex')) {
+          restore.setAttribute('tabindex', '-1');
+        }
+        restore.focus?.();
+      }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
-  const { login, signup, signInWithGoogle } = useAuth();
+  const {
+    login, signup, signInWithGoogle, resetPassword,
+    signInMethodsFor, pendingLinkEmail, completeGoogleLink, cancelGoogleLink,
+    startPhoneSignIn, confirmPhoneCode, pendingPhone, cancelPhoneSignIn,
+    resendVerification, linkEmailPassword,
+  } = useAuth();
+  const [phone, setPhone] = useState('');
+  const [countryIso, setCountryIso] = useState(DEFAULT_COUNTRY_ISO);
+  const country = countryForIso(countryIso);
+  const dialCode = country.dial;
+  const [code, setCode] = useState('');
   const [googleBusy, setGoogleBusy] = useState(false);
 
   const handleGoogle = async () => {
     setError('');
     setGoogleBusy(true);
     try {
-      await signInWithGoogle();
-      // On success the browser navigates to Google, so we never get here.
+      const outcome = await signInWithGoogle();
+
+      // Firebase's popup flow resolves in place — unlike Supabase's redirect,
+      // which unloaded the page and meant nothing after the await ever ran.
+      // Without closing here the user is signed in behind a modal that is
+      // still spinning, which looks exactly like a failure.
+      if (outcome === 'signed-in') {
+        onSuccess?.();
+        onClose();
+        return;
+      }
+      // 'redirecting' — the page is about to unload, so leave the busy state.
+      if (outcome === 'redirecting') return;
+
+      // The address already has a password account. Rather than the dead end
+      // of "use your password instead", ask for it once and attach Google to
+      // the existing account so either method works from now on.
+      if (outcome === 'needs-link') {
+        setMode('link');
+        setPassword('');
+        setGoogleBusy(false);
+        return;
+      }
+
+      // 'cancelled' — the user closed the popup. Not an error; just reset.
+      setGoogleBusy(false);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '';
-      setError(/provider|not enabled|unsupported/i.test(msg)
-        ? 'Google sign-in is not enabled yet. Please use email and password.'
-        : msg || 'Could not start Google sign-in. Please try again.');
+      setError(describeGoogleError(err));
       setGoogleBusy(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
     setInfo('');
 
+    if ((mode === 'login' || mode === 'reset') && !isValidLoginIdentifier(email)) {
+      setError('Enter your email address, or your staff username.');
+      return;
+    }
+
+    if (mode === 'add-email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (mode === 'phone') {
+      const problem = describePhoneProblem(phone, dialCode);
+      if (problem) { setError(problem); return; }
+    }
+    if (mode === 'code' && !/^\d{6}$/.test(code.trim())) {
+      setError('Enter the 6-digit code from the text message.');
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       if (mode === 'login') {
-        await login(email, password);
+        // `admin` resolves to admin@lehart.co.uk; a full address passes through.
+        await login(resolveLoginIdentifier(email), password);
         onSuccess?.();
         onClose();
-      } else {
-        await signup(email, password, fullName);
-        // Supabase requires email confirmation by default — tell the user
-        setInfo(`We've sent a confirmation link to ${email}. Please check your inbox, then sign in.`);
-        setMode('login');
+      } else if (mode === 'reset') {
+        await resetPassword(resolveLoginIdentifier(email));
+        // Worded so it reveals nothing either way. Confirming that an address
+        // does have an account turns this form into a way of testing which of
+        // a leaked address list are customers here.
+        setInfo(`If an account exists for ${email}, a reset link is on its way. Check your inbox and spam folder.`);
         setPassword('');
+      } else if (mode === 'link') {
+        await completeGoogleLink(password);
+        onSuccess?.();
+        onClose();
+      } else if (mode === 'add-email') {
+        await linkEmailPassword(email, password);
+        onSuccess?.();
+        onClose();
+      } else if (mode === 'phone') {
+        await startPhoneSignIn(phone, RECAPTCHA_ID, dialCode);
+        setCode('');
+        setMode('code');
+      } else if (mode === 'code') {
+        const { hasEmail } = await confirmPhoneCode(code);
+        if (hasEmail) {
+          // Adding a mobile to an existing account — nothing left to collect.
+          onSuccess?.();
+          onClose();
+        } else {
+          // Phone-first account. Without an address there is nowhere to send an
+          // order confirmation, a receipt or a return update, so ask now while
+          // they are still here rather than at checkout.
+          setPassword('');
+          setEmail('');
+          setMode('add-email');
+        }
+      } else {
+        // The customer is signed in the moment this resolves — the verify
+        // screen is a courtesy, not a gate, and its button just closes the
+        // modal. Blocking checkout on an unconfirmed address would cost more
+        // in abandoned orders than the typos it catches.
+        await signup(email, password, fullName);
+        setPassword('');
+        setMode('verify');
       }
     } catch (err: unknown) {
-      const msg = (err as { message?: string })?.message ?? '';
-      const lower = msg.toLowerCase();
-      if (lower.includes('email not confirmed') || lower.includes('confirm your email') || lower.includes('not confirmed')) {
-        setError('Please check your inbox and confirm your email address before signing in.');
+      const code = (err as { code?: string })?.code ?? '';
+
+      // A failed sign-in is very often the right person using the wrong
+      // method, so say which method the address actually has rather than
+      // "invalid credentials" — that is the difference between a customer
+      // recovering and a customer creating a duplicate account.
+      if (mode === 'login' && (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found')) {
+        const hint = describeProviders(await signInMethodsFor(resolveLoginIdentifier(email)));
+        setError(hint ?? 'That email and password do not match. Try again, or reset your password.');
+      } else if (mode === 'signup' && code === 'auth/email-already-in-use') {
+        const hint = describeProviders(await signInMethodsFor(email));
+        setError(hint ?? 'An account already exists for that email. Sign in instead.');
+      } else if (mode === 'link' && (code === 'auth/invalid-credential' || code === 'auth/wrong-password')) {
+        setError('That password does not match the existing account. Try again, or reset it.');
+      } else if (mode === 'add-email' && code === 'auth/email-already-in-use') {
+        setError('That email already has an account. Sign in to it instead, or use a different address.');
       } else {
-        setError(msg || 'Something went wrong. Please try again.');
+        setError(describeAuthError(err));
       }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /** Leave link mode without attaching Google, e.g. the user changed their mind. */
+  const abandonLink = () => {
+    cancelGoogleLink();
+    setPassword('');
+    setError('');
+    setInfo('');
+    setMode('login');
+  };
+
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    setResending(true);
+    setError('');
+    try {
+      await resendVerification();
+      setInfo(`Sent again to ${email}. Give it a minute, and check your spam folder.`);
+    } catch {
+      // Firebase rate-limits this per address, which is normal to hit rather
+      // than a fault worth alarming anyone about.
+      setError('Could not send just now. Wait a minute and try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  /** Drop a pending SMS verification and its reCAPTCHA. */
+  const abandonPhone = (back: Mode = 'login') => {
+    cancelPhoneSignIn();
+    setCode('');
+    setError('');
+    setInfo('');
+    setMode(back);
+  };
+
+  const countrySelectStyle = {
+    padding: '14px 10px', background: 'var(--grey-5)', border: '1px solid var(--grey-20)',
+    borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)', fontSize: '14px',
+    fontWeight: 600, color: 'var(--black)', outline: 'none', cursor: 'pointer',
+    boxSizing: 'border-box' as const, flexShrink: 0,
   };
 
   const inputStyle = {
@@ -132,16 +414,131 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <X size={16} />
               </button>
               <h2 id="auth-modal-title" style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: '0 0 8px 0', paddingRight: '32px' }}>
-                {mode === 'login' ? 'Welcome back' : 'Create your account'}
+                {mode === 'login' ? 'Welcome back'
+                  : mode === 'signup' ? 'Create your account'
+                  : mode === 'reset' ? 'Reset your password'
+                  : mode === 'phone' ? 'Sign in with your mobile'
+                  : mode === 'code' ? 'Enter your code'
+                  : mode === 'verify' ? 'Check your email'
+                  : mode === 'add-email' ? 'Add your email'
+                  : 'Connect your Google account'}
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
-                {mode === 'login'
-                  ? 'Sign in to access your orders and wishlist.'
-                  : 'Join mobilephonemarket.co.uk for a certified experience.'}
+                {mode === 'login' ? 'Sign in to access your orders and wishlist.'
+                  : mode === 'signup' ? 'Join lehart.co.uk for a certified experience.'
+                  : mode === 'reset' ? 'Enter your email and we will send you a link to set a new one.'
+                  : mode === 'phone' ? 'We will text you a 6-digit code. No password needed.'
+                  : mode === 'code' ? `Sent to ${pendingPhone ? formatPhoneForDisplay(pendingPhone) : 'your mobile'}. It expires in a few minutes.`
+                  : mode === 'verify' ? `Your account is ready and you are signed in. We have sent a link to ${email} to confirm the address.`
+                  : mode === 'add-email' ? 'Order confirmations, receipts and return updates go to your email. Without one we have no way to reach you about an order.'
+                  : `${pendingLinkEmail ?? 'That address'} already has a password. Enter it once and Google will sign you in from now on.`}
               </p>
             </div>
 
             <div style={{ padding: 'var(--spacing-32)' }}>
+              {mode === 'verify' ? (
+                <div>
+                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.65, color: 'var(--grey-60)', margin: '0 0 4px' }}>
+                    Confirming it means your order updates and delivery emails
+                    reach you. You can shop straight away either way.
+                  </p>
+
+                  {info && (
+                    <p role="status" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: '#0a7c5c', background: '#e6f7f2', borderRadius: '6px', padding: '10px 12px', textAlign: 'center', margin: '14px 0 0' }}>{info}</p>
+                  )}
+                  {error && (
+                    <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: 'var(--color-sale)', textAlign: 'center', margin: '14px 0 0' }}>{error}</p>
+                  )}
+
+                  {/* Asking for the mobile here, rather than at checkout, is
+                      what keeps one customer to one account: a number attached
+                      now means a later phone sign-in LINKS to this account
+                      instead of minting a second one. Optional on purpose —
+                      making it mandatory would cost more signups than the
+                      duplicates it prevents. */}
+                  <div style={{ marginTop: '22px', paddingTop: '18px', borderTop: '1px solid var(--grey-10)' }}>
+                    <div style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', fontWeight: 700, color: 'var(--black)', marginBottom: '4px' }}>
+                      Add your mobile
+                    </div>
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '12.5px', color: 'var(--grey-50)', margin: '0 0 12px' }}>
+                      For delivery updates, and so you can sign in with a code instead of a password.
+                    </p>
+                    {/* The country is picked, never inferred. A bare
+                        9700144003 used to be rewritten to +449700144003 —
+                        a number that exists nowhere — and the only clue was
+                        Firebase's auth/internal-error. */}
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        aria-label="Country"
+                        value={countryIso}
+                        onChange={(e) => setCountryIso(e.target.value)}
+                        style={countrySelectStyle}
+                      >
+                        {COUNTRIES.map((c) => (
+                          <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>
+                        ))}
+                      </select>
+                      <div style={{ position: 'relative', flex: 1 }}>
+                        <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                        <input
+                          type="tel"
+                          placeholder={country.example}
+                          autoComplete="tel"
+                          inputMode="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          style={inputStyle}
+                          onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                          onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isLoading}
+                      onClick={async () => {
+                        const problem = describePhoneProblem(phone, dialCode);
+                        if (problem) { setError(problem); return; }
+                        setError(''); setInfo(''); setIsLoading(true);
+                        try {
+                          await startPhoneSignIn(phone, RECAPTCHA_ID, dialCode);
+                          setCode('');
+                          setMode('code');
+                        } catch (err) {
+                          setError(describeAuthError(err));
+                        } finally { setIsLoading(false); }
+                      }}
+                      className="btn btn-secondary btn-full"
+                      style={{ marginTop: '10px' }}
+                    >
+                      Text me a code
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => { onSuccess?.(); onClose(); }}
+                    className="btn btn-primary btn-lg btn-full"
+                    style={{ marginTop: '18px' }}
+                  >
+                    Start shopping <ArrowRight size={16} />
+                  </button>
+
+                  <div style={{ marginTop: '14px', textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resending}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: resending ? 'wait' : 'pointer' }}
+                      onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
+                    >
+                      {resending ? 'Sending…' : "Didn't arrive? Send it again"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+              <>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {mode === 'signup' && (
                   <div style={{ position: 'relative' }}>
@@ -149,14 +546,101 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <input type="text" required placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                   </div>
                 )}
-                <div style={{ position: 'relative' }}>
-                  <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                  <input ref={firstFieldRef} type="email" required placeholder="Email Address" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
-                  <input type="password" required placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
-                </div>
+                {(mode === 'login' || mode === 'signup' || mode === 'reset' || mode === 'add-email') && (
+                  <div style={{ position: 'relative' }}>
+                    <Mail size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                    <input ref={firstFieldRef} type={mode === 'signup' || mode === 'add-email' ? 'email' : 'text'} required placeholder={mode === 'signup' || mode === 'add-email' ? 'Email Address' : 'Email or username'} autoComplete={mode === 'signup' || mode === 'add-email' ? 'email' : 'username'} value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  </div>
+                )}
+                {/* A reset needs no password — asking for one would be asking
+                    for the thing the user is here because they do not have. */}
+                {(mode === 'login' || mode === 'signup' || mode === 'link' || mode === 'add-email') && (
+                  <div style={{ position: 'relative' }}>
+                    <Lock size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                    <input ref={mode === 'link' ? firstFieldRef : undefined} type="password" required placeholder={mode === 'link' ? 'Your existing password' : 'Password'} autoComplete={mode === 'signup' || mode === 'add-email' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                  </div>
+                )}
+
+                {mode === 'phone' && (
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select
+                      aria-label="Country"
+                      value={countryIso}
+                      onChange={(e) => setCountryIso(e.target.value)}
+                      style={countrySelectStyle}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <option key={c.iso} value={c.iso}>{c.iso} +{c.dial}</option>
+                      ))}
+                    </select>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <Smartphone size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
+                      <input
+                        ref={firstFieldRef}
+                        type="tel"
+                        required
+                        placeholder={country.example}
+                        autoComplete="tel"
+                        inputMode="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        style={inputStyle}
+                        onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                        onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {mode === 'code' && (
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      ref={firstFieldRef}
+                      type="text"
+                      required
+                      placeholder="123456"
+                      /* one-time-code lets iOS and Android offer the code straight
+                         from the notification, which is the whole ergonomic win
+                         of SMS sign-in. */
+                      autoComplete="one-time-code"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                      style={{ ...inputStyle, paddingLeft: '16px', textAlign: 'center', fontSize: '22px', fontWeight: 700, letterSpacing: '0.4em' }}
+                      onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'}
+                      onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'}
+                    />
+                  </div>
+                )}
+
+                {mode === 'code' && (
+                  <div style={{ textAlign: 'center', marginTop: '-4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => abandonPhone('phone')}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer' }}
+                      onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
+                    >
+                      Wrong number, or no code? Send again
+                    </button>
+                  </div>
+                )}
+
+                {mode === 'login' && (
+                  <div style={{ textAlign: 'right', marginTop: '-4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => { setMode('reset'); setError(''); setInfo(''); }}
+                      style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer' }}
+                      onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
+                      onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
+                    >
+                      Forgot your password?
+                    </button>
+                  </div>
+                )}
 
                 {info && (
                   <p role="status" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, color: '#0a7c5c', background: '#e6f7f2', borderRadius: '6px', padding: '10px 12px', textAlign: 'center', margin: '4px 0 0 0' }}>{info}</p>
@@ -168,16 +652,40 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 <button
                   type="submit"
                   disabled={isLoading}
+                  aria-busy={isLoading}
                   className="btn btn-primary btn-lg btn-full"
                   style={{ marginTop: '8px' }}
                 >
-                  {isLoading ? <Loader2 size={18} className="animate-spin" /> : (
-                    <>{mode === 'login' ? 'Sign in' : 'Create account'} <ArrowRight size={16} /></>
+                  {isLoading ? (
+                    <Spinner
+                      size="sm"
+                      tone="current"
+                      label={mode === 'login' ? 'Signing in'
+                        : mode === 'signup' ? 'Creating your account'
+                        : mode === 'reset' ? 'Sending your link'
+                        : mode === 'phone' ? 'Texting your code'
+                        : mode === 'code' ? 'Checking your code'
+                        : mode === 'add-email' ? 'Saving your email'
+                        : 'Connecting Google'}
+                    />
+                  ) : (
+                    <>{mode === 'login' ? 'Sign in'
+                      : mode === 'signup' ? 'Create account'
+                      : mode === 'reset' ? 'Send reset link'
+                      : mode === 'phone' ? 'Text me a code'
+                      : mode === 'code' ? 'Verify and sign in'
+                      : mode === 'add-email' ? 'Save and finish'
+                      : 'Connect and sign in'} <ArrowRight size={16} /></>
                   )}
                 </button>
               </form>
 
-              {/* ── Google OAuth ───────────────────────────────── */}
+              {/* ── Google OAuth ─────────────────────────────────
+                  Hidden while resetting (nothing to sign in with yet) and
+                  while linking (the Google attempt is what got us here, so
+                  offering it again would loop). */}
+              {(mode === 'login' || mode === 'signup') && (
+              <>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
                 <span style={{ flex: 1, height: '1px', background: 'var(--grey-20)' }} />
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-40)' }}>or</span>
@@ -188,6 +696,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 type="button"
                 onClick={handleGoogle}
                 disabled={googleBusy}
+                aria-busy={googleBusy}
                 aria-label="Continue with Google"
                 style={{
                   width: '100%',
@@ -209,7 +718,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 onMouseOver={(e) => { e.currentTarget.style.background = 'var(--grey-5)'; }}
                 onMouseOut={(e) => { e.currentTarget.style.background = 'var(--grey-0)'; }}
               >
-                {googleBusy ? <Loader2 size={18} className="animate-spin" /> : (
+                {googleBusy ? <Spinner size="sm" label="Signing in with Google" /> : (
                   <>
                     {/* Google mark — inline so no external request is needed. */}
                     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -223,16 +732,73 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                 )}
               </button>
 
+              <button
+                type="button"
+                onClick={() => { setMode('phone'); setError(''); setInfo(''); }}
+                aria-label="Continue with mobile number"
+                style={{
+                  width: '100%',
+                  height: '48px',
+                  marginTop: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  background: 'var(--grey-0)',
+                  border: '1px solid var(--grey-20)',
+                  borderRadius: 'var(--radius-full)',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: '15px',
+                  fontWeight: 600,
+                  color: 'var(--black)',
+                  cursor: 'pointer',
+                  transition: 'background var(--duration-fast), border-color var(--duration-fast)',
+                }}
+                onMouseOver={(e) => { e.currentTarget.style.background = 'var(--grey-5)'; }}
+                onMouseOut={(e) => { e.currentTarget.style.background = 'var(--grey-0)'; }}
+              >
+                <Smartphone size={18} aria-hidden="true" />
+                Continue with mobile
+              </button>
+              </>
+              )}
+
               <div style={{ marginTop: 'var(--spacing-32)', textAlign: 'center' }}>
                 <button
-                  onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                  onClick={() => {
+                    if (mode === 'link') { abandonLink(); return; }
+                    if (mode === 'add-email') { onSuccess?.(); onClose(); return; }
+                    if (mode === 'phone' || mode === 'code') { abandonPhone('login'); return; }
+                    if (mode === 'reset') { setMode('login'); setError(''); setInfo(''); return; }
+                    setMode(mode === 'login' ? 'signup' : 'login');
+                    setError('');
+                    setInfo('');
+                  }}
                   style={{ background: 'none', border: 'none', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer', transition: 'color var(--duration-fast)' }}
                   onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
                   onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
                 >
-                  {mode === 'login' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
+                  {mode === 'login' ? "Don't have an account? Sign up"
+                    : mode === 'signup' ? 'Already have an account? Sign in'
+                    : mode === 'reset' ? 'Back to sign in'
+                    : mode === 'add-email' ? 'Skip for now'
+                    : (mode === 'phone' || mode === 'code') ? 'Use email instead'
+                    : 'Cancel and sign in another way'}
                 </button>
               </div>
+              </>
+              )}
+
+              {/* Invisible reCAPTCHA mounts here. OUTSIDE the verify/other
+                  ternary, deliberately: it must exist in the DOM before
+                  startPhoneSignIn runs, and "Add your mobile" lives on the
+                  verify screen. While this sat in the other branch, every
+                  attempt from that screen threw auth/argument-error before an
+                  SMS was ever requested — the RecaptchaVerifier constructor
+                  was handed an element id that resolved to nothing. It must
+                  also stay mounted for the whole flow: unmounting it
+                  mid-verification leaves Firebase holding a detached node. */}
+              <div id={RECAPTCHA_ID} />
             </div>
           </motion.div>
         </div>

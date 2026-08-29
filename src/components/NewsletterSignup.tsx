@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, CheckCircle2, Tag, Bell } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 
 const STORAGE_KEY = 'mt_newsletter_email';
 
@@ -23,11 +22,16 @@ export default function NewsletterSignup() {
     }
     setIsSubmitting(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from('newsletter_subscribers') as any).upsert(
-        { email: trimmed, is_active: true },
-        { onConflict: 'email', ignoreDuplicates: false }
-      );
+      // Through the API, not straight into Firestore. Writing direct from the
+      // browser skipped the rate limit and, worse, skipped the consent record
+      // — timestamp, source and policy version — that is what makes this list
+      // lawfully mailable. Client writes to the collection are now refused by
+      // the security rules, so this is the only path in.
+      await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: trimmed, source: 'homepage-newsletter' }),
+      });
     } catch { /* non-fatal — still show success */ }
     try { window.localStorage.setItem(STORAGE_KEY, trimmed); } catch { /* ignore */ }
     setIsSubmitting(false);
@@ -38,7 +42,7 @@ export default function NewsletterSignup() {
     <section
       aria-label="Subscribe for deals"
       style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+        background: 'linear-gradient(135deg, var(--grey-90) 0%, var(--black) 100%)',
         color: 'white',
         paddingTop: 'var(--spacing-64)',
         paddingBottom: 'var(--spacing-64)',
@@ -66,7 +70,7 @@ export default function NewsletterSignup() {
           <div>
             <div
               className="overline"
-              style={{ color: '#06b6d4', marginBottom: '8px' }}
+              style={{ color: 'var(--brand-cyan-on-dark)', marginBottom: '8px' }}
             >
               Price drops & new stock
             </div>
@@ -196,7 +200,7 @@ export default function NewsletterSignup() {
                       placeholder="you@email.com"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                      onFocus={(e) => { e.currentTarget.style.borderColor = '#06b6d4'; }}
+                      onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--brand-cyan-on-dark)'; }}
                       onBlur={(e) => { e.currentTarget.style.borderColor = error ? 'var(--color-sale)' : 'rgba(255,255,255,0.22)'; }}
                       style={{
                         flex: '1 1 200px',
@@ -213,7 +217,7 @@ export default function NewsletterSignup() {
                     <button
                       type="submit"
                       className="btn btn-primary btn-lg"
-                      style={{ flexShrink: 0, background: '#06b6d4', color: 'white', borderColor: '#06b6d4' }}
+                      style={{ flexShrink: 0, background: 'var(--brand-cyan-on-dark)', color: 'var(--black)', borderColor: 'var(--brand-cyan-on-dark)' }}
                     >
                       {isSubmitting ? 'Saving…' : 'Notify me'}
                     </button>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Smartphone, Banknote, PackageCheck, Lightbulb, CheckCircle2, ChevronDown } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db, COL } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
 
 const STEPS = [
@@ -146,14 +147,15 @@ export default function TradeInProgram() {
     setIsSubmitting(true);
     setError('');
     try {
-      await (supabase.from('trade_in_quotes') as any).insert({
-        user_id: user?.id ?? null,
+      await addDoc(collection(db, COL.tradeInQuotes), {
+        userId: user?.id ?? null,
         email: contactEmail,
-        device_brand: selectedBrand,
-        device_model: selectedModel.name,
-        device_condition: selectedCondition,
-        estimated_value: quoteValue,
+        deviceBrand: selectedBrand,
+        deviceModel: selectedModel.name,
+        deviceCondition: selectedCondition,
+        estimatedValue: quoteValue,
         status: 'quoted',
+        createdAt: serverTimestamp(),
       });
       setFormStep('submitted');
     } catch {

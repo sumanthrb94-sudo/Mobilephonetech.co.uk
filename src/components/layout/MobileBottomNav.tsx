@@ -76,7 +76,9 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
             <span style={labelStyle}>Cart</span>
           </button>
         </li>
-        <Item to="/orders" label="Account" icon={UserCircle} />
+        {/* /account, not /orders: the tab is labelled Account, and order
+            history is one tab within it rather than the whole thing. */}
+        <Item to="/account" label="Account" icon={UserCircle} />
       </ul>
     </nav>
   );

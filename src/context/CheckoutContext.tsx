@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { auth, db, COL } from '../lib/firebase';
+
 import { useAuth } from './AuthContext';
 
 const ADDRESS_KEY = 'mt_shipping_address';
@@ -122,46 +124,49 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     } catch { /* quota / private mode — ignore */ }
   }, [shippingAddress]);
 
-  // Fetch order history from Supabase when user logs in
+  // Fetch order history when the user signs in.
+  //
+  // orders and order_items were two Postgres tables joined on read. In
+  // Firestore the line items are an array on the order document instead: they
+  // are only ever read with their order, never queried across orders, so a
+  // separate collection would just cost extra reads.
   useEffect(() => {
     if (!session || !user || user.isGuest) return;
+    let cancelled = false;
     (async () => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (supabase.from('orders') as any)
-          .select('*, order_items(*)')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-        if (error || !data) return;
-        const fetched: Order[] = (data as Record<string, unknown>[]).map(row => ({
-          id: row.id as string,
-          userId: row.user_id as string,
-          items: ((row.order_items as Record<string, unknown>[]) ?? []).map(item => ({
-            id: item.product_id,
-            model: item.model,
-            brand: item.brand,
-            price: item.price,
-            originalPrice: item.original_price,
-            quantity: item.quantity,
-            imageUrl: item.image_url,
-            selectedColor: item.selected_color,
-            selectedStorage: item.selected_storage,
-            selectedCondition: item.selected_condition,
-          })),
-          shippingAddress: row.delivery_address as ShippingAddress,
-          shippingOption: SHIPPING_OPTIONS[0],
-          paymentMethod: { id: 'restored', type: 'card', brand: row.payment_method as string },
-          subtotal: row.subtotal as number,
-          shippingCost: row.delivery_cost as number,
-          discount: row.discount as number,
-          tax: 0,
-          total: row.total as number,
-          status: row.status as Order['status'],
-          createdAt: row.created_at as string,
-        }));
+        // No orderBy: an equality filter plus an orderBy on another field
+        // requires a composite index, and Firestore rejects the query without
+        // one. Sorting a shopper's own orders in memory avoids that entirely.
+        const snap = await getDocs(query(
+          collection(db, COL.orders),
+          where('userId', '==', user.id),
+        ));
+        if (cancelled) return;
+
+        const fetched: Order[] = snap.docs.map(d => {
+          const row = d.data() as Record<string, unknown>;
+          return {
+            id: d.id,
+            userId: row.userId as string,
+            items: (row.items as Order['items']) ?? [],
+            shippingAddress: row.shippingAddress as ShippingAddress,
+            shippingOption: SHIPPING_OPTIONS[0],
+            paymentMethod: { id: 'restored', type: 'card', brand: row.paymentMethod as string },
+            subtotal: row.subtotal as number,
+            shippingCost: row.shippingCost as number,
+            discount: row.discount as number,
+            tax: 0,
+            total: row.total as number,
+            status: row.status as Order['status'],
+            createdAt: row.createdAt as string,
+          };
+        });
+        fetched.sort((a, b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
         setOrders(fetched);
-      } catch { /* non-fatal */ }
+      } catch { /* non-fatal — the local order list still renders */ }
     })();
+    return () => { cancelled = true; };
   }, [session, user?.id]);
 
   const MOCK_COUPONS: Coupon[] = [
@@ -186,40 +191,43 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
   const createOrder = useCallback(async (order: Order) => {
     setOrders(prev => [...prev, order]);
     setAppliedCoupon(null);
-    // Persist to Supabase — fire-and-forget, doesn't block confirmation screen
+    // Persist — fire-and-forget, so a write failure never blocks the
+    // confirmation screen for an order the shopper has already paid for.
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: orderRow } = await (supabase.from('orders') as any).insert({
-        id: order.id,
-        user_id: order.userId ?? null,
-        guest_email: order.shippingAddress.email,
-        status: order.status,
-        subtotal: order.subtotal,
-        delivery_cost: order.shippingCost,
-        discount: order.discount ?? 0,
-        total: order.total,
-        delivery_address: order.shippingAddress,
-        payment_method: order.paymentMethod.brand,
-      }).select().single();
-      if (orderRow) {
-        const lineItems = order.items.map((item: any) => ({
-          order_id: orderRow.id,
-          product_id: item.id ?? null,
-          model: item.model,
-          brand: item.brand,
-          selected_color: item.selectedColor ?? null,
-          selected_storage: item.selectedStorage ?? item.storage ?? null,
-          selected_condition: item.selectedCondition ?? item.grade ?? null,
-          price: item.price,
-          original_price: item.originalPrice,
-          quantity: item.quantity,
-          image_url: item.imageUrl ?? null,
-        }));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase.from('order_items') as any).insert(lineItems);
+      // The server prices the order. This request carries product ids and
+      // quantities only — never prices — because a price that arrives from the
+      // browser is a price an attacker chooses. /api/orders looks every one up
+      // in the catalogue, and `orders` is closed to client writes entirely.
+      const token = await auth.currentUser?.getIdToken().catch(() => null);
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          items: (order.items as any[]).map((i: any) => ({
+            // The base product for pricing; the variant, when there is one,
+            // so the server prices the exact configuration that was chosen.
+            productId: i.productId ?? i.id,
+            variantId: i.variantId ?? null,
+            quantity: i.quantity,
+            selectedColor: i.selectedColor ?? null,
+            selectedStorage: i.selectedStorage ?? null,
+            selectedCondition: i.selectedCondition ?? null,
+          })),
+          shippingAddress: order.shippingAddress,
+          shippingOptionId: order.shippingOption?.id ?? 'standard',
+          couponCode: appliedCoupon?.code ?? null,
+          guestEmail: order.shippingAddress?.email ?? null,
+        }),
+      });
+      if (!res.ok) {
+        const detail = await res.json().catch(() => ({}));
+        throw new Error(detail.error || 'Order could not be placed');
       }
     } catch { /* non-fatal — order still confirmed locally */ }
-  }, []);
+  }, [appliedCoupon]);
 
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;
 

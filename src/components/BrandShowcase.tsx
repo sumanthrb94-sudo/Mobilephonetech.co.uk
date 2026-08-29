@@ -11,8 +11,9 @@ import type { Product } from '../types';
 /**
  * BrandShowcase — the homepage body below the Hero carousel. Renders
  * each series (iPhone 17, Galaxy S, Galaxy Fold & Flip, Pixel) as its
- * own full-bleed hero-style panel: brand-coloured background, flagship
- * product hero on one side, eyebrow/headline/subline/CTA on the other.
+ * own full-bleed hero-style panel: alternating light/dark stone surface
+ * with a gold accent, flagship product hero on one side, and the
+ * eyebrow/headline/subline/CTA on the other.
  * Below each panel sits a horizontal-scroll rail of that series'
  * products so the panel is both editorial and shoppable.
  */
@@ -24,10 +25,13 @@ interface SeriesPanel {
   subline: string;
   ctaLabel: string;
   ctaHref: string;
-  bgFrom: string;
-  bgAccent: string;
-  headlineColor: string;
-  bodyColor: string;
+  /**
+   * Panels alternate light/dark rather than each carrying its own pastel.
+   * The old per-brand candy backgrounds (pink, sky, amber, mint) read as
+   * "playful" — the opposite of the premium, trust-led positioning — and
+   * none of them belonged to the stone + gold token set.
+   */
+  tone: 'light' | 'dark';
   heroImage?: string;
   match: (p: Product) => boolean;
   sortHint?: (a: Product, b: Product) => number;
@@ -42,15 +46,12 @@ const proRank = (m: string) => /Pro\s*Max/i.test(m) ? 3 : /Pro|Ultra/i.test(m) ?
 const PANELS: SeriesPanel[] = [
   {
     id: 'iphone-17',
-    eyebrow: 'iPhone 17 Series · MPM Certified',
+    eyebrow: 'iPhone 17 Series · LeHart Certified',
     headline: 'Luxury refurbished.\nUnboxing experience intact.',
     subline: 'Battery health verified. Face ID tested. Every sensor checked. 12-month warranty, 30-day returns — no asterisk.',
     ctaLabel: 'Shop iPhone 17',
     ctaHref: `/products?brand=Apple&model=${encodeURIComponent('iPhone 17')}`,
-    bgFrom: '#fdf4ff',
-    bgAccent: '#fae8ff',
-    headlineColor: 'var(--brand-header)',
-    bodyColor: 'var(--grey-70)',
+    tone: 'dark',
     heroImage: '/assets/iphone-17-pro-max-trio.jpg',
     match: (p) => p.brand === 'Apple' && /iPhone\s*17/i.test(p.model),
     sortHint: (a, b) => proRank(b.model) - proRank(a.model),
@@ -62,10 +63,7 @@ const PANELS: SeriesPanel[] = [
     subline: 'Galaxy S23, S22 Ultra, S21 — tested to the same standard as our iPhones. Full camera. Full display. Full experience.',
     ctaLabel: 'Shop Galaxy S',
     ctaHref: `/products?brand=Samsung&model=${encodeURIComponent('Samsung Galaxy S')}`,
-    bgFrom: '#f0f9ff',
-    bgAccent: '#dbeafe',
-    headlineColor: 'var(--brand-header)',
-    bodyColor: 'var(--grey-70)',
+    tone: 'light',
     match: (p) => p.brand === 'Samsung' && /Galaxy\s*S\d/i.test(p.model) && !/Tab/i.test(p.model),
     sortHint: (a, b) => year(b) - year(a),
   },
@@ -76,10 +74,7 @@ const PANELS: SeriesPanel[] = [
     subline: 'Hinge tested to 200,000 folds. Both displays verified. Z Fold and Z Flip — the future at a fraction of launch cost.',
     ctaLabel: 'Shop foldables',
     ctaHref: `/products?brand=Samsung&model=${encodeURIComponent('Samsung Galaxy Z')}`,
-    bgFrom: '#fffbeb',
-    bgAccent: '#fef3c7',
-    headlineColor: 'var(--brand-header)',
-    bodyColor: 'var(--grey-70)',
+    tone: 'dark',
     match: (p) => p.brand === 'Samsung' && /(Fold|Flip)/i.test(p.model),
     sortHint: (a, b) => year(b) - year(a),
   },
@@ -90,10 +85,7 @@ const PANELS: SeriesPanel[] = [
     subline: 'Seven years of guaranteed Android updates. Magic Eraser, Photo Unblur, Night Sight — the camera phone that earned its reputation.',
     ctaLabel: 'Shop Pixel',
     ctaHref: `/products?brand=Google&model=${encodeURIComponent('Google Pixel')}`,
-    bgFrom: '#f0fdf4',
-    bgAccent: '#dcfce7',
-    headlineColor: 'var(--brand-header)',
-    bodyColor: 'var(--grey-70)',
+    tone: 'light',
     match: (p) => p.brand === 'Google' && /Pixel\s*\d/i.test(p.model) && !/Watch|Buds/i.test(p.model),
     sortHint: (a, b) => year(b) - year(a),
   },
@@ -126,22 +118,48 @@ export default function BrandShowcase() {
   );
 }
 
+/** Stone + gold surface treatment for a panel, keyed off its tone. */
+function toneStyles(tone: SeriesPanel['tone']) {
+  const dark = tone === 'dark';
+  return {
+    background: dark
+      ? 'linear-gradient(135deg, var(--grey-90) 0%, var(--black) 60%)'
+      : 'linear-gradient(135deg, var(--grey-5) 0%, var(--grey-0) 60%)',
+    border: dark ? 'var(--black)' : 'var(--grey-10)',
+    // The accent glow is gold in both tones; only its strength changes so it
+    // stays visible on stone-black without blowing out on stone-white.
+    glow: dark ? 'rgba(161, 98, 7, 0.22)' : 'rgba(161, 98, 7, 0.10)',
+    dot: dark ? 'rgba(255,255,255,0.05)' : 'rgba(12,10,9,0.045)',
+    eyebrow: dark ? 'var(--brand-cyan)' : 'var(--brand-cyan-hover)',
+    headline: dark ? 'var(--grey-0)' : 'var(--black)',
+    body: dark ? 'var(--grey-30)' : 'var(--grey-70)',
+    // Gold CTA on the dark panels, stone-black on the light ones — each is the
+    // highest-contrast option against its own surface.
+    ctaBg: dark ? 'var(--brand-cyan)' : 'var(--black)',
+    ctaFg: dark ? 'var(--black)' : 'var(--grey-0)',
+    frame: dark ? 'rgba(255,255,255,0.06)' : 'var(--grey-0)',
+    frameShadow: dark ? '0 12px 32px rgba(0,0,0,0.45)' : '0 12px 24px rgba(12,10,9,0.08)',
+  };
+}
+
 function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] }) {
   const { isDesktop } = useBreakpoint();
   const hero = products[0];
+  const t = toneStyles(panel.tone);
 
   return (
     <section
       aria-label={`${panel.eyebrow} — shop the series`}
+      data-tone={panel.tone}
       style={{
         width: '100%',
         position: 'relative',
         overflow: 'hidden',
-        background: `linear-gradient(135deg, ${panel.bgAccent} 0%, ${panel.bgFrom} 55%)`,
-        borderBottom: '1px solid #f1f5f9',
+        background: t.background,
+        borderBottom: `1px solid ${t.border}`,
       }}
     >
-      {/* subtle top-right glow, mirrors the Hero treatment */}
+      {/* Gold corner glow, mirroring the Hero treatment */}
       <div
         aria-hidden
         style={{
@@ -149,13 +167,13 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
           top: 0, right: 0,
           width: '50%',
           height: '100%',
-          background: 'linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.25) 100%)',
+          background: `radial-gradient(60% 80% at 80% 20%, ${t.glow} 0%, transparent 70%)`,
           pointerEvents: 'none',
         }}
       />
       <div aria-hidden style={{
         position: 'absolute', inset: 0,
-        backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)',
+        backgroundImage: `radial-gradient(circle, ${t.dot} 1px, transparent 1px)`,
         backgroundSize: '24px 24px',
         pointerEvents: 'none',
       }} />
@@ -198,7 +216,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
           >
             <div
               className="overline"
-              style={{ marginBottom: '6px', color: panel.headlineColor, fontSize: '10px' }}
+              style={{ marginBottom: '6px', color: t.eyebrow, fontSize: '10px' }}
             >
               {panel.eyebrow}
             </div>
@@ -209,7 +227,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
                 fontWeight: 900,
                 letterSpacing: '-0.02em',
                 lineHeight: 1.15,
-                color: panel.headlineColor,
+                color: t.headline,
                 whiteSpace: 'pre-line',
                 margin: '0 0 6px 0',
               }}
@@ -220,7 +238,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
               style={{
                 fontFamily: 'var(--font-body)',
                 fontSize: '12px',
-                color: panel.bodyColor,
+                color: t.body,
                 maxWidth: '420px',
                 margin: '0 0 12px 0',
                 lineHeight: 1.4,
@@ -235,7 +253,7 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
             <Link
               to={panel.ctaHref}
               className="btn btn-primary btn-sm"
-              style={{ textDecoration: 'none', background: '#0f172a', borderColor: '#0f172a' }}
+              style={{ textDecoration: 'none', background: t.ctaBg, borderColor: t.ctaBg, color: t.ctaFg }}
             >
               {panel.ctaLabel} <ArrowRight size={14} />
             </Link>
@@ -257,11 +275,10 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
                 width: '100%',
                 maxWidth: isDesktop ? '220px' : '150px',
                 aspectRatio: '4 / 3',
-                background: 'rgba(255,255,255,0.72)',
-                backdropFilter: 'blur(4px)',
+                background: t.frame,
                 borderRadius: 'var(--radius-lg)',
                 padding: 'clamp(8px, 1.5vw, 14px)',
-                boxShadow: '0 12px 24px rgba(0,0,0,0.08)',
+                boxShadow: t.frameShadow,
               }}
             >
               <ProductImage
@@ -276,15 +293,15 @@ function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] })
         </motion.div>
 
         {/* Product rail under the editorial */}
-        <ProductRail products={products} title={panel.eyebrow} seeAllHref={panel.ctaHref} />
+        <ProductRail products={products} title={panel.eyebrow} seeAllHref={panel.ctaHref} tone={panel.tone} />
       </div>
     </section>
   );
 }
 
 function ProductRail({
-  products, title, seeAllHref,
-}: { products: Product[]; title: string; seeAllHref: string }) {
+  products, title, seeAllHref, tone,
+}: { products: Product[]; title: string; seeAllHref: string; tone: SeriesPanel['tone'] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
 
   const scrollBy = (dir: 1 | -1) => {
@@ -303,7 +320,9 @@ function ProductRail({
             fontWeight: 800,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: 'var(--brand-header)',
+            // The rail sits on the panel surface, so its heading follows the
+            // panel tone rather than the global header colour.
+            color: tone === 'dark' ? 'var(--grey-30)' : 'var(--brand-header)',
             margin: 0,
           }}
         >

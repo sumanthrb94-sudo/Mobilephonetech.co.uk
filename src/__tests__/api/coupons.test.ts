@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import handler from '../../../api/coupons/validate';
+import handler from '../../../api/_routes/coupons/validate';
 
 function req(method: string, body: unknown = {}) {
   return { method, body };
