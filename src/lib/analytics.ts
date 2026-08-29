@@ -12,6 +12,8 @@
  * bar of signal.
  */
 
+import { logFirebaseEvent } from './firebaseAnalytics';
+
 export type TrackKind = 'page_view' | 'product_view' | 'add_to_cart' | 'checkout_start' | 'search';
 
 interface TrackEvent {
@@ -81,8 +83,37 @@ export function track(event: TrackEvent): void {
   if (!timer) timer = setTimeout(flush, FLUSH_AFTER_MS);
 }
 
-export const trackPageView = (path: string) => track({ kind: 'page_view', path });
-export const trackProductView = (productId: string) => track({ kind: 'product_view', productId });
-export const trackAddToCart = (productId: string) => track({ kind: 'add_to_cart', productId });
-export const trackCheckoutStart = () => track({ kind: 'checkout_start' });
-export const trackSearch = (term: string) => track({ kind: 'search', term });
+/**
+ * Each of these does two things: increments our own cookieless counter, which
+ * covers every visitor, and — only if the visitor accepted cookies and GA4 is
+ * actually running — mirrors the event into Google Analytics under its own
+ * ecommerce vocabulary, so the standard reports populate rather than
+ * everything landing in a custom-events list nobody opens.
+ *
+ * logFirebaseEvent is a no-op when consent was not given, so there is no
+ * consent check to forget at any of these call sites.
+ */
+export const trackPageView = (path: string) => {
+  track({ kind: 'page_view', path });
+  void logFirebaseEvent('page_view', { page_path: path });
+};
+
+export const trackProductView = (productId: string) => {
+  track({ kind: 'product_view', productId });
+  void logFirebaseEvent('view_item', { items: [{ item_id: productId }] });
+};
+
+export const trackAddToCart = (productId: string) => {
+  track({ kind: 'add_to_cart', productId });
+  void logFirebaseEvent('add_to_cart', { items: [{ item_id: productId }] });
+};
+
+export const trackCheckoutStart = () => {
+  track({ kind: 'checkout_start' });
+  void logFirebaseEvent('begin_checkout');
+};
+
+export const trackSearch = (term: string) => {
+  track({ kind: 'search', term });
+  void logFirebaseEvent('search', { search_term: term });
+};

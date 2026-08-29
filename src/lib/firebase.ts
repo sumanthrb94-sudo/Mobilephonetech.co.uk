@@ -10,6 +10,10 @@ const config = {
   storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
   appId:             import.meta.env.VITE_FIREBASE_APP_ID as string,
+  // Optional. Present only when Google Analytics for Firebase is enabled on
+  // the project. Nothing loads it here — see src/lib/firebaseAnalytics.ts,
+  // which waits for consent first.
+  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string | undefined,
 };
 
 export const isFirebaseConfigured = Boolean(config.apiKey && config.projectId && config.authDomain);

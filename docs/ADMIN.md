@@ -235,3 +235,34 @@ than the day before.
 
 Admin traffic is excluded. Counting staff looking at their own shop makes every
 quiet day look busier than it was.
+
+### Two analytics systems, on purpose
+
+| | Covers | Gives you |
+|---|---|---|
+| `src/lib/analytics.ts` | **everyone** — no cookie, no identifier, no consent needed | totals: views, baskets, searches, per-product attention |
+| `src/lib/firebaseAnalytics.ts` | only visitors who accept cookies | GA4 sessions, funnels, retention, audiences |
+
+Read conversion rates off the cookieless counters, because they cover the whole
+population. Read behaviour off GA4, because that is what it is for. Do not
+compare their totals — GA4's are a biased subset by construction, and the bias
+runs towards people who accept banners.
+
+`getAnalytics(app)` is not passive: it writes `_ga` cookies and a persistent
+app-instance id. Calling it at module scope — the shape the Firebase console
+hands you — starts that before the banner renders, which makes "Reject
+non-essential" a lie. So **`src/lib/firebaseAnalytics.ts` is the only file that
+can start GA**, it exports a function rather than an instance, and the only
+caller is the consent gate in `CookieBanner`. Nothing imports
+`firebase/analytics` until consent exists, so a visitor who declines never
+fetches the bundle at all.
+
+Three things must stay in step, and a change to any one is wrong on its own:
+
+1. `vercel.json` CSP — `www.googletagmanager.com` in `script-src`,
+   `*.google-analytics.com` and `*.analytics.google.com` in `connect-src`.
+   Without these GA is blocked with no visible error.
+2. `VITE_FIREBASE_MEASUREMENT_ID` — absent means GA never starts, which is a
+   valid configuration rather than a fault.
+3. `CookiePolicy.tsx` — it names the cookies GA sets. If GA goes, that text goes
+   with it the same day.

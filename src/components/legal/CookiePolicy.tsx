@@ -5,10 +5,14 @@ import { COMPANY } from '../../config/company';
 /**
  * Cookie policy — the page the consent banner links to.
  *
- * Honest about the current state: the site sets no analytics or advertising
- * cookies today, and this page must be UPDATED THE SAME DAY any are added.
- * Describing trackers that do not exist is as misleading as hiding ones that
- * do, so the tables below list only what the code actually sets.
+ * Honest about the current state: no advertising cookies at all, cookieless
+ * measurement that runs for everyone, and Google Analytics loaded only for
+ * visitors who accept.
+ *
+ * This page must be UPDATED THE SAME DAY anything changes. Describing trackers
+ * that do not exist is as misleading as hiding ones that do, so it lists only
+ * what the code actually sets — and src/lib/firebaseAnalytics.ts is the single
+ * place that can start GA, so there is one file to check against this text.
  */
 export default function CookiePolicy() {
   return (
@@ -40,9 +44,25 @@ export default function CookiePolicy() {
 
       <LegalSection title="3. Analytics and advertising">
         <P>
-          None at present. The site sets no analytics, measurement or advertising cookies
-          today. If that changes, this page will say exactly what was added and why, and
-          nothing will load before you consent through the banner.
+          <strong>Advertising: none.</strong> We set no advertising or ad-targeting
+          cookies, and we do not share your browsing with ad networks.
+        </P>
+        <P>
+          <strong>Measurement, always on: no cookies.</strong> We count page and product
+          views to see what is popular. Those counts store nothing on your device — no
+          cookie, no identifier, no IP address — and cannot be traced back to you by us
+          or by anyone else. Because nothing is stored on your device and nobody is
+          identified, this needs no consent and runs for everyone.
+        </P>
+        <P>
+          <strong>Measurement, only if you accept: Google Analytics.</strong> If you
+          choose &ldquo;Accept all cookies&rdquo; we load Google Analytics for Firebase,
+          which sets <strong>_ga</strong> cookies and a Google identifier so we can see
+          journeys through the site rather than only totals. It does not load at all
+          unless you accept, and choosing &ldquo;Reject non-essential&rdquo; means it is
+          never requested — not loaded and disabled, but never fetched. Google acts as
+          our processor for this; the data reaches Google servers, which may be outside
+          the UK.
         </P>
       </LegalSection>
 
@@ -51,7 +71,9 @@ export default function CookiePolicy() {
           Your choice is stored in your browser. To change it, clear this site's data in
           your browser settings and the banner will ask again on your next visit. You can
           also block or delete cookies entirely in your browser — the essential features
-          above may stop working if you do.
+          above may stop working if you do. Withdrawing consent stops Google Analytics
+          from being loaded again; any <strong>_ga</strong> cookies already set are
+          cleared with the rest of the site's data.
         </P>
       </LegalSection>
 
