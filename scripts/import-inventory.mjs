@@ -31,7 +31,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { buildCatalogue, slugify as slug } from './lib/catalogue.mjs';
+import { buildCatalogue, slugify as slug, PRICE_SOURCE } from './lib/catalogue.mjs';
 import { deviceSvg } from './lib/deviceArt.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -83,19 +83,27 @@ try {
 }
 if (!rows.length) fail(`${SOURCE} has no rows.`);
 
-const { products, units, sellable } = buildCatalogue(rows);
+const { products, units, sellable, inversions } = buildCatalogue(rows);
 if (!products.length) fail('No sellable products were produced — refusing to reset the catalogue with nothing to put back.');
 
 const held = units.filter((u) => u.stockType !== 'SHS' && !u.returnDate);
-const cost = sellable.reduce((s, u) => s + u.buyPrice, 0);
 const retail = products.reduce((s, p) => s + p.variants.reduce((t, v) => t + v.price * v.stock, 0), 0);
 
 console.log(`\n  Source        ${SOURCE}`);
 console.log(`  Rows          ${rows.length}`);
 console.log(`  Sellable      ${sellable.length}  (${units.length - sellable.length} excluded: awaiting delivery, returned, or no IMEI)`);
 console.log(`  Listings      ${products.length}`);
-console.log(`  Stock cost    £${cost.toLocaleString()}`);
-console.log(`  Retail value  £${retail.toLocaleString()}   (${((1 - cost / retail) * 100).toFixed(1)}% gross margin before VAT)\n`);
+console.log(`  Prices        ${PRICE_SOURCE === 'as-listed' ? 'as listed in the export, used verbatim' : 'derived from cost'}`);
+console.log(`  Catalogue     £${retail.toLocaleString()} at listed prices\n`);
+
+// Surfaced, never corrected: with listed prices these are the owner's numbers.
+if (inversions.length) {
+  console.log('  Worth a look — a larger capacity priced at or below a smaller one:');
+  for (const i of inversions) {
+    console.log(`    ${i.model.padEnd(28)} ${i.smaller.storage} £${i.smaller.price}  ->  ${i.larger.storage} £${i.larger.price}`);
+  }
+  console.log('');
+}
 
 // ── Artwork ────────────────────────────────────────────────────
 // Written before Firestore so a product never points at a file that is not
@@ -152,6 +160,28 @@ initializeApp({
 const db = getFirestore();
 console.log(`  Project       ${creds.project_id}\n`);
 
+/**
+ * Firestore refuses a document containing `undefined` anywhere in it, and the
+ * error names one field while the write that failed carried seventy. Optional
+ * product attributes — a tablet has no SIM type, a phone has no case size —
+ * are genuinely absent rather than null, so this drops them on the way out.
+ *
+ * Dropping beats coercing to null: a null in Firestore is a stored value that
+ * `where('bodySIM', '==', null)` matches, so coercion invents a fact ("this
+ * device has no SIM type") where absence means "we do not know".
+ */
+function stripUndefined(value) {
+  if (Array.isArray(value)) return value.map(stripUndefined);
+  if (value && typeof value === 'object' && !(value instanceof Date)) {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, stripUndefined(v)]),
+    );
+  }
+  return value;
+}
+
 /** Firestore caps a batch at 500 writes. */
 async function commitInChunks(items, apply) {
   let done = 0;
@@ -192,14 +222,14 @@ const searchTermsFor = (p) => [...new Set(
 )].slice(0, 40);
 
 await commitInChunks(products, (batch, p) => {
-  batch.set(db.collection('products').doc(p.id), {
+  batch.set(db.collection('products').doc(p.id), stripUndefined({
     ...p, searchTerms: searchTermsFor(p), source: 'inventory-import', updatedAt: now,
-  });
+  }));
 });
 console.log(`  Products      ${products.length} written`);
 
 await commitInChunks(sellable, (batch, u) => {
-  batch.set(db.collection('stockUnits').doc(u.imei), {
+  batch.set(db.collection('stockUnits').doc(u.imei), stripUndefined({
     imei: u.imei,
     productId: `${u.brand}-${u.model}-${u.storage ?? u.caseSize ?? ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
     brand: u.brand, model: u.model, category: u.category,
@@ -211,7 +241,7 @@ await commitInChunks(sellable, (batch, u) => {
     // this collection plus the sale price recorded when that happens.
     status: 'available', soldAt: null, orderId: null,
     updatedAt: now,
-  });
+  }));
 });
 console.log(`  Stock units   ${sellable.length} written\n  Done.\n`);
 process.exit(0);

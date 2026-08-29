@@ -202,11 +202,22 @@ excluded.
 **It does not call an opened unit new.** Supplier grade ONU becomes *Pristine*,
 never *New* — "new" is a claim about a sealed device.
 
-**Prices are derived, and that is a decision you should change.** The export
-has a buy price and no sell price. `MARKUP` in `scripts/lib/catalogue.mjs` is a
-grade-keyed multiplier landing around 38% gross margin before VAT. It is a
-starting point, not a pricing strategy. Add an `SP` or `Price` column to the
-export and the importer uses it instead and ignores the table entirely.
+**Prices are used exactly as listed.** `PRICE_SOURCE` in
+`scripts/lib/catalogue.mjs` is `'as-listed'`: the `BP` column is the selling
+price, taken to the penny. Nothing rounds it, nudges it to end in a 9, or
+adjusts it to fix a capacity ladder — a script that quietly edits prices
+somebody set deliberately is worse than one that prices badly, because the
+second is visible. `originalPrice` equals `price`, so no listing claims a
+saving against a figure never charged.
+
+Set `PRICE_SOURCE` to `'derive-from-cost'` if the column ever becomes a true
+cost, and the dormant `MARKUP` table turns it into retail with the capacity
+ladder enforced. Both paths are tested.
+
+Inversions — a larger capacity at or below the price of a smaller one — are
+**reported by the importer, never corrected.** Two batches bought weeks apart
+produce them honestly, and a customer seeing 256 GB at the 128 GB price reads
+it as a mistake or a trick.
 
 **Images are drawn, not photographed.** There is no lawful way to bulk-fetch
 manufacturer press shots for seventy listings, and a broken image on every

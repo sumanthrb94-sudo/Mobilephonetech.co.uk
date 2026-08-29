@@ -149,13 +149,28 @@ export const BATTERY_FLOOR = { Pristine: 100, Excellent: 90, Good: 85, Fair: 80 
 // ── 3. Price ───────────────────────────────────────────────────
 
 /**
- * Retail is derived from the buy price, because the export has no sell column.
+ * Where a listing's price comes from.
  *
- * EDIT THESE NUMBERS. They are a starting point chosen to look sane across a
- * £25–£325 cost range, not a pricing strategy: gross margin lands around 35–45%
- * before VAT, which is ordinary for refurbished handsets but is your decision,
- * not this script's. If the export ever gains an "SP" or "Price" column the
- * importer uses it instead and ignores all of this.
+ *   'as-listed'         the BP column is the selling price, used verbatim.
+ *   'derive-from-cost'  BP is a cost, and MARKUP below turns it into retail.
+ *
+ * 'as-listed' is the default because the owner confirmed the figures in the
+ * export are the real prices. That makes the whole markup table dormant, and
+ * it also means this module must not adjust a price for any reason — not to
+ * round it, not to end it in a 9, and not to fix a capacity ladder that reads
+ * backwards. A script that quietly edits prices somebody set deliberately is
+ * worse than one that prices badly, because the second is visible.
+ *
+ * Inversions are still found and reported by the importer, as something to
+ * look at rather than something to overwrite.
+ */
+export const PRICE_SOURCE = 'as-listed';
+
+/**
+ * Only consulted when PRICE_SOURCE is 'derive-from-cost'. Kept because the
+ * moment the export starts carrying true costs rather than prices, this is
+ * what turns them into retail, and rewriting it from memory later is worse
+ * than leaving it here unused.
  */
 export const MARKUP = { Pristine: 1.75, Excellent: 1.65, Good: 1.55, Fair: 1.40 };
 
@@ -169,9 +184,18 @@ export function psychologicalPrice(value) {
   return Math.round(n / 10) * 10 - 1;
 }
 
-export function priceFor(buyPrice, grade) {
+export function priceFor(buyPrice, grade, source = PRICE_SOURCE) {
   const bp = Number(buyPrice);
   if (!Number.isFinite(bp) || bp <= 0) return null;
+
+  if (source === 'as-listed') {
+    // Exactly what the export says, to the penny. originalPrice matches rather
+    // than being multiplied up: a struck-through "was" price nobody ever
+    // charged is a fabricated saving, which is the specific thing the DMCC
+    // pricing rules are about.
+    return { price: bp, originalPrice: bp };
+  }
+
   const price = psychologicalPrice(bp * (MARKUP[grade] ?? MARKUP.Good));
   return { price, originalPrice: psychologicalPrice(price * RRP_MULTIPLIER) };
 }
@@ -295,7 +319,7 @@ export function buildCatalogue(rows) {
       // shown is one we can actually honour for every unit behind it.
       const cheapest = vUnits.reduce((a, b) => (a.buyPrice <= b.buyPrice ? a : b));
       const priced = cheapest.sellPrice
-        ? { price: cheapest.sellPrice, originalPrice: psychologicalPrice(cheapest.sellPrice * RRP_MULTIPLIER) }
+        ? { price: cheapest.sellPrice, originalPrice: cheapest.sellPrice }
         : priceFor(cheapest.buyPrice, grade);
       if (!priced) continue;
 
@@ -354,8 +378,9 @@ export function buildCatalogue(rows) {
   }
 
   products.sort((a, b) => a.id.localeCompare(b.id));
-  enforceCapacityLadder(products);
-  return { products, units, sellable };
+  // Only when we set the prices ourselves. See PRICE_SOURCE.
+  if (PRICE_SOURCE !== 'as-listed') enforceCapacityLadder(products);
+  return { products, units, sellable, inversions: findCapacityInversions(products) };
 }
 
 /**
@@ -371,6 +396,39 @@ export function buildCatalogue(rows) {
  * the reverse: cutting the smaller price to fix the ladder throws away margin
  * on the model that sells the most.
  */
+/**
+ * Listings where a larger capacity costs the same or less than a smaller one.
+ *
+ * Reported rather than corrected, because with 'as-listed' prices these are
+ * the owner's numbers. Two batches bought weeks apart genuinely produce this,
+ * and it is usually worth a look: a customer seeing 256 GB at the 128 GB price
+ * reads it as a mistake or a trick, and both cost the sale.
+ */
+export function findCapacityInversions(products) {
+  const found = [];
+  const byModel = new Map();
+  for (const p of products) {
+    const key = `${p.brand} ${p.model}`;
+    if (!byModel.has(key)) byModel.set(key, []);
+    byModel.get(key).push(p);
+  }
+
+  for (const group of byModel.values()) {
+    const ladder = group
+      .map((p) => ({ p, gb: parseInt(String(p.storage ?? ''), 10) || 0 }))
+      .filter((e) => e.gb > 0)
+      .sort((a, b) => a.gb - b.gb);
+
+    for (let i = 1; i < ladder.length; i++) {
+      if (ladder[i].p.price <= ladder[i - 1].p.price) {
+        found.push({ model: `${ladder[i].p.brand} ${ladder[i].p.model}`,
+                     smaller: ladder[i - 1].p, larger: ladder[i].p });
+      }
+    }
+  }
+  return found;
+}
+
 export function enforceCapacityLadder(products) {
   const byModel = new Map();
   for (const p of products) {

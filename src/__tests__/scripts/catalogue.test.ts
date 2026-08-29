@@ -101,17 +101,33 @@ describe('what may be listed', () => {
 });
 
 describe('price', () => {
-  it('derives retail from the buy price when the export has no sell column', () => {
+  it('uses the listed price to the penny, by default', () => {
+    // The owner confirmed the export carries real prices. Rounding one, or
+    // nudging it to end in a 9, is editing somebody's commercial decision.
     const p = cat.priceFor(110, 'Excellent');
+    expect(p!.price).toBe(110);
+  });
+
+  it('invents no "was" price to strike through', () => {
+    // A saving against a price nobody ever charged is the specific thing the
+    // DMCC pricing rules exist to stop.
+    const p = cat.priceFor(110, 'Excellent');
+    expect(p!.originalPrice).toBe(p!.price);
+  });
+
+  it('still derives from cost when told the column is a cost', () => {
+    const p = cat.priceFor(110, 'Excellent', 'derive-from-cost');
     expect(p!.price).toBeGreaterThan(110);
     expect(p!.originalPrice).toBeGreaterThan(p!.price);
   });
 
-  it('charges more for a better grade of the same handset', () => {
-    expect(cat.priceFor(100, 'Pristine')!.price).toBeGreaterThan(cat.priceFor(100, 'Fair')!.price);
+  it('charges more for a better grade when deriving', () => {
+    const better = cat.priceFor(100, 'Pristine', 'derive-from-cost')!.price;
+    const worse = cat.priceFor(100, 'Fair', 'derive-from-cost')!.price;
+    expect(better).toBeGreaterThan(worse);
   });
 
-  it('refuses to invent a price with no cost to work from', () => {
+  it('refuses to invent a price with nothing to work from', () => {
     expect(cat.priceFor(0, 'Good')).toBeNull();
     expect(cat.priceFor('', 'Good')).toBeNull();
   });
@@ -163,44 +179,32 @@ describe('the capacity ladder', () => {
     Colour: 'Black', BP: bp, 'Stock Type': 'OFFICE', 'SIM Type': 'SIM + eSIM',
   });
 
-  it('lifts the larger capacity above the smaller one', () => {
-    const { products } = cat.buildCatalogue([unit('128GB', 150, '1'), unit('256GB', 148, '2')]);
-    const small = products.find((p: any) => p.storage === '128GB')!;
-    const large = products.find((p: any) => p.storage === '256GB')!;
+  it('reports an inversion rather than silently repricing it', () => {
+    // The prices are the owner's. A script that quietly edits them is worse
+    // than one that prices badly, because the second is visible.
+    const { products, inversions } = cat.buildCatalogue([unit('128GB', 150, '1'), unit('256GB', 148, '2')]);
+
+    expect(inversions).toHaveLength(1);
+    expect(products.find((p: any) => p.storage === '256GB')!.price).toBe(148);
+    expect(products.find((p: any) => p.storage === '128GB')!.price).toBe(150);
+  });
+
+  it('says nothing about a ladder that reads correctly', () => {
+    const { inversions } = cat.buildCatalogue([unit('64GB', 100, '1'), unit('128GB', 150, '2')]);
+    expect(inversions).toHaveLength(0);
+  });
+
+  it('lifts the larger capacity when we are the ones setting prices', () => {
+    // enforceCapacityLadder is what runs under 'derive-from-cost'.
+    const small: any = { brand: 'Apple', model: 'iPhone 12', storage: '128GB', price: 249, originalPrice: 329, variants: [{ price: 249, originalPrice: 329 }] };
+    const large: any = { brand: 'Apple', model: 'iPhone 12', storage: '256GB', price: 249, originalPrice: 329, variants: [{ price: 249, originalPrice: 329 }] };
+    cat.enforceCapacityLadder([small, large]);
 
     expect(large.price).toBeGreaterThan(small.price);
-  });
-
-  it('lifts the larger one rather than cutting the smaller', () => {
-    // Cutting the cheaper model throws away margin on the one that sells most.
-    const alone = cat.buildCatalogue([unit('128GB', 150, '1')]).products[0];
-    const { products } = cat.buildCatalogue([unit('128GB', 150, '1'), unit('256GB', 148, '2')]);
-
-    expect(products.find((p: any) => p.storage === '128GB')!.price).toBe(alone.price);
-  });
-
-  it('moves the variants with the listing, not just the headline', () => {
-    const { products } = cat.buildCatalogue([
-      unit('128GB', 150, '1'),
-      { ...unit('256GB', 148, '2'), Grade: 'C' },
-    ]);
-    const large = products.find((p: any) => p.storage === '256GB')!;
-
-    // A headline that moved without its variants would show one price on the
-    // grid and charge another at checkout.
-    expect(large.price).toBe(Math.min(...large.variants.map((v: any) => v.price)));
-  });
-
-  it('leaves a sane ladder alone', () => {
-    // Listings are sorted by id, so find them by capacity rather than position
-    // — "128gb" sorts before "64gb".
-    const { products } = cat.buildCatalogue([unit('64GB', 100, '1'), unit('128GB', 150, '2')]);
-    const small = products.find((p: any) => p.storage === '64GB')!;
-    const large = products.find((p: any) => p.storage === '128GB')!;
-    const untouched = cat.buildCatalogue([unit('128GB', 150, '2')]).products[0];
-
-    expect(large.price).toBeGreaterThan(small.price);
-    expect(large.price).toBe(untouched.price);
+    // Lifted, not cut: cutting throws away margin on the model that sells most.
+    expect(small.price).toBe(249);
+    // The variants move with the headline, or the grid and the checkout differ.
+    expect(large.variants[0].price).toBe(large.price);
   });
 });
 
