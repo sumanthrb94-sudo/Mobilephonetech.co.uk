@@ -32,6 +32,7 @@ import { fileURLToPath } from 'node:url';
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { buildCatalogue, slugify as slug, PRICE_SOURCE } from './lib/catalogue.mjs';
+import { parseCsv } from './lib/csv.mjs';
 import { deviceSvg } from './lib/deviceArt.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -41,38 +42,6 @@ const RESET = process.argv.includes('--reset');
 const SOURCE = process.argv.find((a) => a.endsWith('.csv')) ?? join(root, 'data/inventory.csv');
 
 const fail = (m) => { console.error(`\n  ✗ ${m}\n`); process.exit(1); };
-
-/**
- * A real CSV parser, not a split on commas.
- *
- * Colour and notes are free text typed by staff. The day someone writes
- * "Black, Grey" every column after it shifts by one, and the failure is
- * silent — the price column becomes a colour and the import writes nonsense.
- */
-function parseCsv(text) {
-  const rows = [];
-  let row = [], field = '', quoted = false;
-
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (quoted) {
-      if (c === '"') {
-        if (text[i + 1] === '"') { field += '"'; i++; } else quoted = false;
-      } else field += c;
-      continue;
-    }
-    if (c === '"') { quoted = true; continue; }
-    if (c === ',') { row.push(field); field = ''; continue; }
-    if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; continue; }
-    if (c !== '\r') field += c;
-  }
-  if (field || row.length) { row.push(field); rows.push(row); }
-
-  const header = rows.shift().map((h) => h.trim());
-  return rows
-    .filter((r) => r.some((v) => v.trim()))
-    .map((r) => Object.fromEntries(header.map((h, i) => [h, (r[i] ?? '').trim()])));
-}
 
 // ── Read and build ─────────────────────────────────────────────
 let rows;
