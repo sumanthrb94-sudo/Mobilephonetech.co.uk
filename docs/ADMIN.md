@@ -277,3 +277,46 @@ Three things must stay in step, and a change to any one is wrong on its own:
    valid configuration rather than a fault.
 3. `CookiePolicy.tsx` — it names the cookies GA sets. If GA goes, that text goes
    with it the same day.
+
+## Deploying rules and indexes
+
+The Firebase CLI cannot do either with this project's credentials:
+
+```
+Error: Request to https://serviceusage.googleapis.com/... HTTP Error: 403,
+Permission denied to get service [firestore.googleapis.com]
+```
+
+That is the CLI's own precheck — "ensuring required API firestore.googleapis.com
+is enabled" — which needs `serviceusage.services.get`. The Firebase Admin SDK
+service account does not carry it and does not need it for the deployment
+itself; the API is plainly already enabled, since the same credentials read and
+write Firestore continuously. The check fails and the CLI stops before
+attempting anything.
+
+So two scripts call the underlying APIs directly:
+
+```
+export FIREBASE_SERVICE_ACCOUNT="$(base64 -w0 serviceAccountKey.json)"
+node scripts/deploy-rules.mjs     # Firestore + Storage security rules
+node scripts/deploy-indexes.mjs   # composite indexes
+```
+
+`deploy-rules.mjs` compiles a ruleset first and moves the release second, so a
+syntax error fails having changed nothing. Rules are all that stand between a
+stranger and every document, so the only acceptable failure mode is "nothing
+happened".
+
+### What still needs a permission grant
+
+| | |
+|---|---|
+| Firestore rules | ✅ deploying |
+| Storage rules | ❌ 403 — needs `firebaserules.releases.update` on the storage resource |
+| Composite indexes | ❌ 403 — needs `datastore.indexes.create` |
+
+Both are IAM, not billing: they failed identically before and after the move to
+Blaze. Either grant the service account **Firebase Rules Admin** and **Cloud
+Datastore Index Admin** in Google Cloud Console → IAM, or do those two jobs in
+the Firebase console, where an owner's own credentials are used and neither
+permission is in question.

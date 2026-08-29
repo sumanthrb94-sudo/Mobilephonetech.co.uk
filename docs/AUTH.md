@@ -248,13 +248,28 @@ An earlier project id (`mobilephonemarket-2764d`) was carried in the first two
 for a while. If sign-in ever fails in a way that looks like nothing at all
 happening, check these three still name the same project before anything else.
 
-### New-project limits worth knowing
+### Plan and limits
 
-- **SMS is capped at 10/day** until a billing account is attached. That is
-  enough to test mobile sign-in and nowhere near enough to launch on it.
-  Firebase Console → Authentication → Sign-in method shows the current cap.
-- The project is on **Spark (no-cost)**. Firestore and Auth are fine there;
-  raising the SMS cap requires Blaze.
+The project is on **Blaze** (pay-as-you-go). That lifts the Spark plan's cap of
+10 SMS a day, which was the single thing keeping mobile sign-in a thing you
+could test but not launch on.
+
+Two consequences worth holding on to.
+
+**Every SMS now costs money, and the rate is per country.** A verification text
+to a UK number and one to an Indian number are billed differently. Phone auth
+is also the one endpoint here an abuser can make expensive without an account,
+because each attempt is a paid message — which is a second reason the
+reCAPTCHA verifier is mandatory rather than decorative.
+
+**Set a budget alert before launch.** Google Cloud Console → Billing → Budgets
+& alerts. Blaze has no ceiling by default: a loop, a scraper or a bad cron
+bills whatever it runs up. An alert does not stop spend, it means you find out
+in an hour rather than at the end of the month.
+
+The **SMS region policy** is still what decides which countries can receive a
+code at all — Authentication → Settings → SMS region policy. Blaze does not
+open it; GB and IN each have to be allowed explicitly.
 
 ## If sign-in is failing entirely
 
