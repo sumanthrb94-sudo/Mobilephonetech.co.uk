@@ -320,3 +320,60 @@ Blaze. Either grant the service account **Firebase Rules Admin** and **Cloud
 Datastore Index Admin** in Google Cloud Console → IAM, or do those two jobs in
 the Firebase console, where an owner's own credentials are used and neither
 permission is in question.
+
+## Product photography
+
+Two scripts, and a decision to make before either.
+
+```
+node scripts/image-manifest.mjs                      # what to collect
+node scripts/import-images.mjs ./inbox --dry-run     # what would land
+export FIREBASE_SERVICE_ACCOUNT="$(base64 -w0 serviceAccountKey.json)"
+node scripts/import-images.mjs ./inbox               # do it
+```
+
+`image-manifest.mjs` writes `data/image-manifest.csv`: 146 images, each with
+the exact filename to save it as, ordered by units in stock. That ordering is
+the point — **the first ten listings cover 62% of the shelf**. Photograph those
+and most of the catalogue looks real, days before the long tail is finished.
+
+`import-images.mjs` matches files by name, re-encodes each to 1200×1200 WebP
+through Chromium (Playwright is already a dependency, so this needs no image
+library), and points Firestore at the result. Three properties worth knowing:
+
+- **Letterboxed onto white, never cropped.** Sources arrive at different aspect
+  ratios and a crop-to-fill silently removes the top of a handset.
+- **Re-encoded, always.** Press photos are 3000 px and two megabytes. Seventy of
+  those is a 140 MB repository and a product grid that takes ten seconds on a
+  phone, which costs more sales than a missing photograph does.
+- **Partial is safe.** A listing with no photograph keeps its drawing, and a
+  listing photographed in one colour keeps drawings for the others. A
+  half-photographed catalogue must not become a half-broken one.
+
+Set `CHROMIUM_PATH` if Playwright's bundled browser version does not match the
+one installed.
+
+### Where the images may come from
+
+A product photograph is someone's copyright, and this matters more for a shop
+than for a blog. Manufacturer press images are generally licensed for
+*editorial* use, which is not selling against them. A retailer's product shot
+belongs to that retailer. Neither becomes usable because it was easy to
+download.
+
+The sources that are actually clear:
+
+| | |
+|---|---|
+| **Your own photographs** | No licensing question at all, and they show the real unit |
+| **Icecat / Open Icecat** | Free syndication of manufacturer assets, authorised for resellers — the industry's answer to exactly this problem |
+| **Wikimedia Commons** | Many device photos under CC BY-SA; usable with attribution |
+| **A supplier or brand portal** | If a supply agreement grants asset rights, check what it actually covers |
+
+There is also a consumer-law point independent of copyright. A press render
+shows a flawless device; you sell graded second-hand stock. A Fair-grade
+handset arriving with exactly the scratches its grade promised, against a
+listing photo showing none, is a complaint that is expensive to answer and hard
+to defend. If stock photography is used at all, the grade wording has to carry
+the weight the picture does not — which is why `conditionDescription` is
+generated per grade and shown on the listing.
