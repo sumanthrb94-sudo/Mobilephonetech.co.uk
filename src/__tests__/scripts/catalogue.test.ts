@@ -153,3 +153,96 @@ describe('building the catalogue', () => {
     expect(products[0].price).toBe(199);
   });
 });
+
+describe('the capacity ladder', () => {
+  // Prices come from what each unit cost, and two batches bought weeks apart
+  // can leave the 256 GB cheaper than the 128. A customer reads that as either
+  // a mistake or a trick, and both cost the sale.
+  const unit = (storage: string, bp: number, imei: string) => ({
+    Model: 'iPhone 12', IMEI: imei, Grade: 'A', Storage: storage,
+    Colour: 'Black', BP: bp, 'Stock Type': 'OFFICE', 'SIM Type': 'SIM + eSIM',
+  });
+
+  it('lifts the larger capacity above the smaller one', () => {
+    const { products } = cat.buildCatalogue([unit('128GB', 150, '1'), unit('256GB', 148, '2')]);
+    const small = products.find((p: any) => p.storage === '128GB')!;
+    const large = products.find((p: any) => p.storage === '256GB')!;
+
+    expect(large.price).toBeGreaterThan(small.price);
+  });
+
+  it('lifts the larger one rather than cutting the smaller', () => {
+    // Cutting the cheaper model throws away margin on the one that sells most.
+    const alone = cat.buildCatalogue([unit('128GB', 150, '1')]).products[0];
+    const { products } = cat.buildCatalogue([unit('128GB', 150, '1'), unit('256GB', 148, '2')]);
+
+    expect(products.find((p: any) => p.storage === '128GB')!.price).toBe(alone.price);
+  });
+
+  it('moves the variants with the listing, not just the headline', () => {
+    const { products } = cat.buildCatalogue([
+      unit('128GB', 150, '1'),
+      { ...unit('256GB', 148, '2'), Grade: 'C' },
+    ]);
+    const large = products.find((p: any) => p.storage === '256GB')!;
+
+    // A headline that moved without its variants would show one price on the
+    // grid and charge another at checkout.
+    expect(large.price).toBe(Math.min(...large.variants.map((v: any) => v.price)));
+  });
+
+  it('leaves a sane ladder alone', () => {
+    // Listings are sorted by id, so find them by capacity rather than position
+    // — "128gb" sorts before "64gb".
+    const { products } = cat.buildCatalogue([unit('64GB', 100, '1'), unit('128GB', 150, '2')]);
+    const small = products.find((p: any) => p.storage === '64GB')!;
+    const large = products.find((p: any) => p.storage === '128GB')!;
+    const untouched = cat.buildCatalogue([unit('128GB', 150, '2')]).products[0];
+
+    expect(large.price).toBeGreaterThan(small.price);
+    expect(large.price).toBe(untouched.price);
+  });
+});
+
+describe('listing copy', () => {
+  const rows = [{
+    Model: 'Galaxy A32 5G', IMEI: '1', Grade: 'A', Storage: '64GB',
+    Colour: 'Black', BP: 60, 'Stock Type': 'OFFICE', 'SIM Type': 'Dual Physical SIM',
+  }];
+
+  it('describes the listing from what the stock list actually says', () => {
+    const { products } = cat.buildCatalogue(rows);
+    const d = products[0].description as string;
+
+    expect(d).toContain('Galaxy A32 5G');
+    expect(d).toContain('64GB');
+    expect(d).toMatch(/dual physical sim/i);
+    expect(d).toMatch(/12-month warranty/);
+  });
+
+  it('invents no specification the export does not contain', () => {
+    // An invented product claim is a DMCC fine, and to the customer who
+    // receives something else it is simply a lie. The export has no camera,
+    // chip, screen or battery data, so no sentence may mention them.
+    const d = (cat.buildCatalogue(rows).products[0].description as string).toLowerCase();
+
+    for (const claim of ['camera', 'megapixel', 'processor', 'chip', 'snapdragon',
+                         'mah', 'refresh rate', 'amoled', 'display', 'ghz', '5nm']) {
+      expect(d).not.toContain(claim);
+    }
+  });
+
+  it('gives every colour on sale its own image', () => {
+    const twoColours = [
+      rows[0],
+      { ...rows[0], IMEI: '2', Colour: 'Blue' },
+    ];
+    const { products } = cat.buildCatalogue(twoColours);
+    const images = products[0].variants.map((v: any) => v.imageUrl);
+
+    // A picker that changes the price and not the picture tells the customer
+    // their colour choice made no difference.
+    expect(new Set(images).size).toBe(2);
+    expect(images.every((i: string) => i.endsWith('.svg'))).toBe(true);
+  });
+});

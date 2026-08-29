@@ -31,7 +31,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cert, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { buildCatalogue } from './lib/catalogue.mjs';
+import { buildCatalogue, slugify as slug } from './lib/catalogue.mjs';
 import { deviceSvg } from './lib/deviceArt.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -102,14 +102,28 @@ console.log(`  Retail value  £${retail.toLocaleString()}   (${((1 - cost / reta
 // there. Real photographs uploaded from the admin console overwrite these.
 const artDir = join(root, 'public/assets/catalogue');
 mkdirSync(artDir, { recursive: true });
+let art = 0;
 for (const p of products) {
-  writeFileSync(join(artDir, `${p.id}.svg`), deviceSvg({
-    brand: p.brand, model: p.model, storage: p.storage,
-    colour: p.colorOptions[0], category: p.category,
-  }));
+  const draw = (colour, file) => {
+    writeFileSync(join(artDir, file), deviceSvg({
+      brand: p.brand, model: p.model, storage: p.storage, colour, category: p.category,
+    }));
+    art++;
+  };
+
+  draw(p.colorOptions[0], `${p.id}.svg`);
   p.imageUrl = `/assets/catalogue/${p.id}.svg`;
-  p.galleryImages = [p.imageUrl];
+
+  // One per colour on sale. A variant picker that changes the price and not
+  // the picture is worse than no picker: the customer chose a colour and the
+  // page told them, silently, that it made no difference.
+  for (const colour of p.colorOptions) {
+    draw(colour, `${p.id}--${slug(colour)}.svg`);
+  }
+
+  p.galleryImages = [...new Set([p.imageUrl, ...p.variants.map((v) => v.imageUrl).filter(Boolean)])];
 }
+console.log(`  Artwork       ${art} images written`);
 
 if (DRY) {
   console.log('  --dry-run: nothing written to Firestore.\n');

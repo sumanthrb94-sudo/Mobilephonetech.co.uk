@@ -303,6 +303,11 @@ export function buildCatalogue(rows) {
         id: slugify(grade, colour || 'default'),
         condition: grade,
         color: colour || undefined,
+        // Set by the importer, which draws one image per colour. Without it,
+        // choosing Blue leaves a black handset on screen — which reads as a
+        // broken page, or worse, as a bait-and-switch on the one attribute a
+        // customer picked deliberately.
+        imageUrl: colour ? `/assets/catalogue/${id}--${slugify(colour)}.svg` : undefined,
         storage: first.storage ?? undefined,
         price: priced.price,
         originalPrice: priced.originalPrice,
@@ -339,9 +344,109 @@ export function buildCatalogue(rows) {
         display: first.caseSize ? `${first.caseSize} case` : undefined,
       },
       conditionDescription: GRADE_NOTE[lead.condition],
+      description: describe({
+        brand: first.brand, model: first.model, category: first.category,
+        storage: first.storage, simType: first.simType, caseSize: first.caseSize,
+        grades: [...new Set(variants.map((v) => v.condition))],
+        colours: [...new Set(group.map((u) => u.colour).filter(Boolean))],
+      }),
     });
   }
 
   products.sort((a, b) => a.id.localeCompare(b.id));
+  enforceCapacityLadder(products);
   return { products, units, sellable };
+}
+
+/**
+ * A bigger capacity of the same phone must never cost the same or less than a
+ * smaller one.
+ *
+ * This is not a rounding nicety. Prices come from what each unit cost, and two
+ * batches bought weeks apart can easily leave the 256 GB cheaper than the 128 —
+ * at which point the shop is advertising, in a single glance, either a mistake
+ * or a trick. Customers read it as one or the other and both cost you the sale.
+ *
+ * The smaller model's price is the anchor and the larger one is lifted, never
+ * the reverse: cutting the smaller price to fix the ladder throws away margin
+ * on the model that sells the most.
+ */
+export function enforceCapacityLadder(products) {
+  const byModel = new Map();
+  for (const p of products) {
+    const key = `${p.brand} ${p.model}`;
+    if (!byModel.has(key)) byModel.set(key, []);
+    byModel.get(key).push(p);
+  }
+
+  for (const group of byModel.values()) {
+    if (group.length < 2) continue;
+    const ladder = group
+      .map((p) => ({ p, gb: parseInt(String(p.storage ?? ''), 10) || 0 }))
+      .filter((e) => e.gb > 0)
+      .sort((a, b) => a.gb - b.gb);
+
+    for (let i = 1; i < ladder.length; i++) {
+      const below = ladder[i - 1].p;
+      const above = ladder[i].p;
+      if (above.price > below.price) continue;
+
+      // £10 a step is enough to read as deliberate without inventing a
+      // premium the stock does not justify.
+      const lift = below.price + 10 - above.price;
+      above.price += lift;
+      above.originalPrice = psychologicalPrice(above.price * RRP_MULTIPLIER);
+      for (const v of above.variants) {
+        v.price += lift;
+        v.originalPrice = psychologicalPrice(v.price * RRP_MULTIPLIER);
+      }
+    }
+  }
+}
+
+
+/**
+ * Listing copy built only from facts the stock list actually contains.
+ *
+ * Every product page had an empty description, which reads as an unfinished
+ * shop. The obvious fix — generating spec-sheet prose about cameras, chips and
+ * battery capacity — is the one thing that must not happen here: the inventory
+ * export records none of that, so any such sentence would be a claim about a
+ * device invented to fill a gap. Under the DMCC rules an invented product
+ * claim is a fine, and to a customer who receives something different it is
+ * simply a lie.
+ *
+ * So this says what is true: which handset, what capacity, what condition, how
+ * the SIM works, and what the shop promises around it. Thin, and honest.
+ * Replace it with real copy per listing when there is time — this is a floor,
+ * not a finished description.
+ */
+export function describe({ brand, model, category, storage, simType, caseSize, grades, colours }) {
+  const thing = category === 'Ipads & Tabs' ? 'tablet' : category === 'Smartwatches' ? 'watch' : 'handset';
+  const parts = [];
+
+  parts.push(
+    `A certified refurbished ${brand} ${model}${storage ? ` with ${storage} of storage` : ''}` +
+    `${caseSize ? ` in the ${caseSize} case` : ''}, fully tested and ready to use.`,
+  );
+
+  if (grades.length > 1) {
+    parts.push(`Available in ${listWords(grades)} condition — each grade is priced separately, so you pay for the ${thing} you choose.`);
+  } else {
+    parts.push(`${grades[0]} condition: ${GRADE_NOTE[grades[0]].toLowerCase()}`);
+  }
+
+  if (colours.length > 1) parts.push(`In stock in ${listWords(colours)}.`);
+  else if (colours.length === 1) parts.push(`In ${colours[0]}.`);
+
+  if (simType) parts.push(`Takes a ${simType.toLowerCase()}.`);
+
+  parts.push('Unlocked to all networks, with a 12-month warranty and 30 days to change your mind.');
+
+  return parts.join(' ');
+}
+
+function listWords(items) {
+  if (items.length <= 1) return String(items[0] ?? '');
+  return `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 }
