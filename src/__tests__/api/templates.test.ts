@@ -249,3 +249,61 @@ describe('the published support address', () => {
     expect(COMPANY.supportEmail).toBe('info@lehart.co.uk');
   });
 });
+
+describe('images that actually load in a mailbox', () => {
+  it('makes a stored path absolute, because a relative one resolves to nothing in Gmail', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    const before = process.env.PUBLIC_SITE_URL;
+    process.env.PUBLIC_SITE_URL = 'https://lehart.co.uk';
+    // Templates read SHOP_URL at module load, so the default is what applies.
+    expect(emailImageUrl('/assets/catalogue/photos/x.jpg')).toMatch(/^https:\/\/[^/]+\/assets/);
+    process.env.PUBLIC_SITE_URL = before;
+  });
+
+  it('refuses SVG, which Gmail, Outlook and Yahoo all strip', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    // The drawn placeholders are SVG. A broken-image icon in a receipt is
+    // worse than the tidy empty square the caller falls back to.
+    expect(emailImageUrl('/assets/catalogue/apple-iphone-12-64gb.svg')).toBeNull();
+  });
+
+  it('swaps WebP for the JPEG twin, because Outlook on Windows cannot render WebP', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    expect(emailImageUrl('/assets/catalogue/photos/x.webp')).toMatch(/\.jpg$/);
+  });
+
+  it('refuses anything that is not http', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    // A data: or javascript: URL has no business in a customer's receipt.
+    expect(emailImageUrl('javascript:alert(1)')).toBeNull();
+    expect(emailImageUrl('data:image/png;base64,AAAA')).toBeNull();
+    expect(emailImageUrl('')).toBeNull();
+  });
+
+  it('renders the empty square rather than a broken image', async () => {
+    const { orderConfirmationEmail } = await import('../../../api/_templates.js');
+    const mail = orderConfirmationEmail({
+      id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
+      contactEmail: 'ram@example.com',
+      items: [{ brand: 'Apple', model: 'iPhone 12', price: 100, quantity: 1, imageUrl: '/assets/catalogue/x.svg' }],
+      shippingAddress: { fullName: 'Ram', postalCode: 'NW1 9XF' },
+    } as never);
+
+    expect(mail.html).not.toContain('.svg');
+    expect(mail.html).not.toContain('<img');
+  });
+
+  it('renders the photograph when one exists', async () => {
+    const { orderConfirmationEmail } = await import('../../../api/_templates.js');
+    const mail = orderConfirmationEmail({
+      id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
+      contactEmail: 'ram@example.com',
+      items: [{ brand: 'Apple', model: 'iPhone 12', price: 100, quantity: 1, imageUrl: '/assets/catalogue/photos/x.webp' }],
+      shippingAddress: { fullName: 'Ram', postalCode: 'NW1 9XF' },
+    } as never);
+
+    expect(mail.html).toContain('<img');
+    expect(mail.html).toContain('/assets/catalogue/photos/x.jpg');
+    expect(mail.html).toMatch(/src="https:\/\//);
+  });
+});

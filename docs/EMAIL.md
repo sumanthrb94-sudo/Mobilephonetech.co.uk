@@ -605,3 +605,35 @@ harmless at the current scale, where the list is short enough to read by eye.
 **Contact sync.** `api/_brevoContacts.ts` writes to Brevo's contact lists for
 campaigns — marketing rather than transactional, and independent of which
 provider sends receipts.
+
+## Product images in email
+
+Two things stop a catalogue image rendering in a mailbox, and both fail as a
+broken square in the customer's receipt rather than as an error anyone sees.
+
+**A stored path is relative.** Products carry `/assets/catalogue/photos/x.webp`,
+which resolves against the site in a browser and against nothing at all in
+Gmail. `emailImageUrl()` in `api/_templates.ts` prefixes `PUBLIC_SITE_URL`
+centrally, so no template can forget — and it is another reason
+`PUBLIC_SITE_URL` must be right before any send.
+
+**The format is one email cannot render.** SVG is stripped outright by Gmail,
+Outlook and Yahoo. WebP is unsupported by Outlook on Windows, which uses Word's
+rendering engine and is a large share of UK inboxes. Both are correct choices
+for the website and wrong for a receipt.
+
+So `scripts/import-images.mjs` writes every photograph twice — `.webp` for the
+site, `.jpg` beside it for email — and `emailImageUrl()` swaps the extension.
+The pair is written in one loop, so neither exists without the other.
+
+The drawn SVG placeholders resolve to null, and the item row falls back to a
+tidy empty square. That is deliberate: **a blocked or broken image should look
+like a design choice, not a fault.** The cell has a fixed size and its own
+background, so the layout does not shift either way — which matters because
+most clients block remote images until the reader asks for them, so the
+no-image state is what a good proportion of customers see first regardless.
+
+The practical consequence: **order emails show real photographs only for
+listings that have one.** Until the photography lands, receipts show the empty
+square, which is honest and tidy. Nothing needs changing when the pictures
+arrive — the same import that puts them on the site puts them in the emails.
