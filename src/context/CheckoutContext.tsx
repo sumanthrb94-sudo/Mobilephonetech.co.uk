@@ -62,6 +62,24 @@ export interface Order {
   createdAt: string;
 }
 
+/** What the server returns once it has actually stored the order. */
+interface OrderResponse {
+  order?: { id?: string };
+  confirmationEmail?: { sent?: boolean; skipped?: string };
+}
+
+/**
+ * The outcome of a placed order.
+ *
+ * `confirmationEmailSent` is reported rather than assumed: the API sends the
+ * receipt on a best-effort basis and says plainly whether it went, so the
+ * confirmation screen can stop telling every shopper an email is on its way.
+ */
+export interface OrderResult {
+  order: Order;
+  confirmationEmailSent: boolean;
+}
+
 interface CheckoutContextType {
   currentStep: 'cart' | 'shipping' | 'payment' | 'review' | 'confirmation';
   setCurrentStep: (step: 'cart' | 'shipping' | 'payment' | 'review' | 'confirmation') => void;
@@ -75,7 +93,7 @@ interface CheckoutContextType {
   applyCoupon: (code: string) => boolean;
   removeCoupon: () => void;
   orders: Order[];
-  createOrder: (order: Order) => Promise<void>;
+  createOrder: (order: Order) => Promise<OrderResult>;
   lastOrder: Order | null;
 }
 
@@ -188,45 +206,58 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     setAppliedCoupon(null);
   };
 
-  const createOrder = useCallback(async (order: Order) => {
-    setOrders(prev => [...prev, order]);
+  const createOrder = useCallback(async (order: Order): Promise<OrderResult> => {
+    // The server is the authority on whether an order exists. It prices the
+    // basket from the catalogue, checks stock, writes the row and sends the
+    // confirmation — so until it answers 201 there is no order, nothing is
+    // recorded locally, and a refusal is rethrown for checkout to show.
+    //
+    // This was once fire-and-forget into an empty catch. A basket the server
+    // rejected still rendered "Order placed", under an order number minted in
+    // the tab, promising a confirmation email that was never attempted. The
+    // shopper believed they had bought something and nothing existed.
+    // The server prices the order. This request carries product ids and
+    // quantities only — never prices — because a price that arrives from the
+    // browser is a price an attacker chooses. /api/orders looks every one up
+    // in the catalogue, and `orders` is closed to client writes entirely.
+    const token = await auth.currentUser?.getIdToken().catch(() => null);
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        items: (order.items as any[]).map((i: any) => ({
+          // The base product for pricing; the variant, when there is one,
+          // so the server prices the exact configuration that was chosen.
+          productId: i.productId ?? i.id,
+          variantId: i.variantId ?? null,
+          quantity: i.quantity,
+          selectedColor: i.selectedColor ?? null,
+          selectedStorage: i.selectedStorage ?? null,
+          selectedCondition: i.selectedCondition ?? null,
+        })),
+        shippingAddress: order.shippingAddress,
+        shippingOptionId: order.shippingOption?.id ?? 'standard',
+        couponCode: appliedCoupon?.code ?? null,
+        guestEmail: order.shippingAddress?.email ?? null,
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.json().catch(() => ({} as { error?: string }));
+      throw new Error(detail.error || 'Order could not be placed');
+    }
+
+    const data = await res.json().catch(() => ({} as OrderResponse));
+
+    // Adopt the id the server actually stored. The browser-minted one was a
+    // placeholder; quoted to support it matches no row in the database.
+    const confirmed: Order = { ...order, id: data?.order?.id ?? order.id };
+
+    setOrders(prev => [...prev, confirmed]);
     setAppliedCoupon(null);
-    // Persist — fire-and-forget, so a write failure never blocks the
-    // confirmation screen for an order the shopper has already paid for.
-    try {
-      // The server prices the order. This request carries product ids and
-      // quantities only — never prices — because a price that arrives from the
-      // browser is a price an attacker chooses. /api/orders looks every one up
-      // in the catalogue, and `orders` is closed to client writes entirely.
-      const token = await auth.currentUser?.getIdToken().catch(() => null);
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          ...(token ? { authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          items: (order.items as any[]).map((i: any) => ({
-            // The base product for pricing; the variant, when there is one,
-            // so the server prices the exact configuration that was chosen.
-            productId: i.productId ?? i.id,
-            variantId: i.variantId ?? null,
-            quantity: i.quantity,
-            selectedColor: i.selectedColor ?? null,
-            selectedStorage: i.selectedStorage ?? null,
-            selectedCondition: i.selectedCondition ?? null,
-          })),
-          shippingAddress: order.shippingAddress,
-          shippingOptionId: order.shippingOption?.id ?? 'standard',
-          couponCode: appliedCoupon?.code ?? null,
-          guestEmail: order.shippingAddress?.email ?? null,
-        }),
-      });
-      if (!res.ok) {
-        const detail = await res.json().catch(() => ({}));
-        throw new Error(detail.error || 'Order could not be placed');
-      }
-    } catch { /* non-fatal — order still confirmed locally */ }
+    return { order: confirmed, confirmationEmailSent: Boolean(data?.confirmationEmail?.sent) };
   }, [appliedCoupon]);
 
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;

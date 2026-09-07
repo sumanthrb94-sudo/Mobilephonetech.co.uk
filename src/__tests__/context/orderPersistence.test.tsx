@@ -119,15 +119,43 @@ describe('order creation', () => {
     expect(body.shippingOptionId).toBe(SHIPPING_OPTIONS[0].id);
   });
 
-  it('still confirms the order locally when the server call fails', async () => {
-    fetchSpy.mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'nope' }) });
+  it('rejects with the server reason when the order is refused', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: 'That product is no longer available' }),
+    });
     const { result } = renderHook(() => useCheckout(), { wrapper });
 
-    // The shopper has already been shown a confirmation; a persistence failure
-    // must not throw into the UI on top of it.
+    // A refused basket is not an order. This once resolved quietly and kept
+    // the order locally, so checkout rendered a thank-you page and a promised
+    // confirmation email for something the server had never stored.
     await act(async () => {
-      await expect(result.current.createOrder(order())).resolves.toBeUndefined();
+      await expect(result.current.createOrder(order()))
+        .rejects.toThrow('That product is no longer available');
     });
-    expect(result.current.orders).toHaveLength(1);
+    expect(result.current.orders).toHaveLength(0);
+  });
+
+  it('adopts the order id the server stored, not the one minted locally', async () => {
+    const { result } = renderHook(() => useCheckout(), { wrapper });
+
+    await act(async () => { await result.current.createOrder(order({ id: 'ORD-LOCAL' })); });
+
+    // Support looks orders up by this number; the local placeholder matches
+    // no row in the database.
+    expect(result.current.orders.at(-1)?.id).toBe('ORD-SERVER');
+  });
+
+  it('reports whether the confirmation email actually went out', async () => {
+    fetchSpy.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ order: { id: 'ORD-SERVER' }, confirmationEmail: { sent: false } }),
+    });
+    const { result } = renderHook(() => useCheckout(), { wrapper });
+
+    let outcome: Awaited<ReturnType<typeof result.current.createOrder>> | undefined;
+    await act(async () => { outcome = await result.current.createOrder(order()); });
+
+    expect(outcome?.confirmationEmailSent).toBe(false);
   });
 });

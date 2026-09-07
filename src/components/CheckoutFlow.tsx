@@ -53,6 +53,12 @@ export default function CheckoutFlow() {
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  // Why the server refused the order, shown on the review step. Empty when
+  // there is nothing wrong.
+  const [orderError, setOrderError] = useState('');
+  // Whether the receipt actually went out, as reported by the API.
+  const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
+
   // The checkout step transitions happen in-place (same URL) so the
   // global ScrollToTop listener doesn't fire. Reset scroll manually on
   // every step change so a tall Shipping form doesn't leave Payment
@@ -195,9 +201,11 @@ export default function CheckoutFlow() {
   const handlePlaceOrder = async () => {
     if (!shippingAddress || !paymentMethod || !shippingOption) { alert('Please complete all steps'); return; }
     setIsProcessing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    setOrderError('');
 
     const order: Order = {
+      // A placeholder only. createOrder replaces it with the id the server
+      // stored, so the number on screen is one support can actually look up.
       id: `ORD-${Date.now()}`, items, shippingAddress, shippingOption, paymentMethod,
       subtotal, shippingCost, tax, total, status: 'confirmed', createdAt: new Date().toISOString(),
       // Without this the order is unattributable: the Firestore rule requires
@@ -207,10 +215,22 @@ export default function CheckoutFlow() {
       userId: user && !user.isGuest ? user.id : undefined,
     };
 
-    createOrder(order);
-    clearCart();
-    setCurrentStep('confirmation');
-    setIsProcessing(false);
+    // Wait for the server before showing anything. The cart is only emptied
+    // and the confirmation only shown once the order is genuinely stored:
+    // this used to fire the request and advance regardless, so a rejected
+    // basket produced a thank-you page, an emptied cart and no order at all.
+    try {
+      const result = await createOrder(order);
+      setConfirmationEmailSent(result.confirmationEmailSent);
+      clearCart();
+      setCurrentStep('confirmation');
+    } catch (err) {
+      // Keep the basket and the step. The shopper can correct whatever the
+      // server objected to and try again without rebuilding their order.
+      setOrderError(err instanceof Error ? err.message : 'Order could not be placed');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleGuestCheckout = (e: React.FormEvent<HTMLFormElement>) => {
@@ -264,7 +284,11 @@ export default function CheckoutFlow() {
             </h1>
 
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', margin: '0 0 var(--spacing-20) 0', lineHeight: 1.55 }}>
-              A confirmation has been emailed to <strong style={{ color: 'var(--black)' }}>{lastOrder.shippingAddress.email}</strong>.
+              {confirmationEmailSent ? (
+                <>A confirmation has been emailed to <strong style={{ color: 'var(--black)' }}>{lastOrder.shippingAddress.email}</strong>.</>
+              ) : (
+                <>Your order is confirmed under <strong style={{ color: 'var(--black)' }}>{lastOrder.id}</strong>. We could not send the confirmation email just now — quote that number if you need to contact us.</>
+              )}
             </p>
 
             {/* ETA pill */}
@@ -726,6 +750,26 @@ export default function CheckoutFlow() {
                       </div>
                     </div>
                   </div>
+
+                  {orderError && (
+                    <div
+                      role="alert"
+                      style={{
+                        marginTop: 'var(--spacing-24)',
+                        padding: '14px 16px',
+                        borderRadius: 'var(--radius-lg)',
+                        background: '#fef2f2',
+                        border: '1px solid #fecaca',
+                        color: '#991b1b',
+                        fontFamily: 'var(--font-body)',
+                        fontSize: '14px',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong style={{ fontWeight: 700 }}>We could not place your order.</strong>{' '}
+                      {orderError} Your basket has been kept.
+                    </div>
+                  )}
 
                   <button
                     onClick={handlePlaceOrder}
