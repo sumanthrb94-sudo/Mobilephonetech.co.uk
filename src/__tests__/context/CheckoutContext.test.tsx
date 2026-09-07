@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { AuthProvider } from '../../context/AuthContext';
@@ -250,6 +250,14 @@ describe('CheckoutContext', () => {
   // ── Order creation ────────────────────────────────────────────────────────
 
   describe('order creation', () => {
+    // createOrder now waits for /api/orders and rejects when the order was not
+    // stored, so every case here needs a server that accepts. Returning no
+    // `order` field keeps the locally supplied ids these tests assert on.
+    beforeEach(() => {
+      vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({}) })));
+    });
+    afterEach(() => vi.unstubAllGlobals());
+
     it('orders array starts empty', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       expect(result.current.orders).toHaveLength(0);
@@ -309,16 +317,26 @@ describe('CheckoutContext', () => {
       vi.unstubAllGlobals();
     });
 
-    it('createOrder succeeds locally even when the Firestore write throws', async () => {
+    it('is unaffected by a Firestore write failing, since it writes none', async () => {
       const { setDoc } = await import('firebase/firestore');
       vi.mocked(setDoc).mockRejectedValueOnce(new Error('Network failure'));
 
       const { result } = renderHook(() => useCheckout(), { wrapper });
-      // Must not throw: the shopper has already paid, so a failed write cannot
-      // be allowed to break the confirmation screen.
       await act(async () => { await result.current.createOrder(makeOrder({ id: 'order-offline' })); });
       expect(result.current.orders).toHaveLength(1);
       expect(result.current.orders[0].id).toBe('order-offline');
+    });
+
+    it('rejects and records nothing when the request never reaches the server', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch'); }));
+
+      const { result } = renderHook(() => useCheckout(), { wrapper });
+      // An order that never reached the server does not exist, so checkout
+      // must not be able to show a confirmation for it.
+      await act(async () => {
+        await expect(result.current.createOrder(makeOrder({ id: 'order-dropped' }))).rejects.toThrow();
+      });
+      expect(result.current.orders).toHaveLength(0);
     });
   });
 

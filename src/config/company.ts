@@ -30,8 +30,17 @@ export const COMPANY = {
   /** ICO data-protection registration reference, e.g. "ZA123456". */
   icoRegistration: '',
 
-  /** Monitored support inbox. */
-  supportEmail: 'support@lehart.co.uk',
+  /**
+   * Monitored support inbox. Must be a mailbox that actually exists and that
+   * somebody reads — it is printed on the legal pages, in the footer and in
+   * the returns flow, so a typo here is an address customers write to and
+   * nobody receives.
+   *
+   * info@ rather than support@: info@lehart.co.uk exists on the IONOS mail
+   * plan, support@ does not, and publishing an address that bounces is worse
+   * than publishing a less pretty one.
+   */
+  supportEmail: 'info@lehart.co.uk',
 
   /** Support phone — an 03 number costs callers basic rate, which consumer law expects. */
   supportPhone: '',

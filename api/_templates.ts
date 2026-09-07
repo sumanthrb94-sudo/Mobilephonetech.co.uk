@@ -52,6 +52,46 @@ const FONT = "'Nunito Sans','Rubik',-apple-system,BlinkMacSystemFont,'Segoe UI',
 
 const SHOP_URL = (process.env.PUBLIC_SITE_URL || 'https://lehart.co.uk').replace(/\/+$/, '');
 
+/**
+ * A product image an email client will actually load, or null.
+ *
+ * Two things stop a catalogue image rendering in a mailbox, and both fail
+ * silently as a broken-image icon in the customer's receipt.
+ *
+ * **The URL must be absolute.** Products store "/assets/catalogue/x.png",
+ * which resolves against the site in a browser and against nothing at all in
+ * Gmail. Every stored path is prefixed with PUBLIC_SITE_URL here rather than
+ * at each call site, so a template cannot forget.
+ *
+ * **The format must be one email renders.** SVG is stripped by Gmail, Outlook
+ * and Yahoo outright, and WebP is not supported by Outlook on Windows, which
+ * is Word's rendering engine and a large share of UK inboxes. Both are correct
+ * choices for the website and wrong ones for a receipt. Rather than show a
+ * broken icon, this returns null and the caller draws its tidy empty square —
+ * the drawn placeholders are SVG, so today that is exactly what happens, and
+ * real photographs land as .jpg and appear.
+ */
+export function emailImageUrl(raw: unknown): string | null {
+  const url = String(raw ?? '').trim();
+  if (!url) return null;
+
+  const absolute = url.startsWith('/') ? `${SHOP_URL}${url}` : url;
+  // Only http(s): a data: or javascript: URL has no business in a receipt.
+  if (!/^https?:\/\//i.test(absolute)) return null;
+
+  const path = absolute.split('?')[0].split('#')[0].toLowerCase();
+  if (/\.(png|jpe?g|gif)$/.test(path)) return absolute;
+
+  // Both importers write a JPEG twin beside every asset the web prefers — one
+  // next to each photograph's .webp, one next to each drawing's .svg. Swapping
+  // the extension is safe because each pair is written in one loop, so neither
+  // half exists without the other.
+  if (path.endsWith('.webp')) return absolute.replace(/\.webp(\?|#|$)/i, '.jpg$1');
+  if (path.endsWith('.svg')) return absolute.replace(/\.svg(\?|#|$)/i, '.jpg$1');
+
+  return null;
+}
+
 const money = (n: unknown): string => {
   const value = Number(n);
   return Number.isFinite(value) ? `£${value.toFixed(2)}` : '£0.00';
@@ -189,8 +229,9 @@ function itemRows(items: OrderItem[]): string {
       // Remote images are blocked by default in most clients, so the cell has
       // its own background and fixed size — a blocked image leaves a tidy
       // stone square rather than a broken-icon hole that shifts the layout.
-      const thumb = item.imageUrl
-        ? `<img src="${esc(item.imageUrl)}" width="52" height="52" alt="" style="display:block;width:52px;height:52px;border-radius:8px;object-fit:cover;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};">`
+      const src = emailImageUrl(item.imageUrl);
+      const thumb = src
+        ? `<img src="${esc(src)}" width="52" height="52" alt="" style="display:block;width:52px;height:52px;border-radius:8px;object-fit:cover;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};">`
         : `<div style="width:52px;height:52px;border-radius:8px;background:${PALETTE.pageBg};border:1px solid ${PALETTE.border};"></div>`;
 
       return `<tr>

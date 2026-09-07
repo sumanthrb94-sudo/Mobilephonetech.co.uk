@@ -2,6 +2,7 @@ import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
 import { looksLikeEmail, sendEmail } from '../_email.js';
 import { orderConfirmationEmail } from '../_templates.js';
+import { previewModeFrom, PREVIEW_MESSAGE } from '../../src/config/preview.js';
 
 /**
  * Create an order. The server prices it; the browser never does.
@@ -53,6 +54,19 @@ export default async function handler(req: any, res: any) {
   }
   if (!enforceRateLimit(req, res, 'orders', { limit: 12, windowMs: 60_000 })) return;
 
+  /**
+   * Preview mode, enforced here rather than only in the browser.
+   *
+   * The banner on the storefront is a courtesy; this is the control. A hidden
+   * button is still a reachable endpoint, and the one person who finds it is
+   * the one who then has a real order, a real expectation, and no payment
+   * behind it. 503 rather than 403: the shop is temporarily not serving, which
+   * is what a client and a search engine should both understand.
+   */
+  if (previewModeFrom(process.env.VITE_PREVIEW_MODE)) {
+    return res.status(503).json({ error: PREVIEW_MESSAGE, previewMode: true });
+  }
+
   const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Ordering is temporarily unavailable' });
 
@@ -69,10 +83,39 @@ export default async function handler(req: any, res: any) {
   if (!clean(address.addressLine1, 200)) return res.status(400).json({ error: 'A delivery address is required' });
   if (!clean(address.postalCode ?? address.postcode, 20)) return res.status(400).json({ error: 'A postcode is required' });
 
-  const contactEmail = clean(address.email || body.guestEmail || caller?.email, 254);
+  /**
+   * Who the receipt goes to.
+   *
+   * The account address is the customer's identity — it is the one they can
+   * sign in with, the one their order history hangs off, and the one they will
+   * look in when they want to find this purchase again. An address typed into
+   * the checkout form is a delivery detail: a gift, a work inbox, a partner's.
+   *
+   * So the account wins as the primary contact when there is one, and the
+   * typed address gets its own copy when it differs. Preferring the typed one
+   * outright, as this did, meant a signed-in customer who mistyped that field
+   * lost the only record of their purchase to a stranger's inbox — with
+   * nothing in their own, and nothing to match against their order history.
+   */
+  const accountEmail = clean(caller?.email, 254);
+  const typedEmail = clean(address.email || body.guestEmail, 254);
+
+  // An address that was supplied must still be a real one; silently dropping a
+  // typo would send the copy nowhere and say nothing about it.
+  if (typedEmail && !looksLikeEmail(typedEmail)) {
+    return res.status(400).json({ error: 'A valid email address is required for order updates' });
+  }
+
+  const contactEmail = looksLikeEmail(accountEmail) ? accountEmail : typedEmail;
   if (!looksLikeEmail(contactEmail)) {
     return res.status(400).json({ error: 'A valid email address is required for order updates' });
   }
+
+  // Sent as a separate message rather than a second To:, so neither recipient
+  // learns the other's address — the gift case makes that a real disclosure.
+  const copyEmail = typedEmail && typedEmail.toLowerCase() !== contactEmail.toLowerCase()
+    ? typedEmail
+    : null;
 
   const shipping = SHIPPING[String(body.shippingOptionId ?? 'standard')] ?? SHIPPING.standard;
 
@@ -170,6 +213,9 @@ export default async function handler(req: any, res: any) {
     userId: caller?.uid ?? null,
     guestEmail: caller ? null : contactEmail,
     contactEmail,
+    // The address the shopper asked us to copy, kept so support can see who
+    // else was told about this order.
+    copyEmail,
     // Always 'pending'. A customer must never be able to hand us an order that
     // says it is already paid or delivered.
     status: 'pending' as const,
@@ -183,7 +229,7 @@ export default async function handler(req: any, res: any) {
     couponCode: discount > 0 ? code : null,
     shippingAddress: {
       fullName: clean(address.fullName, 120),
-      email: contactEmail,
+      email: typedEmail || contactEmail,
       phone: clean(address.phone, 40) || null,
       addressLine1: clean(address.addressLine1, 200),
       addressLine2: clean(address.addressLine2, 200) || null,
@@ -209,15 +255,33 @@ export default async function handler(req: any, res: any) {
   // still needed because the runtime can freeze the instance the moment the
   // response is sent, cancelling anything left in flight.
   const confirmation = orderConfirmationEmail(order);
-  const emailed = await sendEmail({
-    to: contactEmail,
+  const send = (to: string) => sendEmail({
+    to,
     toName: order.shippingAddress.fullName,
     subject: confirmation.subject,
     html: confirmation.html,
     text: confirmation.text,
     tag: 'order-confirmation',
   });
-  if (emailed.error) console.error(`[api/orders] confirmation for ${orderId}:`, emailed.error);
 
-  return res.status(201).json({ order, confirmationEmail: { sent: emailed.sent, skipped: emailed.skipped } });
+  // Both go out together. The copy is not allowed to delay or fail the
+  // primary, and neither is allowed to fail the order.
+  const [emailed, copied] = await Promise.all([
+    send(contactEmail),
+    copyEmail ? send(copyEmail) : Promise.resolve(null),
+  ]);
+
+  if (emailed.error) console.error(`[api/orders] confirmation for ${orderId}:`, emailed.error);
+  if (copied?.error) console.error(`[api/orders] copy for ${orderId}:`, copied.error);
+
+  return res.status(201).json({
+    order,
+    confirmationEmail: {
+      sent: emailed.sent,
+      skipped: emailed.skipped,
+      // Absent when no second address was asked for, so the checkout can tell
+      // "no copy wanted" from "the copy did not go".
+      ...(copyEmail ? { copySent: Boolean(copied?.sent) } : {}),
+    },
+  });
 }

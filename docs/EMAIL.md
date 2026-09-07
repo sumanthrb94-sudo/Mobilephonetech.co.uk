@@ -376,3 +376,264 @@ the route, or a sender the provider will accept and the world will refuse. It
 also pins the two properties that are easy to break and invisible when broken:
 every message carries a plain-text part, and the confirmation quotes the same
 arrival date checkout showed.
+
+## Going live on lehart.co.uk
+
+The domain is registered and its mail is hosted at IONOS, with mailboxes
+including `info@`, `accounts@` and named staff addresses. That is the missing
+piece the sender warning has been pointing at — Brevo can now send as a domain
+you control instead of as a gmail.com address it can never authenticate.
+
+Four steps, in this order. Each one is inert until the one before it is done.
+
+### 1. Authenticate the domain in Brevo
+
+Brevo → Senders, Domains & Dedicated IPs → **Add a domain** → `lehart.co.uk`.
+Brevo issues a DKIM record, an SPF entry and a DMARC suggestion.
+
+Publish them at **IONOS → Domains → lehart.co.uk → DNS**. They are TXT records;
+IONOS appends the domain to the host name itself, so enter `mail._domainkey`
+rather than `mail._domainkey.lehart.co.uk` or the record ends up doubled.
+
+**Do not remove IONOS's existing MX records.** DKIM and SPF govern sending;
+MX governs receiving. Deleting the MX entries stops every mailbox in the
+screenshots from receiving anything.
+
+Wait for Brevo to show the domain **Verified**. Propagation is usually minutes
+and occasionally hours; nothing below works until it does.
+
+### 2. Point the site at the domain
+
+Vercel → Settings → Domains → add `lehart.co.uk` and `www.lehart.co.uk`, then
+add the A / CNAME records Vercel gives you at IONOS. This is separate from mail
+and neither breaks the other.
+
+### 3. Set the environment variables
+
+```
+EMAIL_FROM        info@lehart.co.uk
+EMAIL_FROM_NAME   LeHart
+EMAIL_REPLY_TO    info@lehart.co.uk
+PUBLIC_SITE_URL   https://lehart.co.uk     # only once step 2 resolves
+```
+
+Eight mailboxes exist on `lehart.co.uk`, and only one of them is wired to the
+site:
+
+| Mailbox | Used by the site |
+|---|---|
+| `info@` | **Yes** — sender, reply-to, and the support address published on the legal pages, the returns flow and the footer |
+| `accounts@` | No — finance |
+| `sales@`, `sourcing@` | No — internal functions |
+| `aimen@`, `asim@`, `haroon@`, `mir@` | No — people. Candidates for `ADMIN_EMAILS`, which is who can sign in to `/admin` |
+
+There is no `orders@`. Create one if the plan has a spare slot: a dedicated
+transactional sender keeps receipts out of a shared inbox and makes a
+deliverability problem easy to isolate when one appears. Until then `info@`
+does both jobs perfectly well at 300 emails a day.
+
+Nothing should send as a person's mailbox. A receipt from `asim@lehart.co.uk`
+invites replies into an individual's inbox, breaks when that person leaves, and
+mixes personal correspondence with automated mail in a way that makes the
+address's sending reputation impossible to reason about.
+
+`EMAIL_REPLY_TO` is applied to every send inside `sendEmail`, so no template
+can forget it. It matters more than it looks: customers reply to receipts to
+ask where a parcel is or to report a fault, and a send-only From address means
+they believe they contacted you while nobody ever sees it.
+
+`PUBLIC_SITE_URL` must not be changed before the domain resolves — it is the
+base for every link inside every email, so pointing it at a domain that is not
+yet serving breaks order tracking, basket recovery and unsubscribe in one move.
+
+### 4. Firebase's own emails
+
+Verification and password-reset messages come from Firebase, not Brevo, and
+still say `noreply@lehart-1b9ef.firebaseapp.com`. Firebase Console →
+Authentication → Templates → **Customise domain** routes them through
+`lehart.co.uk` with its own DNS records. Also add `lehart.co.uk` under
+Authentication → Settings → **Authorized domains**, or Google sign-in returns
+`auth/unauthorized-domain` on the new domain.
+
+### Verifying
+
+`/api/health` reports the state without guessing:
+
+```json
+"emailFrom": "orders@lehart.co.uk", "emailReplyTo": "info@lehart.co.uk", "warnings": []
+```
+
+An empty `warnings` array is the signal — the sender-domain warning disappears
+on its own once `EMAIL_FROM` is no longer at a free-mail domain. Then sign up
+with a real address and confirm both messages arrive: Firebase's verification
+link and the LeHart welcome. Check the spam folder too; the first sends from a
+newly authenticated domain sometimes land there before reputation builds.
+
+## Brevo or Resend
+
+Both are supported. `EMAIL_PROVIDER` chooses, and it is optional — the provider
+is inferred from whichever key is set, so adding `RESEND_API_KEY` is enough to
+switch. When both keys exist Resend wins, on the reasoning that deliberately
+adding the newer key says more than never having removed the old one.
+
+```
+EMAIL_PROVIDER=resend      # optional
+RESEND_API_KEY=re_...      # Resend → API Keys
+```
+
+Every caller passes the same object; only the request differs, and it differs
+in almost every field name:
+
+| | Brevo | Resend |
+|---|---|---|
+| Auth | `api-key:` header | `Authorization: Bearer` |
+| Sender | `sender: {email, name}` | `from: "Name <addr>"` |
+| Body | `htmlContent` / `textContent` | `html` / `text` |
+| Reply-to | `replyTo: {email}` | `reply_to` |
+| Tags | `["order-confirmation"]` | `[{name, value}]` |
+| Id returned | `messageId` | `id` |
+
+The id is read from the field the provider in use actually sets, not by falling
+back between them — a fallback silently picks whichever is present, so the day
+a response carries both, the id in the log is not necessarily the one in their
+console.
+
+### Switching does not skip the DNS work
+
+**This is the part worth being clear about.** DKIM and SPF are published per
+sending domain *per provider*. Moving to Resend means publishing Resend's
+records at IONOS; it does not inherit Brevo's, and it does not avoid the step.
+
+Nothing that has gone wrong with email on this project was the provider's
+doing. The messages that never arrived were sent from a gmail.com address no
+relay can authenticate. The ones before that were never sent at all, because a
+key was missing. Swapping provider would have fixed neither, and the sender
+warning in `/api/health` fires the same either way.
+
+Choose on price, on which dashboard you prefer reading, or on where the
+business already has an account. Not on deliverability — that is your domain's
+reputation, not theirs.
+
+### What stays on Brevo
+
+**SMS.** Resend does not send SMS, so `api/_sms.ts` still uses `BREVO_API_KEY`
+and `SMS_SENDER`. Running Resend for email and Brevo for the doorstep text is a
+supported combination: keep both keys and set `EMAIL_PROVIDER=resend`.
+
+**The bounce webhook.** `api/_routes/brevo-webhook.ts` parses Brevo's payload
+shape. On Resend the equivalent webhook is not yet written, so hard bounces and
+complaints would stop feeding the suppression list — worth building before any
+volume, and harmless at the current scale where the list is short enough to
+read by eye.
+
+**Contact sync.** `api/_brevoContacts.ts` writes to Brevo's contact lists for
+campaigns. That is marketing rather than transactional and is independent of
+which provider sends receipts.
+
+## Brevo or Resend
+
+Both are supported. `EMAIL_PROVIDER` chooses, and it is optional — the provider
+is inferred from whichever key is set, so adding `RESEND_API_KEY` is enough to
+switch. When both exist Resend wins, on the reasoning that deliberately adding
+the newer key says more than never having removed the old one.
+
+Every caller passes the same object; only the request differs, and it differs
+in almost every field name:
+
+| | Brevo | Resend |
+|---|---|---|
+| Auth | `api-key:` header | `Authorization: Bearer` |
+| Sender | `sender: {email, name}` | `from: "Name <addr>"` |
+| Body | `htmlContent` / `textContent` | `html` / `text` |
+| Reply-to | `replyTo: {email}` | `reply_to` |
+| Tags | `["order-confirmation"]` | `[{name, value}]` |
+| Id returned | `messageId` | `id` |
+
+The id is read from the field the provider in use actually sets, not by falling
+back between them — a fallback silently picks whichever is present, so the day
+a response carries both, the id logged is not necessarily the one in their
+console.
+
+### The account address is not the sending address
+
+A Resend account registered under a gmail.com address sends perfectly well from
+`info@lehart.co.uk`. The login is billing and access; deliverability depends
+only on which **domain** is verified inside that account. They are unrelated,
+and conflating them is the reason people conclude a provider "doesn't work".
+
+### Switching does not skip the DNS work
+
+DKIM and SPF are published per sending domain *per provider*. Moving to Resend
+means publishing Resend's records at IONOS; it does not inherit Brevo's.
+
+Nothing that has gone wrong with email here was the provider's doing. The
+messages that never arrived were sent from a gmail.com address no relay can
+authenticate. The ones before that were never sent at all, because a key was
+missing. Swapping provider fixes neither, and the sender warning in
+`/api/health` fires the same either way.
+
+### Running both at once: one SPF record, not two
+
+DKIM is safe to duplicate — each provider uses its own selector, so
+`resend._domainkey` and Brevo's record coexist with no conflict.
+
+**SPF is not.** A domain may publish exactly one SPF TXT record. Adding a
+second does not combine them; it makes the SPF result *permerror*, which is
+worse than having none, and it takes both providers down at once. Merge the
+includes into a single record instead:
+
+```
+v=spf1 include:_spf.brevo.com include:amazonses.com ~all
+```
+
+Take the exact `include:` value each provider tells you to use rather than the
+line above — Resend's has changed as their infrastructure has, and a stale
+include silently fails SPF. SPF also permits at most ten DNS lookups; two
+includes is fine, but it is a budget worth knowing exists.
+
+### What stays on Brevo
+
+**SMS.** Resend does not send SMS, so `api/_sms.ts` still uses `BREVO_API_KEY`
+and `SMS_SENDER`. Resend for email and Brevo for the doorstep text is a
+supported combination: keep both keys and set `EMAIL_PROVIDER=resend`.
+
+**The bounce webhook.** `api/_routes/brevo-webhook.ts` parses Brevo's payload
+shape. The Resend equivalent is not written, so on Resend hard bounces and
+complaints stop feeding the suppression list. Worth building before any volume;
+harmless at the current scale, where the list is short enough to read by eye.
+
+**Contact sync.** `api/_brevoContacts.ts` writes to Brevo's contact lists for
+campaigns — marketing rather than transactional, and independent of which
+provider sends receipts.
+
+## Product images in email
+
+Two things stop a catalogue image rendering in a mailbox, and both fail as a
+broken square in the customer's receipt rather than as an error anyone sees.
+
+**A stored path is relative.** Products carry `/assets/catalogue/photos/x.webp`,
+which resolves against the site in a browser and against nothing at all in
+Gmail. `emailImageUrl()` in `api/_templates.ts` prefixes `PUBLIC_SITE_URL`
+centrally, so no template can forget — and it is another reason
+`PUBLIC_SITE_URL` must be right before any send.
+
+**The format is one email cannot render.** SVG is stripped outright by Gmail,
+Outlook and Yahoo. WebP is unsupported by Outlook on Windows, which uses Word's
+rendering engine and is a large share of UK inboxes. Both are correct choices
+for the website and wrong for a receipt.
+
+So `scripts/import-images.mjs` writes every photograph twice — `.webp` for the
+site, `.jpg` beside it for email — and `emailImageUrl()` swaps the extension.
+The pair is written in one loop, so neither exists without the other.
+
+The drawn SVG placeholders resolve to null, and the item row falls back to a
+tidy empty square. That is deliberate: **a blocked or broken image should look
+like a design choice, not a fault.** The cell has a fixed size and its own
+background, so the layout does not shift either way — which matters because
+most clients block remote images until the reader asks for them, so the
+no-image state is what a good proportion of customers see first regardless.
+
+The practical consequence: **order emails show real photographs only for
+listings that have one.** Until the photography lands, receipts show the empty
+square, which is honest and tidy. Nothing needs changing when the pictures
+arrive — the same import that puts them on the site puts them in the emails.

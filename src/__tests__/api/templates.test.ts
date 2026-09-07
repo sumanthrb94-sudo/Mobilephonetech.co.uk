@@ -212,3 +212,111 @@ describe('the sender that fails silently', () => {
     process.env.EMAIL_FROM = before;
   });
 });
+
+
+describe('replies reach a person', () => {
+  it('sets reply-to on every send from EMAIL_REPLY_TO', async () => {
+    // Customers reply to receipts. Without this the reply goes to the sender
+    // address, which is send-only on most setups — the customer believes they
+    // contacted you and nobody ever sees it.
+    const before = { ...process.env };
+    process.env.BREVO_API_KEY = 'k';
+    process.env.EMAIL_FROM = 'orders@lehart.co.uk';
+    process.env.EMAIL_REPLY_TO = 'info@lehart.co.uk';
+
+    const calls: Array<Record<string, unknown>> = [];
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (_url: string, init: { body: string }) => {
+      calls.push(JSON.parse(init.body));
+      return { ok: true, status: 201, json: async () => ({ messageId: 'm1' }), text: async () => '' };
+    }) as unknown as typeof fetch;
+
+    const { sendEmail } = await import('../../../api/_email.js');
+    await sendEmail({ to: 'ram@example.com', subject: 's', html: '<p>h</p>', text: 't' });
+
+    globalThis.fetch = realFetch;
+    Object.assign(process.env, before);
+
+    expect(calls[0].replyTo).toEqual({ email: 'info@lehart.co.uk' });
+  });
+});
+
+describe('the published support address', () => {
+  it('is a mailbox that exists', async () => {
+    // support@lehart.co.uk was published on the legal pages and the returns
+    // flow, and was never created on the mail plan. info@ is.
+    const { COMPANY } = await import('../../config/company');
+    expect(COMPANY.supportEmail).toBe('info@lehart.co.uk');
+  });
+});
+
+describe('images that actually load in a mailbox', () => {
+  it('makes a stored path absolute, because a relative one resolves to nothing in Gmail', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    const before = process.env.PUBLIC_SITE_URL;
+    process.env.PUBLIC_SITE_URL = 'https://lehart.co.uk';
+    // Templates read SHOP_URL at module load, so the default is what applies.
+    expect(emailImageUrl('/assets/catalogue/photos/x.jpg')).toMatch(/^https:\/\/[^/]+\/assets/);
+    process.env.PUBLIC_SITE_URL = before;
+  });
+
+  it('swaps SVG for the JPEG twin, since Gmail, Outlook and Yahoo strip SVG', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    // The drawn placeholders are SVG on the site. The importer rasterises one
+    // beside each so a receipt shows the device rather than a gap.
+    expect(emailImageUrl('/assets/catalogue/apple-iphone-12-64gb.svg')).toMatch(/\.jpg$/);
+  });
+
+  it('swaps WebP for the JPEG twin, because Outlook on Windows cannot render WebP', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    expect(emailImageUrl('/assets/catalogue/photos/x.webp')).toMatch(/\.jpg$/);
+  });
+
+  it('refuses anything that is not http', async () => {
+    const { emailImageUrl } = await import('../../../api/_templates.js');
+    // A data: or javascript: URL has no business in a customer's receipt.
+    expect(emailImageUrl('javascript:alert(1)')).toBeNull();
+    expect(emailImageUrl('data:image/png;base64,AAAA')).toBeNull();
+    expect(emailImageUrl('')).toBeNull();
+  });
+
+  it('never emits a format email cannot render', async () => {
+    const { orderConfirmationEmail } = await import('../../../api/_templates.js');
+    const mail = orderConfirmationEmail({
+      id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
+      contactEmail: 'ram@example.com',
+      items: [{ brand: 'Apple', model: 'iPhone 12', price: 100, quantity: 1, imageUrl: '/assets/catalogue/x.svg' }],
+      shippingAddress: { fullName: 'Ram', postalCode: 'NW1 9XF' },
+    } as never);
+
+    expect(mail.html).not.toContain('.svg');
+    expect(mail.html).toContain('/assets/catalogue/x.jpg');
+  });
+
+  it('falls back to the empty square when there is no image at all', async () => {
+    const { orderConfirmationEmail } = await import('../../../api/_templates.js');
+    const mail = orderConfirmationEmail({
+      id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
+      contactEmail: 'ram@example.com',
+      items: [{ brand: 'Apple', model: 'iPhone 12', price: 100, quantity: 1, imageUrl: null }],
+      shippingAddress: { fullName: 'Ram', postalCode: 'NW1 9XF' },
+    } as never);
+
+    // A tidy square, never a broken-image icon.
+    expect(mail.html).not.toContain('<img');
+  });
+
+  it('renders the photograph when one exists', async () => {
+    const { orderConfirmationEmail } = await import('../../../api/_templates.js');
+    const mail = orderConfirmationEmail({
+      id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
+      contactEmail: 'ram@example.com',
+      items: [{ brand: 'Apple', model: 'iPhone 12', price: 100, quantity: 1, imageUrl: '/assets/catalogue/photos/x.webp' }],
+      shippingAddress: { fullName: 'Ram', postalCode: 'NW1 9XF' },
+    } as never);
+
+    expect(mail.html).toContain('<img');
+    expect(mail.html).toContain('/assets/catalogue/photos/x.jpg');
+    expect(mail.html).toMatch(/src="https:\/\//);
+  });
+});

@@ -1,5 +1,6 @@
 import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
-import { emailConfigured, senderDomainWarning } from '../_email.js';
+import { emailConfigured, emailProvider, senderDomainWarning } from '../_email.js';
+import { previewModeFrom } from '../../src/config/preview.js';
 
 /**
  * Deployment health check.
@@ -20,6 +21,8 @@ export default async function handler(req: any, res: any) {
 
   const checks: Record<string, unknown> = {
     projectId: process.env.VITE_FIREBASE_PROJECT_ID ?? null,
+    // On means the storefront shows the notice and the order route refuses.
+    previewMode: previewModeFrom(process.env.VITE_PREVIEW_MODE),
     // Which registered web app this deployment identifies as. Public — it is
     // inlined into the browser bundle either way — and worth surfacing because
     // an appId naming a web app that has since been deleted in the Firebase
@@ -36,7 +39,12 @@ export default async function handler(req: any, res: any) {
     // rejected it". The sender address is in the header of every email we
     // send, so naming it here reveals nothing; the key itself is never shown.
     emailConfigured: emailConfigured(),
+    emailProvider: emailProvider(),
     emailFrom: process.env.EMAIL_FROM ?? null,
+    // Where a customer's reply lands. Unset means replies go to the sender
+    // address, which on most setups is send-only — so the customer believes
+    // they contacted you and nobody ever sees it.
+    emailReplyTo: process.env.EMAIL_REPLY_TO ?? null,
     smsConfigured: Boolean(process.env.BREVO_API_KEY && process.env.SMS_SENDER),
   };
 

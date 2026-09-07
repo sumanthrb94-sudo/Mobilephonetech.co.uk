@@ -26,6 +26,7 @@ import MobileBottomNav from './components/layout/MobileBottomNav';
 import CheckoutHeader from './components/layout/CheckoutHeader';
 import CheckoutFooter from './components/layout/CheckoutFooter';
 import AnnouncementBar from './components/layout/AnnouncementBar';
+import PreviewBanner from './components/layout/PreviewBanner';
 import ScrollToTop from './components/ScrollToTop';
 import { Suspense, lazy, useEffect } from 'react';
 import { AnimatePresence, motion, MotionConfig, useReducedMotion } from 'motion/react';
@@ -194,6 +195,10 @@ function AppContent() {
       <div role="status" aria-live="polite" className="sr-only">
         {cartCount > 0 ? `Cart contains ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Cart is empty'}
       </div>
+
+      {/* Above every branch, checkout included: the person furthest into the
+          flow is the one who most needs telling. */}
+      <PreviewBanner />
 
       {isCheckoutRoute ? (
         <CheckoutHeader />

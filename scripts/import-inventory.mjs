@@ -80,11 +80,14 @@ if (inversions.length) {
 const artDir = join(root, 'public/assets/catalogue');
 mkdirSync(artDir, { recursive: true });
 let art = 0;
+const drawn = [];
+
 for (const p of products) {
   const draw = (colour, file) => {
     writeFileSync(join(artDir, file), deviceSvg({
       brand: p.brand, model: p.model, storage: p.storage, colour, category: p.category,
     }));
+    drawn.push(file);
     art++;
   };
 
@@ -100,7 +103,60 @@ for (const p of products) {
 
   p.galleryImages = [...new Set([p.imageUrl, ...p.variants.map((v) => v.imageUrl).filter(Boolean)])];
 }
-console.log(`  Artwork       ${art} images written`);
+console.log(`  Artwork       ${art} drawings written`);
+
+/**
+ * A JPEG beside every drawing, for email.
+ *
+ * SVG is the right format on the site — a kilobyte, crisp at any size — and
+ * unusable in a mailbox, because Gmail, Outlook and Yahoo strip it. Without a
+ * raster twin every order confirmation shows an empty square until real
+ * photographs arrive, which is tidy but says nothing about what was bought.
+ *
+ * 300px JPEG rather than 600px PNG, which was the first attempt and produced
+ * 20 MB of flat colour. These are only ever rendered at 52 pixels in an email
+ * thumbnail, so 300 covers even a high-density display, and JPEG suits a
+ * smooth gradient far better than PNG does. The result is roughly a tenth of
+ * the size for a picture nobody can tell apart at the size it is shown.
+ *
+ * Chromium rasterises them, the same encoder scripts/import-images.mjs uses
+ * for photographs. Skipped with --no-raster when the drawings have not
+ * changed, since it is the slow part of this script by a wide margin.
+ */
+if (!process.argv.includes('--no-raster')) {
+  const { chromium } = await import('playwright');
+  const browser = await chromium.launch(
+    process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
+  );
+  const page = await browser.newPage({ viewport: { width: 320, height: 320 } });
+  let rastered = 0;
+
+  for (const file of drawn) {
+    const svg = readFileSync(join(artDir, file), 'utf8');
+    const png = await page.evaluate(async (source) => {
+      const img = new Image();
+      img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(source)))}`;
+      await img.decode();
+      const SIZE = 300;
+      const canvas = document.createElement('canvas');
+      canvas.width = SIZE;
+      canvas.height = SIZE;
+      const ctx = canvas.getContext('2d');
+      // White behind it. JPEG has no alpha channel, so without this the
+      // transparent areas composite as black.
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, SIZE, SIZE);
+      ctx.drawImage(img, 0, 0, SIZE, SIZE);
+      return canvas.toDataURL('image/jpeg', 0.86);
+    }, svg);
+
+    writeFileSync(join(artDir, file.replace(/\.svg$/, '.jpg')), Buffer.from(png.split(',')[1], 'base64'));
+    rastered++;
+  }
+
+  await browser.close();
+  console.log(`  Email art     ${rastered} JPEG twins written`);
+}
 
 if (DRY) {
   console.log('  --dry-run: nothing written to Firestore.\n');
@@ -192,7 +248,12 @@ const searchTermsFor = (p) => [...new Set(
 
 await commitInChunks(products, (batch, p) => {
   batch.set(db.collection('products').doc(p.id), stripUndefined({
-    ...p, searchTerms: searchTermsFor(p), source: 'inventory-import', updatedAt: now,
+    // createdAt as well as updatedAt: a catalogue read that orders by a
+    // field these documents lack comes back empty rather than unsorted,
+    // which reads as "no catalogue" and sends the storefront to bundled
+    // sample data whose ids no order can be priced against.
+    ...p, searchTerms: searchTermsFor(p), source: 'inventory-import',
+    createdAt: now, updatedAt: now,
   }));
 });
 console.log(`  Products      ${products.length} written`);

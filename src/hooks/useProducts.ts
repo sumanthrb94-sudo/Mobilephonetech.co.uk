@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  collection, doc, getDoc, getDocs, limit as fsLimit, orderBy, query, where,
+  collection, doc, getDoc, getDocs, limit as fsLimit, query, where,
 } from 'firebase/firestore';
 import { Product, FilterState } from '../types';
 import { MOCK_PHONES } from '../data';
@@ -157,10 +157,24 @@ export async function searchProducts(term: string, max = 20): Promise<Product[]>
 
 /** Newest-first products, used by the catalogue provider. */
 export async function fetchCatalogue(max = FETCH_CAP): Promise<Product[]> {
-  const snap = await getDocs(query(
-    collection(db, COL.products),
-    orderBy('createdAt', 'desc'),
-    fsLimit(max),
-  ));
-  return snap.docs.map(d => docToProduct(d.id, d.data()));
+  // Deliberately unordered in the query, and sorted below instead.
+  //
+  // Firestore silently drops every document that lacks the field an orderBy
+  // names. Ordering on `createdAt` therefore returned nothing at all — the
+  // inventory import writes `updatedAt` and never `createdAt` — and nothing
+  // is indistinguishable from "the catalogue is empty". CatalogueProvider
+  // read that as a failure and fell back to the bundled MOCK_PHONES, whose
+  // ids (`apple-iphone-15-plus-unlocked`) are not the ids the catalogue is
+  // keyed by (`apple-iphone-15-plus-128gb`), so /api/orders could not price
+  // a single basket and refused every order with a 400.
+  //
+  // A sort is a presentation detail; it must never be able to empty the shop.
+  const snap = await getDocs(query(collection(db, COL.products), fsLimit(max)));
+
+  return snap.docs
+    .map(d => ({ id: d.id, data: d.data() }))
+    // Newest first, on whichever timestamp the writer actually set.
+    .sort((a, b) => String(b.data.createdAt ?? b.data.updatedAt ?? '')
+      .localeCompare(String(a.data.createdAt ?? a.data.updatedAt ?? '')))
+    .map(r => docToProduct(r.id, r.data));
 }

@@ -115,8 +115,16 @@ const page = await browser.newPage();
  * Done in the page rather than in Node because canvas is the only image
  * encoder available without adding a native dependency — and Playwright, with
  * Chromium, is already installed for the end-to-end suites.
+ *
+ * Two formats come out of it, and the second is not redundant. WebP is right
+ * for the website: same picture, roughly a third of the bytes. It is wrong for
+ * a receipt, because Outlook on Windows cannot render it and neither can
+ * several older clients — a customer would open their order confirmation and
+ * find a broken square where their phone should be. So every photograph also
+ * gets a JPEG twin, and api/_templates.ts only ever links to formats email can
+ * actually display.
  */
-const encode = async (dataUrl) => page.evaluate(async ({ src, size, quality }) => {
+const encode = async (dataUrl, type = 'image/webp') => page.evaluate(async ({ src, size, quality, type }) => {
   const img = new Image();
   img.src = src;
   await img.decode();
@@ -145,13 +153,18 @@ for (const { file, target } of matched) {
   before += bytes.length;
   const mime = { '.png': 'image/png', '.webp': 'image/webp', '.avif': 'image/avif' }[extname(file).toLowerCase()] ?? 'image/jpeg';
 
+  const stem = basename(target.saveAs, extname(target.saveAs));
+  const source = `data:${mime};base64,${bytes.toString('base64')}`;
+
   try {
-    const out = await encode(`data:${mime};base64,${bytes.toString('base64')}`);
-    const buf = Buffer.from(out.split(',')[1], 'base64');
-    const name = `${basename(target.saveAs, extname(target.saveAs))}.webp`;
-    writeFileSync(join(OUT_DIR, name), buf);
-    after += buf.length;
-    written.push({ ...target, url: `/assets/catalogue/photos/${name}` });
+    for (const [type, ext] of [['image/webp', 'webp'], ['image/jpeg', 'jpg']]) {
+      const out = await encode(source, type);
+      const buf = Buffer.from(out.split(',')[1], 'base64');
+      writeFileSync(join(OUT_DIR, `${stem}.${ext}`), buf);
+      after += buf.length;
+    }
+    // The site is pointed at the WebP; emails resolve the .jpg twin beside it.
+    written.push({ ...target, url: `/assets/catalogue/photos/${stem}.webp` });
   } catch (err) {
     console.log(`    FAILED  ${file} — ${err.message}`);
   }
