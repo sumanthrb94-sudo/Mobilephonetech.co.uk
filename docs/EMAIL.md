@@ -411,11 +411,31 @@ and neither breaks the other.
 ### 3. Set the environment variables
 
 ```
-EMAIL_FROM        orders@lehart.co.uk      # create this mailbox, or use info@
+EMAIL_FROM        info@lehart.co.uk
 EMAIL_FROM_NAME   LeHart
-EMAIL_REPLY_TO    info@lehart.co.uk        # a mailbox somebody reads
+EMAIL_REPLY_TO    info@lehart.co.uk
 PUBLIC_SITE_URL   https://lehart.co.uk     # only once step 2 resolves
 ```
+
+Eight mailboxes exist on `lehart.co.uk`, and only one of them is wired to the
+site:
+
+| Mailbox | Used by the site |
+|---|---|
+| `info@` | **Yes** — sender, reply-to, and the support address published on the legal pages, the returns flow and the footer |
+| `accounts@` | No — finance |
+| `sales@`, `sourcing@` | No — internal functions |
+| `aimen@`, `asim@`, `haroon@`, `mir@` | No — people. Candidates for `ADMIN_EMAILS`, which is who can sign in to `/admin` |
+
+There is no `orders@`. Create one if the plan has a spare slot: a dedicated
+transactional sender keeps receipts out of a shared inbox and makes a
+deliverability problem easy to isolate when one appears. Until then `info@`
+does both jobs perfectly well at 300 emails a day.
+
+Nothing should send as a person's mailbox. A receipt from `asim@lehart.co.uk`
+invites replies into an individual's inbox, breaks when that person leaves, and
+mixes personal correspondence with automated mail in a way that makes the
+address's sending reputation impossible to reason about.
 
 `EMAIL_REPLY_TO` is applied to every send inside `sendEmail`, so no template
 can forget it. It matters more than it looks: customers reply to receipts to
