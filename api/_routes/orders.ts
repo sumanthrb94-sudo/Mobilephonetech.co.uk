@@ -2,6 +2,7 @@ import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
 import { looksLikeEmail, sendEmail } from '../_email.js';
 import { orderConfirmationEmail } from '../_templates.js';
+import { previewModeFrom, PREVIEW_MESSAGE } from '../../src/config/preview.js';
 
 /**
  * Create an order. The server prices it; the browser never does.
@@ -52,6 +53,19 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   if (!enforceRateLimit(req, res, 'orders', { limit: 12, windowMs: 60_000 })) return;
+
+  /**
+   * Preview mode, enforced here rather than only in the browser.
+   *
+   * The banner on the storefront is a courtesy; this is the control. A hidden
+   * button is still a reachable endpoint, and the one person who finds it is
+   * the one who then has a real order, a real expectation, and no payment
+   * behind it. 503 rather than 403: the shop is temporarily not serving, which
+   * is what a client and a search engine should both understand.
+   */
+  if (previewModeFrom(process.env.VITE_PREVIEW_MODE)) {
+    return res.status(503).json({ error: PREVIEW_MESSAGE, previewMode: true });
+  }
 
   const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Ordering is temporarily unavailable' });

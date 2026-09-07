@@ -1,5 +1,6 @@
 import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
 import { emailConfigured, emailProvider, senderDomainWarning } from '../_email.js';
+import { previewModeFrom } from '../../src/config/preview.js';
 
 /**
  * Deployment health check.
@@ -20,6 +21,8 @@ export default async function handler(req: any, res: any) {
 
   const checks: Record<string, unknown> = {
     projectId: process.env.VITE_FIREBASE_PROJECT_ID ?? null,
+    // On means the storefront shows the notice and the order route refuses.
+    previewMode: previewModeFrom(process.env.VITE_PREVIEW_MODE),
     // Which registered web app this deployment identifies as. Public — it is
     // inlined into the browser bundle either way — and worth surfacing because
     // an appId naming a web app that has since been deleted in the Firebase

@@ -260,11 +260,11 @@ describe('images that actually load in a mailbox', () => {
     process.env.PUBLIC_SITE_URL = before;
   });
 
-  it('refuses SVG, which Gmail, Outlook and Yahoo all strip', async () => {
+  it('swaps SVG for the JPEG twin, since Gmail, Outlook and Yahoo strip SVG', async () => {
     const { emailImageUrl } = await import('../../../api/_templates.js');
-    // The drawn placeholders are SVG. A broken-image icon in a receipt is
-    // worse than the tidy empty square the caller falls back to.
-    expect(emailImageUrl('/assets/catalogue/apple-iphone-12-64gb.svg')).toBeNull();
+    // The drawn placeholders are SVG on the site. The importer rasterises one
+    // beside each so a receipt shows the device rather than a gap.
+    expect(emailImageUrl('/assets/catalogue/apple-iphone-12-64gb.svg')).toMatch(/\.jpg$/);
   });
 
   it('swaps WebP for the JPEG twin, because Outlook on Windows cannot render WebP', async () => {
@@ -280,7 +280,7 @@ describe('images that actually load in a mailbox', () => {
     expect(emailImageUrl('')).toBeNull();
   });
 
-  it('renders the empty square rather than a broken image', async () => {
+  it('never emits a format email cannot render', async () => {
     const { orderConfirmationEmail } = await import('../../../api/_templates.js');
     const mail = orderConfirmationEmail({
       id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
@@ -290,6 +290,19 @@ describe('images that actually load in a mailbox', () => {
     } as never);
 
     expect(mail.html).not.toContain('.svg');
+    expect(mail.html).toContain('/assets/catalogue/x.jpg');
+  });
+
+  it('falls back to the empty square when there is no image at all', async () => {
+    const { orderConfirmationEmail } = await import('../../../api/_templates.js');
+    const mail = orderConfirmationEmail({
+      id: 'ORD-1', total: 100, subtotal: 100, tax: 0, shippingCost: 0,
+      contactEmail: 'ram@example.com',
+      items: [{ brand: 'Apple', model: 'iPhone 12', price: 100, quantity: 1, imageUrl: null }],
+      shippingAddress: { fullName: 'Ram', postalCode: 'NW1 9XF' },
+    } as never);
+
+    // A tidy square, never a broken-image icon.
     expect(mail.html).not.toContain('<img');
   });
 

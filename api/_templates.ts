@@ -82,10 +82,12 @@ export function emailImageUrl(raw: unknown): string | null {
   const path = absolute.split('?')[0].split('#')[0].toLowerCase();
   if (/\.(png|jpe?g|gif)$/.test(path)) return absolute;
 
-  // scripts/import-images.mjs writes a .jpg twin beside every .webp for
-  // exactly this. Swapping the extension is safe because the pair is written
-  // in one loop — neither exists without the other.
+  // Both importers write a JPEG twin beside every asset the web prefers — one
+  // next to each photograph's .webp, one next to each drawing's .svg. Swapping
+  // the extension is safe because each pair is written in one loop, so neither
+  // half exists without the other.
   if (path.endsWith('.webp')) return absolute.replace(/\.webp(\?|#|$)/i, '.jpg$1');
+  if (path.endsWith('.svg')) return absolute.replace(/\.svg(\?|#|$)/i, '.jpg$1');
 
   return null;
 }

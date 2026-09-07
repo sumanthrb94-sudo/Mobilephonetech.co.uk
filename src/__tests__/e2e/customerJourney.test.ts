@@ -249,3 +249,33 @@ describe('every message in the journey', () => {
     }
   });
 });
+
+describe('preview mode refuses the order, not just the button', () => {
+  it('answers 503 and sends nothing while the switch is on', async () => {
+    const before = process.env.VITE_PREVIEW_MODE;
+    process.env.VITE_PREVIEW_MODE = 'on';
+    const sentBefore = sent.length;
+
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: ADDRESS,
+    });
+
+    process.env.VITE_PREVIEW_MODE = before;
+
+    // A hidden button is still a reachable endpoint. The refusal has to be
+    // here, or the one person who finds it has a real order and no payment.
+    expect(out.code).toBe(503);
+    expect(out.body.previewMode).toBe(true);
+    expect(sent).toHaveLength(sentBefore);
+  });
+
+  it('takes the order again once the switch is off', async () => {
+    delete process.env.VITE_PREVIEW_MODE;
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: ADDRESS,
+    });
+    expect(out.code).toBe(201);
+  });
+});
