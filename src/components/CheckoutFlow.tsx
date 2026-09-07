@@ -56,8 +56,10 @@ export default function CheckoutFlow() {
   // Why the server refused the order, shown on the review step. Empty when
   // there is nothing wrong.
   const [orderError, setOrderError] = useState('');
-  // Whether the receipt actually went out, as reported by the API.
+  // Whether the receipt actually went out, as reported by the API, and to
+  // which addresses — never assumed from what is in the form.
   const [confirmationEmailSent, setConfirmationEmailSent] = useState(false);
+  const [confirmationSentTo, setConfirmationSentTo] = useState<string[]>([]);
 
   // The checkout step transitions happen in-place (same URL) so the
   // global ScrollToTop listener doesn't fire. Reset scroll manually on
@@ -222,6 +224,7 @@ export default function CheckoutFlow() {
     try {
       const result = await createOrder(order);
       setConfirmationEmailSent(result.confirmationEmailSent);
+      setConfirmationSentTo(result.confirmationSentTo);
       clearCart();
       setCurrentStep('confirmation');
     } catch (err) {
@@ -285,7 +288,14 @@ export default function CheckoutFlow() {
 
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', margin: '0 0 var(--spacing-20) 0', lineHeight: 1.55 }}>
               {confirmationEmailSent ? (
-                <>A confirmation has been emailed to <strong style={{ color: 'var(--black)' }}>{lastOrder.shippingAddress.email}</strong>.</>
+                <>A confirmation has been emailed to{' '}
+                  {confirmationSentTo.map((addr, i) => (
+                    <React.Fragment key={addr}>
+                      {i > 0 && (i === confirmationSentTo.length - 1 ? ' and ' : ', ')}
+                      <strong style={{ color: 'var(--black)' }}>{addr}</strong>
+                    </React.Fragment>
+                  ))}.
+                </>
               ) : (
                 <>Your order is confirmed under <strong style={{ color: 'var(--black)' }}>{lastOrder.id}</strong>. We could not send the confirmation email just now — quote that number if you need to contact us.</>
               )}
@@ -582,7 +592,11 @@ export default function CheckoutFlow() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Full Name</label><input type="text" name="fullName" defaultValue={shippingAddress?.fullName || user?.fullName || ''} style={inputStyle} />{formErrors.fullName && <p style={errorStyle}>{formErrors.fullName}</p>}</div>
-                    <div><label style={labelStyle}>Email</label><input type="email" name="email" defaultValue={shippingAddress?.email || user?.email || ''} style={inputStyle} />{formErrors.email && <p style={errorStyle}>{formErrors.email}</p>}</div>
+                    <div><label style={labelStyle}>Email</label><input type="email" name="email" defaultValue={shippingAddress?.email || user?.email || ''} style={inputStyle} />{isAuthenticated && user?.email && (
+                      <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', marginTop: '6px', lineHeight: 1.45 }}>
+                        Your receipt always goes to <strong style={{ color: 'var(--grey-60)' }}>{user.email}</strong>. Change this to send a copy somewhere else too.
+                      </p>
+                    )}{formErrors.email && <p style={errorStyle}>{formErrors.email}</p>}</div>
                     <div><label style={labelStyle}>Phone</label><input type="tel" name="phone" defaultValue={shippingAddress?.phone} style={inputStyle} />{formErrors.phone && <p style={errorStyle}>{formErrors.phone}</p>}</div>
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address Line 1</label><input type="text" name="addressLine1" defaultValue={shippingAddress?.addressLine1} style={inputStyle} />{formErrors.addressLine1 && <p style={errorStyle}>{formErrors.addressLine1}</p>}</div>
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address Line 2 (Optional)</label><input type="text" name="addressLine2" defaultValue={shippingAddress?.addressLine2} style={inputStyle} /></div>

@@ -35,12 +35,14 @@ function collection(name: string) {
 }
 
 const caller = { uid: 'u_ram', email: 'ram@example.com', name: 'Ram' };
+// Swapped to null for the guest case. verifyCaller reads it on every call.
+let currentCaller: typeof caller | null = caller;
 let isAdmin = false;
 
 vi.mock('../../../api/_firebaseAdmin.js', () => ({
   adminDb: async () => ({ collection }),
   adminAuth: async () => null,
-  verifyCaller: async () => caller,
+  verifyCaller: async () => currentCaller,
   callerIsAdmin: async () => isAdmin,
   getAdminInitError: () => null,
 }));
@@ -277,5 +279,83 @@ describe('preview mode refuses the order, not just the button', () => {
       shippingAddress: ADDRESS,
     });
     expect(out.code).toBe(201);
+  });
+});
+
+// ── Who the receipt reaches ──────────────────────────────────────
+//
+// The account address identifies the customer; the one typed at checkout is a
+// delivery detail. Sending only to the typed one meant a signed-in shopper who
+// mistyped it lost the sole record of their purchase to a stranger.
+describe('confirmation recipients', () => {
+  beforeEach(() => {
+    currentCaller = caller;
+    delete process.env.VITE_PREVIEW_MODE;
+    store.products['apple-iphone-13-128gb'].stock = 20;
+  });
+
+  it('sends to the account address and copies the one typed at checkout', async () => {
+    const before = sent.length;
+
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: { ...ADDRESS, email: 'someone.else@example.com' },
+    });
+
+    expect(out.code).toBe(201);
+    expect(out.body.confirmationEmail.sent).toBe(true);
+    expect(out.body.confirmationEmail.copySent).toBe(true);
+
+    const recipients = sent.slice(before).map(m => m.to[0].email);
+    expect(recipients).toHaveLength(2);
+    expect(recipients).toContain('ram@example.com');
+    expect(recipients).toContain('someone.else@example.com');
+
+    // Separate messages, so neither recipient learns the other's address.
+    sent.slice(before).forEach(m => expect(m.to).toHaveLength(1));
+
+    // The order is filed against the account, and the typed address stays on
+    // the delivery block where the shopper put it.
+    expect(out.body.order.contactEmail).toBe('ram@example.com');
+    expect(out.body.order.copyEmail).toBe('someone.else@example.com');
+    expect(out.body.order.shippingAddress.email).toBe('someone.else@example.com');
+  });
+
+  it('sends once when the typed address is the account address', async () => {
+    const before = sent.length;
+
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: { ...ADDRESS, email: 'RAM@example.com' },
+    });
+
+    expect(out.code).toBe(201);
+    // Same mailbox in different case is not a second person.
+    expect(sent.slice(before)).toHaveLength(1);
+    expect(out.body.confirmationEmail.copySent).toBeUndefined();
+  });
+
+  it('falls back to the typed address for a guest with no account', async () => {
+    currentCaller = null;
+    const before = sent.length;
+
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: { ...ADDRESS, email: 'guest@example.com' },
+    });
+
+    expect(out.code).toBe(201);
+    expect(sent.slice(before).map(m => m.to[0].email)).toEqual(['guest@example.com']);
+    expect(out.body.order.guestEmail).toBe('guest@example.com');
+  });
+
+  it('refuses a malformed address rather than quietly dropping the copy', async () => {
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: { ...ADDRESS, email: 'not-an-address' },
+    });
+
+    expect(out.code).toBe(400);
+    expect(out.body.error).toMatch(/valid email/i);
   });
 });

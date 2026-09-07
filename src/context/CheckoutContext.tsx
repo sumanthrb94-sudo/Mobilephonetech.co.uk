@@ -64,8 +64,8 @@ export interface Order {
 
 /** What the server returns once it has actually stored the order. */
 interface OrderResponse {
-  order?: { id?: string };
-  confirmationEmail?: { sent?: boolean; skipped?: string };
+  order?: { id?: string; contactEmail?: string; copyEmail?: string | null };
+  confirmationEmail?: { sent?: boolean; skipped?: string; copySent?: boolean };
 }
 
 /**
@@ -78,6 +78,13 @@ interface OrderResponse {
 export interface OrderResult {
   order: Order;
   confirmationEmailSent: boolean;
+  /**
+   * The addresses the receipt actually reached — the account address, plus the
+   * one typed at checkout when it differs. Reported rather than inferred: the
+   * confirmation screen used to name whichever address was in the form, which
+   * is not necessarily where anything was sent.
+   */
+  confirmationSentTo: string[];
 }
 
 interface CheckoutContextType {
@@ -255,9 +262,17 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     // placeholder; quoted to support it matches no row in the database.
     const confirmed: Order = { ...order, id: data?.order?.id ?? order.id };
 
+    const sentTo: string[] = [];
+    if (data?.confirmationEmail?.sent && data?.order?.contactEmail) sentTo.push(data.order.contactEmail);
+    if (data?.confirmationEmail?.copySent && data?.order?.copyEmail) sentTo.push(data.order.copyEmail);
+
     setOrders(prev => [...prev, confirmed]);
     setAppliedCoupon(null);
-    return { order: confirmed, confirmationEmailSent: Boolean(data?.confirmationEmail?.sent) };
+    return {
+      order: confirmed,
+      confirmationEmailSent: Boolean(data?.confirmationEmail?.sent),
+      confirmationSentTo: sentTo,
+    };
   }, [appliedCoupon]);
 
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;
