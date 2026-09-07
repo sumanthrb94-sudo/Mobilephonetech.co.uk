@@ -1,5 +1,5 @@
 import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
-import { emailConfigured, senderDomainWarning } from '../_email.js';
+import { emailConfigured, emailProvider, senderDomainWarning } from '../_email.js';
 
 /**
  * Deployment health check.
@@ -36,6 +36,7 @@ export default async function handler(req: any, res: any) {
     // rejected it". The sender address is in the header of every email we
     // send, so naming it here reveals nothing; the key itself is never shown.
     emailConfigured: emailConfigured(),
+    emailProvider: emailProvider(),
     emailFrom: process.env.EMAIL_FROM ?? null,
     // Where a customer's reply lands. Unset means replies go to the sender
     // address, which on most setups is send-only — so the customer believes

@@ -468,3 +468,140 @@ on its own once `EMAIL_FROM` is no longer at a free-mail domain. Then sign up
 with a real address and confirm both messages arrive: Firebase's verification
 link and the LeHart welcome. Check the spam folder too; the first sends from a
 newly authenticated domain sometimes land there before reputation builds.
+
+## Brevo or Resend
+
+Both are supported. `EMAIL_PROVIDER` chooses, and it is optional — the provider
+is inferred from whichever key is set, so adding `RESEND_API_KEY` is enough to
+switch. When both keys exist Resend wins, on the reasoning that deliberately
+adding the newer key says more than never having removed the old one.
+
+```
+EMAIL_PROVIDER=resend      # optional
+RESEND_API_KEY=re_...      # Resend → API Keys
+```
+
+Every caller passes the same object; only the request differs, and it differs
+in almost every field name:
+
+| | Brevo | Resend |
+|---|---|---|
+| Auth | `api-key:` header | `Authorization: Bearer` |
+| Sender | `sender: {email, name}` | `from: "Name <addr>"` |
+| Body | `htmlContent` / `textContent` | `html` / `text` |
+| Reply-to | `replyTo: {email}` | `reply_to` |
+| Tags | `["order-confirmation"]` | `[{name, value}]` |
+| Id returned | `messageId` | `id` |
+
+The id is read from the field the provider in use actually sets, not by falling
+back between them — a fallback silently picks whichever is present, so the day
+a response carries both, the id in the log is not necessarily the one in their
+console.
+
+### Switching does not skip the DNS work
+
+**This is the part worth being clear about.** DKIM and SPF are published per
+sending domain *per provider*. Moving to Resend means publishing Resend's
+records at IONOS; it does not inherit Brevo's, and it does not avoid the step.
+
+Nothing that has gone wrong with email on this project was the provider's
+doing. The messages that never arrived were sent from a gmail.com address no
+relay can authenticate. The ones before that were never sent at all, because a
+key was missing. Swapping provider would have fixed neither, and the sender
+warning in `/api/health` fires the same either way.
+
+Choose on price, on which dashboard you prefer reading, or on where the
+business already has an account. Not on deliverability — that is your domain's
+reputation, not theirs.
+
+### What stays on Brevo
+
+**SMS.** Resend does not send SMS, so `api/_sms.ts` still uses `BREVO_API_KEY`
+and `SMS_SENDER`. Running Resend for email and Brevo for the doorstep text is a
+supported combination: keep both keys and set `EMAIL_PROVIDER=resend`.
+
+**The bounce webhook.** `api/_routes/brevo-webhook.ts` parses Brevo's payload
+shape. On Resend the equivalent webhook is not yet written, so hard bounces and
+complaints would stop feeding the suppression list — worth building before any
+volume, and harmless at the current scale where the list is short enough to
+read by eye.
+
+**Contact sync.** `api/_brevoContacts.ts` writes to Brevo's contact lists for
+campaigns. That is marketing rather than transactional and is independent of
+which provider sends receipts.
+
+## Brevo or Resend
+
+Both are supported. `EMAIL_PROVIDER` chooses, and it is optional — the provider
+is inferred from whichever key is set, so adding `RESEND_API_KEY` is enough to
+switch. When both exist Resend wins, on the reasoning that deliberately adding
+the newer key says more than never having removed the old one.
+
+Every caller passes the same object; only the request differs, and it differs
+in almost every field name:
+
+| | Brevo | Resend |
+|---|---|---|
+| Auth | `api-key:` header | `Authorization: Bearer` |
+| Sender | `sender: {email, name}` | `from: "Name <addr>"` |
+| Body | `htmlContent` / `textContent` | `html` / `text` |
+| Reply-to | `replyTo: {email}` | `reply_to` |
+| Tags | `["order-confirmation"]` | `[{name, value}]` |
+| Id returned | `messageId` | `id` |
+
+The id is read from the field the provider in use actually sets, not by falling
+back between them — a fallback silently picks whichever is present, so the day
+a response carries both, the id logged is not necessarily the one in their
+console.
+
+### The account address is not the sending address
+
+A Resend account registered under a gmail.com address sends perfectly well from
+`info@lehart.co.uk`. The login is billing and access; deliverability depends
+only on which **domain** is verified inside that account. They are unrelated,
+and conflating them is the reason people conclude a provider "doesn't work".
+
+### Switching does not skip the DNS work
+
+DKIM and SPF are published per sending domain *per provider*. Moving to Resend
+means publishing Resend's records at IONOS; it does not inherit Brevo's.
+
+Nothing that has gone wrong with email here was the provider's doing. The
+messages that never arrived were sent from a gmail.com address no relay can
+authenticate. The ones before that were never sent at all, because a key was
+missing. Swapping provider fixes neither, and the sender warning in
+`/api/health` fires the same either way.
+
+### Running both at once: one SPF record, not two
+
+DKIM is safe to duplicate — each provider uses its own selector, so
+`resend._domainkey` and Brevo's record coexist with no conflict.
+
+**SPF is not.** A domain may publish exactly one SPF TXT record. Adding a
+second does not combine them; it makes the SPF result *permerror*, which is
+worse than having none, and it takes both providers down at once. Merge the
+includes into a single record instead:
+
+```
+v=spf1 include:_spf.brevo.com include:amazonses.com ~all
+```
+
+Take the exact `include:` value each provider tells you to use rather than the
+line above — Resend's has changed as their infrastructure has, and a stale
+include silently fails SPF. SPF also permits at most ten DNS lookups; two
+includes is fine, but it is a budget worth knowing exists.
+
+### What stays on Brevo
+
+**SMS.** Resend does not send SMS, so `api/_sms.ts` still uses `BREVO_API_KEY`
+and `SMS_SENDER`. Resend for email and Brevo for the doorstep text is a
+supported combination: keep both keys and set `EMAIL_PROVIDER=resend`.
+
+**The bounce webhook.** `api/_routes/brevo-webhook.ts` parses Brevo's payload
+shape. The Resend equivalent is not written, so on Resend hard bounces and
+complaints stop feeding the suppression list. Worth building before any volume;
+harmless at the current scale, where the list is short enough to read by eye.
+
+**Contact sync.** `api/_brevoContacts.ts` writes to Brevo's contact lists for
+campaigns — marketing rather than transactional, and independent of which
+provider sends receipts.
