@@ -11,6 +11,7 @@
  *   BREVO_API_KEY   from Brevo → SMTP & API → API keys
  *   EMAIL_FROM      the verified sender address, e.g. orders@lehart.co.uk
  *   EMAIL_FROM_NAME optional display name, defaults to "LeHart"
+ *   EMAIL_REPLY_TO  where a customer's reply lands, e.g. info@lehart.co.uk
  *
  * With the key unset every send becomes a logged no-op rather than an error.
  * That is deliberate: a missing email key must never fail a customer's return
@@ -78,6 +79,20 @@ export async function sendEmail(params: {
     return { sent: false, error: 'Recipient address is not valid' };
   }
 
+  /**
+   * Where a reply goes, applied here rather than at each call site.
+   *
+   * Customers reply to receipts — to ask where the parcel is, to report a
+   * fault, to cancel. Without this the reply goes to EMAIL_FROM, which is a
+   * send-only address on most setups, so the message bounces or lands in a
+   * mailbox nobody opens. Either way the customer believes they contacted you
+   * and you have no idea they tried, which is how a fixable complaint becomes
+   * a chargeback.
+   *
+   * Set on every send so no future template can forget it.
+   */
+  const replyTo = params.replyTo ?? process.env.EMAIL_REPLY_TO ?? undefined;
+
   try {
     const res = await fetch(BREVO_ENDPOINT, {
       method: 'POST',
@@ -97,7 +112,7 @@ export async function sendEmail(params: {
         // Always send a plain-text part: HTML-only mail scores worse with
         // spam filters and is unreadable in text-only clients.
         textContent: params.text,
-        ...(params.replyTo ? { replyTo: { email: params.replyTo } } : {}),
+        ...(replyTo ? { replyTo: { email: replyTo } } : {}),
         ...(params.tag ? { tags: [params.tag] } : {}),
       }),
     });

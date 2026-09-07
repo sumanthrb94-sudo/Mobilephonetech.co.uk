@@ -37,6 +37,10 @@ export default async function handler(req: any, res: any) {
     // send, so naming it here reveals nothing; the key itself is never shown.
     emailConfigured: emailConfigured(),
     emailFrom: process.env.EMAIL_FROM ?? null,
+    // Where a customer's reply lands. Unset means replies go to the sender
+    // address, which on most setups is send-only — so the customer believes
+    // they contacted you and nobody ever sees it.
+    emailReplyTo: process.env.EMAIL_REPLY_TO ?? null,
     smsConfigured: Boolean(process.env.BREVO_API_KEY && process.env.SMS_SENDER),
   };
 

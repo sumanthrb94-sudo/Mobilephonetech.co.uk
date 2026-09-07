@@ -376,3 +376,75 @@ the route, or a sender the provider will accept and the world will refuse. It
 also pins the two properties that are easy to break and invisible when broken:
 every message carries a plain-text part, and the confirmation quotes the same
 arrival date checkout showed.
+
+## Going live on lehart.co.uk
+
+The domain is registered and its mail is hosted at IONOS, with mailboxes
+including `info@`, `accounts@` and named staff addresses. That is the missing
+piece the sender warning has been pointing at — Brevo can now send as a domain
+you control instead of as a gmail.com address it can never authenticate.
+
+Four steps, in this order. Each one is inert until the one before it is done.
+
+### 1. Authenticate the domain in Brevo
+
+Brevo → Senders, Domains & Dedicated IPs → **Add a domain** → `lehart.co.uk`.
+Brevo issues a DKIM record, an SPF entry and a DMARC suggestion.
+
+Publish them at **IONOS → Domains → lehart.co.uk → DNS**. They are TXT records;
+IONOS appends the domain to the host name itself, so enter `mail._domainkey`
+rather than `mail._domainkey.lehart.co.uk` or the record ends up doubled.
+
+**Do not remove IONOS's existing MX records.** DKIM and SPF govern sending;
+MX governs receiving. Deleting the MX entries stops every mailbox in the
+screenshots from receiving anything.
+
+Wait for Brevo to show the domain **Verified**. Propagation is usually minutes
+and occasionally hours; nothing below works until it does.
+
+### 2. Point the site at the domain
+
+Vercel → Settings → Domains → add `lehart.co.uk` and `www.lehart.co.uk`, then
+add the A / CNAME records Vercel gives you at IONOS. This is separate from mail
+and neither breaks the other.
+
+### 3. Set the environment variables
+
+```
+EMAIL_FROM        orders@lehart.co.uk      # create this mailbox, or use info@
+EMAIL_FROM_NAME   LeHart
+EMAIL_REPLY_TO    info@lehart.co.uk        # a mailbox somebody reads
+PUBLIC_SITE_URL   https://lehart.co.uk     # only once step 2 resolves
+```
+
+`EMAIL_REPLY_TO` is applied to every send inside `sendEmail`, so no template
+can forget it. It matters more than it looks: customers reply to receipts to
+ask where a parcel is or to report a fault, and a send-only From address means
+they believe they contacted you while nobody ever sees it.
+
+`PUBLIC_SITE_URL` must not be changed before the domain resolves — it is the
+base for every link inside every email, so pointing it at a domain that is not
+yet serving breaks order tracking, basket recovery and unsubscribe in one move.
+
+### 4. Firebase's own emails
+
+Verification and password-reset messages come from Firebase, not Brevo, and
+still say `noreply@lehart-1b9ef.firebaseapp.com`. Firebase Console →
+Authentication → Templates → **Customise domain** routes them through
+`lehart.co.uk` with its own DNS records. Also add `lehart.co.uk` under
+Authentication → Settings → **Authorized domains**, or Google sign-in returns
+`auth/unauthorized-domain` on the new domain.
+
+### Verifying
+
+`/api/health` reports the state without guessing:
+
+```json
+"emailFrom": "orders@lehart.co.uk", "emailReplyTo": "info@lehart.co.uk", "warnings": []
+```
+
+An empty `warnings` array is the signal — the sender-domain warning disappears
+on its own once `EMAIL_FROM` is no longer at a free-mail domain. Then sign up
+with a real address and confirm both messages arrive: Firebase's verification
+link and the LeHart welcome. Check the spam folder too; the first sends from a
+newly authenticated domain sometimes land there before reputation builds.

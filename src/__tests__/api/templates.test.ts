@@ -212,3 +212,40 @@ describe('the sender that fails silently', () => {
     process.env.EMAIL_FROM = before;
   });
 });
+
+
+describe('replies reach a person', () => {
+  it('sets reply-to on every send from EMAIL_REPLY_TO', async () => {
+    // Customers reply to receipts. Without this the reply goes to the sender
+    // address, which is send-only on most setups — the customer believes they
+    // contacted you and nobody ever sees it.
+    const before = { ...process.env };
+    process.env.BREVO_API_KEY = 'k';
+    process.env.EMAIL_FROM = 'orders@lehart.co.uk';
+    process.env.EMAIL_REPLY_TO = 'info@lehart.co.uk';
+
+    const calls: Array<Record<string, unknown>> = [];
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (_url: string, init: { body: string }) => {
+      calls.push(JSON.parse(init.body));
+      return { ok: true, status: 201, json: async () => ({ messageId: 'm1' }), text: async () => '' };
+    }) as unknown as typeof fetch;
+
+    const { sendEmail } = await import('../../../api/_email.js');
+    await sendEmail({ to: 'ram@example.com', subject: 's', html: '<p>h</p>', text: 't' });
+
+    globalThis.fetch = realFetch;
+    Object.assign(process.env, before);
+
+    expect(calls[0].replyTo).toEqual({ email: 'info@lehart.co.uk' });
+  });
+});
+
+describe('the published support address', () => {
+  it('is a mailbox that exists', async () => {
+    // support@lehart.co.uk was published on the legal pages and the returns
+    // flow, and was never created on the mail plan. info@ is.
+    const { COMPANY } = await import('../../config/company');
+    expect(COMPANY.supportEmail).toBe('info@lehart.co.uk');
+  });
+});
