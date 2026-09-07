@@ -248,7 +248,12 @@ const searchTermsFor = (p) => [...new Set(
 
 await commitInChunks(products, (batch, p) => {
   batch.set(db.collection('products').doc(p.id), stripUndefined({
-    ...p, searchTerms: searchTermsFor(p), source: 'inventory-import', updatedAt: now,
+    // createdAt as well as updatedAt: a catalogue read that orders by a
+    // field these documents lack comes back empty rather than unsorted,
+    // which reads as "no catalogue" and sends the storefront to bundled
+    // sample data whose ids no order can be priced against.
+    ...p, searchTerms: searchTermsFor(p), source: 'inventory-import',
+    createdAt: now, updatedAt: now,
   }));
 });
 console.log(`  Products      ${products.length} written`);

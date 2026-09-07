@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useProducts } from '../../hooks/useProducts';
+import { useProducts, fetchCatalogue } from '../../hooks/useProducts';
 import { MOCK_PHONES } from '../../data';
 import { getDocs } from 'firebase/firestore';
 
@@ -16,6 +16,37 @@ function snapshot(docs: { id: string; data: Record<string, unknown> }[]) {
     docs: docs.map(d => ({ id: d.id, data: () => d.data })),
   };
 }
+
+describe('fetchCatalogue', () => {
+  beforeEach(() => { vi.restoreAllMocks(); });
+
+  it('returns products that carry no createdAt', async () => {
+    // The inventory import writes updatedAt and no createdAt. The query used
+    // to order by createdAt, and Firestore drops documents missing the field
+    // it orders on — so the whole catalogue came back empty, the storefront
+    // fell back to bundled sample data, and every basket built from it was
+    // refused by /api/orders because those ids exist in no collection.
+    vi.mocked(getDocs).mockResolvedValueOnce(snapshot([
+      { id: 'apple-iphone-15-plus-128gb', data: { model: 'iPhone 15 Plus', brand: 'Apple', price: 459, updatedAt: '2026-09-01T00:00:00.000Z' } },
+    ]) as never);
+
+    const rows = await fetchCatalogue();
+
+    expect(rows).toHaveLength(1);
+    // The id must be the document id: it is what the order route prices by.
+    expect(rows[0].id).toBe('apple-iphone-15-plus-128gb');
+  });
+
+  it('orders newest first, falling back to updatedAt', async () => {
+    vi.mocked(getDocs).mockResolvedValueOnce(snapshot([
+      { id: 'older', data: { model: 'A', brand: 'Apple', price: 1, updatedAt: '2026-01-01T00:00:00.000Z' } },
+      { id: 'newest', data: { model: 'B', brand: 'Apple', price: 1, createdAt: '2026-09-01T00:00:00.000Z' } },
+      { id: 'middle', data: { model: 'C', brand: 'Apple', price: 1, updatedAt: '2026-05-01T00:00:00.000Z' } },
+    ]) as never);
+
+    expect((await fetchCatalogue()).map(p => p.id)).toEqual(['newest', 'middle', 'older']);
+  });
+});
 
 describe('useProducts', () => {
   beforeEach(() => {
