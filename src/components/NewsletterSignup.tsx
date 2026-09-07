@@ -21,18 +21,46 @@ export default function NewsletterSignup() {
       return;
     }
     setIsSubmitting(true);
+
+    // Why the outcome is collected rather than thrown: a server refusal has a
+    // reason worth showing ("Invalid email address"), while a network failure
+    // only has the browser's own "Failed to fetch", which tells a customer
+    // nothing. They are reported differently on purpose.
+    let failure: string | null = null;
+    const GENERIC = 'Could not subscribe you just now. Please try again.';
+
     try {
       // Through the API, not straight into Firestore. Writing direct from the
       // browser skipped the rate limit and, worse, skipped the consent record
       // — timestamp, source and policy version — that is what makes this list
       // lawfully mailable. Client writes to the collection are now refused by
       // the security rules, so this is the only path in.
-      await fetch('/api/newsletter', {
+      const res = await fetch('/api/newsletter', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: trimmed, source: 'homepage-newsletter' }),
       });
-    } catch { /* non-fatal — still show success */ }
+
+      // The confirmation is only honest if the subscription exists. This used
+      // to show success unconditionally — a rejected address, a rate limit, a
+      // 500, or no network at all all rendered "you're subscribed". The
+      // consent record is the whole point of routing through the API, so a
+      // failed write leaves someone believing they opted in, absent from the
+      // list, and with no record either way.
+      if (!res.ok) {
+        const detail = await res.json().catch(() => ({} as { error?: string }));
+        failure = detail.error || GENERIC;
+      }
+    } catch {
+      failure = GENERIC;
+    }
+
+    if (failure) {
+      setError(failure);
+      setIsSubmitting(false);
+      return;
+    }
+
     try { window.localStorage.setItem(STORAGE_KEY, trimmed); } catch { /* ignore */ }
     setIsSubmitting(false);
     setSubmitted(true);
