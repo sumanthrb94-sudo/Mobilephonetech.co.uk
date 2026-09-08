@@ -618,3 +618,83 @@ describe('each signup route asks for the other contact method', () => {
     expect(linkEmailPassword).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * Google is the one signup route that used to close the modal on the spot.
+ *
+ * Email signup offers a mobile on the verify screen and phone signup asks for
+ * an email, but Google did neither — it signed the customer in and closed. A
+ * Google account carries a verified address and never a number, so that left
+ * exactly the account whose owner later taps "sign in with mobile" and, since
+ * Firebase treats a number as an identity in its own right, receives a second
+ * uid with a second order history. Nothing in the application can detect it
+ * afterwards, and the customer's warranty claim sits under an order they can
+ * no longer see. Asking once, here, is the only moment linking is free.
+ */
+describe('Google sign-in collects the number it never provides', () => {
+  it('asks for a mobile instead of closing when the account has none', async () => {
+    signInWithGoogle.mockResolvedValue('signed-in-needs-phone');
+    const { onClose } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+
+    expect(await screen.findByRole('heading', { name: /add your mobile/i })).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+    // Signed in already — asking for either of these again would be busywork.
+    expect(screen.queryByPlaceholderText('Email or username')).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Password')).not.toBeInTheDocument();
+  });
+
+  it('closes without asking when Google already carries a number', async () => {
+    signInWithGoogle.mockResolvedValue('signed-in');
+    const { onClose, onSuccess } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(onSuccess).toHaveBeenCalled();
+    // A returning customer must not be nagged for a number they already gave.
+    expect(screen.queryByRole('heading', { name: /add your mobile/i })).not.toBeInTheDocument();
+  });
+
+  it('sends a code to the number given, to link rather than sign in', async () => {
+    signInWithGoogle.mockResolvedValue('signed-in-needs-phone');
+    startPhoneSignIn.mockResolvedValue(undefined);
+    renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+    await userEvent.type(await screen.findByPlaceholderText(/7700 900123/i), '7700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+
+    await waitFor(() => expect(startPhoneSignIn).toHaveBeenCalled());
+    expect(await screen.findByRole('heading', { name: /enter your code/i })).toBeInTheDocument();
+  });
+
+  it('lets the customer skip, since a mandatory number costs more signups', async () => {
+    signInWithGoogle.mockResolvedValue('signed-in-needs-phone');
+    const { onClose, onSuccess } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /skip for now/i }));
+
+    expect(onSuccess).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('abandoning the code step closes rather than dropping them at sign-in', async () => {
+    signInWithGoogle.mockResolvedValue('signed-in-needs-phone');
+    startPhoneSignIn.mockResolvedValue(undefined);
+    const { onClose } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+    await userEvent.type(await screen.findByPlaceholderText(/7700 900123/i), '7700900123');
+    await userEvent.click(screen.getByRole('button', { name: /text me a code/i }));
+    await screen.findByRole('heading', { name: /enter your code/i });
+
+    // They are already signed in. Offering "use email instead" here would send
+    // an authenticated customer back to a sign-in form.
+    await userEvent.click(screen.getByRole('button', { name: /skip for now/i }));
+
+    expect(onClose).toHaveBeenCalled();
+  });
+});

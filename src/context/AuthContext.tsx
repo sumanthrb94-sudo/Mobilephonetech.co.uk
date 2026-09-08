@@ -74,7 +74,7 @@ interface AuthContextType {
    * 'needs-link' means the address already has a password account — see
    * pendingLinkEmail and completeGoogleLink below.
    */
-  signInWithGoogle: () => Promise<'signed-in' | 'cancelled' | 'redirecting' | 'needs-link'>;
+  signInWithGoogle: () => Promise<'signed-in' | 'signed-in-needs-phone' | 'cancelled' | 'redirecting' | 'needs-link'>;
   /**
    * Which providers an address is already registered with, e.g. ['password']
    * or ['google.com'].
@@ -315,7 +315,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pendingCredentialRef = useRef<AuthCredential | null>(null);
   const [pendingLinkEmail, setPendingLinkEmail] = useState<string | null>(null);
 
-  const signInWithGoogle = async (): Promise<'signed-in' | 'cancelled' | 'redirecting' | 'needs-link'> => {
+  const signInWithGoogle = async (): Promise<'signed-in' | 'signed-in-needs-phone' | 'cancelled' | 'redirecting' | 'needs-link'> => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
@@ -325,7 +325,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // the user is signed in and the caller still has a live component to
       // update. Returning the outcome is what lets it close the modal.
       setUser(await toUser(cred.user));
-      return 'signed-in';
+      // Google hands over a verified address but never a number, and this was
+      // the one signup route that closed the modal on the spot. A Google
+      // account with no number attached is the account whose owner later taps
+      // "sign in with mobile" — Firebase treats that as a fresh identity, so
+      // they get a second uid, a second order history, and a warranty claim
+      // filed against an order they can no longer see. Saying which case this
+      // is lets the caller ask for the number while they are still here,
+      // which is the only moment linking is free.
+      return cred.user.phoneNumber ? 'signed-in' : 'signed-in-needs-phone';
     } catch (err) {
       const code = (err as { code?: string })?.code ?? '';
       // A blocked popup is a browser setting, not a failure worth surfacing —

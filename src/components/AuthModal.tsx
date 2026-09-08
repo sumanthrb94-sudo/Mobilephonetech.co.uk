@@ -14,7 +14,7 @@ import {
  * Uses the app's cyan primary and shared design tokens.
  */
 
-type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify' | 'add-email';
+type Mode = 'login' | 'signup' | 'reset' | 'link' | 'phone' | 'code' | 'verify' | 'add-email' | 'add-phone';
 
 /** Where the invisible reCAPTCHA mounts. Firebase needs a real element id. */
 const RECAPTCHA_ID = 'auth-recaptcha-container';
@@ -196,6 +196,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   const dialCode = country.dial;
   const [code, setCode] = useState('');
   const [googleBusy, setGoogleBusy] = useState(false);
+  /**
+   * Whether the phone flow is signing someone in or attaching a number to an
+   * account they are already signed into. The code screen is reached from
+   * three places and only the first should fall back to sign-in when it is
+   * abandoned; the other two are already authenticated and should just close.
+   */
+  const [phoneFlow, setPhoneFlow] = useState<'signin' | 'link'>('signin');
 
   const handleGoogle = async () => {
     setError('');
@@ -210,6 +217,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       if (outcome === 'signed-in') {
         onSuccess?.();
         onClose();
+        return;
+      }
+      // Signed in, but Google gave us no number. Ask for one now — skippably —
+      // rather than letting them come back months later, tap "sign in with
+      // mobile", and mint a duplicate account nothing in the app can detect.
+      if (outcome === 'signed-in-needs-phone') {
+        setPhoneFlow('link');
+        setPhone('');
+        setMode('add-phone');
+        setGoogleBusy(false);
         return;
       }
       // 'redirecting' — the page is about to unload, so leave the busy state.
@@ -247,7 +264,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       setError('Enter a valid email address.');
       return;
     }
-    if (mode === 'phone') {
+    if (mode === 'phone' || mode === 'add-phone') {
       const problem = describePhoneProblem(phone, dialCode);
       if (problem) { setError(problem); return; }
     }
@@ -279,7 +296,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         await linkEmailPassword(email, password);
         onSuccess?.();
         onClose();
-      } else if (mode === 'phone') {
+      } else if (mode === 'phone' || mode === 'add-phone') {
         await startPhoneSignIn(phone, RECAPTCHA_ID, dialCode);
         setCode('');
         setMode('code');
@@ -418,6 +435,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'signup' ? 'Create your account'
                   : mode === 'reset' ? 'Reset your password'
                   : mode === 'phone' ? 'Sign in with your mobile'
+                  : mode === 'add-phone' ? 'Add your mobile'
                   : mode === 'code' ? 'Enter your code'
                   : mode === 'verify' ? 'Check your email'
                   : mode === 'add-email' ? 'Add your email'
@@ -428,6 +446,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'signup' ? 'Join lehart.co.uk for a certified experience.'
                   : mode === 'reset' ? 'Enter your email and we will send you a link to set a new one.'
                   : mode === 'phone' ? 'We will text you a 6-digit code. No password needed.'
+                  : mode === 'add-phone' ? 'For delivery updates, and so you can sign in with a code next time. You can skip this.'
                   : mode === 'code' ? `Sent to ${pendingPhone ? formatPhoneForDisplay(pendingPhone) : 'your mobile'}. It expires in a few minutes.`
                   : mode === 'verify' ? `Your account is ready and you are signed in. We have sent a link to ${email} to confirm the address.`
                   : mode === 'add-email' ? 'Order confirmations, receipts and return updates go to your email. Without one we have no way to reach you about an order.'
@@ -501,6 +520,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                         if (problem) { setError(problem); return; }
                         setError(''); setInfo(''); setIsLoading(true);
                         try {
+                          setPhoneFlow('link');
                           await startPhoneSignIn(phone, RECAPTCHA_ID, dialCode);
                           setCode('');
                           setMode('code');
@@ -561,7 +581,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   </div>
                 )}
 
-                {mode === 'phone' && (
+                {(mode === 'phone' || mode === 'add-phone') && (
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <select
                       aria-label="Country"
@@ -618,7 +638,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   <div style={{ textAlign: 'center', marginTop: '-4px' }}>
                     <button
                       type="button"
-                      onClick={() => abandonPhone('phone')}
+                      onClick={() => abandonPhone(phoneFlow === 'link' ? 'add-phone' : 'phone')}
                       style={{ background: 'none', border: 'none', padding: 0, fontFamily: 'var(--font-body)', fontSize: '12.5px', fontWeight: 600, color: 'var(--grey-60)', cursor: 'pointer' }}
                       onMouseOver={(e) => e.currentTarget.style.color = 'var(--brand-cyan-hover)'}
                       onMouseOut={(e) => e.currentTarget.style.color = 'var(--grey-60)'}
@@ -663,7 +683,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                       label={mode === 'login' ? 'Signing in'
                         : mode === 'signup' ? 'Creating your account'
                         : mode === 'reset' ? 'Sending your link'
-                        : mode === 'phone' ? 'Texting your code'
+                        : mode === 'phone' || mode === 'add-phone' ? 'Texting your code'
                         : mode === 'code' ? 'Checking your code'
                         : mode === 'add-email' ? 'Saving your email'
                         : 'Connecting Google'}
@@ -672,7 +692,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     <>{mode === 'login' ? 'Sign in'
                       : mode === 'signup' ? 'Create account'
                       : mode === 'reset' ? 'Send reset link'
-                      : mode === 'phone' ? 'Text me a code'
+                      : mode === 'phone' || mode === 'add-phone' ? 'Text me a code'
                       : mode === 'code' ? 'Verify and sign in'
                       : mode === 'add-email' ? 'Save and finish'
                       : 'Connect and sign in'} <ArrowRight size={16} /></>
@@ -734,7 +754,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
 
               <button
                 type="button"
-                onClick={() => { setMode('phone'); setError(''); setInfo(''); }}
+                onClick={() => { setPhoneFlow('signin'); setMode('phone'); setError(''); setInfo(''); }}
                 aria-label="Continue with mobile number"
                 style={{
                   width: '100%',
@@ -768,6 +788,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   onClick={() => {
                     if (mode === 'link') { abandonLink(); return; }
                     if (mode === 'add-email') { onSuccess?.(); onClose(); return; }
+                    if (mode === 'add-phone' || (mode === 'code' && phoneFlow === 'link')) {
+                      cancelPhoneSignIn();
+                      onSuccess?.();
+                      onClose();
+                      return;
+                    }
                     if (mode === 'phone' || mode === 'code') { abandonPhone('login'); return; }
                     if (mode === 'reset') { setMode('login'); setError(''); setInfo(''); return; }
                     setMode(mode === 'login' ? 'signup' : 'login');
@@ -782,6 +808,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     : mode === 'signup' ? 'Already have an account? Sign in'
                     : mode === 'reset' ? 'Back to sign in'
                     : mode === 'add-email' ? 'Skip for now'
+                    : (mode === 'add-phone' || (mode === 'code' && phoneFlow === 'link')) ? 'Skip for now'
                     : (mode === 'phone' || mode === 'code') ? 'Use email instead'
                     : 'Cancel and sign in another way'}
                 </button>

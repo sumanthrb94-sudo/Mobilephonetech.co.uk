@@ -161,7 +161,14 @@ the cost of being wrong is a failed send, not a wrong account.
 ## Each route asks for the other method
 
 Signing up with an email offers a mobile straight after; signing up with a
-mobile asks for an email. Both steps are skippable.
+mobile asks for an email; signing in with Google, which carries a verified
+address but never a number, offers a mobile before the modal closes. All three
+steps are skippable.
+
+Google was the exception until recently: it signed the customer in and closed
+on the spot, leaving precisely the account most likely to spring the trap
+below — an address, no number, and an owner who may well reach for "sign in
+with mobile" next time.
 
 This is the duplicate defence doing its real work rather than only reacting.
 A number attached at signup means a later phone sign-in **links** to that
