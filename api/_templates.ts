@@ -297,21 +297,6 @@ function addressBlock(order: OrderLike): string {
   </div>`;
 }
 
-/** A callout for the one fact the message exists to deliver. */
-function highlight(label: string, value: string, tone: 'gold' | 'green' = 'gold'): string {
-  const bg = tone === 'green' ? PALETTE.greenWash : PALETTE.goldWash;
-  const fg = tone === 'green' ? PALETTE.green : PALETTE.goldDeep;
-  return `<div style="margin:20px 0;padding:15px 17px;background:${bg};border-radius:11px;border:1px solid ${
-    tone === 'green' ? '#bbf7d0' : '#fde68a'
-  };">
-    <div style="font-family:${FONT};font-size:11px;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:${fg};margin-bottom:5px;">${esc(
-      label,
-    )}</div>
-    <div style="font-family:${FONT};font-size:17px;font-weight:800;color:${PALETTE.ink};letter-spacing:-0.01em;">${esc(
-      value,
-    )}</div>
-  </div>`;
-}
 
 /**
  * The shell every message shares. The footer carries the company identity

@@ -375,8 +375,14 @@ function AppContent() {
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <AddedToCartModal />
       {/* The shopping assistant is for shoppers. In the console it is not just
-          irrelevant — its floating bubble sits over the row action buttons. */}
-      {!isAdminRoute && (
+          irrelevant — its floating bubble sits over the row action buttons.
+
+          Off unless VITE_AI_ASSISTANT is "true". It is the only Gemini spend on
+          the live site and improvises product advice under the brand, so it
+          stays dark for launch and turns on with one Vercel env var — no code
+          change — once the bill and the answers can be watched. Human support
+          below is unaffected. */}
+      {!isAdminRoute && import.meta.env.VITE_AI_ASSISTANT === 'true' && (
         <Suspense fallback={null}>
           <AIAssistant />
         </Suspense>
