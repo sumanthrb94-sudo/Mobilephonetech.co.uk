@@ -101,6 +101,14 @@ interface CheckoutContextType {
   removeCoupon: () => void;
   orders: Order[];
   createOrder: (order: Order) => Promise<OrderResult>;
+  /**
+   * Record an order the server already created and was already paid for
+   * (the PayPal path), without POSTing again. createOrder is for the card
+   * path where this context drives the write; here the money and the write
+   * both happened server-side during capture, so this only mirrors the
+   * result into local state so the confirmation screen can read it.
+   */
+  recordServerOrder: (order: Order) => void;
   lastOrder: Order | null;
 }
 
@@ -274,6 +282,11 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
     };
   }, [appliedCoupon]);
 
+  const recordServerOrder = useCallback((order: Order) => {
+    setOrders(prev => [...prev, order]);
+    setAppliedCoupon(null);
+  }, []);
+
   const lastOrder = orders.length > 0 ? orders[orders.length - 1] : null;
 
   return (
@@ -291,6 +304,7 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
       removeCoupon,
       orders,
       createOrder,
+      recordServerOrder,
       lastOrder,
     }}>
       {children}

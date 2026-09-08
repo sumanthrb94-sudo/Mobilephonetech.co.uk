@@ -1,6 +1,7 @@
 import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
 import { emailConfigured, emailProvider, senderDomainWarning } from '../_email.js';
 import { previewModeFrom } from '../../src/config/preview.js';
+import { paypalConfigured, paypalEnv } from '../_paypal.js';
 
 /**
  * Deployment health check.
@@ -46,6 +47,12 @@ export default async function handler(req: any, res: any) {
     // they contacted you and nobody ever sees it.
     emailReplyTo: process.env.EMAIL_REPLY_TO ?? null,
     smsConfigured: Boolean(process.env.BREVO_API_KEY && process.env.SMS_SENDER),
+    // Whether card payment can actually run. Unset means the PayPal routes
+    // refuse with 503 and the storefront hides the button — the shop browses
+    // but cannot take money. The env (sandbox vs live) is surfaced so a
+    // deployment still pointed at sandbox after go-live is visible at a glance.
+    paypalConfigured: paypalConfigured(),
+    paypalEnv: paypalConfigured() ? paypalEnv() : null,
   };
 
   // Configuration that is present, accepted everywhere, and still wrong. These

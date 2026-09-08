@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 import ExpressPayRow from './ExpressPayRow';
 import ProductImage from './ProductImage';
+import PayPalCheckout, { PayPalPayload } from './PayPalCheckout';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode } from '../utils/postcodeLookup';
 
@@ -47,7 +48,7 @@ export default function CheckoutFlow() {
   const { 
     currentStep, setCurrentStep, shippingAddress, setShippingAddress,
     shippingOption, paymentMethod, setPaymentMethod,
-    appliedCoupon, applyCoupon, removeCoupon, createOrder, lastOrder,
+    appliedCoupon, applyCoupon, removeCoupon, createOrder, recordServerOrder, lastOrder,
   } = useCheckout();
   const { user, isAuthenticated, continueAsGuest } = useAuth();
 
@@ -198,6 +199,53 @@ export default function CheckoutFlow() {
     setCouponError('');
     if (!couponCode.trim()) return;
     if (applyCoupon(couponCode)) { setCouponCode(''); } else { setCouponError('Invalid coupon code'); }
+  };
+
+  /**
+   * The basket payload the payment routes take — the same shape /api/orders
+   * receives, prices only ever set server-side. Built fresh at call time so a
+   * late basket edit is included.
+   */
+  const buildPayapalPayload = (): PayPalPayload => ({
+    items: (items as any[]).map((i: any) => ({
+      productId: i.productId ?? i.id,
+      variantId: i.variantId ?? null,
+      quantity: i.quantity,
+      selectedColor: i.selectedColor ?? null,
+      selectedStorage: i.selectedStorage ?? null,
+      selectedCondition: i.selectedCondition ?? null,
+    })),
+    shippingAddress: shippingAddress as unknown as Record<string, unknown>,
+    shippingOptionId: shippingOption?.id ?? 'standard',
+    couponCode: appliedCoupon?.code ?? null,
+    guestEmail: shippingAddress?.email ?? null,
+  });
+
+  /**
+   * PayPal has captured and the server has recorded the order. Money and
+   * write both happened server-side, so this only mirrors the result into the
+   * confirmation screen — no second POST.
+   */
+  const handlePayPalPaid = (serverOrder: Record<string, any>) => {
+    setOrderError('');
+    recordServerOrder({
+      id: String(serverOrder.id),
+      items: serverOrder.items ?? items,
+      shippingAddress: (serverOrder.shippingAddress ?? shippingAddress) as ShippingAddress,
+      shippingOption: shippingOption!,
+      paymentMethod: paymentMethod ?? { id: 'paypal', type: 'paypal', brand: 'PayPal', last4: 'PYPL' } as PaymentMethod,
+      subtotal: Number(serverOrder.subtotal ?? subtotal),
+      shippingCost: Number(serverOrder.shippingCost ?? shippingCost),
+      tax: Number(serverOrder.tax ?? tax),
+      total: Number(serverOrder.total ?? total),
+      status: 'confirmed',
+      createdAt: String(serverOrder.createdAt ?? new Date().toISOString()),
+      userId: user && !user.isGuest ? user.id : undefined,
+    });
+    setConfirmationEmailSent(Boolean(serverOrder.contactEmail));
+    setConfirmationSentTo([serverOrder.contactEmail, serverOrder.copyEmail].filter(Boolean) as string[]);
+    clearCart();
+    setCurrentStep('confirmation');
   };
 
   const handlePlaceOrder = async () => {
@@ -800,6 +848,17 @@ export default function CheckoutFlow() {
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', textAlign: 'center', marginTop: '10px' }}>
                     By placing your order you agree to our Terms and Conditions.
                   </p>
+
+                  {/* Card payment via PayPal. Self-hides unless a sandbox
+                      client id is configured, and carries its own
+                      under-development banner while it does show. */}
+                  {shippingAddress && shippingOption && (
+                    <PayPalCheckout
+                      payload={buildPayapalPayload()}
+                      onPaid={handlePayPalPaid}
+                      onError={(m) => setOrderError(m)}
+                    />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

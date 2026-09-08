@@ -38,6 +38,8 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   newsletter: () => import('./_routes/newsletter.js'),
   'order-notify': () => import('./_routes/order-notify.js'),
   orders: () => import('./_routes/orders.js'),
+  'paypal/create-order': () => import('./_routes/paypal/create-order.js'),
+  'paypal/capture': () => import('./_routes/paypal/capture.js'),
   products: () => import('./_routes/products.js'),
   'return-notify': () => import('./_routes/return-notify.js'),
   reviews: () => import('./_routes/reviews.js'),
