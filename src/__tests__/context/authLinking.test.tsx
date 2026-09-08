@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import {
   signInWithPopup, signInWithEmailAndPassword, linkWithCredential,
   fetchSignInMethodsForEmail, GoogleAuthProvider,
 } from 'firebase/auth';
+import { getDoc } from 'firebase/firestore';
 import { AuthProvider, useAuth } from '../../context/AuthContext';
 
 /**
@@ -172,5 +173,59 @@ describe('signInMethodsFor', () => {
     await act(async () => { methods = await result.current.signInMethodsFor('a@b.com'); });
 
     expect(methods).toEqual([]);
+  });
+});
+
+/**
+ * A Google sign-up is still a sign-up.
+ *
+ * The welcome was sent from signup() and from linkEmailPassword() only, so a
+ * customer who arrived through Google got nothing from us at all — no
+ * greeting, nothing in their inbox recording that the account exists, and no
+ * address to reply to. No verification mail is sent on this path and none
+ * should be: Google has already verified the address.
+ */
+describe('welcoming a Google sign-up', () => {
+  const googleUser = () => ({
+    uid: 'u_google',
+    email: 'nina@example.com',
+    emailVerified: true,
+    phoneNumber: null,
+    displayName: 'Nina Okafor',
+    providerData: [{ providerId: 'google.com' }],
+    getIdToken: vi.fn(async () => 'id-token'),
+    getIdTokenResult: vi.fn(async () => ({ claims: {} })),
+  });
+
+  const welcomed = (spy: ReturnType<typeof vi.fn>) =>
+    spy.mock.calls.some(c => String(c[0]).includes('/api/account-welcome'));
+
+  let fetchSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchSpy = vi.fn(async () => ({ ok: true, json: async () => ({}) }));
+    vi.stubGlobal('fetch', fetchSpy);
+    vi.mocked(signInWithPopup).mockResolvedValueOnce({ user: googleUser() } as never);
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('sends the welcome when the account did not exist before', async () => {
+    // The default profile mock reports no document, so this is a first sign-in.
+    const result = await renderAuth();
+    await act(async () => { await result.current.signInWithGoogle(); });
+
+    expect(welcomed(fetchSpy)).toBe(true);
+  });
+
+  it('does not welcome a returning customer on every sign-in', async () => {
+    // Profile already there: they have signed in before.
+    vi.mocked(getDoc).mockResolvedValue({
+      exists: () => true, data: () => ({ email: 'nina@example.com' }), id: 'u_google',
+    } as never);
+
+    const result = await renderAuth();
+    await act(async () => { await result.current.signInWithGoogle(); });
+
+    expect(welcomed(fetchSpy)).toBe(false);
   });
 });

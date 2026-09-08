@@ -332,6 +332,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const cred = await signInWithPopup(auth, provider);
       const { created } = await ensureProfile(cred.user);
+
+      // A Google sign-up is still a sign-up. Only signup() and
+      // linkEmailPassword() sent the welcome, so a customer who arrived
+      // through Google received nothing from us at all — no greeting, no
+      // record in their inbox that the account exists, and no address to
+      // reply to. Gated on `created` so a returning customer is not welcomed
+      // every time they sign in; the route de-duplicates as well.
+      //
+      // No verification mail: Google has already verified the address, and
+      // asking a customer to confirm what Google confirmed is noise.
+      if (created) await sendAccountWelcome(cred.user);
       // Unlike Supabase's signInWithOAuth, the popup flow resolves in place:
       // the user is signed in and the caller still has a live component to
       // update. Returning the outcome is what lets it close the modal.
