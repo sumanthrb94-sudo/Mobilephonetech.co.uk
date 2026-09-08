@@ -87,6 +87,24 @@ export default async function handler(req: any, res: any) {
   if (!clean(address.postalCode ?? address.postcode, 20)) return res.status(400).json({ error: 'A postcode is required' });
 
   /**
+   * A contact number, required here and not only in the checkout form.
+   *
+   * The browser already refuses to submit without one, but a form validation
+   * is not a rule — the endpoint is reachable without the form. Couriers need
+   * a number to deliver against, and a failed delivery with no way to reach
+   * the customer is a returned parcel and a refund.
+   *
+   * Deliberately not SMS-verified: this is a delivery contact, not a
+   * credential, so it never depends on text delivery working in the
+   * customer's country. It does not link the number to their sign-in, and so
+   * does not by itself prevent a duplicate account.
+   */
+  const contactPhone = clean(address.phone, 40);
+  if (!contactPhone) {
+    return res.status(400).json({ error: 'A contact phone number is required for delivery' });
+  }
+
+  /**
    * Who the receipt goes to.
    *
    * The account address is the customer's identity — it is the one they can
@@ -233,7 +251,7 @@ export default async function handler(req: any, res: any) {
     shippingAddress: {
       fullName: clean(address.fullName, 120),
       email: typedEmail || contactEmail,
-      phone: clean(address.phone, 40) || null,
+      phone: contactPhone,
       addressLine1: clean(address.addressLine1, 200),
       addressLine2: clean(address.addressLine2, 200) || null,
       city: clean(address.city, 100),
@@ -317,6 +335,27 @@ export default async function handler(req: any, res: any) {
   // and one angry email. sendEmail swallows its own failures; this await is
   // still needed because the runtime can freeze the instance the moment the
   // response is sent, cancelling anything left in flight.
+  /**
+   * Keep the number on the customer's profile.
+   *
+   * Stored as `contactPhone`, never as `phoneNumber`: that field holds the
+   * SMS-verified number attached to their sign-in, and overwriting a proven
+   * credential with an unverified delivery detail would quietly downgrade it.
+   *
+   * Best-effort. A profile write must never cost someone an order that is
+   * already paid for and filed.
+   */
+  if (caller?.uid) {
+    try {
+      await db.collection('users').doc(caller.uid).set(
+        { contactPhone, updatedAt: now },
+        { merge: true },
+      );
+    } catch (err) {
+      console.warn(`[api/orders] profile phone for ${orderId}:`, (err as Error).message);
+    }
+  }
+
   const confirmation = orderConfirmationEmail(order);
   const send = (to: string) => sendEmail({
     to,

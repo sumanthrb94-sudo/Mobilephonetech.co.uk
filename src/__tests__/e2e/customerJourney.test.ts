@@ -453,3 +453,59 @@ describe('selling reserves the stock', () => {
     expect(store.products['apple-iphone-13-128gb'].stock).toBe(5);
   });
 });
+
+/**
+ * A number the courier can actually ring.
+ *
+ * The checkout form already refused to submit without one, but a validation
+ * that lives only in the browser is not a rule — the endpoint is reachable
+ * without the form. A failed delivery with no way to reach the customer is a
+ * returned parcel and a refund.
+ */
+describe('a contact number is required to order', () => {
+  beforeEach(() => {
+    currentCaller = caller;
+    delete process.env.VITE_PREVIEW_MODE;
+    store.products['apple-iphone-13-128gb'].stock = 20;
+  });
+
+  it('refuses an order with no phone number', async () => {
+    const { phone: _dropped, ...noPhone } = ADDRESS;
+
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: noPhone,
+    });
+
+    expect(out.code).toBe(400);
+    expect(out.body.error).toMatch(/phone/i);
+  });
+
+  it('keeps the number on the order and on the customer profile', async () => {
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: ADDRESS,
+    });
+
+    expect(out.code).toBe(201);
+    expect(out.body.order.shippingAddress.phone).toBe(ADDRESS.phone);
+    // Remembered, so it is not retyped next time and support can find them.
+    expect(store.users?.u_ram?.contactPhone).toBe(ADDRESS.phone);
+  });
+
+  it('does not overwrite an SMS-verified number with a delivery one', async () => {
+    store.users ??= {};
+    store.users.u_ram = { phoneNumber: '+447700900999' };
+
+    await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: { ...ADDRESS, phone: '07700 900123' },
+    });
+
+    // phoneNumber is the credential they sign in with; contactPhone is a
+    // delivery detail. Collapsing the two would silently downgrade a proven
+    // number to an unverified one.
+    expect(store.users.u_ram.phoneNumber).toBe('+447700900999');
+    expect(store.users.u_ram.contactPhone).toBe('07700 900123');
+  });
+});
