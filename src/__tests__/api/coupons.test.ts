@@ -61,22 +61,24 @@ describe('POST /api/coupons/validate', () => {
     expect(body.newTotal).toBe(180);
   });
 
-  it('validates WELCOME20 as £20 fixed discount', () => {
+  it('validates FREESHIP as a fixed discount', () => {
     const r = res();
-    handler(req('POST', { code: 'WELCOME20', cartTotal: 100 }), r);
+    handler(req('POST', { code: 'FREESHIP', cartTotal: 100 }), r);
     expect(r.statusCode).toBe(200);
     const body = r.body as any;
     expect(body.discountType).toBe('fixed');
-    expect(body.discountAmount).toBe(20);
-    expect(body.newTotal).toBe(80);
+    expect(body.discountAmount).toBe(9.99);
   });
 
-  it('WELCOME20 rejected when cart is below minimum order', () => {
+  it('rejects WELCOME20 — the launch giveaway was withdrawn', () => {
+    // Removed at the owner's instruction: unlimited, no expiry, no
+    // once-per-customer limit, so reusable indefinitely by anyone who learnt
+    // it. A withdrawn code must read as unknown, not silently apply.
     const r = res();
-    handler(req('POST', { code: 'WELCOME20', cartTotal: 30 }), r);
-    expect(r.statusCode).toBe(400);
+    handler(req('POST', { code: 'WELCOME20', cartTotal: 100 }), r);
+    // 404: the code is not merely ineligible, it no longer exists.
+    expect(r.statusCode).toBe(404);
     expect((r.body as any).valid).toBe(false);
-    expect((r.body as any).minOrderValue).toBe(50);
   });
 
   it('accepts code case-insensitively', () => {

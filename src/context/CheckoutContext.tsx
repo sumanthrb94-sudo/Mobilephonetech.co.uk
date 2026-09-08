@@ -196,7 +196,6 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
 
   const MOCK_COUPONS: Coupon[] = [
     { code: 'SAVE10', discountType: 'percentage', value: 10 },
-    { code: 'WELCOME20', discountType: 'fixed', value: 20 },
     { code: 'FREESHIP', discountType: 'fixed', value: 9.99 },
   ];
 

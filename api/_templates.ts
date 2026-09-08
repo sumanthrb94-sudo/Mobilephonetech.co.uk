@@ -440,7 +440,6 @@ export function welcomeEmail(opts: { name?: string | null; unsubscribeUrl?: stri
 
   const body = [
     p('Thanks for joining. You will hear from us when something is genuinely worth knowing — new stock, price drops on the models you care about, and the occasional subscriber-only code. Not more than that.'),
-    highlight('Your welcome code', 'WELCOME20 — £20 off orders over £50'),
     p('Every phone we sell is professionally refurbished, checked against a 60-point inspection, and covered for 12 months. If it is not right, you have 30 days to send it back.'),
     button('Start browsing', `${SHOP_URL}/products`),
   ].join('');
@@ -449,8 +448,6 @@ export function welcomeEmail(opts: { name?: string | null; unsubscribeUrl?: stri
     greeting,
     '',
     'Thanks for joining. You will hear from us when something is genuinely worth knowing — new stock, price drops, and the occasional subscriber-only code.',
-    '',
-    'YOUR WELCOME CODE: WELCOME20 — £20 off orders over £50',
     '',
     'Every phone is professionally refurbished, checked against a 60-point inspection, and covered for 12 months. 30 days to send it back if it is not right.',
     '',
@@ -462,9 +459,9 @@ export function welcomeEmail(opts: { name?: string | null; unsubscribeUrl?: stri
     .join('\n');
 
   return {
-    subject: 'Welcome to LeHart — here is £20 off your first order',
+    subject: 'Welcome to LeHart',
     html: shell({
-      preview: 'Your WELCOME20 code is inside, plus what to expect from us.',
+      preview: 'What to expect from us, and why every phone is worth trusting.',
       headline: greeting,
       body,
       unsubscribeUrl: opts.unsubscribeUrl,

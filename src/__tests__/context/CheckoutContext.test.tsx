@@ -196,15 +196,23 @@ describe('CheckoutContext', () => {
       expect(result.current.appliedCoupon!.value).toBe(10);
     });
 
-    it('applyCoupon("WELCOME20") returns true and sets coupon with fixed discount', () => {
+    it('applyCoupon("FREESHIP") returns true and sets coupon with fixed discount', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       let returnValue = false;
-      act(() => { returnValue = result.current.applyCoupon('WELCOME20'); });
+      act(() => { returnValue = result.current.applyCoupon('FREESHIP'); });
       expect(returnValue).toBe(true);
       expect(result.current.appliedCoupon).not.toBeNull();
-      expect(result.current.appliedCoupon!.code).toBe('WELCOME20');
+      expect(result.current.appliedCoupon!.code).toBe('FREESHIP');
       expect(result.current.appliedCoupon!.discountType).toBe('fixed');
-      expect(result.current.appliedCoupon!.value).toBe(20);
+      expect(result.current.appliedCoupon!.value).toBe(9.99);
+    });
+
+    it('applyCoupon("WELCOME20") now returns false — the code was withdrawn', () => {
+      const { result } = renderHook(() => useCheckout(), { wrapper });
+      let returnValue = true;
+      act(() => { returnValue = result.current.applyCoupon('WELCOME20'); });
+      expect(returnValue).toBe(false);
+      expect(result.current.appliedCoupon).toBeNull();
     });
 
     it('applyCoupon("BADCODE") returns false and leaves appliedCoupon null', () => {
@@ -231,19 +239,19 @@ describe('CheckoutContext', () => {
       expect(result.current.appliedCoupon).not.toBeNull();
     });
 
-    it('applyCoupon is case-insensitive — "Welcome20" matches WELCOME20', () => {
+    it('applyCoupon is case-insensitive — "freeship" matches FREESHIP', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       let returnValue = false;
-      act(() => { returnValue = result.current.applyCoupon('Welcome20'); });
+      act(() => { returnValue = result.current.applyCoupon('freeship'); });
       expect(returnValue).toBe(true);
-      expect(result.current.appliedCoupon!.code).toBe('WELCOME20');
+      expect(result.current.appliedCoupon!.code).toBe('FREESHIP');
     });
 
     it('applyCoupon replaces an existing coupon with a new one', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       act(() => result.current.applyCoupon('SAVE10'));
-      act(() => result.current.applyCoupon('WELCOME20'));
-      expect(result.current.appliedCoupon!.code).toBe('WELCOME20');
+      act(() => result.current.applyCoupon('FREESHIP'));
+      expect(result.current.appliedCoupon!.code).toBe('FREESHIP');
     });
   });
 

@@ -34,7 +34,6 @@ const SHIPPING: Record<string, { name: string; cost: number }> = {
 
 const COUPONS: Record<string, { type: 'percentage' | 'fixed'; value: number; minOrder?: number }> = {
   SAVE10: { type: 'percentage', value: 10 },
-  WELCOME20: { type: 'fixed', value: 20, minOrder: 50 },
   FREESHIP: { type: 'fixed', value: 9.99 },
   REFURB15: { type: 'percentage', value: 15, minOrder: 200 },
 };

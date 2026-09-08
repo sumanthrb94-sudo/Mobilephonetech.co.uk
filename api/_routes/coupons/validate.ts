@@ -18,14 +18,6 @@ const COUPONS: Record<string, Coupon> = {
     description: '10% off your order',
     active: true,
   },
-  WELCOME20: {
-    code: 'WELCOME20',
-    discountType: 'fixed',
-    value: 20,
-    minOrderValue: 50,
-    description: '£20 off orders over £50',
-    active: true,
-  },
   FREESHIP: {
     code: 'FREESHIP',
     discountType: 'fixed',
