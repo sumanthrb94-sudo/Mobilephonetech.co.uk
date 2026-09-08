@@ -37,6 +37,13 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/defaultsite",
+      "destination": "/",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/).*)",
