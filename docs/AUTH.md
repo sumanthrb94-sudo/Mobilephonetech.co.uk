@@ -186,6 +186,17 @@ Both are optional on purpose. Making either mandatory would cost more signups
 than the duplicates and unreachable accounts it prevents, and both can be added
 later from the account page.
 
+**Asked once, not every visit.** The prompts are gated on `ensureProfile`
+reporting that it had to create the profile — a first sign-in — rather than on
+the detail still being absent. A customer who declined to give a number has
+answered the question, and asking again every time they return is nagging
+rather than helpful. A failed profile write reports "not new" for the same
+reason: it must never turn into a prompt on every visit.
+
+The phone-first step collects a **name** alongside the address. Without it the
+account is greeted by a masked number for the rest of its life, and so is every
+order confirmation it receives.
+
 ## Email verification
 
 Signup sends a confirmation link, and the modal then shows a screen naming the

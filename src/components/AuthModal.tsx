@@ -260,6 +260,10 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       return;
     }
 
+    if (mode === 'add-email' && !fullName.trim()) {
+      setError('Please enter your name.');
+      return;
+    }
     if (mode === 'add-email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError('Enter a valid email address.');
       return;
@@ -293,7 +297,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         onSuccess?.();
         onClose();
       } else if (mode === 'add-email') {
-        await linkEmailPassword(email, password);
+        await linkEmailPassword(email, password, fullName);
         onSuccess?.();
         onClose();
       } else if (mode === 'phone' || mode === 'add-phone') {
@@ -438,7 +442,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'add-phone' ? 'Add your mobile'
                   : mode === 'code' ? 'Enter your code'
                   : mode === 'verify' ? 'Check your email'
-                  : mode === 'add-email' ? 'Add your email'
+                  : mode === 'add-email' ? 'Add your details'
                   : 'Connect your Google account'}
               </h2>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
@@ -560,7 +564,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               ) : (
               <>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {mode === 'signup' && (
+                {(mode === 'signup' || mode === 'add-email') && (
                   <div style={{ position: 'relative' }}>
                     <User size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--grey-40)' }} />
                     <input type="text" required placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />

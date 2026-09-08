@@ -594,10 +594,10 @@ export default function CheckoutFlow() {
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Full Name</label><input type="text" name="fullName" defaultValue={shippingAddress?.fullName || user?.fullName || ''} style={inputStyle} />{formErrors.fullName && <p style={errorStyle}>{formErrors.fullName}</p>}</div>
                     <div><label style={labelStyle}>Email</label><input type="email" name="email" defaultValue={shippingAddress?.email || user?.email || ''} style={inputStyle} />{isAuthenticated && user?.email && (
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', marginTop: '6px', lineHeight: 1.45 }}>
-                        Your receipt always goes to <strong style={{ color: 'var(--grey-60)' }}>{user.email}</strong>. Change this to send a copy somewhere else too.
+                        Your receipt always goes to <strong style={{ color: 'var(--grey-60)' }}>{user.email}</strong>. Enter a different address here and we will send it to <strong style={{ color: 'var(--grey-60)' }}>both</strong>.
                       </p>
                     )}{formErrors.email && <p style={errorStyle}>{formErrors.email}</p>}</div>
-                    <div><label style={labelStyle}>Phone</label><input type="tel" name="phone" defaultValue={shippingAddress?.phone} style={inputStyle} />{formErrors.phone && <p style={errorStyle}>{formErrors.phone}</p>}</div>
+                    <div><label style={labelStyle}>Phone</label><input type="tel" name="phone" defaultValue={shippingAddress?.phone || user?.phoneNumber || ''} style={inputStyle} />{formErrors.phone && <p style={errorStyle}>{formErrors.phone}</p>}</div>
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address Line 1</label><input type="text" name="addressLine1" defaultValue={shippingAddress?.addressLine1} style={inputStyle} />{formErrors.addressLine1 && <p style={errorStyle}>{formErrors.addressLine1}</p>}</div>
                     <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address Line 2 (Optional)</label><input type="text" name="addressLine2" defaultValue={shippingAddress?.addressLine2} style={inputStyle} /></div>
                     <div><label style={labelStyle}>City</label><input type="text" name="city" defaultValue={shippingAddress?.city} style={inputStyle} />{formErrors.city && <p style={errorStyle}>{formErrors.city}</p>}</div>

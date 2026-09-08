@@ -539,8 +539,11 @@ describe('each signup route asks for the other contact method', () => {
     await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
     await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
 
-    expect(await screen.findByRole('heading', { name: /add your email/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /add your details/i })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Email Address')).toBeInTheDocument();
+    // Collected here too, or the greeting and every order confirmation are
+    // addressed to a masked phone number.
+    expect(screen.getByPlaceholderText('Full Name')).toBeInTheDocument();
   });
 
   it('closes instead when the phone was added to an account that has an email', async () => {
@@ -557,7 +560,7 @@ describe('each signup route asks for the other contact method', () => {
 
     // Nothing left to collect.
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(screen.queryByRole('heading', { name: /add your email/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /add your details/i })).not.toBeInTheDocument();
   });
 
   it('links the email a phone-first account supplies', async () => {
@@ -573,11 +576,13 @@ describe('each signup route asks for the other contact method', () => {
     await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
     await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
 
-    await userEvent.type(await screen.findByPlaceholderText('Email Address'), 'jordan@example.com');
+    await userEvent.type(await screen.findByPlaceholderText('Full Name'), 'Jordan Blake');
+    await userEvent.type(screen.getByPlaceholderText('Email Address'), 'jordan@example.com');
     await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
     await userEvent.click(screen.getByRole('button', { name: /save and finish/i }));
 
-    await waitFor(() => expect(linkEmailPassword).toHaveBeenCalledWith('jordan@example.com', 'hunter22'));
+    await waitFor(() =>
+      expect(linkEmailPassword).toHaveBeenCalledWith('jordan@example.com', 'hunter22', 'Jordan Blake'));
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -594,7 +599,8 @@ describe('each signup route asks for the other contact method', () => {
     await userEvent.type(await screen.findByPlaceholderText('123456'), '123456');
     await userEvent.click(screen.getByRole('button', { name: /verify and sign in/i }));
 
-    await userEvent.type(await screen.findByPlaceholderText('Email Address'), 'taken@example.com');
+    await userEvent.type(await screen.findByPlaceholderText('Full Name'), 'Jordan Blake');
+    await userEvent.type(screen.getByPlaceholderText('Email Address'), 'taken@example.com');
     await userEvent.type(screen.getByPlaceholderText('Password'), 'hunter22');
     await userEvent.click(screen.getByRole('button', { name: /save and finish/i }));
 
@@ -696,5 +702,28 @@ describe('Google sign-in collects the number it never provides', () => {
     await userEvent.click(screen.getByRole('button', { name: /skip for now/i }));
 
     expect(onClose).toHaveBeenCalled();
+  });
+});
+
+/**
+ * Asked once, not every visit.
+ *
+ * The prompt is gated on the profile having just been created rather than on
+ * the number still being absent: a customer who declined has answered the
+ * question, and re-asking on every sign-in is nagging. AuthContext decides
+ * this — signInWithGoogle only reports 'signed-in-needs-phone' on a first
+ * sign-in — so the modal simply does what it is told.
+ */
+describe('a returning customer is not asked again', () => {
+  it('closes for a returning Google customer who has no number', async () => {
+    // Not a first sign-in, so the context reports a plain success even though
+    // the account still carries no number.
+    signInWithGoogle.mockResolvedValue('signed-in');
+    const { onClose } = renderModal('login');
+
+    await userEvent.click(screen.getByRole('button', { name: /continue with google/i }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(screen.queryByRole('heading', { name: /add your mobile/i })).not.toBeInTheDocument();
   });
 });

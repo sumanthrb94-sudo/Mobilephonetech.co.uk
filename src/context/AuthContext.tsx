@@ -141,7 +141,7 @@ interface AuthContextType {
    * address there is nowhere to send an order confirmation, and without a
    * password they can only ever get back in by burning another SMS.
    */
-  linkEmailPassword: (email: string, password: string) => Promise<void>;
+  linkEmailPassword: (email: string, password: string, fullName?: string) => Promise<void>;
   continueAsGuest: (email: string) => void;
   /** Force-refresh the ID token, e.g. right after a role change. */
   refreshClaims: () => Promise<void>;
@@ -182,11 +182,19 @@ async function toUser(fbUser: FirebaseUser): Promise<User> {
  * document is written on first sign-in. merge:true keeps an existing role and
  * saved address intact — this runs on every sign-in, not just registration.
  */
-async function ensureProfile(fbUser: FirebaseUser, fullName?: string) {
+/**
+ * Creates the profile if it is missing, and says whether it had to.
+ *
+ * `created` is how the caller tells a first sign-in from the hundredth. Asking
+ * for a missing detail is welcome once and nagging every time after, so the
+ * prompts are gated on this rather than on the detail still being absent — a
+ * customer who declined to give a number has answered the question.
+ */
+async function ensureProfile(fbUser: FirebaseUser, fullName?: string): Promise<{ created: boolean }> {
   try {
     const ref = doc(db, COL.users, fbUser.uid);
     const snap = await getDoc(ref);
-    if (snap.exists()) return;
+    if (snap.exists()) return { created: false };
     await setDoc(ref, {
       fullName: fullName ?? fbUser.displayName ?? fbUser.email?.split('@')[0] ?? 'User',
       email: fbUser.email ?? '',
@@ -197,9 +205,12 @@ async function ensureProfile(fbUser: FirebaseUser, fullName?: string) {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
+    return { created: true };
   } catch {
     // A missing profile must not block sign-in; the rest of the app treats it
-    // as absent and falls back to the auth record.
+    // as absent and falls back to the auth record. Reported as "not new" so a
+    // failed write can never trigger a first-run prompt on every visit.
+    return { created: false };
   }
 }
 
@@ -320,7 +331,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     provider.setCustomParameters({ prompt: 'select_account' });
     try {
       const cred = await signInWithPopup(auth, provider);
-      await ensureProfile(cred.user);
+      const { created } = await ensureProfile(cred.user);
       // Unlike Supabase's signInWithOAuth, the popup flow resolves in place:
       // the user is signed in and the caller still has a live component to
       // update. Returning the outcome is what lets it close the modal.
@@ -333,7 +344,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // filed against an order they can no longer see. Saying which case this
       // is lets the caller ask for the number while they are still here,
       // which is the only moment linking is free.
-      return cred.user.phoneNumber ? 'signed-in' : 'signed-in-needs-phone';
+      // Only on the first sign-in. Someone who skipped it once has already
+      // answered; asking again every time they return is nagging, and the
+      // account page is where a number gets added later.
+      return created && !cred.user.phoneNumber ? 'signed-in-needs-phone' : 'signed-in';
     } catch (err) {
       const code = (err as { code?: string })?.code ?? '';
       // A blocked popup is a browser setting, not a failure worth surfacing —
@@ -479,14 +493,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { hasEmail: Boolean(cred.user.email) };
   };
 
-  const linkEmailPassword = async (email: string, password: string) => {
+  const linkEmailPassword = async (email: string, password: string, fullName?: string) => {
     const current = auth.currentUser;
     if (!current) throw new Error('You need to be signed in to add an email address.');
 
     const credential = EmailAuthProvider.credential(email.trim().toLowerCase(), password);
     const linked = await linkWithCredential(current, credential);
 
-    await ensureProfile(linked.user);
+    // Without this the account is greeted by a masked phone number for the
+    // rest of its life, and every order confirmation is addressed to one.
+    if (fullName) await updateProfile(linked.user, { displayName: fullName });
+    await ensureProfile(linked.user, fullName);
     // Now that there is an address, both the things an address is for.
     await sendVerification(linked.user);
     await sendAccountWelcome(linked.user);
