@@ -26,12 +26,43 @@ function collection(name: string) {
   return {
     doc: (id: string) => ({
       id,
-      get: async () => ({ exists: id in store[name], data: () => store[name][id] }),
+      collectionName: name,
+      // A copy per call, as Firestore does. Handing back the live object let a
+      // caller's working copy mutate the store, so a transaction that threw
+      // still left its half-finished decrements behind.
+      get: async () => ({
+        exists: id in store[name],
+        data: () => (id in store[name] ? structuredClone(store[name][id]) : undefined),
+      }),
       set: async (value: Doc, opts?: { merge?: boolean }) => {
         store[name][id] = opts?.merge ? { ...(store[name][id] ?? {}), ...value } : value;
       },
     }),
   };
+}
+
+/**
+ * Enough of a transaction for the order route: reads resolve against the same
+ * store, and writes land immediately. It does not model contention — nothing
+ * here runs concurrently — but it does exercise the read-check-decrement-write
+ * path, which is where stock was silently never reduced.
+ */
+async function runTransaction<T>(fn: (tx: {
+  get: (ref: any) => Promise<any>;
+  update: (ref: any, patch: Record<string, unknown>) => void;
+  set: (ref: any, value: Record<string, unknown>) => void;
+}) => Promise<T>): Promise<T> {
+  return fn({
+    get: async (ref: any) => ref.get(),
+    update: (ref: any, patch: Record<string, unknown>) => {
+      const existing = store[ref.collectionName]?.[ref.id] ?? {};
+      store[ref.collectionName][ref.id] = { ...existing, ...patch };
+    },
+    set: (ref: any, value: Record<string, unknown>) => {
+      store[ref.collectionName] ??= {};
+      store[ref.collectionName][ref.id] = value;
+    },
+  });
 }
 
 const caller = { uid: 'u_ram', email: 'ram@example.com', name: 'Ram' };
@@ -40,7 +71,7 @@ let currentCaller: typeof caller | null = caller;
 let isAdmin = false;
 
 vi.mock('../../../api/_firebaseAdmin.js', () => ({
-  adminDb: async () => ({ collection }),
+  adminDb: async () => ({ collection, runTransaction }),
   adminAuth: async () => null,
   verifyCaller: async () => currentCaller,
   callerIsAdmin: async () => isAdmin,
@@ -357,5 +388,68 @@ describe('confirmation recipients', () => {
 
     expect(out.code).toBe(400);
     expect(out.body.error).toMatch(/valid email/i);
+  });
+});
+
+/**
+ * Stock has to come down when something sells.
+ *
+ * The route read stock, refused a basket it could not fill, and then never
+ * reduced the figure — so the same handset sold to an unlimited number of
+ * people. This catalogue is keyed by IMEI: every unit is one physical phone,
+ * so the second buyer onwards gets an apology and a refund.
+ */
+describe('selling reserves the stock', () => {
+  beforeEach(() => {
+    currentCaller = caller;
+    delete process.env.VITE_PREVIEW_MODE;
+    store.products['apple-iphone-13-128gb'].stock = 5;
+  });
+
+  it('reduces stock by the quantity sold', async () => {
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 2 }],
+      shippingAddress: ADDRESS,
+    });
+
+    expect(out.code).toBe(201);
+    expect(store.products['apple-iphone-13-128gb'].stock).toBe(3);
+  });
+
+  it('refuses a basket larger than the stock, and writes nothing', async () => {
+    const ordersBefore = Object.keys(store.orders ?? {}).length;
+
+    const out = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 5 }],
+      shippingAddress: ADDRESS,
+    });
+    expect(out.code).toBe(201);
+
+    // Nothing left. The next customer must be told, not sold to.
+    const second = await post('orders', {
+      items: [{ productId: 'apple-iphone-13-128gb', quantity: 1 }],
+      shippingAddress: ADDRESS,
+    });
+
+    expect(second.code).toBe(409);
+    expect(second.body.error).toMatch(/out of stock/i);
+    expect(store.products['apple-iphone-13-128gb'].stock).toBe(0);
+    // The refused order is not filed: one order was written, not two.
+    expect(Object.keys(store.orders).length).toBe(ordersBefore + 1);
+  });
+
+  it('counts two lines of the same product against one pool', async () => {
+    // Three plus three is six against a stock of five. Checking each line
+    // against the same untouched figure would let both pass.
+    const out = await post('orders', {
+      items: [
+        { productId: 'apple-iphone-13-128gb', quantity: 3 },
+        { productId: 'apple-iphone-13-128gb', quantity: 3 },
+      ],
+      shippingAddress: ADDRESS,
+    });
+
+    expect(out.code).toBe(409);
+    expect(store.products['apple-iphone-13-128gb'].stock).toBe(5);
   });
 });

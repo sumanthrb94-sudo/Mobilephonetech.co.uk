@@ -23,6 +23,9 @@ import { previewModeFrom, PREVIEW_MESSAGE } from '../../src/config/preview.js';
  * a uid the guest did not have.
  */
 
+/** A basket that priced correctly but could no longer be filled. */
+class StockConflict extends Error {}
+
 const SHIPPING: Record<string, { name: string; cost: number }> = {
   standard: { name: 'Standard Delivery', cost: 0 },
   express: { name: 'Express Delivery', cost: 9.99 },
@@ -242,9 +245,69 @@ export default async function handler(req: any, res: any) {
     updatedAt: now,
   };
 
+  /**
+   * Reserve the stock and write the order as one atomic step.
+   *
+   * The check above reads stock and refuses a basket it cannot fill, but
+   * nothing ever reduced the figure — so the same handset sold to an unlimited
+   * number of customers, and this catalogue is keyed by IMEI, where every unit
+   * is one physical phone. Four of five buyers get an apology and a refund.
+   *
+   * A transaction rather than a plain write because the check and the decrement
+   * must not be separable: two simultaneous checkouts for the last unit both
+   * read "1 available" and both pass, and only a transaction makes one of them
+   * lose. Firestore requires every read before every write, hence the two
+   * passes below.
+   */
   try {
-    await db.collection('orders').doc(orderId).set(order);
+    await db.runTransaction(async (tx) => {
+      const ids = [...new Set(priced.map(i => String(i.productId)))];
+      const refs = ids.map(id => db.collection('products').doc(id));
+      const snaps = await Promise.all(refs.map(ref => tx.get(ref)));
+
+      const docs = new Map(refs.map((ref, i) => [
+        ref.id,
+        { ref, exists: snaps[i].exists, data: (snaps[i].data() ?? {}) as Record<string, any> },
+      ]));
+
+      for (const item of priced) {
+        const entry = docs.get(String(item.productId));
+        // Sold out or withdrawn between pricing the basket and reserving it.
+        if (!entry?.exists) throw new StockConflict('That product is no longer available');
+
+        const product = entry.data;
+        const variant = item.variantId && Array.isArray(product.variants)
+          ? product.variants.find((v: any) => v?.id === item.variantId) ?? null
+          : null;
+
+        const available = Number((variant?.stock ?? product.stock) ?? 0);
+        const wanted = Number(item.quantity);
+        if (available < wanted) {
+          const name = `${product.brand ?? ''} ${product.model ?? ''}`.trim() || 'That item';
+          throw new StockConflict(`${name} is out of stock`);
+        }
+
+        // Written back to the working copy, not just compared: two lines of the
+        // same product must not each pass against the same starting figure.
+        if (variant) variant.stock = available - wanted;
+        else product.stock = available - wanted;
+      }
+
+      for (const { ref, data } of docs.values()) {
+        const patch: Record<string, any> = { updatedAt: now };
+        // A configured product carries its stock per variant, inside an array
+        // Firestore can only rewrite whole.
+        if (Array.isArray(data.variants)) patch.variants = data.variants;
+        if (typeof data.stock === 'number') patch.stock = data.stock;
+        tx.update(ref, patch);
+      }
+
+      tx.set(db.collection('orders').doc(orderId), order);
+    });
   } catch (err) {
+    // 409 rather than 400: the basket was valid, someone else simply got there
+    // first, and the customer's own next move is different for each.
+    if (err instanceof StockConflict) return res.status(409).json({ error: err.message });
     return res.status(500).json({ error: 'Could not save your order', detail: (err as Error).message });
   }
 
