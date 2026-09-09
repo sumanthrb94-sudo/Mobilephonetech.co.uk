@@ -64,6 +64,17 @@ export default function CookiePolicy() {
           our processor for this; the data reaches Google servers, which may be outside
           the UK.
         </P>
+        <P>
+          <strong>Session insights, only if you accept: Microsoft Clarity.</strong> With
+          the same &ldquo;Accept all cookies&rdquo; choice we also load Microsoft Clarity,
+          which records anonymised session replays and heatmaps so we can see where the
+          site is confusing or broken — a checkout that stalls, a button people miss. It
+          sets <strong>_clck</strong> and <strong>_clsk</strong> cookies and a Clarity
+          user id, loads only if you accept, and is never requested if you reject.
+          Microsoft acts as our processor; the data reaches Microsoft servers, which may
+          be outside the UK. Clarity masks text and input by default, so what you type is
+          not captured.
+        </P>
       </LegalSection>
 
       <LegalSection title="4. Changing your mind">
@@ -71,9 +82,10 @@ export default function CookiePolicy() {
           Your choice is stored in your browser. To change it, clear this site's data in
           your browser settings and the banner will ask again on your next visit. You can
           also block or delete cookies entirely in your browser — the essential features
-          above may stop working if you do. Withdrawing consent stops Google Analytics
-          from being loaded again; any <strong>_ga</strong> cookies already set are
-          cleared with the rest of the site's data.
+          above may stop working if you do. Withdrawing consent stops Google Analytics and Microsoft Clarity
+          from being loaded again; any <strong>_ga</strong>, <strong>_clck</strong> or
+          <strong>_clsk</strong> cookies already set are cleared with the rest of the
+          site's data.
         </P>
       </LegalSection>
 

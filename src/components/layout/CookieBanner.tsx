@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CONSENT_KEY, startFirebaseAnalytics, stopFirebaseAnalytics } from '../../lib/firebaseAnalytics';
+import { startClarity, stopClarity } from '../../lib/clarity';
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -13,13 +14,14 @@ export default function CookieBanner() {
     // A returning visitor who accepted on a previous visit. This is the ONLY
     // other place GA4 can start: nothing imports it at module scope, so a page
     // load with no stored acceptance loads no measurement code at all.
-    if (consent === 'accepted') void startFirebaseAnalytics();
+    if (consent === 'accepted') { void startFirebaseAnalytics(); startClarity(); }
   }, []);
 
   const handleAccept = () => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
     setIsVisible(false);
     void startFirebaseAnalytics();
+    startClarity();
   };
 
   const handleDecline = () => {
@@ -27,9 +29,10 @@ export default function CookieBanner() {
     setIsVisible(false);
     // Nothing to tear down on a first visit, because nothing started. This
     // matters for someone who accepted earlier and has come back to refuse:
-    // the SDK offers no teardown, so the only honest way to stop it is to
-    // reload without it.
+    // neither SDK offers a teardown, so the only honest way to stop them is to
+    // reload without them.
     stopFirebaseAnalytics();
+    stopClarity();
   };
 
   return (
