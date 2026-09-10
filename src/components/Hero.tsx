@@ -331,8 +331,14 @@ export default function Hero() {
         justifyContent: 'space-between', gap: '12px',
         zIndex: 2, boxSizing: 'border-box',
       }}>
-        {/* Progress bar indicators */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {/* Progress bar indicators.
+            The bar stays 4px tall — the button around it does not. A 8×4px
+            hit area is roughly a fifth of a fingertip, so the transparent
+            button is padded out to 24px of height and the visible bar is an
+            inner span. Nothing moves visually; the target just becomes
+            reachable. Vertical padding rather than a min-height so the bars
+            stay optically centred on the row. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: '-6px' }}>
           {SLIDES.map((_, i) => (
             <button
               key={i}
@@ -340,14 +346,22 @@ export default function Hero() {
               aria-label={`Go to slide ${i + 1}`}
               aria-current={i === current}
               style={{
-                width: i === current ? '32px' : '8px',
-                height: '4px',
-                borderRadius: '999px',
-                background: i === current ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.30)',
-                border: 'none', cursor: 'pointer', padding: 0,
-                transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '10px 6px',
+                background: 'none', border: 'none', cursor: 'pointer',
               }}
-            />
+            >
+              <span
+                style={{
+                  display: 'block',
+                  width: i === current ? '32px' : '8px',
+                  height: '4px',
+                  borderRadius: '999px',
+                  background: i === current ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.30)',
+                  transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+              />
+            </button>
           ))}
         </div>
 

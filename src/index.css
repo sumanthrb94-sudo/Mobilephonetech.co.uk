@@ -1839,20 +1839,156 @@ a.ops-list-name:hover { color: var(--brand-cyan-hover); }
 
 /* The account tab list reads as a row of chips on phones and a vertical
    rail on desktop — a five-item vertical list eats the whole first screen
-   on mobile before any content is visible. */
+   on mobile before any content is visible. Measured on a 390×844 phone:
+   the card version pushed "Personal details" to y≈590, below the fold. */
 .account-tabs {
   display: flex;
+  gap: 8px;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   scrollbar-width: none;
+  /* Bleed to the screen edges so a scrolled chip row reads as continuing
+     off-screen, while the first and last chip stay inside the page gutter. */
+  margin-inline: -20px;
+  padding-inline: 20px;
+  /* Room for the focus ring, which would otherwise be clipped by overflow. */
+  padding-block: 3px;
 }
 
 .account-tabs::-webkit-scrollbar { display: none; }
 
+.account-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  padding: 10px 15px;
+  border-radius: 999px;
+  border: 1.5px solid var(--grey-10);
+  background: var(--grey-0);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--grey-60);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.account-tab[data-active='true'] {
+  background: var(--color-brand-subtle);
+  border-color: var(--brand-cyan);
+  color: var(--black);
+  font-weight: 700;
+}
+
+/* The chevron marks the selected row on the desktop rail; on a pill it is
+   just noise, so it only appears once the rail exists. */
+.account-tab__chevron { display: none; }
+
 @media (min-width: 900px) {
   .account-tabs {
+    /* The chip row becomes the card itself — one element, two layouts, so
+       the two cannot drift apart. */
     display: block;
     overflow-x: visible;
+    margin-inline: 0;
+    padding: 0;
+    background: var(--grey-0);
+    border: 1px solid var(--grey-10);
+    border-radius: 16px;
+    position: sticky;
+    top: 100px;
   }
+
+  .account-tab {
+    display: flex;
+    width: 100%;
+    padding: 14px 18px;
+    border: none;
+    border-left: 3px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+  }
+
+  .account-tab:first-child { border-top-right-radius: 16px; }
+
+  .account-tab[data-active='true'] {
+    background: var(--color-brand-subtle);
+    border-left-color: var(--brand-cyan);
+  }
+
+  /* Wishlist is a destination, not a tab, so it sits below a rule — with the
+     same 3px indent as the tabs, which it previously lacked and so sat 3px
+     to their left. */
+  .account-tab--link {
+    border-top: 1px solid var(--grey-10);
+    border-bottom-right-radius: 16px;
+  }
+
+  .account-tab__chevron { display: block; margin-left: auto; }
+}
+
+/* Panel padding tracks the viewport: 32px of inset inside a 20px page gutter
+   left a 390px phone only 286px of usable width. */
+.account-panel {
+  background: var(--grey-0);
+  border: 1px solid var(--grey-10);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+@media (min-width: 640px) { .account-panel { padding: 28px; } }
+@media (min-width: 900px) { .account-panel { padding: 32px; } }
+
+/* Name, address and the sign-out control. Wraps rather than letting a long
+   name squeeze the button, which has no room to shrink. */
+.account-hero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+@media (min-width: 640px) { .account-hero { margin-bottom: 28px; } }
+
+.account-hero__who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  flex: 1 1 200px;
+}
+
+.account-hero__avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--color-brand-subtle);
+  color: var(--brand-cyan-hover);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* min-width:0 lets the ellipsis actually engage inside a flex child. */
+.account-hero__text { min-width: 0; }
+
+.account-hero__email {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--grey-60);
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ───────────────────────────────────────────────────────────────
