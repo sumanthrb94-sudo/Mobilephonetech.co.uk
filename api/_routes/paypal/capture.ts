@@ -23,6 +23,31 @@ import { paypalConfigured, capturePayPalOrder, refundCapture } from '../../_payp
  * customer's money without giving them an order.
  */
 
+/**
+ * Write down money we hold with no order behind it.
+ *
+ * console.error is not a record: Vercel's runtime logs roll off, and nobody is
+ * reading them at 2am. A failed refund is the one failure that costs a real
+ * customer real money, so it goes somewhere a human can still find tomorrow —
+ * and a capture that errored ambiguously (a timeout mid-capture) goes down too,
+ * because PayPal may have taken the money even though we never saw the reply.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function recordIncident(db: any, kind: string, detail: Record<string, unknown>): Promise<void> {
+  console.error(`[paypal/capture] ${kind}`, JSON.stringify(detail));
+  try {
+    await db.collection('payment_incidents').add({
+      kind,
+      resolved: false,
+      createdAt: new Date().toISOString(),
+      ...detail,
+    });
+  } catch (err) {
+    // Nothing left to do but shout. Losing the log too is why this is loud.
+    console.error(`[paypal/capture] COULD NOT RECORD ${kind}:`, (err as Error).message);
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -55,7 +80,16 @@ export default async function handler(req: any, res: any) {
 
   // 2. Take the money.
   const captured = await capturePayPalOrder(paypalOrderId);
-  if (!captured.ok) return res.status(captured.status).json({ error: captured.error });
+  if (!captured.ok) {
+    // We do not know whether PayPal took the money before this failed — a
+    // timeout looks identical to a refusal from here. Record it so someone can
+    // check the PayPal dashboard for an orphaned capture.
+    await recordIncident(db, 'capture-failed', {
+      paypalOrderId, reference: order.id, total: order.total,
+      currency: order.currency, paypalError: captured.error ?? null,
+    });
+    return res.status(captured.status).json({ error: captured.error });
+  }
 
   const { capturedTotal, currency, captureId, status } = captured.data!;
 
@@ -71,7 +105,13 @@ export default async function handler(req: any, res: any) {
       const refund = await refundCapture(captureId);
       if (!refund.ok) {
         // A refund we could not complete is the one thing a human must chase.
-        console.error(`[paypal/capture] REFUND FAILED for ${captureId} (order ${order.id}): ${refund.error}`);
+        await recordIncident(db, 'refund-failed', {
+          reason: 'amount-mismatch', captureId, paypalOrderId, reference: order.id,
+          capturedTotal, capturedCurrency: currency, captureStatus: status,
+          expectedTotal: order.total, expectedCurrency: order.currency,
+          customerEmail: order.shippingAddress?.email ?? null,
+          paypalError: refund.error ?? null,
+        });
       }
     }
     return res.status(409).json({
@@ -87,7 +127,14 @@ export default async function handler(req: any, res: any) {
     if (captureId) {
       const refund = await refundCapture(captureId);
       if (!refund.ok) {
-        console.error(`[paypal/capture] REFUND FAILED for ${captureId} (order ${order.id}): ${refund.error}`);
+        await recordIncident(db, 'refund-failed', {
+          reason: err instanceof StockConflict ? 'stock-conflict' : 'commit-failed',
+          captureId, paypalOrderId, reference: order.id,
+          capturedTotal, capturedCurrency: currency,
+          customerEmail: order.shippingAddress?.email ?? null,
+          paypalError: refund.error ?? null,
+          commitError: (err as Error).message,
+        });
       }
     }
     if (err instanceof StockConflict) {

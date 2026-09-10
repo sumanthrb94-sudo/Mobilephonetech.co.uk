@@ -35,9 +35,9 @@ const MOCK_ADDRESS: ShippingAddress = {
 
 const MOCK_PAYMENT: PaymentMethod = {
   id: 'pm_test_001',
-  type: 'card',
-  last4: '4242',
-  brand: 'Visa',
+  type: 'paypal',
+  last4: 'PYPL',
+  brand: 'PayPal',
 };
 
 function makeOrder(overrides: Partial<Order> = {}): Order {

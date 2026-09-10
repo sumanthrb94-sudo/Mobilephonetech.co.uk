@@ -22,7 +22,7 @@ const ADDRESS: ShippingAddress = {
   fullName: 'A B', email: 'a@b.c', phone: '1', addressLine1: '1 St',
   city: 'London', postalCode: 'E1', country: 'UK',
 } as ShippingAddress;
-const PAYMENT: PaymentMethod = { id: 'p', type: 'card', brand: 'Visa' } as PaymentMethod;
+const PAYMENT: PaymentMethod = { id: 'p', type: 'paypal', brand: 'PayPal' } as PaymentMethod;
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <AuthProvider><CheckoutProvider>{children}</CheckoutProvider></AuthProvider>

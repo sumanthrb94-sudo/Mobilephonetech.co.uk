@@ -34,6 +34,17 @@ export function paypalConfigured(): boolean {
   return Boolean(process.env.PAYPAL_CLIENT_ID && process.env.PAYPAL_SECRET);
 }
 
+/**
+ * Every PayPal call gets a hard deadline.
+ *
+ * A capture that hangs until the platform kills the function is the worst
+ * outcome available: the money may already be taken, and no refund is ever
+ * attempted because there is no stack frame left to attempt it in. Better to
+ * fail while we can still react and write the failure down.
+ */
+const PAYPAL_TIMEOUT_MS = 8_000;
+const deadline = () => AbortSignal.timeout(PAYPAL_TIMEOUT_MS);
+
 export interface PayPalResult<T> {
   ok: boolean;
   status: number;
@@ -63,6 +74,7 @@ async function accessToken(): Promise<PayPalResult<string>> {
         'content-type': 'application/x-www-form-urlencoded',
       },
       body: 'grant_type=client_credentials',
+      signal: deadline(),
     });
     const body = (await res.json().catch(() => ({}))) as { access_token?: string; error_description?: string };
     if (!res.ok || !body.access_token) {
@@ -99,6 +111,7 @@ export async function createPayPalOrder(
         authorization: `Bearer ${token.data}`,
         'content-type': 'application/json',
       },
+      signal: deadline(),
       body: JSON.stringify({
         intent: 'CAPTURE',
         purchase_units: [{
@@ -143,6 +156,7 @@ export async function capturePayPalOrder(paypalOrderId: string): Promise<PayPalR
         authorization: `Bearer ${token.data}`,
         'content-type': 'application/json',
       },
+      signal: deadline(),
     });
     const body = (await res.json().catch(() => ({}))) as any;
     if (!res.ok) {
@@ -184,6 +198,7 @@ export async function refundCapture(captureId: string): Promise<PayPalResult<{ s
         authorization: `Bearer ${token.data}`,
         'content-type': 'application/json',
       },
+      signal: deadline(),
     });
     const body = (await res.json().catch(() => ({}))) as { status?: string; message?: string };
     if (!res.ok) return { ok: false, status: 502, error: body.message || `PayPal refund failed (${res.status})` };

@@ -35,7 +35,12 @@ export interface ShippingOption {
 
 export interface PaymentMethod {
   id: string;
-  type: 'card' | 'paypal' | 'apple_pay' | 'google_pay' | 'klarna' | 'clearpay';
+  /**
+   * PayPal is the only gateway, and this union is how the compiler keeps it
+   * that way: adding a method means changing this line on purpose, not
+   * quietly constructing one somewhere in a component.
+   */
+  type: 'paypal';
   last4?: string;
   brand?: string;
 }
@@ -185,7 +190,9 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
             items: (row.items as Order['items']) ?? [],
             shippingAddress: row.shippingAddress as ShippingAddress,
             shippingOption: SHIPPING_OPTIONS[0],
-            paymentMethod: { id: 'restored', type: 'card', brand: row.paymentMethod as string },
+            // Display only, and nothing reads `type`: the label a shopper sees
+            // is the string the server stored on the order ('PayPal').
+            paymentMethod: { id: 'restored', type: 'paypal', brand: (row.paymentMethod as string) ?? 'PayPal' },
             subtotal: row.subtotal as number,
             shippingCost: row.shippingCost as number,
             discount: row.discount as number,
