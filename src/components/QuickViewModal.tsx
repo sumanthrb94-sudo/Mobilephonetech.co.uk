@@ -104,10 +104,6 @@ export default function QuickViewModal({
               </span>
             )}
           </div>
-          <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', marginTop: '-2px' }}>
-            or 3 payments of £{Math.ceil(phone.price / 3)} with Klarna
-          </div>
-
           {/* Trust row */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--grey-10)' }}>
             <TrustRow icon={Shield} label={`${phone.warrantyMonths}-month warranty`} />

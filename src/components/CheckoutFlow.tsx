@@ -1,35 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
-import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod, Order } from '../context/CheckoutContext';
+import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
-import ExpressPayRow from './ExpressPayRow';
 import ProductImage from './ProductImage';
-import PayPalCheckout, { PayPalPayload } from './PayPalCheckout';
+import PayPalCheckout, { PayPalPayload, isPayPalConfigured } from './PayPalCheckout';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode } from '../utils/postcodeLookup';
 
-// Payment method selection only — this form NEVER collects card details.
+// PayPal is the only payment gateway. This form NEVER collects card details.
 //
 // That is deliberate, not a gap. Accepting a card number, expiry or CVC into
-// our own DOM would put the site in a PCI DSS scope it cannot satisfy; card
-// capture belongs exclusively to the payment provider's hosted fields
-// (Stripe Elements / Checkout), which arrive with the PSP integration. Until
-// then the step records which method the customer chose and nothing else.
-// Do not add card inputs back here — wire the PSP instead.
+// our own DOM would put the site in a PCI DSS scope it cannot satisfy. Card
+// capture belongs exclusively to PayPal's own hosted fields, which is exactly
+// what the PayPal buttons open. Do not add card inputs back here.
+//
+// Everything else that used to appear on this step — Apple Pay, Google Pay,
+// Klarna, Clearpay, a bare "credit or debit card" radio — was a placeholder
+// with nothing behind it: choosing one placed an order and took no money. A
+// payment method the shop cannot actually charge does not belong on a live
+// checkout, so there is now exactly one, and it is the one that works.
 
-type PaymentTypeKey = 'card' | 'klarna' | 'clearpay' | 'apple_pay' | 'google_pay' | 'paypal';
-
-const PAYMENT_METHOD_LABELS: Record<PaymentTypeKey, { brand: string; last4: string; display: string }> = {
-  card:       { brand: 'Card',       last4: '····', display: 'Credit or debit card' },
-  klarna:     { brand: 'Klarna',     last4: 'PAY3', display: 'Klarna · Pay in 3'    },
-  clearpay:   { brand: 'Clearpay',   last4: 'PAY4', display: 'Clearpay · Pay in 4'  },
-  apple_pay:  { brand: 'Apple Pay',  last4: 'WLLT', display: 'Apple Pay'            },
-  google_pay: { brand: 'Google Pay', last4: 'WLLT', display: 'Google Pay'           },
-  paypal:     { brand: 'PayPal',     last4: 'PYPL', display: 'PayPal'               },
-};
+const PAYPAL_METHOD = { brand: 'PayPal', last4: 'PYPL', display: 'PayPal' } as const;
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -48,7 +42,7 @@ export default function CheckoutFlow() {
   const { 
     currentStep, setCurrentStep, shippingAddress, setShippingAddress,
     shippingOption, paymentMethod, setPaymentMethod,
-    appliedCoupon, applyCoupon, removeCoupon, createOrder, recordServerOrder, lastOrder,
+    appliedCoupon, applyCoupon, removeCoupon, recordServerOrder, lastOrder,
   } = useCheckout();
   const { user, isAuthenticated, continueAsGuest } = useAuth();
 
@@ -81,12 +75,10 @@ export default function CheckoutFlow() {
     // Runs on mount and if the cart fills while here; later steps are
     // untouched because the guard only fires on 'cart'.
   }, [currentStep, items.length, setCurrentStep]);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'selection' | 'shipping'>(isAuthenticated || user?.isGuest ? 'shipping' : 'selection');
-  const [paymentType, setPaymentType] = useState<PaymentTypeKey>('card');
 
   // Demo seed: checkout starts with a plausible UK address pre-selected
   // so a demo walk-through goes straight from cart -> payment. Uses the
@@ -177,16 +169,13 @@ export default function CheckoutFlow() {
   const handlePaymentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Selection only. Card capture happens on the payment provider's hosted
-    // page once the PSP is wired — nothing sensitive exists in this form to
-    // read, which is exactly the point.
+    // Selection only. Card capture happens on PayPal's hosted page — nothing
+    // sensitive exists in this form to read, which is exactly the point.
     const method: PaymentMethod = {
       id: Math.random().toString(36).slice(2, 11),
-      type: paymentType === 'apple_pay' || paymentType === 'google_pay' || paymentType === 'paypal'
-        ? paymentType
-        : 'card',
-      last4: PAYMENT_METHOD_LABELS[paymentType].last4,
-      brand: PAYMENT_METHOD_LABELS[paymentType].brand,
+      type: 'paypal',
+      last4: PAYPAL_METHOD.last4,
+      brand: PAYPAL_METHOD.brand,
     };
 
     setFormErrors({});
@@ -206,6 +195,9 @@ export default function CheckoutFlow() {
    * receives, prices only ever set server-side. Built fresh at call time so a
    * late basket edit is included.
    */
+  /** PayPal is the only gateway, so this is also "can we take an order". */
+  const paypalAvailable = isPayPalConfigured();
+
   const buildPayapalPayload = (): PayPalPayload => ({
     items: (items as any[]).map((i: any) => ({
       productId: i.productId ?? i.id,
@@ -246,42 +238,6 @@ export default function CheckoutFlow() {
     setConfirmationSentTo([serverOrder.contactEmail, serverOrder.copyEmail].filter(Boolean) as string[]);
     clearCart();
     setCurrentStep('confirmation');
-  };
-
-  const handlePlaceOrder = async () => {
-    if (!shippingAddress || !paymentMethod || !shippingOption) { alert('Please complete all steps'); return; }
-    setIsProcessing(true);
-    setOrderError('');
-
-    const order: Order = {
-      // A placeholder only. createOrder replaces it with the id the server
-      // stored, so the number on screen is one support can actually look up.
-      id: `ORD-${Date.now()}`, items, shippingAddress, shippingOption, paymentMethod,
-      subtotal, shippingCost, tax, total, status: 'confirmed', createdAt: new Date().toISOString(),
-      // Without this the order is unattributable: the Firestore rule requires
-      // userId to equal the caller's uid, so the write was rejected outright —
-      // and order history, which filters on userId, could never have matched
-      // it either. Guests stay null and are matched by email instead.
-      userId: user && !user.isGuest ? user.id : undefined,
-    };
-
-    // Wait for the server before showing anything. The cart is only emptied
-    // and the confirmation only shown once the order is genuinely stored:
-    // this used to fire the request and advance regardless, so a rejected
-    // basket produced a thank-you page, an emptied cart and no order at all.
-    try {
-      const result = await createOrder(order);
-      setConfirmationEmailSent(result.confirmationEmailSent);
-      setConfirmationSentTo(result.confirmationSentTo);
-      clearCart();
-      setCurrentStep('confirmation');
-    } catch (err) {
-      // Keep the basket and the step. The shopper can correct whatever the
-      // server objected to and try again without rebuilding their order.
-      setOrderError(err instanceof Error ? err.message : 'Order could not be placed');
-    } finally {
-      setIsProcessing(false);
-    }
   };
 
   const handleGuestCheckout = (e: React.FormEvent<HTMLFormElement>) => {
@@ -403,8 +359,11 @@ export default function CheckoutFlow() {
                 <p className="overline" style={{ marginBottom: '8px' }}>Payment</p>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px' }}>
                   <CreditCard size={18} style={{ color: 'var(--grey-60)' }} />
+                  {/* Was "{brand} ending in {last4 || '4242'}" — which read
+                      "PayPal ending in PYPL", and invented a card ending 4242
+                      whenever the order had no last four. */}
                   <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
-                    {lastOrder.paymentMethod.brand || 'Card'} ending in {lastOrder.paymentMethod.last4 || '4242'}
+                    Paid with PayPal
                   </span>
                 </div>
               </div>
@@ -710,55 +669,53 @@ export default function CheckoutFlow() {
                     </h2>
                   </div>
 
-                  <ExpressPayRow
-                    selected={paymentType === 'apple_pay' ? 'apple' : paymentType === 'google_pay' ? 'google' : paymentType === 'paypal' ? 'paypal' : null}
-                    onSelect={(p) => setPaymentType(p === 'apple' ? 'apple_pay' : p === 'google' ? 'google_pay' : 'paypal')}
-                  />
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: 'var(--spacing-32)' }}>
-                    <PaymentRadio
-                      checked={paymentType === 'card'}
-                      onChange={() => setPaymentType('card')}
-                      icon={<CreditCard size={20} style={{ color: 'var(--black)', flexShrink: 0 }} />}
-                      label="Credit or debit card"
-                    />
-                    <PaymentRadio
-                      checked={paymentType === 'klarna'}
-                      onChange={() => setPaymentType('klarna')}
-                      icon={<span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#ffa8c5', background: '#000', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Klarna</span>}
-                      label="Pay in 3 — 0% interest"
-                    />
-                    <PaymentRadio
-                      checked={paymentType === 'clearpay'}
-                      onChange={() => setPaymentType('clearpay')}
-                      icon={<span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, color: '#000', background: '#b6ffda', borderRadius: '4px', padding: '2px 6px', fontSize: '11px' }}>Clearpay</span>}
-                      label="Pay in 4 — every 2 weeks"
-                    />
+                  {/* One gateway, so nothing to choose between. Stating it
+                      plainly beats a radio group with a single option. */}
+                  <div
+                    style={{
+                      display: 'flex', gap: '14px', alignItems: 'flex-start',
+                      padding: '18px 18px',
+                      border: '2px solid var(--brand-cyan)',
+                      background: 'var(--color-brand-subtle)',
+                      borderRadius: 'var(--radius-lg)',
+                    }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        fontFamily: 'var(--font-sans)', fontWeight: 800, fontStyle: 'italic',
+                        fontSize: '17px', letterSpacing: '-0.02em', color: '#003087',
+                        background: '#ffc439', borderRadius: 'var(--radius-sm)',
+                        padding: '4px 10px', flexShrink: 0, lineHeight: 1.3,
+                      }}
+                    >
+                      PayPal
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--brand-cyan-hover)', lineHeight: 1.6 }}>
+                      <strong style={{ fontWeight: 700 }}>Pay securely with PayPal.</strong> You can use your
+                      PayPal balance or a credit or debit card through PayPal — you do not need a PayPal
+                      account to pay by card. You will confirm the payment on PayPal's own secure page.
+                    </span>
                   </div>
 
-                  {/* No card inputs, by design: card details belong to the
-                      payment provider's secure page, never to this site's DOM.
-                      See the PCI note at the top of this file. */}
+                  {/* No card inputs, by design: card details belong to PayPal,
+                      never to this site's DOM. See the PCI note at the top. */}
                   <div
                     style={{
                       display: 'flex', gap: '10px', alignItems: 'flex-start',
                       padding: '14px 16px',
-                      background: 'var(--color-brand-subtle)',
-                      border: '1px solid rgba(161, 98, 7, 0.25)',
+                      background: 'var(--grey-5)',
+                      border: '1px solid var(--grey-10)',
                       borderRadius: 'var(--radius-md)',
                       fontFamily: 'var(--font-body)',
                       fontSize: '13px',
-                      color: 'var(--brand-cyan-hover)',
+                      color: 'var(--grey-70)',
                       marginTop: 'var(--spacing-16)',
                       lineHeight: 1.55,
                     }}
                   >
                     <Lock size={15} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
-                    <span>
-                      <strong style={{ fontWeight: 700 }}>{PAYMENT_METHOD_LABELS[paymentType].display}</strong>
-                      {' '}selected. You'll confirm and pay on a secure payment page after reviewing your
-                      order — card details are never entered on this site.
-                    </span>
+                    <span>Card details are never entered on this site.</span>
                   </div>
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
@@ -808,7 +765,11 @@ export default function CheckoutFlow() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <CreditCard size={20} style={{ color: 'var(--black)' }} />
-                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>{paymentMethod?.brand} ending in {paymentMethod?.last4}</p>
+                        {/* "ending in ····" was card wording. There is one
+                            method and it has no last four digits. */}
+                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
+                          PayPal — or a card via PayPal
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -833,32 +794,53 @@ export default function CheckoutFlow() {
                     </div>
                   )}
 
-                  <button
-                    onClick={handlePlaceOrder}
-                    disabled={isProcessing}
-                    data-loading={isProcessing || undefined}
-                    className="btn btn-buy btn-lg btn-full"
-                    style={{
-                      marginTop: 'var(--spacing-48)',
-                      fontSize: 'clamp(15px, 2vw, 17px)',
-                    }}
-                  >
-                    <Lock size={16} /> Place your order · £{total.toFixed(2)}
-                  </button>
-                  <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', textAlign: 'center', marginTop: '10px' }}>
-                    By placing your order you agree to our Terms and Conditions.
-                  </p>
+                  {/* Paying IS placing the order. There is deliberately no
+                      "place your order" button beside this: the one that used
+                      to sit here wrote a confirmed order and took no money,
+                      so every checkout was free. The order is now created by
+                      the server only after PayPal reports a captured payment
+                      that matches the re-priced basket to the penny.
 
-                  {/* Card payment via PayPal. Self-hides unless a sandbox
-                      client id is configured, and carries its own
-                      under-development banner while it does show. */}
-                  {shippingAddress && shippingOption && (
-                    <PayPalCheckout
-                      payload={buildPayapalPayload()}
-                      onPaid={handlePayPalPaid}
-                      onError={(m) => setOrderError(m)}
-                    />
-                  )}
+                      PayPalCheckout renders nothing without a client id, so
+                      the notice below stands in for it — an unconfigured
+                      gateway must read as "cannot take orders", never as a
+                      button that appears to work. */}
+                  <div style={{ marginTop: 'var(--spacing-32)' }}>
+                    {shippingAddress && shippingOption && paypalAvailable && (
+                      <PayPalCheckout
+                        payload={buildPayapalPayload()}
+                        onPaid={handlePayPalPaid}
+                        onError={(m) => setOrderError(m)}
+                      />
+                    )}
+
+                    {!paypalAvailable && (
+                      <div
+                        role="alert"
+                        style={{
+                          display: 'flex', gap: '10px', alignItems: 'flex-start',
+                          padding: '16px 18px',
+                          background: 'var(--color-sale-subtle)',
+                          border: '1px solid #fecaca',
+                          borderRadius: 'var(--radius-lg)',
+                          fontFamily: 'var(--font-body)', fontSize: '14px',
+                          color: '#991b1b', lineHeight: 1.6,
+                        }}
+                      >
+                        <Lock size={16} style={{ flexShrink: 0, marginTop: 3 }} aria-hidden="true" />
+                        <span>
+                          <strong style={{ fontWeight: 700 }}>Checkout is temporarily unavailable.</strong>{' '}
+                          We cannot take payment right now, so we are not taking the order either. Your
+                          basket is saved — please try again shortly, or contact us and we will complete
+                          it for you.
+                        </span>
+                      </div>
+                    )}
+
+                    <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', textAlign: 'center', marginTop: '14px' }}>
+                      By paying you agree to our Terms and Conditions.
+                    </p>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -962,53 +944,5 @@ function Row({ label, value, accent, trust }: { label: string; value: string; ac
         {value}
       </span>
     </div>
-  );
-}
-
-function PaymentRadio({
-  checked, onChange, icon, label,
-}: { checked: boolean; onChange: () => void; icon: React.ReactNode; label: string }) {
-  return (
-    <label
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '14px',
-        padding: '14px 16px',
-        border: checked ? '2px solid var(--brand-cyan)' : '1px solid var(--grey-20)',
-        background: checked ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
-        borderRadius: 'var(--radius-lg)',
-        cursor: 'pointer',
-        transition: 'background var(--duration-fast), border-color var(--duration-fast)',
-      }}
-    >
-      <input
-        type="radio"
-        name="paymentType"
-        checked={checked}
-        onChange={onChange}
-        style={{ position: 'absolute', opacity: 0, pointerEvents: 'none' }}
-      />
-      <span
-        aria-hidden
-        style={{
-          width: '18px',
-          height: '18px',
-          borderRadius: '50%',
-          border: checked ? '2px solid var(--brand-cyan)' : '1.5px solid var(--grey-30)',
-          background: 'var(--grey-0)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        {checked && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--brand-cyan)' }} />}
-      </span>
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
-        {icon}
-        <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)' }}>{label}</span>
-      </span>
-    </label>
   );
 }

@@ -35,9 +35,10 @@ const SECTIONS: { title: string; items: QA[] }[] = [
   {
     title: 'Payment & finance',
     items: [
-      { q: 'Which finance options do you offer?', a: 'Klarna Pay in 3 (three 0% instalments), Clearpay Pay in 4 (four 0% instalments every 2 weeks), and Klarna Pay in 30 (no charge for 30 days). Subject to status, 18+.' },
-      { q: 'Do you accept Apple Pay and Google Pay?', a: 'Yes — both are available at checkout on supported devices.' },
-      { q: 'Is my payment secure?',              a: 'Every transaction is processed via Stripe over TLS. We never store card details on our servers.' },
+      { q: 'How can I pay?',                     a: 'We take payment through PayPal. You can pay from your PayPal balance, or with a Visa, Mastercard or American Express credit or debit card through PayPal — you do not need a PayPal account to pay by card.' },
+      { q: 'Do you offer finance or pay in instalments?', a: 'Not at the moment. We do not offer Klarna, Clearpay or any other instalment plan.' },
+      { q: 'Do you accept Apple Pay and Google Pay?', a: 'Not at the moment. PayPal is the only payment method at checkout.' },
+      { q: 'Is my payment secure?',              a: 'Payment is completed on PayPal\u2019s own secure pages over TLS. Card details are never entered on this site and never reach our servers, so we have nothing to store.' },
     ],
   },
   {

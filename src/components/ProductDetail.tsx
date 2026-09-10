@@ -17,7 +17,6 @@ import TechnicalSpecs from './TechnicalSpecs';
 import { enrichSpecs } from '../utils/deviceSpecs';
 import { ProductVariant, ProductGrade } from '../types';
 import Breadcrumbs from './ui/Breadcrumbs';
-import FinanceOptions from './FinanceOptions';
 import GradeExplainer from './GradeExplainer';
 import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
@@ -589,7 +588,6 @@ export default function ProductDetail() {
             </div>
 
             {/* Finance split-payment breakdown */}
-            <FinanceOptions price={displayPrice} />
 
             {/* Key Value Props Strip */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
