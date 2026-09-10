@@ -258,15 +258,15 @@ export default function Footer() {
               >
                 Payments
               </span>
+              {/* Only what checkout can actually charge. Visa, Mastercard and
+                  Amex stay because PayPal accepts all three from a guest with
+                  no PayPal account; Apple Pay, Google Pay, Klarna and Clearpay
+                  were badges for methods the shop cannot take. */}
               {[
+                { id: 'paypal',   label: 'PayPal',     fontWeight: 800, italic: true, letterSpacing: '-0.02em' },
                 { id: 'visa',     label: 'VISA',       fontWeight: 900, letterSpacing: '0.08em', italic: true },
                 { id: 'mc',       label: 'mastercard', fontWeight: 700, letterSpacing: '-0.02em' },
                 { id: 'amex',     label: 'AMEX',       fontWeight: 900, letterSpacing: '0.06em' },
-                { id: 'apay',     label: 'Pay',        fontWeight: 700, letterSpacing: '-0.02em', prefix: '' },
-                { id: 'gpay',     label: 'G Pay',      fontWeight: 700, letterSpacing: '-0.02em' },
-                { id: 'klarna',   label: 'Klarna',     fontWeight: 800, letterSpacing: '-0.01em' },
-                { id: 'clearpay', label: 'Clearpay',   fontWeight: 800, letterSpacing: '-0.01em' },
-                { id: 'paypal',   label: 'PayPal',     fontWeight: 800, italic: true, letterSpacing: '-0.02em' },
               ].map((p) => (
                 <span
                   key={p.id}

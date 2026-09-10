@@ -20,6 +20,25 @@ import { auth } from '../lib/firebase';
 const CLIENT_ID = import.meta.env.VITE_PAYPAL_CLIENT_ID as string | undefined;
 const CURRENCY = 'GBP';
 
+/**
+ * Whether a PayPal client id is present in this build.
+ *
+ * PayPal is the only gateway, so this is also the answer to "can this shop
+ * take an order at all?" — exported so the checkout asks the same question
+ * this component answers, rather than re-reading the env var and risking the
+ * two disagreeing about whether a payment button exists.
+ */
+export function isPayPalConfigured(): boolean {
+  return Boolean(CLIENT_ID);
+}
+
+/**
+ * Sandbox until VITE_PAYPAL_ENV says otherwise. Fail-safe on purpose: an
+ * unset value shows the "no real money moves" banner, so the only way to
+ * remove that warning is to declare the environment live deliberately.
+ */
+const IS_LIVE = (import.meta.env.VITE_PAYPAL_ENV as string | undefined) === 'live';
+
 /** The basket payload, identical in shape to what /api/orders receives. */
 export interface PayPalPayload {
   items: Array<Record<string, unknown>>;
@@ -136,6 +155,7 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
 
   return (
     <div style={{ marginTop: 'var(--spacing-24)' }}>
+      {!IS_LIVE && (
       <div
         role="note"
         style={{
@@ -151,6 +171,7 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
           {' '}checkout for testing — no real money moves. Live card payment is coming soon.
         </span>
       </div>
+      )}
 
       {failed && (
         <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-sale)', margin: '0 0 10px' }}>

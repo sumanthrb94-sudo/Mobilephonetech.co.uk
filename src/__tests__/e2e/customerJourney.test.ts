@@ -153,6 +153,11 @@ const ADDRESS = {
 beforeEach(async () => {
   const { resetRateLimits } = await import('../../../api/_rateLimit.js');
   resetRateLimits();
+  // /api/orders is the unpaid path and ships disabled — PayPal is the only
+  // gateway a customer can reach. It stays the door this suite uses to
+  // exercise _orderCore's pricing, stock and email behaviour, so it is opened
+  // deliberately here and nowhere else.
+  process.env.ALLOW_UNPAID_ORDERS = 'true';
 });
 
 describe('the whole journey, in order', () => {

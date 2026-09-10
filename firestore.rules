@@ -210,6 +210,17 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Money we took but could not turn into an order: a refund that failed, or
+    // a capture whose outcome we never saw. Written only by the PayPal capture
+    // route through the Admin SDK. Staff-read because each row names a
+    // customer who may be out of pocket and needs chasing by hand; no client
+    // write path, and no delete — an unresolved incident must not be tidied
+    // away from a browser.
+    match /payment_incidents/{incidentId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // Anything not matched above is denied. Firestore already defaults to
     // deny, but stating it means a new collection cannot be reached by
     // accident before its rules are written.

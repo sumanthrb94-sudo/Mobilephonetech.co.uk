@@ -65,6 +65,12 @@
       }
     ]
     </script>
+
+    <!-- Unhashed on purpose: the recovery for a bundle that failed to load
+         cannot itself be part of that bundle. Blocking on purpose too: it has
+         to register its listener before the module script below starts.
+         See public/boot-check.js. -->
+    <script src="/boot-check.js"></script>
   </head>
   <body>
     <div id="root"></div>

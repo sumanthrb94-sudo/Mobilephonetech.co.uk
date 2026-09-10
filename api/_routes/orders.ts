@@ -4,17 +4,29 @@ import { previewModeFrom, PREVIEW_MESSAGE } from '../../src/config/preview.js';
 import { priceAndValidate, commitOrder, finalizeOrder, StockConflict } from '../_orderCore.js';
 
 /**
- * Create an order. The server prices it; the browser never does.
+ * Create an order WITHOUT taking payment. Disabled by default.
  *
- * The pricing, stock reservation and confirmation email all live in
- * _orderCore, shared with the PayPal capture route so the two cannot disagree
- * on a penny. This handler is the direct (card / express-intent) path: it
- * prices, reserves and writes in one go, because there is no separate payment
- * step to wait on. The PayPal path writes only after the money is captured.
+ * This was the direct path for a card gateway that never landed: it prices,
+ * reserves stock and writes a confirmed order in one go, with no payment step
+ * to wait on. PayPal is now the only gateway, which makes this endpoint a way
+ * to obtain stock and a confirmation email for free — it takes no card, and it
+ * does not require a signed-in caller.
  *
- * Guests are allowed — the prices are authoritative either way, and requiring
- * sign-in would only break guest checkout.
+ * So it is off unless ALLOW_UNPAID_ORDERS is explicitly set to 'true'. The
+ * route is kept rather than deleted because the end-to-end suite drives the
+ * shared pricing, stock and email behaviour of _orderCore through it, and
+ * because a manual or phone order may yet want a deliberate way in. Nothing
+ * in the storefront calls it: the browser reaches _orderCore only through
+ * paypal/capture, which writes an order only after the money is captured and
+ * matched to the penny.
+ *
+ * If you turn this on, understand exactly what you are opening.
  */
+
+/** The only way to enable the unpaid path, and it has to be said out loud. */
+function unpaidOrdersAllowed(): boolean {
+  return String(process.env.ALLOW_UNPAID_ORDERS ?? '').trim().toLowerCase() === 'true';
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -24,6 +36,17 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   if (!enforceRateLimit(req, res, 'orders', { limit: 12, windowMs: 60_000 })) return;
+
+  /**
+   * Closed unless deliberately opened. 503 rather than 404: the capability
+   * exists and is switched off, which is the honest answer, and it matches
+   * how preview mode reports the same "not serving right now" condition.
+   */
+  if (!unpaidOrdersAllowed()) {
+    return res.status(503).json({
+      error: 'Orders are placed through PayPal. This endpoint does not take payment and is disabled.',
+    });
+  }
 
   /**
    * Preview mode, enforced here rather than only in the browser. The banner on

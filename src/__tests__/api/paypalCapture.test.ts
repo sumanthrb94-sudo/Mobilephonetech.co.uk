@@ -25,9 +25,16 @@ vi.mock('../../../api/_paypal.js', () => ({
 type Doc = Record<string, any>;
 const store: Record<string, Record<string, Doc>> = {};
 
+let autoId = 0;
 function collection(name: string) {
   store[name] ??= {};
   return {
+    // Incidents are appended, not addressed by id.
+    add: async (value: Doc) => {
+      const id = `auto-${++autoId}`;
+      store[name][id] = value;
+      return { id };
+    },
     doc: (id: string) => ({
       id,
       collectionName: name,
@@ -41,11 +48,14 @@ function collection(name: string) {
     }),
   };
 }
+/** Flipped by the test that needs the commit to blow up after capture. */
+let commitFails: string | null = null;
 async function runTransaction<T>(fn: (tx: {
   get: (ref: any) => Promise<any>;
   update: (ref: any, patch: Doc) => void;
   set: (ref: any, value: Doc) => void;
 }) => Promise<T>): Promise<T> {
+  if (commitFails) throw new Error(commitFails);
   return fn({
     get: async (ref: any) => ref.get(),
     update: (ref: any, patch: Doc) => { store[ref.collectionName][ref.id] = { ...(store[ref.collectionName]?.[ref.id] ?? {}), ...patch }; },
@@ -105,7 +115,11 @@ beforeEach(() => {
   };
   store.orders = {};
   store.users = {};
+  store.payment_incidents = {};
+  commitFails = null;
 });
+
+const incidents = () => Object.values(store.payment_incidents ?? {});
 
 describe('POST /api/paypal/capture', () => {
   // £389 + £14.99 next-day, +20% VAT = £484.79. Standard shipping is free,
@@ -187,5 +201,85 @@ describe('POST /api/paypal/capture', () => {
     const out = await post(body({ paypalOrderId: '' }));
     expect(out.code).toBe(400);
     expect(capturePayPalOrder).not.toHaveBeenCalled();
+  });
+  /**
+   * Money we hold with no order behind it must survive the log retention
+   * window. On Vercel's Hobby plan runtime logs are gone within the hour, so
+   * console.error is not a record of a customer being out of pocket.
+   */
+  it('writes a durable incident when the refund itself fails', async () => {
+    capturePayPalOrder.mockResolvedValue({
+      ok: true, status: 200,
+      data: { status: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
+    });
+    refundCapture.mockResolvedValue({ ok: false, status: 502, error: 'PayPal refund failed (422)' });
+
+    const out = await post(body());
+    expect(out.code).toBe(409);
+
+    const [incident] = incidents();
+    expect(incident).toMatchObject({
+      kind: 'refund-failed',
+      reason: 'amount-mismatch',
+      captureId: 'CAP-9',
+      paypalOrderId: 'PP-1',
+      resolved: false,
+      customerEmail: 'ram@example.com',
+    });
+    expect(incident.createdAt).toBeTruthy();
+  });
+
+  it('records nothing when the refund succeeds — the customer is whole', async () => {
+    capturePayPalOrder.mockResolvedValue({
+      ok: true, status: 200,
+      data: { status: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
+    });
+    refundCapture.mockResolvedValue({ ok: true, status: 200, data: { status: 'COMPLETED' } });
+
+    expect((await post(body())).code).toBe(409);
+    expect(incidents()).toHaveLength(0);
+  });
+
+  /**
+   * A capture that errors is ambiguous: a timeout on our side looks exactly
+   * like a refusal, and PayPal may have taken the money anyway.
+   */
+  it('records an incident when the capture call itself fails', async () => {
+    capturePayPalOrder.mockResolvedValue({
+      ok: false, status: 502, error: 'The operation was aborted due to timeout',
+    });
+
+    const out = await post(body());
+    expect(out.code).toBe(502);
+    expect(incidents()).toHaveLength(1);
+    expect(incidents()[0]).toMatchObject({ kind: 'capture-failed', paypalOrderId: 'PP-1', resolved: false });
+    expect(refundCapture).not.toHaveBeenCalled();
+  });
+
+  it('records an incident when the order could not be written and the refund also failed', async () => {
+    commitFails = 'firestore is down';
+    capturePayPalOrder.mockResolvedValue({
+      ok: true, status: 200,
+      data: { status: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-7' },
+    });
+    refundCapture.mockResolvedValue({ ok: false, status: 502, error: 'nope' });
+
+    const out = await post(body());
+    expect(out.code).toBe(500);
+    expect(incidents()[0]).toMatchObject({
+      kind: 'refund-failed', reason: 'commit-failed', captureId: 'CAP-7',
+      commitError: 'firestore is down',
+    });
+  });
+
+  it('leaves no order behind when the money could not be kept', async () => {
+    capturePayPalOrder.mockResolvedValue({
+      ok: true, status: 200,
+      data: { status: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
+    });
+    refundCapture.mockResolvedValue({ ok: false, status: 502, error: 'nope' });
+
+    await post(body());
+    expect(Object.keys(store.orders)).toHaveLength(0);
   });
 });

@@ -198,6 +198,17 @@ export default function AccountPage() {
 
   const handleLogout = async () => { await logout(); navigate('/'); };
 
+  /** Up to two initials for the header avatar, falling back to the email's
+   *  first character so the circle is never empty on a phone-first account
+   *  that has no name yet. */
+  const initials = (() => {
+    const source = (fullName || user?.fullName || '').trim();
+    if (source) {
+      return source.split(/\s+/).slice(0, 2).map(w => w[0]!.toUpperCase()).join('');
+    }
+    return (user?.email?.[0] ?? '?').toUpperCase();
+  })();
+
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '10px 14px', borderRadius: 10,
     border: '1.5px solid #e5e7eb', fontFamily: 'var(--font-body)',
@@ -245,17 +256,22 @@ export default function AccountPage() {
     <div style={{ minHeight: '100vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)', paddingBottom: 64 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 20px', boxSizing: 'border-box' }}>
 
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px,3vw,30px)', fontWeight: 900, color: 'var(--black)', margin: 0 }}>
-              Hello, {fullName || user?.fullName || 'there'} 👋
-            </h1>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: '#6b7280', margin: '4px 0 0' }}>{user?.email}</p>
+        {/* Header. The avatar carries the identity on a phone, where the
+            greeting has to shrink to fit; the row wraps so a long name pushes
+            Sign out onto its own line instead of crushing it. */}
+        <div className="account-hero">
+          <div className="account-hero__who">
+            <div className="account-hero__avatar" aria-hidden="true">{initials}</div>
+            <div className="account-hero__text">
+              <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(19px,3vw,28px)', fontWeight: 900, color: 'var(--black)', margin: 0, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                Hello, {fullName || user?.fullName || 'there'}
+              </h1>
+              <p className="account-hero__email">{user?.email}</p>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 'auto', padding: '9px 16px', borderRadius: 999, border: '1.5px solid var(--grey-10)', background: 'var(--grey-0)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--grey-70)', cursor: 'pointer' }}
           >
             <LogOut size={14} /> Sign out
           </button>
@@ -265,31 +281,26 @@ export default function AccountPage() {
             breakpoint, so a 390px phone got a 180px sidebar and the content
             column overflowed the viewport. */}
         <div className="account-grid">
-          {/* Sidebar */}
-          <div style={{ background: 'white', borderRadius: 16, border: '1px solid #e5e7eb', overflow: 'hidden', position: 'sticky', top: 100 }}>
+          {/* Navigation. One markup, two layouts (see .account-tabs): a
+              horizontal chip row on phones, the vertical rail on desktop. */}
+          <nav className="account-tabs" aria-label="Account sections">
             {TABS.map(t => (
               <button
                 key={t.id}
+                type="button"
                 onClick={() => setTab(t.id)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '14px 18px', border: 'none', background: tab === t.id ? '#f0fdf4' : 'white',
-                  borderLeft: `3px solid ${tab === t.id ? 'var(--brand-cyan)' : 'transparent'}`,
-                  fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: tab === t.id ? 700 : 500,
-                  color: tab === t.id ? 'var(--black)' : '#6b7280', cursor: 'pointer', textAlign: 'left',
-                  transition: 'all 0.15s',
-                }}
+                className="account-tab"
+                data-active={tab === t.id}
+                aria-current={tab === t.id ? 'page' : undefined}
               >
                 {t.icon} {t.label}
-                {tab === t.id && <ChevronRight size={14} style={{ marginLeft: 'auto' }} />}
+                {tab === t.id && <ChevronRight size={14} className="account-tab__chevron" />}
               </button>
             ))}
-            <div style={{ padding: '12px 18px', borderTop: '1px solid var(--grey-10)' }}>
-              <Link to="/wishlist" style={{ display: 'flex', alignItems: 'center', gap: 10, fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 500, color: '#6b7280', textDecoration: 'none' }}>
-                <Heart size={16} /> Wishlist
-              </Link>
-            </div>
-          </div>
+            <Link to="/wishlist" className="account-tab account-tab--link">
+              <Heart size={16} /> Wishlist
+            </Link>
+          </nav>
 
           {/* Main panel */}
           <AnimatePresence mode="wait">
@@ -299,7 +310,7 @@ export default function AccountPage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.18 }}
-              style={{ background: 'white', borderRadius: 16, border: '1px solid #e5e7eb', padding: 32 }}
+              className="account-panel"
             >
 
               {/* ── Profile tab ── */}
