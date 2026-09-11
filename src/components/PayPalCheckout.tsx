@@ -112,7 +112,7 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
       // Ask our server to open the order. The body is the basket only; the
       // server prices it and opens PayPal for that total.
       createOrder: async () => {
-        const res = await fetch('/api/paypal/create-order', {
+        const res = await fetch('/api/paypal-create-order', {
           method: 'POST',
           headers: { 'content-type': 'application/json', ...(await authHeader()) },
           body: JSON.stringify(payloadRef.current),
@@ -127,7 +127,7 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
       // Capture server-side. The server re-prices, checks the captured amount,
       // reserves stock and writes the order — or refunds and tells us why.
       onApprove: async (data: { orderID: string }) => {
-        const res = await fetch('/api/paypal/capture', {
+        const res = await fetch('/api/paypal-capture', {
           method: 'POST',
           headers: { 'content-type': 'application/json', ...(await authHeader()) },
           body: JSON.stringify({ ...payloadRef.current, paypalOrderId: data.orderID }),

@@ -22,6 +22,8 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Handler = (req: any, res: any) => unknown | Promise<unknown>;
 
+// Every key is ONE url segment. Vercel's edge never routes a nested /api/a/b
+// path to this catch-all, so a slash in a key 404s before this file is reached.
 const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'account-welcome': () => import('./_routes/account-welcome.js'),
   'bootstrap-admin': () => import('./_routes/bootstrap-admin.js'),
@@ -29,7 +31,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   analytics: () => import('./_routes/analytics.js'),
   'brevo-webhook': () => import('./_routes/brevo-webhook.js'),
   'cart-events': () => import('./_routes/cart-events.js'),
-  'coupons/validate': () => import('./_routes/coupons/validate.js'),
+  'coupons-validate': () => import('./_routes/coupons/validate.js'),
   'cron-abandoned-cart': () => import('./_routes/cron-abandoned-cart.js'),
   delivery: () => import('./_routes/delivery.js'),
   'gemini-chat': () => import('./_routes/gemini-chat.js'),
@@ -38,8 +40,8 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   newsletter: () => import('./_routes/newsletter.js'),
   'order-notify': () => import('./_routes/order-notify.js'),
   orders: () => import('./_routes/orders.js'),
-  'paypal/create-order': () => import('./_routes/paypal/create-order.js'),
-  'paypal/capture': () => import('./_routes/paypal/capture.js'),
+  'paypal-create-order': () => import('./_routes/paypal/create-order.js'),
+  'paypal-capture': () => import('./_routes/paypal/capture.js'),
   products: () => import('./_routes/products.js'),
   'return-notify': () => import('./_routes/return-notify.js'),
   reviews: () => import('./_routes/reviews.js'),
