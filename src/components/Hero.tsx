@@ -20,6 +20,7 @@ const SLIDES = [
     ctaLabel: 'Shop Samsung',
     ctaHref: '/products?brand=Samsung',
     image: '/assets/hero-foldable-duo.jpg',
+    imageMobile: '/assets/hero-foldable-duo-mobile.jpg',
     imageAlt: 'Two folding smartphones, one white and one midnight blue, shown open and closed',
     gradientFrom: '#0b0f1a',
     gradientTo: '#1b2440',
@@ -39,6 +40,7 @@ const SLIDES = [
     ctaLabel: 'Shop iPhones',
     ctaHref: '/products?brand=Apple',
     image: '/assets/hero-iphone-pro-crimson.jpg',
+    imageMobile: '/assets/hero-iphone-pro-crimson-mobile.jpg',
     imageAlt: 'An iPhone Pro in a deep crimson finish, shown front and back',
     gradientFrom: '#170608',
     gradientTo: '#3d1016',
@@ -55,6 +57,7 @@ const SLIDES = [
     ctaLabel: 'Shop iPhones',
     ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-17-pro-max-orange.jpg',
+    imageMobile: '/assets/iphone-17-pro-max-orange.jpg',
     imageAlt: 'Certified iPhone 17 Pro Max',
     gradientFrom: '#0c0a09',
     gradientTo: '#44403c',
@@ -71,6 +74,7 @@ const SLIDES = [
     ctaLabel: 'Shop Samsung',
     ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
+    imageMobile: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy S24 Ultra',
     gradientFrom: '#1c1917',
     gradientTo: '#57534e',
@@ -87,6 +91,7 @@ const SLIDES = [
     ctaLabel: 'Shop Pixel',
     ctaHref: '/products?brand=Google',
     image: '/assets/pixel-8-pro.png',
+    imageMobile: '/assets/pixel-8-pro.png',
     imageAlt: 'Google Pixel 8 Pro',
     gradientFrom: '#0c0a09',
     gradientTo: '#3f3a35',
@@ -103,6 +108,7 @@ const SLIDES = [
     ctaLabel: 'Get a free quote',
     ctaHref: '/#trade-in',
     image: '/assets/iphone-17-pro-max-trio.jpg',
+    imageMobile: '/assets/iphone-17-pro-max-trio.jpg',
     imageAlt: 'Trade in your phone',
     gradientFrom: '#1c1917',
     gradientTo: '#4b443c',
@@ -175,12 +181,12 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : (slide.fullBleed ? 'clamp(500px, 128vw, 580px)' : 'clamp(360px, 80vw, 480px)'),
+        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : (slide.fullBleed ? '125vw' : 'clamp(360px, 80vw, 480px)'),
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
         transition: 'background 0.6s ease',
-        paddingTop: 'var(--nav-total)',
+        paddingTop: (!isDesktop && slide.fullBleed) ? 0 : 'var(--nav-total)',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -214,23 +220,23 @@ export default function Hero() {
         <>
           <img
             key={slide.image}
-            src={slide.image}
+            src={isDesktop ? slide.image : slide.imageMobile}
             alt={slide.imageAlt}
             loading={current === 0 ? 'eager' : 'lazy'}
             fetchPriority={current === 0 ? 'high' : 'auto'}
             decoding="async"
             style={{
-              position: 'absolute', top: 'var(--nav-total)', left: 0, right: 0, bottom: 0,
-              zIndex: 0, width: '100%',
-              objectFit: 'contain', objectPosition: isDesktop ? 'center' : 'center top',
+              position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
+              left: 0, right: 0, bottom: 0, zIndex: 0, width: '100%',
+              objectFit: isDesktop ? 'contain' : 'cover', objectPosition: 'center top',
             }}
           />
           <div style={{
-            position: 'absolute', top: 'var(--nav-total)', left: 0, right: 0, bottom: 0,
-            zIndex: 1, pointerEvents: 'none',
+            position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
+            left: 0, right: 0, bottom: 0, zIndex: 1, pointerEvents: 'none',
             background: isDesktop
               ? 'linear-gradient(90deg, rgba(6,8,14,0.88) 0%, rgba(6,8,14,0.62) 30%, rgba(6,8,14,0.06) 56%, rgba(6,8,14,0) 100%)'
-              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 34%, rgba(6,8,14,0.62) 48%, rgba(6,8,14,0.93) 62%, rgba(6,8,14,0.98) 100%)',
+              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 55%, rgba(6,8,14,0.45) 68%, rgba(6,8,14,0.80) 82%, rgba(6,8,14,0.88) 100%)',
           }} />
         </>
       )}
