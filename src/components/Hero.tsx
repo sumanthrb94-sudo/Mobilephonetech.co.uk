@@ -220,16 +220,17 @@ export default function Hero() {
             fetchPriority={current === 0 ? 'high' : 'auto'}
             decoding="async"
             style={{
-              position: 'absolute', inset: 0, zIndex: 0,
-              width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: isDesktop ? slide.focal : slide.focalMobile,
+              position: 'absolute', top: 'var(--nav-total)', left: 0, right: 0, bottom: 0,
+              zIndex: 0, width: '100%',
+              objectFit: 'contain', objectPosition: isDesktop ? 'center' : 'center top',
             }}
           />
           <div style={{
-            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            position: 'absolute', top: 'var(--nav-total)', left: 0, right: 0, bottom: 0,
+            zIndex: 1, pointerEvents: 'none',
             background: isDesktop
-              ? 'linear-gradient(90deg, rgba(6,8,14,0.92) 0%, rgba(6,8,14,0.72) 34%, rgba(6,8,14,0.10) 62%, rgba(6,8,14,0) 100%)'
-              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 40%, rgba(6,8,14,0.55) 54%, rgba(6,8,14,0.92) 68%, rgba(6,8,14,0.97) 100%)',
+              ? 'linear-gradient(90deg, rgba(6,8,14,0.88) 0%, rgba(6,8,14,0.62) 30%, rgba(6,8,14,0.06) 56%, rgba(6,8,14,0) 100%)'
+              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 34%, rgba(6,8,14,0.62) 48%, rgba(6,8,14,0.93) 62%, rgba(6,8,14,0.98) 100%)',
           }} />
         </>
       )}
