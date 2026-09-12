@@ -174,6 +174,10 @@ export default async function handler(req: any, res: any) {
     });
   }
 
+  // The capture id is what a refund needs — the order id will not do. Without
+  // it on the order, the back office cannot refund this sale at all.
+  order.captureId = captureId;
+
   // 4. Reserve stock and write the order. If it can no longer be filled, the
   //    money is already ours, so refund before telling the customer.
   try {

@@ -60,6 +60,8 @@ export interface PricedOrder {
   couponCode: string | null;
   paymentMethod?: string;
   paypalOrderId?: string;
+  /** The PayPal capture, which is what a later refund needs. */
+  captureId?: string | null;
   shippingAddress: Record<string, unknown>;
   items: Array<Record<string, unknown>>;
   createdAt: string;
@@ -279,6 +281,70 @@ export async function commitOrder(db: any, order: PricedOrder): Promise<void> {
     }
 
     tx.set(db.collection('orders').doc(order.id), order);
+  });
+}
+
+
+/**
+ * Put an order's stock back and mark it refunded, in one transaction.
+ *
+ * The exact inverse of the reservation in commitOrder, and it has to stay that
+ * way: same variant-before-product resolution, same per-item quantities. Stock
+ * and order status move together or not at all — a refund that restocks but
+ * leaves the order reading "paid" sells the same handset twice, and one that
+ * marks refunded without restocking strands good stock off sale.
+ *
+ * Deliberately does NOT talk to PayPal. The money is refunded first, by the
+ * caller; this is what happens once that has actually succeeded.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function restockOrder(db: any, orderId: string, patch: Record<string, unknown>): Promise<void> {
+  await db.runTransaction(async (tx: any) => {
+    const orderRef = db.collection('orders').doc(orderId);
+    const orderSnap = await tx.get(orderRef);
+    if (!orderSnap.exists) throw new Error(`order ${orderId} vanished`);
+
+    const order = orderSnap.data() as { items?: Array<Record<string, any>> };
+    const items = Array.isArray(order.items) ? order.items : [];
+
+    const ids = [...new Set(items.map(i => String(i.productId)))];
+    const refs = ids.map(id => db.collection('products').doc(id));
+    const snaps = await Promise.all(refs.map((ref: any) => tx.get(ref)));
+
+    const docs = new Map(refs.map((ref: any, i: number) => [
+      ref.id,
+      { ref, exists: snaps[i].exists, data: (snaps[i].data() ?? {}) as Record<string, any> },
+    ]));
+
+    for (const item of items) {
+      const entry = docs.get(String(item.productId));
+      // A product deleted since the sale cannot be restocked. That is a
+      // catalogue decision, not a reason to fail the refund the customer is
+      // owed, so it is skipped rather than thrown.
+      if (!entry?.exists) continue;
+
+      const product = entry.data;
+      const variant = item.variantId && Array.isArray(product.variants)
+        ? product.variants.find((v: any) => v?.id === item.variantId) ?? null
+        : null;
+
+      const current = Number((variant?.stock ?? product.stock) ?? 0);
+      const back = Number(item.quantity) || 0;
+      if (variant) variant.stock = current + back;
+      else product.stock = current + back;
+    }
+
+    const now = new Date().toISOString();
+    for (const entry of docs.values()) {
+      const { ref, exists, data } = entry as { ref: any; exists: boolean; data: Record<string, any> };
+      if (!exists) continue;
+      const update: Record<string, any> = { updatedAt: now };
+      if (Array.isArray(data.variants)) update.variants = data.variants;
+      if (typeof data.stock === 'number') update.stock = data.stock;
+      tx.update(ref, update);
+    }
+
+    tx.set(orderRef, { ...patch, updatedAt: now }, { merge: true });
   });
 }
 

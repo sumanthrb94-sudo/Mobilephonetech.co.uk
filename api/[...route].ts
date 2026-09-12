@@ -39,6 +39,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   health: () => import('./_routes/health.js'),
   newsletter: () => import('./_routes/newsletter.js'),
   'order-notify': () => import('./_routes/order-notify.js'),
+  'order-refund': () => import('./_routes/order-refund.js'),
   orders: () => import('./_routes/orders.js'),
   'paypal-create-order': () => import('./_routes/paypal/create-order.js'),
   'paypal-capture': () => import('./_routes/paypal/capture.js'),

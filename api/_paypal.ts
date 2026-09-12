@@ -190,6 +190,34 @@ export async function capturePayPalOrder(paypalOrderId: string): Promise<PayPalR
 }
 
 /**
+ * Recover the capture id for a PayPal order we already captured.
+ *
+ * Orders written before the id was stored on the order document have only the
+ * PayPal ORDER id, and a refund needs the CAPTURE id. Rather than make those
+ * orders unrefundable from the back office, ask PayPal what the capture was.
+ */
+export async function lookupCaptureId(paypalOrderId: string): Promise<PayPalResult<string>> {
+  const token = await accessToken();
+  if (!token.ok) return { ok: false, status: token.status, error: token.error };
+
+  try {
+    const res = await fetch(`${paypalApiBase()}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`, {
+      headers: { authorization: `Bearer ${token.data}` },
+      signal: deadline(),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body = (await res.json().catch(() => ({}))) as any;
+    if (!res.ok) return { ok: false, status: 502, error: body?.message || `PayPal lookup failed (${res.status})` };
+
+    const id = body?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    if (!id) return { ok: false, status: 404, error: 'That PayPal order has no capture to refund' };
+    return { ok: true, status: 200, data: String(id) };
+  } catch (err) {
+    return { ok: false, status: 502, error: (err as Error).message };
+  }
+}
+
+/**
  * Refund a capture in full.
  *
  * The one honest response to a payment we took but cannot fulfil — the amount
