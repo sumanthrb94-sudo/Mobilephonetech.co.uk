@@ -14,6 +14,39 @@ import RevealText from './ui/RevealText';
 
 const SLIDES = [
   {
+    eyebrow: 'Foldables · Certified refurbished',
+    headline: 'A phone that\nopens up.',
+    subline: 'Foldable flagships, fully tested and unlocked — at refurbished prices.',
+    ctaLabel: 'Shop Samsung',
+    ctaHref: '/products?brand=Samsung',
+    image: '/assets/hero-foldable-duo.jpg',
+    imageAlt: 'Two folding smartphones, one white and one midnight blue, shown open and closed',
+    gradientFrom: '#0b0f1a',
+    gradientTo: '#1b2440',
+    glowColor: 'rgba(96, 120, 220, 0.30)',
+    savings: 'Unlocked · 12-month warranty',
+    // The product sits in the right two-thirds of this shot and the left is
+    // deliberate negative space, so the image is the background and the copy
+    // lives in that space rather than beside a shrunken panel.
+    fullBleed: true,
+    focal: '68% 50%',
+  },
+  {
+    eyebrow: 'iPhone Pro · 30-point audit',
+    headline: 'Pro, for less\nthan new.',
+    subline: 'Every iPhone tested across 30 checks, battery guaranteed, ready to use.',
+    ctaLabel: 'Shop iPhones',
+    ctaHref: '/products?brand=Apple',
+    image: '/assets/hero-iphone-pro-crimson.jpg',
+    imageAlt: 'An iPhone Pro in a deep crimson finish, shown front and back',
+    gradientFrom: '#170608',
+    gradientTo: '#3d1016',
+    glowColor: 'rgba(190, 60, 70, 0.28)',
+    savings: 'Save up to £600',
+    fullBleed: true,
+    focal: '62% 50%',
+  },
+  {
     eyebrow: 'LeHart Certified · 30-point audit',
     headline: 'Flagship iPhones.\nAuthentic quality.',
     subline: 'Battery 85%+ guaranteed. 12-month warranty. Up to 70% less than new.',
@@ -25,6 +58,8 @@ const SLIDES = [
     gradientTo: '#44403c',
     glowColor: 'rgba(161, 98, 7, 0.45)',
     savings: 'Save up to £600',
+    fullBleed: false,
+    focal: '50% 50%',
   },
   {
     eyebrow: 'Samsung Galaxy · Unlocked',
@@ -38,6 +73,8 @@ const SLIDES = [
     gradientTo: '#57534e',
     glowColor: 'rgba(168, 162, 158, 0.30)',
     savings: 'From £199',
+    fullBleed: false,
+    focal: '50% 50%',
   },
   {
     eyebrow: 'Google Pixel · Pure Android',
@@ -51,6 +88,8 @@ const SLIDES = [
     gradientTo: '#3f3a35',
     glowColor: 'rgba(202, 138, 4, 0.38)',
     savings: 'From £249',
+    fullBleed: false,
+    focal: '50% 50%',
   },
   {
     eyebrow: 'Instant cash · Free collection',
@@ -64,6 +103,8 @@ const SLIDES = [
     gradientTo: '#4b443c',
     glowColor: 'rgba(161, 98, 7, 0.36)',
     savings: 'Best prices guaranteed',
+    fullBleed: false,
+    focal: '50% 50%',
   },
 ] as const;
 
@@ -159,6 +200,32 @@ export default function Hero() {
         pointerEvents: 'none',
       }} />
 
+      {/* Full-bleed slides carry their own scene, so the image IS the
+          background. A left-to-right scrim keeps the copy legible over it
+          without washing the product out; on phones it runs bottom-up
+          instead, because the copy sits under the shot rather than beside it. */}
+      {slide.fullBleed && isDesktop && (
+        <>
+          <img
+            key={slide.image}
+            src={slide.image}
+            alt={slide.imageAlt}
+            loading={current === 0 ? 'eager' : 'lazy'}
+            fetchPriority={current === 0 ? 'high' : 'auto'}
+            decoding="async"
+            style={{
+              position: 'absolute', inset: 0, zIndex: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: slide.focal,
+            }}
+          />
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+            background: 'linear-gradient(90deg, rgba(6,8,14,0.92) 0%, rgba(6,8,14,0.72) 34%, rgba(6,8,14,0.10) 62%, rgba(6,8,14,0) 100%)',
+          }} />
+        </>
+      )}
+
       <div
         style={{
           width: '100%', maxWidth: '1280px',
@@ -180,7 +247,7 @@ export default function Hero() {
             transition={{ duration: 0.42, ease: [0.2, 0, 0, 1] }}
             style={{
               display: 'grid',
-              gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr',
+              gridTemplateColumns: isDesktop && !slide.fullBleed ? '1fr 1fr' : '1fr',
               gap: isDesktop ? '48px' : '16px',
               alignItems: 'center',
               padding: isDesktop ? '48px 0 24px' : '16px 0 8px',
@@ -291,7 +358,9 @@ export default function Hero() {
               </div>
             </div>
 
-            {/* Image column */}
+            {/* Image column — only when the slide does not carry its own
+                scene as the background, or the shot renders twice. */}
+            {(!slide.fullBleed || !isDesktop) && (
             <div
               style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -311,12 +380,16 @@ export default function Hero() {
                 fetchPriority={current === 0 ? 'high' : 'auto'}
                 decoding="async"
                 style={{
-                  height: '100%', width: '100%', objectFit: 'contain',
-                  filter: 'drop-shadow(0 24px 40px rgba(0,0,0,0.45))',
+                  height: '100%', width: '100%',
+                  objectFit: slide.fullBleed ? 'cover' : 'contain',
+                  objectPosition: slide.fullBleed ? '62% 45%' : 'center',
+                  borderRadius: slide.fullBleed ? 'var(--radius-lg)' : 0,
+                  filter: slide.fullBleed ? 'none' : 'drop-shadow(0 24px 40px rgba(0,0,0,0.45))',
                   position: 'relative', zIndex: 1,
                 }}
               />
             </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
