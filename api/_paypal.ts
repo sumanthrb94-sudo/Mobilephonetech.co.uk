@@ -131,7 +131,15 @@ export async function createPayPalOrder(
 }
 
 export interface CaptureResult {
+  /** The PayPal ORDER status. Reaches COMPLETED before the money has settled. */
   status: string;
+  /**
+   * The status of the capture itself, which is the one worth trusting. PayPal
+   * reports an order COMPLETED while its capture is still PENDING — a
+   * bank-funded payment, or one held for review — so treating the order status
+   * as proof of payment ships goods against money that may never arrive.
+   */
+  captureStatus: string;
   /** The amount PayPal actually captured, in major units, per purchase unit. */
   capturedTotal: number;
   currency: string;
@@ -169,7 +177,8 @@ export async function capturePayPalOrder(paypalOrderId: string): Promise<PayPalR
       ok: true,
       status: 200,
       data: {
-        status: String(body?.status ?? capture?.status ?? 'UNKNOWN'),
+        status: String(body?.status ?? 'UNKNOWN'),
+        captureStatus: String(capture?.status ?? 'UNKNOWN'),
         capturedTotal: Number(amount.value ?? NaN),
         currency: String(amount.currency_code ?? ''),
         captureId: capture?.id ?? null,

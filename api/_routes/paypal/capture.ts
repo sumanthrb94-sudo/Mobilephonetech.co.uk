@@ -48,6 +48,43 @@ async function recordIncident(db: any, kind: string, detail: Record<string, unkn
   }
 }
 
+/**
+ * Mark that we are about to take money, before we take it.
+ *
+ * recordIncident writes down failures we saw. This covers the window we
+ * cannot see: between the capture returning and the order being written, a
+ * function that is killed — the platform's ten-second ceiling, a redeploy, an
+ * instance reclaimed — leaves the money taken, no order, and otherwise no
+ * trace it ever happened. Keyed on the PayPal order id and closed on every
+ * path that reaches a decision, so a row still unresolved is money to chase.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function openCaptureAttempt(db: any, paypalOrderId: string, detail: Record<string, unknown>): Promise<void> {
+  try {
+    await db.collection('payment_incidents').doc(paypalOrderId).set({
+      kind: 'capture-attempt',
+      resolved: false,
+      createdAt: new Date().toISOString(),
+      ...detail,
+    });
+  } catch (err) {
+    console.error(`[paypal/capture] could not open attempt ${paypalOrderId}:`, (err as Error).message);
+  }
+}
+
+/** Close the window above. Best-effort: it must never be what fails a payment. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function closeCaptureAttempt(db: any, paypalOrderId: string, outcome: string): Promise<void> {
+  try {
+    await db.collection('payment_incidents').doc(paypalOrderId).set(
+      { resolved: true, outcome, resolvedAt: new Date().toISOString() },
+      { merge: true },
+    );
+  } catch (err) {
+    console.error(`[paypal/capture] could not close attempt ${paypalOrderId}:`, (err as Error).message);
+  }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -78,7 +115,12 @@ export default async function handler(req: any, res: any) {
   order.paymentMethod = 'PayPal';
   order.paypalOrderId = paypalOrderId;
 
-  // 2. Take the money.
+  // 2. Take the money — but write down that we are about to, first.
+  await openCaptureAttempt(db, paypalOrderId, {
+    reference: order.id, total: order.total, currency: order.currency,
+    customerEmail: order.shippingAddress?.email ?? null,
+  });
+
   const captured = await capturePayPalOrder(paypalOrderId);
   if (!captured.ok) {
     // We do not know whether PayPal took the money before this failed — a
@@ -88,34 +130,47 @@ export default async function handler(req: any, res: any) {
       paypalOrderId, reference: order.id, total: order.total,
       currency: order.currency, paypalError: captured.error ?? null,
     });
+    await closeCaptureAttempt(db, paypalOrderId, 'capture-failed');
     return res.status(captured.status).json({ error: captured.error });
   }
 
-  const { capturedTotal, currency, captureId, status } = captured.data!;
+  const { capturedTotal, currency, captureId, status, captureStatus } = captured.data!;
 
   // 3. The captured amount must equal what we priced, to the penny. A mismatch
   //    — a tampered client, a stale approval, a currency mix-up — is money we
   //    hold for an order we will not create, so it goes straight back.
-  const amountOk = status === 'COMPLETED'
+  // captureStatus, not status: the ORDER reads COMPLETED while its capture is
+  // still PENDING for a bank-funded payment or one held for review, and
+  // shipping against that is shipping against money that may never arrive.
+  const amountOk = captureStatus === 'COMPLETED'
     && currency === order.currency
     && money(capturedTotal) === money(order.total);
 
   if (!amountOk) {
-    if (captureId) {
-      const refund = await refundCapture(captureId);
-      if (!refund.ok) {
-        // A refund we could not complete is the one thing a human must chase.
-        await recordIncident(db, 'refund-failed', {
-          reason: 'amount-mismatch', captureId, paypalOrderId, reference: order.id,
-          capturedTotal, capturedCurrency: currency, captureStatus: status,
-          expectedTotal: order.total, expectedCurrency: order.currency,
-          customerEmail: order.shippingAddress?.email ?? null,
-          paypalError: refund.error ?? null,
-        });
-      }
+    const refund = captureId ? await refundCapture(captureId) : null;
+    const refunded = Boolean(refund?.ok);
+
+    // Every unrefunded mismatch is chased, not only the ones where a refund was
+    // attempted and failed. A capture we could not even parse an id out of is
+    // the case most likely to strand a customer's money, so it must not be the
+    // one case that records nothing.
+    if (!refunded) {
+      await recordIncident(db, 'refund-failed', {
+        reason: 'amount-mismatch', captureId, paypalOrderId, reference: order.id,
+        capturedTotal, capturedCurrency: currency, captureStatus, orderStatus: status,
+        expectedTotal: order.total, expectedCurrency: order.currency,
+        customerEmail: order.shippingAddress?.email ?? null,
+        paypalError: refund?.error ?? 'no capture id to refund',
+      });
     }
+    await closeCaptureAttempt(db, paypalOrderId, refunded ? 'refunded-mismatch' : 'mismatch-not-refunded');
+
+    // Telling someone they were not charged when we could not refund them is
+    // the one lie that turns a bug into a complaint we deserve.
     return res.status(409).json({
-      error: 'Payment did not match the order and has been refunded. You have not been charged.',
+      error: refunded
+        ? 'Payment did not match the order and has been refunded. You have not been charged.'
+        : 'Payment did not match the order, so it was not completed. If you were charged, we have recorded it and will refund you — please contact us.',
     });
   }
 
@@ -124,27 +179,37 @@ export default async function handler(req: any, res: any) {
   try {
     await commitOrder(db, order);
   } catch (err) {
-    if (captureId) {
-      const refund = await refundCapture(captureId);
-      if (!refund.ok) {
-        await recordIncident(db, 'refund-failed', {
-          reason: err instanceof StockConflict ? 'stock-conflict' : 'commit-failed',
-          captureId, paypalOrderId, reference: order.id,
-          capturedTotal, capturedCurrency: currency,
-          customerEmail: order.shippingAddress?.email ?? null,
-          paypalError: refund.error ?? null,
-          commitError: (err as Error).message,
-        });
-      }
+    const refund = captureId ? await refundCapture(captureId) : null;
+    const refunded = Boolean(refund?.ok);
+
+    if (!refunded) {
+      await recordIncident(db, 'refund-failed', {
+        reason: err instanceof StockConflict ? 'stock-conflict' : 'commit-failed',
+        captureId, paypalOrderId, reference: order.id,
+        capturedTotal, capturedCurrency: currency,
+        customerEmail: order.shippingAddress?.email ?? null,
+        paypalError: refund?.error ?? 'no capture id to refund',
+        commitError: (err as Error).message,
+      });
     }
+    await closeCaptureAttempt(db, paypalOrderId, refunded ? 'refunded-commit-failed' : 'commit-failed-not-refunded');
+
+    const assurance = refunded
+      ? 'You have been refunded — you were not charged.'
+      : 'If you were charged, we have recorded it and will refund you — please contact us.';
+
     if (err instanceof StockConflict) {
-      return res.status(409).json({ error: `${err.message} You have been refunded — you were not charged.` });
+      return res.status(409).json({ error: `${err.message} ${assurance}` });
     }
     console.error(`[paypal/capture] commit failed for ${order.id}:`, (err as Error).message);
     return res.status(500).json({
-      error: 'We took the payment but could not record the order, so it has been refunded. Please try again.',
+      error: `We took the payment but could not record the order. ${assurance}`,
     });
   }
+
+  // The money is ours and the order exists, so the window opened before the
+  // capture is closed. Anything left open is money without an order.
+  await closeCaptureAttempt(db, paypalOrderId, 'order-created');
 
   const confirmationEmail = await finalizeOrder(db, order, caller, priced.contactPhone);
   return res.status(201).json({ order, confirmationEmail });
