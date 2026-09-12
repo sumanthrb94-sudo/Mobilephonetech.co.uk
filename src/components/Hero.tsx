@@ -30,6 +30,7 @@ const SLIDES = [
     // lives in that space rather than beside a shrunken panel.
     fullBleed: true,
     focal: '68% 50%',
+    focalMobile: '66% 6%',
   },
   {
     eyebrow: 'iPhone Pro · 30-point audit',
@@ -45,6 +46,7 @@ const SLIDES = [
     savings: 'Save up to £600',
     fullBleed: true,
     focal: '62% 50%',
+    focalMobile: '50% 34%',
   },
   {
     eyebrow: 'LeHart Certified · 30-point audit',
@@ -60,6 +62,7 @@ const SLIDES = [
     savings: 'Save up to £600',
     fullBleed: false,
     focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
   {
     eyebrow: 'Samsung Galaxy · Unlocked',
@@ -75,6 +78,7 @@ const SLIDES = [
     savings: 'From £199',
     fullBleed: false,
     focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
   {
     eyebrow: 'Google Pixel · Pure Android',
@@ -90,6 +94,7 @@ const SLIDES = [
     savings: 'From £249',
     fullBleed: false,
     focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
   {
     eyebrow: 'Instant cash · Free collection',
@@ -105,6 +110,7 @@ const SLIDES = [
     savings: 'Best prices guaranteed',
     fullBleed: false,
     focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
 ] as const;
 
@@ -169,7 +175,7 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : 'clamp(360px, 80vw, 480px)',
+        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : (slide.fullBleed ? 'clamp(500px, 128vw, 580px)' : 'clamp(360px, 80vw, 480px)'),
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
@@ -204,7 +210,7 @@ export default function Hero() {
           background. A left-to-right scrim keeps the copy legible over it
           without washing the product out; on phones it runs bottom-up
           instead, because the copy sits under the shot rather than beside it. */}
-      {slide.fullBleed && isDesktop && (
+      {slide.fullBleed && (
         <>
           <img
             key={slide.image}
@@ -216,12 +222,14 @@ export default function Hero() {
             style={{
               position: 'absolute', inset: 0, zIndex: 0,
               width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: slide.focal,
+              objectFit: 'cover', objectPosition: isDesktop ? slide.focal : slide.focalMobile,
             }}
           />
           <div style={{
             position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
-            background: 'linear-gradient(90deg, rgba(6,8,14,0.92) 0%, rgba(6,8,14,0.72) 34%, rgba(6,8,14,0.10) 62%, rgba(6,8,14,0) 100%)',
+            background: isDesktop
+              ? 'linear-gradient(90deg, rgba(6,8,14,0.92) 0%, rgba(6,8,14,0.72) 34%, rgba(6,8,14,0.10) 62%, rgba(6,8,14,0) 100%)'
+              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 40%, rgba(6,8,14,0.55) 54%, rgba(6,8,14,0.92) 68%, rgba(6,8,14,0.97) 100%)',
           }} />
         </>
       )}
@@ -249,8 +257,8 @@ export default function Hero() {
               display: 'grid',
               gridTemplateColumns: isDesktop && !slide.fullBleed ? '1fr 1fr' : '1fr',
               gap: isDesktop ? '48px' : '16px',
-              alignItems: 'center',
-              padding: isDesktop ? '48px 0 24px' : '16px 0 8px',
+              alignItems: !isDesktop && slide.fullBleed ? 'end' : 'center',
+              padding: isDesktop ? '48px 0 24px' : (slide.fullBleed ? '0 0 12px' : '16px 0 8px'),
               flex: 1, minHeight: 0,
             }}
           >
@@ -289,13 +297,18 @@ export default function Hero() {
                 {slide.headline}
               </RevealText>
 
-              <p style={{
-                fontFamily: 'var(--font-body)', fontSize: '15px',
-                color: 'rgba(255,255,255,0.72)', maxWidth: '400px',
-                marginBottom: 28, lineHeight: 1.6,
-              }}>
-                {slide.subline}
-              </p>
+              {/* The subline is the first thing to go in a phone-width banner:
+                  the headline and the CTA are what the slide is for, and two
+                  more lines of body copy push the product out of frame. */}
+              {!(slide.fullBleed && !isDesktop) && (
+                <p style={{
+                  fontFamily: 'var(--font-body)', fontSize: '15px',
+                  color: 'rgba(255,255,255,0.72)', maxWidth: '400px',
+                  marginBottom: 28, lineHeight: 1.6,
+                }}>
+                  {slide.subline}
+                </p>
+              )}
 
               {/* CTA row: pill button + savings text */}
               <div style={{
@@ -335,7 +348,12 @@ export default function Hero() {
                 </span>
               </div>
 
-              {/* Trust micro-badges */}
+              {/* Trust micro-badges. Held back inside a phone-width banner:
+                  eyebrow, headline, subline, CTA, savings and three badges
+                  do not fit over a 390px scene without landing on the
+                  product. They still run on every other slide, and the same
+                  three claims sit in the trust strip directly above. */}
+              {!(slide.fullBleed && !isDesktop) && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: isDesktop ? 20 : 14,
                 marginTop: 24, flexWrap: 'wrap',
@@ -356,11 +374,12 @@ export default function Hero() {
                   </div>
                 ))}
               </div>
+              )}
             </div>
 
             {/* Image column — only when the slide does not carry its own
                 scene as the background, or the shot renders twice. */}
-            {(!slide.fullBleed || !isDesktop) && (
+            {!slide.fullBleed && (
             <div
               style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
