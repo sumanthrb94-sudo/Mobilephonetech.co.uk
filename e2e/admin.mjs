@@ -17,7 +17,7 @@ import { mkdirSync } from 'node:fs';
 import { resolveChromium } from './chromium-path.mjs';
 import {
   seed, waitForEmulators, getProduct, countProducts, attemptProductWriteAs,
-  ADMIN_EMAIL, CUSTOMER_EMAIL, PASSWORD,
+  ADMIN_EMAIL, CUSTOMER_EMAIL, PASSWORD, seedOrders,
 } from './emulator-seed.mjs';
 
 const BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
@@ -91,6 +91,50 @@ async function signInAs(page, identifier) {
   // Wait for the modal to close, which is the app's own signal that
   // onAuthStateChanged has fired and the session is live.
   await page.waitForTimeout(3500);
+}
+
+/**
+ * Layout invariants that must hold at EVERY viewport, not just the one the
+ * screen was designed at. Desktop and mobile drift apart silently otherwise:
+ * a grid sized for one width shatters at the other, and nothing fails.
+ *
+ * Measured on the live page rather than asserted from the CSS, because what
+ * matters is where the pixels actually landed.
+ */
+async function auditLayout(page, view, label) {
+  const r = await page.evaluate(() => {
+    const vis = el => el.getBoundingClientRect().height > 0;
+    const doc = document.documentElement;
+    return {
+      overflow: doc.scrollWidth - doc.clientWidth,
+      borderless: [...document.querySelectorAll('input:not([type=hidden])')].filter(vis)
+        .filter(el => parseFloat(getComputedStyle(el).borderTopWidth) === 0)
+        .map(el => el.id || el.placeholder || 'input'),
+      // An icon on its own line is the signature of a button with no
+      // inline-flex — the defect that made three controls look like plain text.
+      // Measured as "does the content box span more than one line", scoped to
+      // the action controls; a tall button with generous padding is not a bug,
+      // and an earlier height-versus-icon ratio flagged every one of those.
+      stacked: [...document.querySelectorAll('.ord-actions button, .ord-confirm button, .admin-toolbar button')]
+        .filter(vis)
+        .filter(el => el.querySelector('svg') && (el.textContent || '').trim())
+        .filter(el => {
+          // Vertical centres, not heights: a button with a tap-target minimum
+          // height is taller than its text and perfectly fine. What marks the
+          // defect is the icon sitting on its own row, which pulls its centre
+          // clear of the button's.
+          const icon = el.querySelector('svg').getBoundingClientRect();
+          const box = el.getBoundingClientRect();
+          const drift = Math.abs((icon.top + icon.height / 2) - (box.top + box.height / 2));
+          return drift > icon.height * 0.75;
+        })
+        .map(el => (el.textContent || '').trim().slice(0, 24)),
+    };
+  });
+
+  rec(view, `${label}: page never scrolls sideways`, r.overflow <= 0, `${r.overflow}px`);
+  rec(view, `${label}: every input has a visible border`, r.borderless.length === 0, r.borderless.join(', '));
+  rec(view, `${label}: no button stacks its icon above its label`, r.stacked.length === 0, r.stacked.join(' | '));
 }
 
 async function run(view, contextOpts) {
@@ -383,6 +427,51 @@ async function run(view, contextOpts) {
     return bad;
   });
   rec(view, 'Tap targets >= 24px (WCAG 2.2 SC 2.5.8)', smallTargets.length === 0, smallTargets.join(' | '));
+
+  // ── Orders: the screen staff actually run the shop from ──
+  await seedOrders([{
+    id: 'ORD-E2E-1', status: 'pending', total: 759, currency: 'GBP',
+    contactEmail: 'buyer@example.com', createdAt: '2026-09-11T08:12:44.000Z',
+    updatedAt: '2026-09-11T08:12:44.000Z', paypalOrderId: 'PP-E2E-1', captureId: 'CAP-E2E-1',
+    shippingAddress: { fullName: 'Alex Morgan', addressLine1: '221B Baker Street', city: 'London', postalCode: 'NW1 6XE' },
+    items: [{ productId: 'apple-iphone-17', brand: 'Apple', model: 'iPhone 17', quantity: 1, price: 759 }],
+  }]);
+
+  await page.goto(`${BASE}/admin/orders`, { waitUntil: 'domcontentloaded' });
+  await dismissCookies(page);
+  await settled(page, '.ord-head');
+  const orders = await txt();
+
+  rec(view, 'Orders screen lists the seeded order', /ORD-E2E-1/.test(orders), orders.slice(0, 120));
+  rec(view, 'Order total is shown', /£759\.00/.test(orders));
+  rec(view, 'Status reads as a packing task', /Paid — to pack/i.test(orders));
+
+  // The order reference must never wrap — it is the thing staff read aloud.
+  const idLines = await page.evaluate(() => {
+    const el = document.querySelector('.ord-id');
+    if (!el) return -1;
+    return Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).fontSize));
+  });
+  rec(view, 'Order reference stays on one line', idLines > 0 && idLines < 2, `${idLines} lines`);
+
+  await auditLayout(page, view, 'Orders (collapsed)');
+  await shot(page, `${view}-orders-list`);
+
+  await page.locator('.ord-head').first().click();
+  await settled(page, '.ord-actions');
+  rec(view, 'Expanding an order reveals the dispatch controls',
+    await page.getByRole('button', { name: /Mark dispatched/i }).isVisible());
+  await auditLayout(page, view, 'Orders (expanded)');
+  await shot(page, `${view}-orders-expanded`);
+
+  // Money leaving takes two deliberate steps at every width.
+  await page.getByRole('button', { name: /Refund & restock/i }).click();
+  const confirming = await page.locator('.ord-confirm').isVisible();
+  rec(view, 'Refund asks before it acts', confirming);
+  rec(view, 'Refund trigger is withdrawn while confirming',
+    (await page.getByRole('button', { name: /Refund & restock/i }).count()) === 0);
+  await auditLayout(page, view, 'Orders (confirming refund)');
+  await shot(page, `${view}-orders-refund-confirm`);
 
   rec(view, 'Admin pages are noindex', await page.evaluate(() =>
     /noindex/.test(document.querySelector('meta[name="robots"]')?.getAttribute('content') ?? '')));
