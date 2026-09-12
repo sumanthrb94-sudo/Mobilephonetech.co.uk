@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OrdersPage from '../../components/admin/OrdersPage';
 import type { AdminOrder } from '../../lib/orders';
@@ -65,12 +65,13 @@ describe('OrdersPage', () => {
     render(<OrdersPage />);
     await screen.findByText('ORD-1001');
 
-    await userEvent.click(screen.getByRole('button', { name: /Open/ }));
+    await userEvent.click(screen.getByRole('button', { name: /ORD-1001/ }));
     await userEvent.click(await screen.findByRole('button', { name: /Refund & restock/ }));
 
     // Asked, not done.
     expect(refundOrder).not.toHaveBeenCalled();
-    expect(screen.getByText(/Refund £654\.00 and put the stock back\?/)).toBeTruthy();
+    const confirm = screen.getByRole('group', { name: 'Confirm refund' });
+    expect(within(confirm).getByText('£654.00')).toBeTruthy();
 
     await userEvent.click(screen.getByRole('button', { name: /Yes, refund/ }));
     await waitFor(() => expect(refundOrder).toHaveBeenCalledWith('ORD-1001'));
@@ -80,9 +81,9 @@ describe('OrdersPage', () => {
     render(<OrdersPage />);
     await screen.findByText('ORD-1001');
 
-    await userEvent.click(screen.getByRole('button', { name: /Open/ }));
+    await userEvent.click(screen.getByRole('button', { name: /ORD-1001/ }));
     await userEvent.type(await screen.findByLabelText('Courier'), 'Royal Mail');
-    await userEvent.type(screen.getByLabelText('Tracking'), 'AB123456789GB');
+    await userEvent.type(screen.getByLabelText('Tracking number'), 'AB123456789GB');
     await userEvent.click(screen.getByRole('button', { name: /Mark dispatched/ }));
 
     await waitFor(() => expect(markDispatched).toHaveBeenCalledWith('ORD-1001', {
@@ -94,7 +95,7 @@ describe('OrdersPage', () => {
     render(<OrdersPage />);
     await screen.findByText('ORD-1001');
     await userEvent.click(screen.getByRole('tab', { name: /Refunded/ }));
-    await userEvent.click(await screen.findByRole('button', { name: /Open/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /ORD-1002/ }));
 
     expect(screen.queryByRole('button', { name: /Refund & restock/ })).toBeNull();
     expect(screen.getByText(/Refunded £199\.00/)).toBeTruthy();

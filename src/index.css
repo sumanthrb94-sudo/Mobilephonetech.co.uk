@@ -2398,3 +2398,239 @@ textarea,
    need their width — so it scrolls inside its panel rather than pushing the
    page sideways on a phone. */
 .ops-panel > .ops-table { display: block; overflow-x: auto; }
+
+/* ── Orders console ──────────────────────────────────────────────
+   .admin-ghost carried only :hover and :focus-visible rules, so every
+   button using it rendered as bare text with its icon stranded on the
+   line above. The hover rule paints a background, which only makes
+   sense on something padded — the base was simply missing. */
+.admin-ghost,
+.admin-ghost-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-text-default);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.admin-ghost-danger {
+  color: var(--color-sale);
+  border-color: var(--color-sale-subtle);
+}
+
+.admin-ghost:disabled,
+.admin-ghost-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* One order. The whole header is the hit target — a 44px-plus band beats
+   hunting for a caret, especially on a phone in a stockroom. */
+.ord-card {
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.ord-card:last-child {
+  border-bottom: none;
+}
+
+.ord-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.ord-head:hover,
+.ord-head:focus-visible {
+  background: var(--grey-5);
+}
+
+/* Sized for what orders actually hold, not borrowed from the inventory
+   grid — whose 48px first column is what shattered the order number. */
+@media (min-width: 900px) {
+  .ord-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 104px 150px 40px;
+    gap: 16px;
+    flex-wrap: nowrap;
+  }
+}
+
+.ord-ref {
+  min-width: 0;
+}
+
+.ord-id {
+  font-family: var(--font-mono, ui-monospace, "SF Mono", Menlo, monospace);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text-default);
+  white-space: nowrap;
+}
+
+.ord-meta {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: var(--color-text-subtle);
+}
+
+.ord-money {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 900px) {
+  .ord-money { text-align: right; }
+}
+
+/* Status carries meaning, so it carries colour — separate from anything
+   decorative, and readable without reading the word. */
+.ord-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  background: var(--grey-5);
+  color: var(--color-text-subtle);
+}
+
+.ord-chip::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.ord-chip-topack   { background: var(--color-warn-subtle);  color: var(--color-warn); }
+.ord-chip-moving   { background: var(--color-brand-subtle); color: var(--color-brand); }
+.ord-chip-done     { background: var(--color-trust);        color: var(--color-trust-text); }
+.ord-chip-refunded { background: var(--grey-5);             color: var(--color-text-subtle); }
+
+.ord-caret {
+  display: none;
+  color: var(--color-text-subtle);
+  transition: transform 0.15s ease;
+}
+
+@media (min-width: 900px) {
+  .ord-caret { display: block; justify-self: end; }
+}
+
+.ord-caret-open { transform: rotate(180deg); }
+
+.ord-body {
+  display: grid;
+  gap: 18px;
+  padding: 0 14px 18px;
+}
+
+.ord-items {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  background: var(--grey-5);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+
+.ord-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ord-item span:last-child { font-variant-numeric: tabular-nums; }
+
+.ord-facts {
+  display: grid;
+  gap: 7px;
+  font-size: 13.5px;
+  color: var(--color-text-subtle);
+}
+
+.ord-fact {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.ord-fact svg { flex: none; margin-top: 2px; }
+
+/* Its own field layout. The inventory row grid is not a form. */
+.ord-fields {
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .ord-fields { grid-template-columns: 1fr 1fr; }
+}
+
+.ord-field {
+  display: grid;
+  gap: 5px;
+}
+
+.ord-field label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.ord-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+}
+
+/* The refund confirmation is a distinct surface, not another button in
+   the row — a destructive step should not look like the ones beside it. */
+.ord-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-sale-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-sale-subtle);
+  font-size: 14px;
+}
+
+.ord-confirm strong { font-variant-numeric: tabular-nums; }
+
+.ord-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--color-text-subtle);
+}
