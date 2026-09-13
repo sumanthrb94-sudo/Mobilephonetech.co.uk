@@ -79,13 +79,21 @@ describe('PageLoading', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Loading your orders');
   });
 
+  it('waits on the brand mark, not a generic ring', () => {
+    // Matches the boot splash in index.html: a route that arrives slowly
+    // should look like this app still working, not like a different one.
+    render(<PageLoading />);
+
+    expect(screen.getByTestId('brand-mark').dataset.spinning).toBe('true');
+    expect(screen.queryByTestId('spinner')).toBeNull();
+  });
+
   it('renders without animation under prefers-reduced-motion', () => {
     reducedMotion = true;
     render(<PageLoading />);
 
-    const ring = screen.getByTestId('spinner');
-    expect(ring).toHaveAttribute('data-reduced-motion', 'true');
-    expect(ring.style.animation).toBe('');
+    // Still shown, simply held still — a slower spin is still a spin.
+    expect(screen.getByTestId('brand-mark').dataset.spinning).toBe('false');
     expect(screen.getByRole('status')).toHaveTextContent('Loading');
   });
 });

@@ -62,7 +62,7 @@ const LEGAL = [
 
 export default function Footer() {
   return (
-    <footer style={{ background: '#f8f9fa', color: '#191c1d' }}>
+    <footer className="site-footer" style={{ background: '#f8f9fa', color: '#191c1d' }}>
 
       {/* Newsletter strip removed — homepage NewsletterSignup component
           owns lead capture now. Keeping a duplicate here meant users

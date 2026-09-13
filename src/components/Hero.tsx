@@ -231,12 +231,32 @@ export default function Hero() {
               objectFit: isDesktop ? 'contain' : 'cover', objectPosition: 'center top',
             }}
           />
+          {/* Scrim.
+              The mobile stops are set from where the copy actually lands, not
+              by eye. Measured on a 390px phone, as a percentage of the banner:
+
+                slide            copy top   headline
+                foldable duo        40%      49-64%
+                iPhone crimson      47%      56-71%
+
+              The previous ramp was fully transparent until 55%, so on the
+              foldable the eyebrow and the top half of the headline had no
+              cover at all and sat on the specular highlight coming off the
+              phones — grey text on a lit reflection. The crimson slide only
+              looked fine because its image happens to be dark where the words
+              fall, which is luck, not a design.
+
+              So the ramp now begins at 26% and carries real weight by 38%,
+              ahead of the earliest copy on either slide with room to spare for
+              a headline that wraps to a third line. It stays soft through the
+              top third, which is where the devices are: the point is to read
+              the words, not to flatten the picture the client supplied. */}
           <div style={{
             position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
             left: 0, right: 0, bottom: 0, zIndex: 1, pointerEvents: 'none',
             background: isDesktop
               ? 'linear-gradient(90deg, rgba(6,8,14,0.88) 0%, rgba(6,8,14,0.62) 30%, rgba(6,8,14,0.06) 56%, rgba(6,8,14,0) 100%)'
-              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 55%, rgba(6,8,14,0.45) 68%, rgba(6,8,14,0.80) 82%, rgba(6,8,14,0.88) 100%)',
+              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 26%, rgba(6,8,14,0.40) 38%, rgba(6,8,14,0.68) 48%, rgba(6,8,14,0.84) 66%, rgba(6,8,14,0.90) 100%)',
           }} />
         </>
       )}

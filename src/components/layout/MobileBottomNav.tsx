@@ -1,12 +1,22 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Store, Heart, ShoppingBag, UserCircle } from 'lucide-react';
+import { Home, Store, ShoppingBag, UserCircle } from 'lucide-react';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { useCart } from '../../context/CartContext';
 
 /**
- * MobileBottomNav — native-feeling tab bar anchored to the bottom edge on
- * phones. Hidden on desktop where the top navbar already covers these
- * destinations. Respects iOS safe-area inset.
+ * MobileBottomNav — the tab bar anchored to the bottom edge on phones. Hidden
+ * on desktop, where the top navbar already covers these destinations.
+ * Respects the iOS safe-area inset.
+ *
+ * Four tabs, not five. Wishlist used to sit here AND as a heart in the app
+ * bar, so a phone showed two ways into one list — which reads as two
+ * different features until you tap one. It is also the least-used of the
+ * five: somewhere you go occasionally, not somewhere you navigate from.
+ *
+ * That is what the account section is for, and it lives there now, as a row
+ * in the Account tab. Home, Shop, Cart and Account are the four a shopper
+ * moves between, and each of the remaining tabs is now 25% of the bar rather
+ * than 20% — a wider tap target for every one of them.
  */
 export default function MobileBottomNav(_: { onCartClick?: () => void }) {
   const { isDesktop } = useBreakpoint();
@@ -32,7 +42,7 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
       <ul
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           listStyle: 'none',
           margin: 0,
           padding: 0,
@@ -40,7 +50,6 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
       >
         <Item to="/" label="Home" icon={Home} end />
         <Item to="/products" label="Shop" icon={Store} />
-        <Item to="/wishlist" label="Wishlist" icon={Heart} />
         <li>
           <button
             onClick={() => navigate('/cart')}

@@ -26,6 +26,7 @@ import MobileBottomNav from './components/layout/MobileBottomNav';
 import CheckoutHeader from './components/layout/CheckoutHeader';
 import CheckoutFooter from './components/layout/CheckoutFooter';
 import AnnouncementBar from './components/layout/AnnouncementBar';
+import OfflineNotice from './components/OfflineNotice';
 import PreviewBanner from './components/layout/PreviewBanner';
 import ScrollToTop from './components/ScrollToTop';
 import { Suspense, lazy, useEffect } from 'react';
@@ -179,6 +180,16 @@ function AppContent() {
     return () => { document.documentElement.classList.remove('is-checkout'); };
   }, [isCheckoutRoute]);
 
+  // Below 1024px the trust strip is not fixed chrome (see APP SHELL in
+  // index.css); it renders inline on Home only. CSS needs to know which
+  // route it is on, and a root class is the one signal available to the
+  // fixed-position rules that live outside any component.
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('is-home', location.pathname === '/');
+    return () => { document.documentElement.classList.remove('is-home'); };
+  }, [location.pathname]);
+
   return (
     <div
       style={{
@@ -236,6 +247,17 @@ function AppContent() {
       >
         Skip to main content
       </a>
+
+      {/* Losing signal must not cost the visitor the page they are on, so
+          this is a bar under the app bar rather than a screen over it. */}
+      <OfflineNotice />
+
+      {/* Trust strip. Fixed to the bottom edge on desktop, where DOM order
+          does not matter; below 1024px it un-pins and renders here, in the
+          flow, directly under the app bar on Home. Mounted above <main> for
+          exactly that reason — pinned chrome can sit anywhere, inline
+          content cannot. */}
+      {!isAdminRoute && <AnnouncementBar />}
 
       {/*
         Main content — offset by nav height.
@@ -402,7 +424,6 @@ function AppContent() {
       {!isCheckoutRoute && !isAdminRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
       {/* Same again for the trust strip: delivery and returns promises are a
           shopper cue, and pinned to the bottom it covers the last table row. */}
-      {!isAdminRoute && <AnnouncementBar />}
     </div>
   );
 }

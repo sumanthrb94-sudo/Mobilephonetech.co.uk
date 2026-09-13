@@ -160,7 +160,7 @@ export default function Navbar(_: NavbarProps) {
           ANNOUNCEMENT BAR & FIXED HEADER
       ═══════════════════════════════════════════════════ */}
       <motion.div
-        className="fixed top-0 left-0 right-0 z-[60]"
+        className="app-header fixed top-0 left-0 right-0 z-[60]"
         style={{
           backgroundColor: 'white',
           boxShadow,
@@ -408,18 +408,43 @@ export default function Navbar(_: NavbarProps) {
                 </AnimatePresence>
               </div>
 
-              {/* Wishlist */}
-              <Link to="/wishlist" id="navbar-wishlist-btn" style={{ textDecoration: 'none' }}>
+              {/* Wishlist — desktop only.
+                  Below 1024px this was the second of two wishlist controls on
+                  the same screen: a heart here, and a Wishlist tab in the bar
+                  at the bottom. Two entry points to one list is not a
+                  shortcut, it is a question the visitor has to answer ("are
+                  these the same thing?") before either is useful. The tab bar
+                  owns primary navigation on a phone, so the heart steps aside
+                  there; on desktop there is no tab bar and this is the only
+                  way in. See MobileBottomNav for where the tab itself went. */}
+              <Link
+                to="/wishlist"
+                id="navbar-wishlist-btn"
+                className="navbar-wishlist"
+                style={{ textDecoration: 'none' }}
+              >
                 <IconBtn icon={Heart} label="Wishlist" />
               </Link>
 
-              {/* Cart button — icon-only on mobile, pill on sm+ */}
+              {/* Cart button — desktop only, pill with the count inline.
+                  Same reasoning as the wishlist above: below 1024px the tab
+                  bar has a Cart tab carrying the same badge, and two carts on
+                  one screen is a question, not a shortcut. The tab is the
+                  better of the two on a phone anyway — thumb-height rather
+                  than at the top of the screen, and it does not scroll away.
+                  Adding to the basket still confirms in place via
+                  AddedToCartModal, so the path to checkout is unchanged. */}
               <Link
                 to="/cart"
                 id="navbar-cart-btn"
+                className="navbar-cart"
                 aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  // No `display` here: .navbar-cart owns it, so the app shell
+                  // can drop the pill on phones. An inline display beats a
+                  // stylesheet, which is exactly how the old .navbar-cart
+                  // sizing rules ended up applying to nothing.
+                  alignItems: 'center', gap: 6,
                   height: 40,
                   background: cartCount > 0 ? 'var(--brand-cyan)' : 'transparent',
                   color: cartCount > 0 ? 'white' : '#374151',
@@ -473,6 +498,10 @@ export default function Navbar(_: NavbarProps) {
         {/* ═══════════════════════════════════════════════════
             CATEGORY NAV BAR — 48px — horizontal scroll
         ═══════════════════════════════════════════════════ */}
+        {/* Hidden below 1024px by .catnav — see the APP SHELL block in
+            index.css. On a phone these destinations are already one tap away
+            inside the Shop tab, and as permanent chrome they cost 48px of a
+            844px screen for a second row of navigation nobody asked for. */}
         <nav
           aria-label="Product categories"
           style={{
@@ -483,7 +512,7 @@ export default function Navbar(_: NavbarProps) {
             scrollbarWidth: 'none',
           }}
           ref={catNavRef}
-          className="no-scrollbar"
+          className="no-scrollbar catnav"
         >
           <div
             className="container-bm h-full flex items-center gap-1 px-4"

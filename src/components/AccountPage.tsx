@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Package, MapPin, Lock, ChevronRight, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart } from 'lucide-react';
+import { User, Package, MapPin, Lock, ChevronRight, ChevronLeft, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart, LifeBuoy, Truck, RotateCcw, FileText, ShieldCheck, Cookie } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
@@ -9,8 +9,23 @@ import { auth, db, COL } from '../lib/firebase';
 import { useSeo } from '../hooks/useSeo';
 import ProductImage from './ProductImage';
 import AuthModal from './AuthModal';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 
 type Tab = 'profile' | 'orders' | 'addresses' | 'security';
+
+/**
+ * The links folded in from the site footer, which is hidden below 1024px.
+ * They are not decoration: Terms, Privacy and Cookies have to stay reachable
+ * from every screen, and the Account tab is one tap from all of them.
+ */
+const MORE_LINKS: { to: string; label: string; icon: React.ElementType }[] = [
+  { to: '/faq',       label: 'Help & FAQ',            icon: LifeBuoy },
+  { to: '/returns',   label: 'Returns & warranty',     icon: RotateCcw },
+  { to: '/delivery',  label: 'Delivery',               icon: Truck },
+  { to: '/terms',     label: 'Terms of service',       icon: FileText },
+  { to: '/privacy',   label: 'Privacy policy',         icon: ShieldCheck },
+  { to: '/cookies',   label: 'Cookies',                icon: Cookie },
+];
 
 /** Shape of an order document in Firestore, camelCase throughout. */
 interface StoredOrder {
@@ -59,7 +74,17 @@ export default function AccountPage() {
   useSeo({ title: 'My Account | LeHart', noindex: true });
   const navigate = useNavigate();
   const { user, session, logout } = useAuth();
-  const [tab, setTab] = useState<Tab>('profile');
+  const { isDesktop } = useBreakpoint();
+
+  /**
+   * `null` is the phone's menu root — the list of sections, with nothing
+   * open. Desktop has no such state: its rail shows every section at once,
+   * so something must always be selected. Keeping one state and letting the
+   * breakpoint decide what `null` means is why there is no second copy of
+   * this screen to drift out of sync.
+   */
+  const [tab, setTab] = useState<Tab | null>(null);
+  const openTab: Tab = tab ?? 'profile';
 
   // Profile state
   const [fullName, setFullName] = useState(user?.fullName ?? '');
@@ -102,8 +127,8 @@ export default function AccountPage() {
   }, [user]);
 
   useEffect(() => {
-    if (tab === 'orders') loadOrders();
-  }, [tab]);
+    if (openTab === 'orders') loadOrders();
+  }, [openTab]);
 
   async function loadProfile() {
     if (!session) return;
@@ -226,7 +251,7 @@ export default function AccountPage() {
   // ── Signed out ──────────────────────────────────────────────
   if (!user || user.isGuest) {
     return (
-      <div style={{ minHeight: '70vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)', display: 'grid', placeItems: 'center', paddingInline: 20 }}>
+      <div style={{ minHeight: '70vh', background: 'var(--grey-5)', display: 'grid', placeItems: 'center', paddingInline: 20 }}>
         <div style={{ maxWidth: 420, textAlign: 'center' }}>
           <div style={{
             width: 56, height: 56, borderRadius: '50%', margin: '0 auto 18px',
@@ -252,60 +277,133 @@ export default function AccountPage() {
     );
   }
 
+  // No paddingTop on the wrapper: the route is wrapped in AnimatedPage, which
+  // already offsets by --nav-total. Setting it again put 128px of blank above
+  // the avatar on every screen.
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--grey-5)', paddingTop: 'var(--nav-total)', paddingBottom: 64 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--grey-5)', paddingBottom: 64 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 20px', boxSizing: 'border-box' }}>
 
-        {/* Header. The avatar carries the identity on a phone, where the
-            greeting has to shrink to fit; the row wraps so a long name pushes
-            Sign out onto its own line instead of crushing it. */}
-        <div className="account-hero">
-          <div className="account-hero__who">
-            <div className="account-hero__avatar" aria-hidden="true">{initials}</div>
-            <div className="account-hero__text">
-              <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(19px,3vw,28px)', fontWeight: 900, color: 'var(--black)', margin: 0, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                Hello, {fullName || user?.fullName || 'there'}
-              </h1>
-              <p className="account-hero__email">{user?.email}</p>
-            </div>
+        {/* ── Phone: the menu root ─────────────────────────────────────
+            An app's profile tab is a list of places you can go, not four
+            sections crammed into a chip row that runs off the screen edge.
+            Choosing one pushes it in (below), with a back row to come out —
+            so nothing has to shrink to fit 390px. Desktop is untouched: its
+            rail shows every section at once and never reaches this branch. */}
+        {!isDesktop && tab === null && (
+          <div className="app-screen">
+            <header className="app-profile">
+              <div className="app-profile__avatar" aria-hidden="true">{initials}</div>
+              <div className="app-profile__text">
+                <h1 className="app-profile__name">{fullName || user?.fullName || 'Your account'}</h1>
+                <p className="app-profile__email">{user?.email}</p>
+              </div>
+            </header>
+
+            <nav className="app-list" aria-label="Account sections">
+              {TABS.map(t => (
+                <button key={t.id} type="button" className="app-list__row" onClick={() => setTab(t.id)}>
+                  <span className="app-list__icon">{t.icon}</span>
+                  <span className="app-list__label">{t.label}</span>
+                  <ChevronRight size={18} className="app-list__chev" />
+                </button>
+              ))}
+              <Link to="/wishlist" className="app-list__row">
+                <span className="app-list__icon"><Heart size={18} /></span>
+                <span className="app-list__label">Wishlist</span>
+                <ChevronRight size={18} className="app-list__chev" />
+              </Link>
+            </nav>
+
+            {/* Folded in from the site footer, which the app shell hides
+                below 1024px. Terms, Privacy and Cookies have to stay
+                reachable, and this keeps them two taps from any screen. */}
+            <p className="app-list__heading">Help &amp; legal</p>
+            <nav className="app-list" aria-label="Help and legal">
+              {MORE_LINKS.map(l => {
+                const Icon = l.icon;
+                return (
+                  <Link key={l.to} to={l.to} className="app-list__row">
+                    <span className="app-list__icon"><Icon size={18} /></span>
+                    <span className="app-list__label">{l.label}</span>
+                    <ChevronRight size={18} className="app-list__chev" />
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <button type="button" className="app-list app-list__row app-list__row--danger" onClick={handleLogout}>
+              <span className="app-list__icon"><LogOut size={18} /></span>
+              <span className="app-list__label">Sign out</span>
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 'auto', padding: '9px 16px', borderRadius: 999, border: '1.5px solid var(--grey-10)', background: 'var(--grey-0)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--grey-70)', cursor: 'pointer' }}
-          >
-            <LogOut size={14} /> Sign out
-          </button>
-        </div>
+        )}
+
+        {/* ── Phone: a section, pushed in ── */}
+        {!isDesktop && tab !== null && (
+          <div className="app-topbar">
+            <button type="button" className="app-topbar__back" onClick={() => setTab(null)}>
+              <ChevronLeft size={20} />
+              <span>Account</span>
+            </button>
+            <h1 className="app-topbar__title">{TABS.find(t => t.id === tab)?.label}</h1>
+          </div>
+        )}
+
+        {/* Header and rail are the desktop layout. The phone gets the two
+            branches above instead, so neither has to be hidden by CSS at a
+            width it was never laid out for. */}
+        {isDesktop && (
+          <div className="account-hero">
+            <div className="account-hero__who">
+              <div className="account-hero__avatar" aria-hidden="true">{initials}</div>
+              <div className="account-hero__text">
+                <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(19px,3vw,28px)', fontWeight: 900, color: 'var(--black)', margin: 0, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  Hello, {fullName || user?.fullName || 'there'}
+                </h1>
+                <p className="account-hero__email">{user?.email}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 'auto', padding: '9px 16px', borderRadius: 999, border: '1.5px solid var(--grey-10)', background: 'var(--grey-0)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--grey-70)', cursor: 'pointer' }}
+            >
+              <LogOut size={14} /> Sign out
+            </button>
+          </div>
+        )}
 
         {/* Columns live in CSS (.account-grid): applied inline they had no
             breakpoint, so a 390px phone got a 180px sidebar and the content
             column overflowed the viewport. */}
         <div className="account-grid">
-          {/* Navigation. One markup, two layouts (see .account-tabs): a
-              horizontal chip row on phones, the vertical rail on desktop. */}
-          <nav className="account-tabs" aria-label="Account sections">
-            {TABS.map(t => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setTab(t.id)}
-                className="account-tab"
-                data-active={tab === t.id}
-                aria-current={tab === t.id ? 'page' : undefined}
-              >
-                {t.icon} {t.label}
-                {tab === t.id && <ChevronRight size={14} className="account-tab__chevron" />}
-              </button>
-            ))}
-            <Link to="/wishlist" className="account-tab account-tab--link">
-              <Heart size={16} /> Wishlist
-            </Link>
-          </nav>
+          {isDesktop && (
+            <nav className="account-tabs" aria-label="Account sections">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setTab(t.id)}
+                  className="account-tab"
+                  data-active={openTab === t.id}
+                  aria-current={openTab === t.id ? 'page' : undefined}
+                >
+                  {t.icon} {t.label}
+                  {openTab === t.id && <ChevronRight size={14} className="account-tab__chevron" />}
+                </button>
+              ))}
+              <Link to="/wishlist" className="account-tab account-tab--link">
+                <Heart size={16} /> Wishlist
+              </Link>
+            </nav>
+          )}
 
-          {/* Main panel */}
+          {/* Main panel. On a phone the menu root IS the screen, so the
+              panel only exists once a section has been pushed in. */}
+          {(isDesktop || tab !== null) && (
           <AnimatePresence mode="wait">
             <motion.div
-              key={tab}
+              key={openTab}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
@@ -314,7 +412,7 @@ export default function AccountPage() {
             >
 
               {/* ── Profile tab ── */}
-              {tab === 'profile' && (
+              {openTab === 'profile' && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
                     <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: 0 }}>Personal details</h2>
@@ -360,7 +458,7 @@ export default function AccountPage() {
               )}
 
               {/* ── Orders tab ── */}
-              {tab === 'orders' && (
+              {openTab === 'orders' && (
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 24px' }}>Order history</h2>
                   {ordersError && (
@@ -460,7 +558,7 @@ export default function AccountPage() {
               )}
 
               {/* ── Addresses tab ── */}
-              {tab === 'addresses' && (
+              {openTab === 'addresses' && (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
                     <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: 0 }}>Saved address</h2>
@@ -500,7 +598,7 @@ export default function AccountPage() {
               )}
 
               {/* ── Security tab ── */}
-              {tab === 'security' && hasPassword === false && (
+              {openTab === 'security' && hasPassword === false && (
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 16px' }}>Sign-in method</h2>
                   <div style={{
@@ -517,7 +615,7 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {tab === 'security' && hasPassword !== false && (
+              {openTab === 'security' && hasPassword !== false && (
                 <div>
                   <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 24px' }}>Change password</h2>
                   {pwError && (
@@ -563,6 +661,7 @@ export default function AccountPage() {
 
             </motion.div>
           </AnimatePresence>
+          )}
         </div>
       </div>
     </div>

@@ -185,20 +185,20 @@
   gap: 8px;
 }
 
-/* Reserve bottom room for the fixed chrome (AnnouncementBar + on
-   mobile the tab bar) so footer legal text / sticky CTAs aren't
-   covered. The announcement bar is 30px everywhere; the tab bar
-   is 64px but hidden on ≥1024px and on /checkout. */
+/* Reserve bottom room for the fixed chrome so footer legal text and sticky
+   CTAs are not covered. Desktop keeps the 36px announcement strip; below
+   1024px that strip is not fixed chrome at all (see APP SHELL), so the only
+   thing to clear is the 64px tab bar. */
 body {
   padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
 }
 @media (max-width: 1023px) {
   body {
-    padding-bottom: calc(36px + 64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
   }
   /* …but on /checkout there is no bottom nav, so reclaim that room. */
   html.is-checkout body {
-    padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
 
@@ -326,16 +326,14 @@ html.is-checkout .ai-fab {
   }
 }
 
-/* Cart pill: compact on mobile, comfortable on tablet+ */
+/* The cart pill's colours and sizing are set inline in Navbar.tsx, because
+   they depend on whether the basket has anything in it. Its `display` is not:
+   it lives here so the app shell can drop the pill on phones, where the tab
+   bar owns the cart. An inline display would win over that rule — which is
+   how the height and padding declarations that used to sit here ended up
+   applying to nothing at all. */
 .navbar-cart {
-  height: 40px;
-  padding: 0 10px;
-}
-
-@media (min-width: 640px) {
-  .navbar-cart {
-    padding: 0 16px;
-  }
+  display: inline-flex;
 }
 
 /* ──────────────────────────────────────────────────────────
@@ -2633,4 +2631,394 @@ textarea,
   gap: 10px;
   padding: 40px 20px;
   color: var(--color-text-subtle);
+}
+
+/* Offline bar — pinned directly under the app bar so it is visible from
+   wherever the visitor happens to be, without covering the way out. */
+.offline-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  z-index: 55;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: var(--black);
+  color: var(--grey-0);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+/* Keeps the icon next to the sentence. Left to fill the bar the text wraps
+   to two lines across the full width and the icon is stranded at the far
+   edge, reading as an unrelated control rather than part of the message. */
+.offline-bar > span {
+  max-width: 30ch;
+}
+
+/* Above 1023px the category strip is still there, so the bar clears it. */
+@media (min-width: 1024px) {
+  .offline-bar { top: var(--nav-total); }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   STATUS SCREENS
+   Waiting, offline, errored, not found — one frame, so each of them
+   is guaranteed to have a mark, a sentence and a way out.
+─────────────────────────────────────────────────────────────── */
+
+.status-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-40) 20px;
+  background: var(--grey-0);
+}
+
+.status-screen__inner {
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.status-screen__mark {
+  display: inline-flex;
+  margin-bottom: 22px;
+}
+
+.status-screen__icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grey-5);
+  color: var(--grey-60);
+}
+
+.status-screen__title {
+  font-family: var(--font-sans);
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--black);
+  margin: 0 0 10px;
+  line-height: 1.25;
+}
+
+.status-screen__body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--grey-60);
+  margin: 0 0 24px;
+}
+
+.status-screen__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.status-screen__footnote {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--grey-50);
+  margin: 20px 0 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ────────────────────────────────────────────────────────────
+   APP SHELL (< 1024px)
+
+   Below the desktop breakpoint the site is laid out as an application,
+   not as a page that happens to be narrow: one top bar, the content, one
+   tab bar. That is also what makes it wrappable as an APK later — a
+   Trusted Web Activity renders exactly this, with no browser chrome to
+   hide the fact that a web footer and three navigation rows are showing.
+
+   The measurement that forced this: on a 390×844 phone the old chrome was
+   64px header + 48px category strip + 36px announcement strip + 64px tab
+   bar = 212px, a quarter of the screen, permanently. An app spends about
+   half that. Everything below reclaims the other half.
+─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+  /* One top bar, not two. Every page offsets its content by --nav-total,
+     so shrinking the variable moves the whole site up together rather
+     than leaving each screen to be corrected by hand.
+
+     The status-bar inset is part of the header's height, not something
+     each screen subtracts for itself: with viewport-fit=cover the page
+     paints under the notch, and a bar that ignores it puts the logo
+     behind the clock. Zero on a device without one, so this is the same
+     number as before everywhere else. */
+  :root {
+    --nav-total: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+  }
+
+  .app-header {
+    padding-top: env(safe-area-inset-top, 0px);
+    /* Landscape notches eat into the sides too. */
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .catnav {
+    display: none;
+  }
+
+  /* The tab bar owns primary navigation here. It has a Cart tab carrying the
+     same count badge, and an Account tab holding the wishlist, so a heart and
+     a cart pill in the app bar as well gave a phone two entry points to each
+     of them. See Navbar.tsx and MobileBottomNav.tsx. */
+  .navbar-wishlist,
+  .navbar-cart {
+    display: none;
+  }
+
+  /* The trust strip stops being pinned chrome. It was sitting on top of
+     page content — on /account it covered the email field — and a
+     permanent marketing bar above the tabs is the single clearest tell
+     that something is a website in a frame rather than an app. It still
+     renders on Home, in the flow under the app bar, where it reads as
+     content rather than as a fourth navigation row. */
+  .announcement-bar {
+    display: none;
+  }
+
+  html.is-home .announcement-bar {
+    display: flex;
+    top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+    bottom: auto;
+    border-top: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Home carries the strip in its header stack, so its pages start 36px
+     lower. Every screen offsets by --nav-total, so setting it here moves
+     the hero, the skip target and the scroll-padding together — the
+     alternative is a hard-coded 36px in each of them, which is how the
+     old 40px band above the banner happened. */
+  html.is-home {
+    --nav-total: calc(var(--header-h) + 36px + env(safe-area-inset-top, 0px));
+  }
+
+  /* The sitemap footer does not belong inside a tab. Its links live in the
+     Account tab instead (see .app-list), which the tab bar keeps one tap
+     from every screen — so nothing, legal pages included, gets harder to
+     reach by being removed from here. */
+  .site-footer {
+    display: none;
+  }
+
+  /* Nothing above the tab bar to clear any more. The two floating bubbles
+     are stacked rather than co-located: with the announcement strip gone
+     their old offsets put them on the same 52px of screen, so the support
+     bubble sat inside the assistant's. */
+  .support-fab {
+    bottom: calc(64px + 12px + env(safe-area-inset-bottom, 0px));
+  }
+  .ai-fab {
+    bottom: calc(64px + 12px + 52px + 10px + env(safe-area-inset-bottom, 0px));
+  }
+  html.is-checkout .support-fab {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  html.is-checkout .ai-fab {
+    bottom: calc(16px + 52px + 10px + env(safe-area-inset-bottom, 0px));
+  }
+
+
+  /* ── App list ──────────────────────────────────────────────────
+     The row-with-a-chevron that every phone OS uses for settings and
+     profile screens. It replaced a chip row that ran off the right edge
+     of a 390px screen: a list has no width to run out of, so sections
+     can be renamed or added without anything being cut off. */
+
+  .app-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .app-profile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 2px 12px;
+  }
+
+  .app-profile__avatar {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--color-brand-subtle);
+    color: var(--brand-cyan-hover);
+    font-family: var(--font-sans);
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+  .app-profile__text { min-width: 0; }
+
+  /* Wraps to a second line rather than truncating. The old header put the
+     name in a nowrap ellipsis beside a fixed-width Sign out button, so a
+     two-word name read "Hello, Demo …" — the identity on the screen was
+     the one thing being cut. Sign out now lives at the foot of the list. */
+  .app-profile__name {
+    font-family: var(--font-sans);
+    font-size: 21px;
+    font-weight: 900;
+    color: var(--black);
+    margin: 0;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+
+  .app-profile__email {
+    font-family: var(--font-body);
+    font-size: 13.5px;
+    color: var(--grey-60);
+    margin: 3px 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-list {
+    display: block;
+    width: 100%;
+    background: var(--grey-0);
+    border: 1px solid var(--grey-10);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .app-list__heading {
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--grey-50);
+    margin: 14px 0 0;
+    padding-inline: 4px;
+  }
+
+  .app-list__row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    /* 52px tall: comfortably over the 44px touch target every mobile
+       platform asks for, without the list becoming a stack of buttons. */
+    min-height: 52px;
+    padding: 0 14px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--grey-10);
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--black);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .app-list__row:last-child { border-bottom: none; }
+  .app-list__row:active { background: var(--grey-5); }
+
+  .app-list__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--grey-60);
+  }
+
+  .app-list__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-weight: 600;
+  }
+
+  .app-list__chev {
+    flex-shrink: 0;
+    color: var(--grey-40, #9ca3af);
+  }
+
+  /* Sign out is its own single-row list, set apart and coloured, because
+     it is the one row on this screen that ends the session. */
+  .app-list__row--danger {
+    margin-top: 14px;
+    justify-content: center;
+    background: var(--grey-0);
+    border: 1px solid var(--grey-10);
+    border-radius: 14px;
+    color: var(--color-sale, #b91c1c);
+  }
+  .app-list__row--danger .app-list__icon { color: inherit; }
+  .app-list__row--danger .app-list__label { flex: 0 0 auto; }
+
+  /* ── Push navigation ──
+     A section opened from the list gets a back row, so the way out is in
+     the same place every time and never depends on the browser's own. */
+  .app-topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .app-topbar__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 44px;
+    padding: 0 10px 0 4px;
+    margin-left: -4px;
+    background: transparent;
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--brand-cyan-hover);
+    cursor: pointer;
+  }
+
+  .app-topbar__title {
+    font-family: var(--font-sans);
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--black);
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The page gutter is the list's gutter; the panel supplies its own. */
+  .account-grid { gap: 0; }
+
+  /* Native-feeling touch behaviour. A grey flash on every tap and a
+     text caret on a nav label are both browser defaults that no app has. */
+  .app-tabbar,
+  .app-list__row,
+  .app-seg__btn {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
 }

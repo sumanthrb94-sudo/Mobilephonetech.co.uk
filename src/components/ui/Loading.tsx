@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from 'motion/react';
+import BrandMark from './BrandMark';
 
 /**
  * Loading — the single loading vocabulary for the app.
@@ -96,7 +97,13 @@ export interface PageLoadingProps {
   label?: string;
 }
 
-/** Full-page centred loading state — the fallback for lazy routes. */
+/**
+ * Full-page centred loading state — the fallback for lazy routes.
+ *
+ * Shows the turning brand mark rather than a grey ring, matching the boot
+ * splash in index.html. A route that arrives slowly then looks like the same
+ * app still working, instead of a different app's spinner appearing inside it.
+ */
 export function PageLoading({ label = 'Loading' }: PageLoadingProps) {
   return (
     <div
@@ -113,7 +120,7 @@ export function PageLoading({ label = 'Loading' }: PageLoadingProps) {
         padding: 'var(--spacing-48) var(--spacing-16)',
       }}
     >
-      <Spinner size="lg" decorative />
+      <BrandMark size="lg" spinning />
       <p
         style={{
           margin: 0,
