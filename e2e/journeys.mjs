@@ -183,7 +183,13 @@ async function run(view, contextOpts) {
     await dismissCookies(page);
     await shot(page, view, 'compare');
     const t = await txt(page);
-    rec(view, 'Compare page renders', t.length > 300 ? 'PASS' : 'FAIL');
+    // Was a >300 character count, which the sitemap footer satisfied on its
+    // own — so it passed on a page rendering nothing of its own, and failed
+    // the moment the app shell dropped the footer on phones. Assert the
+    // page's own content instead.
+    rec(view, 'Compare page renders',
+      /side-by-side|comparison/i.test(t) && /add phone|compare/i.test(t) ? 'PASS' : 'FAIL',
+      t.slice(0, 120));
   } catch (e) { rec(view, 'Compare page renders', 'FAIL', e.message.slice(0, 100)); }
 
   // ── Wishlist + 404 ──
@@ -191,7 +197,10 @@ async function run(view, contextOpts) {
     await page.goto(`${BASE}/wishlist`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2000);
     await shot(page, view, 'wishlist');
-    rec(view, 'Wishlist renders', (await txt(page)).length > 300 ? 'PASS' : 'FAIL');
+    const w = await txt(page);
+    rec(view, 'Wishlist renders',
+      /your wishlist/i.test(w) && /(nothing saved|no items|heart any product|£)/i.test(w) ? 'PASS' : 'FAIL',
+      w.slice(0, 120));
     await page.goto(`${BASE}/nope-not-real`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(1500);
     await shot(page, view, '404');

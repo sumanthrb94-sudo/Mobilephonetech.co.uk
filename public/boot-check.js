@@ -46,6 +46,11 @@
   function explain() {
     var root = document.getElementById('root');
     if (!root) return;
+    /* The splash is a cover for a boot that is still coming. This one is not
+       coming, so it has to go — otherwise the spinning logo sits on top of
+       the explanation, and the page reads as still loading for ever. */
+    var splash = document.getElementById('app-splash');
+    if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
     root.innerHTML =
       '<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;' +
       'max-width:32rem;margin:16vh auto;padding:0 24px;text-align:center;color:#1a1a1a">' +

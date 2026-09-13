@@ -1,4 +1,6 @@
 import React from 'react';
+import { AlertTriangle } from 'lucide-react';
+import StatusScreen from './ui/StatusScreen';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -37,52 +39,28 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
 
     if (this.props.fallback) return this.props.fallback(this.state.error!, this.reset);
 
+    /**
+     * The visitor gets a sentence, two ways out and nothing else. The error
+     * text is deliberately NOT shown: a stack trace is no use to a shopper
+     * and can carry internals that should not be on screen. It goes to the
+     * console, where componentDidCatch already put it.
+     *
+     * "Try again" re-renders in place, which is the right first move for a
+     * transient failure (a chunk that failed to fetch, a race on mount) and
+     * costs the visitor nothing if it does not help — the homepage link is
+     * still there underneath.
+     */
     return (
-      <div
-        role="alert"
-        style={{
-          minHeight: '60vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--grey-0)',
-          padding: 'var(--spacing-48) var(--spacing-16)',
-        }}
-      >
-        <div style={{ maxWidth: '420px', textAlign: 'center' }}>
-          <h2
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: '22px',
-              fontWeight: 800,
-              letterSpacing: '-0.02em',
-              color: 'var(--black)',
-              margin: '0 0 8px 0',
-            }}
-          >
-            Something went wrong.
-          </h2>
-          <p
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: '14px',
-              color: 'var(--grey-60)',
-              margin: '0 0 24px 0',
-              lineHeight: 1.5,
-            }}
-          >
-            This page hit an error while loading. You can try again, or head back to the homepage.
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button onClick={this.reset} className="btn btn-primary btn-md">
-              Try again
-            </button>
-            <a href="/" className="btn btn-secondary btn-md" style={{ textDecoration: 'none' }}>
-              Go to homepage
-            </a>
-          </div>
-        </div>
-      </div>
+      <StatusScreen
+        live="alert"
+        icon={<span className="status-screen__icon"><AlertTriangle size={30} /></span>}
+        title="Something went wrong"
+        body="This page hit an error while loading. Nothing you were doing has been lost."
+        actions={[
+          { label: 'Try again', onClick: this.reset, variant: 'primary' },
+          { label: 'Go to homepage', to: '/' },
+        ]}
+      />
     );
   }
 }

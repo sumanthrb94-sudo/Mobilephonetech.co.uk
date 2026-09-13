@@ -80,6 +80,76 @@
     ]
     </script>
 
+    <style>
+      /* Inline for the same reason as the markup below: this has to paint
+         while the real stylesheet is still in flight. */
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background: #f8f9fa;
+        /* Fills the notch and the gesture bar, which viewport-fit=cover
+           otherwise leaves as bare white strips on a standalone launch. */
+        padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+                 env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        /* Faded out by main.tsx rather than cut, so a fast boot does not
+           flash. The element is removed once this finishes. */
+        transition: opacity 260ms ease;
+      }
+      #app-splash[data-leaving="true"] { opacity: 0; pointer-events: none; }
+
+      .app-splash__tile {
+        width: 68px;
+        height: 68px;
+        border-radius: 18px;
+        background: #a16207;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: app-splash-spin 1.1s linear infinite;
+      }
+      .app-splash__tile svg { width: 34px; height: 34px; }
+
+      .app-splash__word {
+        margin: 4px 0 0;
+        font-size: 21px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: #1c1917;
+        /* Rises in after the mark, so the eye lands on the logo first. */
+        animation: app-splash-rise 420ms 120ms ease both;
+      }
+      .app-splash__word span { color: #a16207; }
+
+      .app-splash__tag {
+        margin: 0;
+        font-size: 13px;
+        color: #6b7280;
+        animation: app-splash-rise 420ms 260ms ease both;
+      }
+
+      @keyframes app-splash-spin { to { transform: rotate(360deg); } }
+      @keyframes app-splash-rise {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: none; }
+      }
+
+      /* A spinning logo and rising text are exactly what this setting is
+         for. The splash still shows; it simply holds still. */
+      @media (prefers-reduced-motion: reduce) {
+        .app-splash__tile,
+        .app-splash__word,
+        .app-splash__tag { animation: none; }
+        #app-splash { transition: none; }
+      }
+    </style>
+
     <!-- Unhashed on purpose: the recovery for a bundle that failed to load
          cannot itself be part of that bundle. Blocking on purpose too: it has
          to register its listener before the module script below starts.
@@ -87,6 +157,39 @@
     <script src="/boot-check.js"></script>
   </head>
   <body>
+    <!-- Boot splash.
+         Between the first paint and React mounting there is nothing on
+         screen. In a browser that gap is covered by the tab and the address
+         bar; launched from a home screen or wrapped as an APK there is no
+         chrome at all, so the app opens on a blank white rectangle for as
+         long as the bundle takes to arrive and parse. This is what fills it.
+
+         Written by hand, inline, with no imports: it has to paint before the
+         stylesheet and the bundle it is covering for have loaded. The mark is
+         the same brown tile and refresh glyph the navbar draws and the
+         installed icon uses, so the first thing shown is the last thing the
+         user tapped.
+
+         It is a SIBLING of #root, never a child: public/boot-check.js decides
+         whether the app booted by asking whether #root is empty, and splash
+         markup inside it would make a failed boot look like a successful one.
+
+         Removed by src/main.tsx once React has painted. If the bundle never
+         arrives, boot-check.js clears it and says so instead. -->
+    <div id="app-splash" role="status" aria-live="polite">
+      <div class="app-splash__tile" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+          <path d="M21 21v-5h-5" />
+        </svg>
+      </div>
+      <p class="app-splash__word">Le<span>Hart</span></p>
+      <p class="app-splash__tag">Certified refurbished tech</p>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

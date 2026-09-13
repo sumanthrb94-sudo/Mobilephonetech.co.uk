@@ -26,6 +26,7 @@ import MobileBottomNav from './components/layout/MobileBottomNav';
 import CheckoutHeader from './components/layout/CheckoutHeader';
 import CheckoutFooter from './components/layout/CheckoutFooter';
 import AnnouncementBar from './components/layout/AnnouncementBar';
+import OfflineNotice from './components/OfflineNotice';
 import PreviewBanner from './components/layout/PreviewBanner';
 import ScrollToTop from './components/ScrollToTop';
 import { Suspense, lazy, useEffect } from 'react';
@@ -246,6 +247,10 @@ function AppContent() {
       >
         Skip to main content
       </a>
+
+      {/* Losing signal must not cost the visitor the page they are on, so
+          this is a bar under the app bar rather than a screen over it. */}
+      <OfflineNotice />
 
       {/* Trust strip. Fixed to the bottom edge on desktop, where DOM order
           does not matter; below 1024px it un-pins and renders here, in the
