@@ -2737,6 +2737,71 @@ textarea,
   overflow-wrap: anywhere;
 }
 
+/* Order progress — where the order stands, at a glance.
+   A horizontal rail of four stops: done, now, still to come. */
+.ord-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.ord-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  position: relative;
+}
+
+/* The rail runs between dots, drawn by each step except the first, so it
+   cannot overhang either end of the row. */
+.ord-steps li::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 50%;
+  left: -50%;
+  height: 2px;
+  background: var(--grey-10);
+}
+.ord-steps li:first-child::before { display: none; }
+.ord-steps li[data-state='done']::before,
+.ord-steps li[data-state='now']::before { background: var(--brand-cyan); }
+
+.ord-steps__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--grey-0);
+  border: 2px solid var(--grey-20);
+  box-sizing: border-box;
+  z-index: 1;
+}
+.ord-steps li[data-state='done'] .ord-steps__dot { background: var(--brand-cyan); border-color: var(--brand-cyan); }
+.ord-steps li[data-state='now'] .ord-steps__dot {
+  background: var(--brand-cyan);
+  border-color: var(--brand-cyan);
+  box-shadow: 0 0 0 4px var(--color-brand-subtle);
+}
+
+.ord-steps__label {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--grey-50);
+  /* Wraps rather than truncating: "Out for delivery" is the longest and the
+     one most worth reading in full. */
+  overflow-wrap: anywhere;
+}
+.ord-steps li[data-state='now'] .ord-steps__label {
+  color: var(--black);
+  font-weight: 800;
+}
+
 /* ───────────────────────────────────────────────────────────────
    PRODUCT DETAIL — the buy decision, at a glance
 

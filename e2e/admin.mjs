@@ -429,13 +429,23 @@ async function run(view, contextOpts) {
   rec(view, 'Tap targets >= 24px (WCAG 2.2 SC 2.5.8)', smallTargets.length === 0, smallTargets.join(' | '));
 
   // ── Orders: the screen staff actually run the shop from ──
-  await seedOrders([{
-    id: 'ORD-E2E-1', status: 'pending', total: 759, currency: 'GBP',
+  const orderFixture = (id, status, total) => ({
+    id, status, total, currency: 'GBP',
     contactEmail: 'buyer@example.com', createdAt: '2026-09-11T08:12:44.000Z',
-    updatedAt: '2026-09-11T08:12:44.000Z', paypalOrderId: 'PP-E2E-1', captureId: 'CAP-E2E-1',
+    updatedAt: '2026-09-11T08:12:44.000Z', paypalOrderId: `PP-${id}`, captureId: `CAP-${id}`,
     shippingAddress: { fullName: 'Alex Morgan', addressLine1: '221B Baker Street', city: 'London', postalCode: 'NW1 6XE' },
-    items: [{ productId: 'apple-iphone-17', brand: 'Apple', model: 'iPhone 17', quantity: 1, price: 759 }],
-  }]);
+    items: [{ productId: 'apple-iphone-17', brand: 'Apple', model: 'iPhone 17', quantity: 1, price: total }],
+  });
+
+  // One order at each stage. A single fixture would have passed against the
+  // broken screen too: it showed every action at every stage, so it showed
+  // the right one as well.
+  await seedOrders([
+    orderFixture('ORD-E2E-1', 'pending', 759),
+    orderFixture('ORD-E2E-2', 'dispatched', 429),
+    orderFixture('ORD-E2E-3', 'out-for-delivery', 315),
+    orderFixture('ORD-E2E-4', 'delivered', 199),
+  ]);
 
   await page.goto(`${BASE}/admin/orders`, { waitUntil: 'domcontentloaded' });
   await dismissCookies(page);
@@ -463,6 +473,54 @@ async function run(view, contextOpts) {
     await page.getByRole('button', { name: /Mark dispatched/i }).isVisible());
   await auditLayout(page, view, 'Orders (expanded)');
   await shot(page, `${view}-orders-expanded`);
+
+  /* Each stage offers ONE move — the next one — and never the others.
+     This shipped broken: every order showed Mark dispatched, Out for
+     delivery, Resend receipt and Refund whatever stage it was at, so an
+     order already on the van still offered to dispatch it. The suite did not
+     notice, because it only ever asked whether the controls appeared. */
+  const STAGE_EXPECTATIONS = [
+    ['ORD-E2E-1', 'Mark dispatched',       ['Mark out for delivery', 'Mark delivered'], true],
+    ['ORD-E2E-2', 'Mark out for delivery', ['Mark dispatched', 'Mark delivered'],       true],
+    ['ORD-E2E-3', 'Mark delivered',        ['Mark dispatched', 'Mark out for delivery'], false],
+    ['ORD-E2E-4', null,                    ['Mark dispatched', 'Mark out for delivery', 'Mark delivered'], false],
+  ];
+
+  await page.goto(`${BASE}/admin/orders`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.ord-head');
+  await page.getByRole('tab', { name: /^All/ }).click();
+  await page.waitForTimeout(500);
+
+  for (const [id, expected, forbidden, wantsTracking] of STAGE_EXPECTATIONS) {
+    const head = page.locator('.ord-head', { hasText: id }).first();
+    if (!(await head.count())) { rec(view, `Stage actions: ${id}`, false, 'row not found'); continue; }
+    await head.click();
+    await page.waitForTimeout(450);
+
+    const exact = (name) => page.getByRole('button', { name: new RegExp(`^${name}$`, 'i') });
+    const offered = expected ? await exact(expected).count() : 0;
+    let wrong = 0;
+    for (const f of forbidden) wrong += await exact(f).count();
+
+    rec(view, `Stage offers only its next move: ${id}`,
+      (expected ? offered === 1 : true) && wrong === 0,
+      `expected ${expected ?? 'none'} (found ${offered}), forbidden found ${wrong}`);
+
+    // Courier and tracking belong to a movement, not to every row.
+    const tracking = await page.getByLabel('Tracking number').count();
+    rec(view, `Tracking fields shown only when useful: ${id}`,
+      wantsTracking ? tracking === 1 : tracking === 0, `found ${tracking}`);
+
+    // The rail says where the order is without decoding the button.
+    const rail = await page.locator('.ord-steps li[data-state="now"]').count();
+    rec(view, `Progress rail marks one current stage: ${id}`, rail === 1, `found ${rail}`);
+
+    await head.click();
+    await page.waitForTimeout(300);
+  }
+
+  await page.locator('.ord-head', { hasText: 'ORD-E2E-1' }).first().click();
+  await settled(page, '.ord-actions');
 
   // Money leaving takes two deliberate steps at every width.
   await page.getByRole('button', { name: /Refund & restock/i }).click();

@@ -669,6 +669,58 @@ export function outForDeliveryEmail(order: OrderLike, info: DispatchInfo = {}): 
   };
 }
 
+/** ── 4a-ii. Delivered ─────────────────────────────────────────────── */
+
+/**
+ * Sent when staff mark an order delivered.
+ *
+ * This is the one email in the sequence that asks for nothing and sells
+ * nothing. It confirms the parcel arrived, and — because this is refurbished
+ * stock and the first hour with the device is when a fault shows up — points
+ * at the warranty and the return window while both are still fresh. The
+ * 14-day cancellation right under the Consumer Contracts Regulations runs
+ * from delivery, so the day this email is sent is the day that clock starts.
+ */
+export function orderDeliveredEmail(order: OrderLike, returnDays = 30): Built {
+  const body = [
+    progress('delivered'),
+    p('Your order has been delivered. We hope it is everything you expected.'),
+    p(
+      `Every device is checked before it ships, but if anything is not right, tell us early rather than late \u2014 it is covered by the warranty, and you have ${returnDays} days to change your mind for any reason at all.`,
+    ),
+    button('View your order', `${SHOP_URL}/orders`),
+    p(
+      `<span style="font-size:12.5px;color:${PALETTE.muted};">Not received it? Check with anyone else at the address and look for a card from the courier, then reply to this email and we will chase it.</span>`,
+    ),
+    utilityLinks(),
+  ].join('');
+
+  const text = [
+    'Delivered',
+    `Order ${order.id}`,
+    '',
+    'Your order has been delivered. We hope it is everything you expected.',
+    '',
+    `If anything is not right, tell us early: it is covered by the warranty, and you have ${returnDays} days to change your mind for any reason.`,
+    '',
+    `Your orders: ${SHOP_URL}/orders`,
+    `Returns: ${SHOP_URL}/returns`,
+    `Help: ${SHOP_URL}/faq`,
+  ].join('\n');
+
+  return {
+    subject: `Delivered \u2014 order ${order.id}`,
+    html: shell({
+      preview: 'Your order has arrived.',
+      kicker: 'Delivered',
+      headline: 'It has arrived',
+      subline: `Order ${order.id}`,
+      body,
+    }),
+    text,
+  };
+}
+
 /** ── 4b. Refunded ────────────────────────────────────────────────── */
 
 /**

@@ -255,18 +255,56 @@ describe('the whole journey, in order', () => {
     expect(sent[3].tags).toContain('order-out-for-delivery');
   });
 
-  it('7. a customer cannot declare their own order dispatched', async () => {
+  it('7. delivered closes the journey and stamps the date', async () => {
+    const out = await post('order-notify', { orderId, kind: 'delivered' });
+
+    expect(out.code).toBe(200);
+    expect(store.orders[orderId].status).toBe('delivered');
+    // The 14-day cancellation right runs from delivery, so this is the date a
+    // returns dispute is measured against, not a label.
+    expect(store.orders[orderId].deliveredAt).toBeTruthy();
+    expect(sent).toHaveLength(5);
+    expect(sent[4].tags).toContain('order-delivered');
+  });
+
+  it('8. an order cannot be walked backwards', async () => {
+    // The defect this guards: every kind used to be accepted in any order, so
+    // a delivered order could be re-marked dispatched — mailing the customer
+    // "on its way" for a parcel already in their hands, and resetting
+    // dispatchedAt on the way past.
+    const before = sent.length;
+    const out = await post('order-notify', { orderId, kind: 'dispatched' });
+
+    expect(out.code).toBe(409);
+    expect(out.body.error).toMatch(/already delivered/i);
+    expect(store.orders[orderId].status).toBe('delivered');
+    expect(sent).toHaveLength(before);
+  });
+
+  it('9. nor can a stage be skipped', async () => {
+    store.orders[orderId].status = 'confirmed';
+    const before = sent.length;
+    const out = await post('order-notify', { orderId, kind: 'delivered' });
+
+    expect(out.code).toBe(409);
+    expect(store.orders[orderId].status).toBe('confirmed');
+    expect(sent).toHaveLength(before);
+
+    store.orders[orderId].status = 'delivered';
+  });
+
+  it('10. a customer cannot declare their own order dispatched', async () => {
     isAdmin = false;
     const out = await post('order-notify', { orderId, kind: 'dispatched' });
 
     expect(out.code).toBe(403);
-    expect(sent).toHaveLength(4);
+    expect(sent).toHaveLength(5);
   });
 });
 
 describe('every message in the journey', () => {
   it('goes to the customer, from the configured sender, with a plain-text part', () => {
-    expect(sent).toHaveLength(4);
+    expect(sent).toHaveLength(5);
 
     for (const mail of sent) {
       expect(mail.to[0].email).toBe('ram@example.com');
