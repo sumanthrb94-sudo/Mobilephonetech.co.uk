@@ -68,6 +68,7 @@ const AdminLayout = lazy(() => import('./components/admin/AdminLayout'));
 const AdminDashboard = lazy(() => import('./components/admin/DashboardPage'));
 const OrdersPage = lazy(() => import('./components/admin/OrdersPage'));
 const InventoryPage = lazy(() => import('./components/admin/InventoryPage'));
+const BannersPage = lazy(() => import('./components/admin/BannersPage'));
 const ReturnsPage = lazy(() => import('./components/admin/ReturnsPage'));
 const AnalyticsPage = lazy(() => import('./components/admin/AnalyticsPage'));
 const SupportInbox = lazy(() => import('./components/admin/SupportInbox'));
@@ -376,6 +377,7 @@ function AppContent() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="inventory" element={<InventoryPage />} />
+                <Route path="banners" element={<BannersPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
                 <Route path="analytics" element={<AnalyticsPage />} />

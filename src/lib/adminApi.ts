@@ -11,6 +11,7 @@ import type { Product, ProductGrade } from '../types';
 
 /** Storage folder for product imagery. */
 export const IMAGE_BUCKET = 'product-images';
+export const BANNER_BUCKET = 'banner-images';
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
@@ -449,14 +450,24 @@ export function imagePath(productId: string, fileName: string, unique: string): 
   return `${productId}/${unique}.${ext}`;
 }
 
-export async function uploadImage(productId: string, file: File): Promise<string> {
+/**
+ * @param bucket which top-level folder to write to. Defaults to product
+ *   imagery; banner artwork lives under its own prefix so storage.rules can
+ *   grant the two separately, and so a banner is never mistaken for a
+ *   product's photo when either is cleaned up.
+ */
+export async function uploadImage(
+  productId: string,
+  file: File,
+  bucket: string = IMAGE_BUCKET,
+): Promise<string> {
   const invalid = validateImageFile(file);
   if (invalid) throw new Error(invalid);
 
   const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const path = imagePath(productId, file.name, unique);
 
-  const objectRef = ref(storage, `${IMAGE_BUCKET}/${path}`);
+  const objectRef = ref(storage, `${bucket}/${path}`);
   await uploadBytes(objectRef, file, {
     contentType: file.type,
     cacheControl: 'public, max-age=31536000',

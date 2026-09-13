@@ -78,6 +78,7 @@ export const COL = {
   tradeInQuotes: 'tradeInQuotes',
   newsletter: 'newsletterSubscribers',
   returns: 'returns',
+  banners: 'banners',
   conversations: 'conversations',
   // Per-user subcollections under users/{uid}
   cart: 'cart',

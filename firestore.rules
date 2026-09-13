@@ -36,6 +36,16 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ── Home-page banners ───────────────────────────────────
+    // Public to read, because they are the first thing on the shop front.
+    // Writable only by staff: a banner is a headline and a link shown to
+    // every visitor, so whoever can write here controls what the home page
+    // says and where its main call to action points.
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── Users ───────────────────────────────────────────────
     // A user reads and writes only their own document. `role` is explicitly
     // immutable from the client: it is display-only, but letting someone set

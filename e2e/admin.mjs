@@ -26,6 +26,12 @@ const OUT = process.env.E2E_ADMIN_SHOTS || 'e2e/screenshots/admin';
 
 mkdirSync(OUT, { recursive: true });
 
+/** Smallest valid PNG: enough to exercise the upload, nothing to store. */
+const PNG_1PX = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64',
+);
+
 const results = [];
 let shotN = 0;
 const rec = (view, name, ok, detail = '') => results.push({ view, name, ok, detail });
@@ -427,6 +433,77 @@ async function run(view, contextOpts) {
     return bad;
   });
   rec(view, 'Tap targets >= 24px (WCAG 2.2 SC 2.5.8)', smallTargets.length === 0, smallTargets.join(' | '));
+
+  /* ── Banners: the shop front, editable without a deploy ──
+     The property that matters is the round trip. A banner saved here has to
+     reach the home page, and a banner switched off must not — anything less
+     and staff are typing into a form that may or may not be the website. */
+  await page.goto(`${BASE}/admin/banners`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.ops-title');
+  rec(view, 'Banners screen is reachable from the admin nav',
+    /home banners/i.test(await txt()));
+
+  await page.getByRole('button', { name: /New banner/i }).click();
+  await settled(page, '.bn-card');
+
+  // A new banner is off and incomplete: it must not be savable yet.
+  const saveBtn = page.getByRole('button', { name: /^Save$/ }).first();
+  rec(view, 'An incomplete banner cannot be saved',
+    await saveBtn.isDisabled(), 'save was enabled on an empty banner');
+  rec(view, 'It says what is missing rather than only refusing',
+    (await page.locator('.bn-problems li').count()) > 0);
+
+  await page.getByLabel('Headline').fill('E2E banner headline');
+  await page.getByLabel('Image description').fill('An end-to-end test banner');
+  await page.getByLabel('Button link').fill('/products');
+
+  // A link that leaves the shop is refused: this is the home page's main
+  // call to action, set from a text field.
+  await page.getByLabel('Button link').fill('https://evil.test');
+  await page.waitForTimeout(250);
+  rec(view, 'A banner link that leaves the shop is refused',
+    /inside the shop/i.test(await txt()));
+  await page.getByLabel('Button link').fill('/products');
+  await page.waitForTimeout(250);
+
+  // Artwork, through the real upload path into the emulator's storage.
+  await page.setInputFiles('.bn-field input[type="file"]', {
+    name: 'banner.png', mimeType: 'image/png', buffer: PNG_1PX,
+  });
+  await page.waitForTimeout(2500);
+  rec(view, 'Banner artwork uploads to storage',
+    (await page.locator('.bn-upload__thumb[src]').count()) > 0);
+
+  await page.getByRole('button', { name: /Switch on/i }).click();
+  await page.waitForTimeout(300);
+  await page.getByRole('button', { name: /Save & put live/i }).click();
+  await page.waitForTimeout(2500);
+  rec(view, 'Saving a live banner reports it as live', /live on the home page/i.test(await txt()));
+
+  // The round trip: the storefront must now be showing it.
+  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+  await dismissCookies(page);
+  await page.waitForTimeout(3500);
+  rec(view, 'A saved banner reaches the home page',
+    /E2E banner headline/i.test(await txt()), (await txt()).slice(0, 120));
+
+  // …and switching it off takes it down again.
+  await page.goto(`${BASE}/admin/banners`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.bn-card');
+  await page.getByRole('button', { name: /Switch off/i }).first().click();
+  await page.waitForTimeout(300);
+  await page.getByRole('button', { name: /^Save$/ }).first().click();
+  await page.waitForTimeout(2500);
+
+  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3500);
+  rec(view, 'Switching a banner off takes it off the home page',
+    !/E2E banner headline/i.test(await txt()));
+
+  await auditLayout(page, view, 'Banners');
+  await page.goto(`${BASE}/admin/banners`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.bn-card');
+  await shot(page, `${view}-banners`);
 
   // ── Orders: the screen staff actually run the shop from ──
   const orderFixture = (id, status, total) => ({
