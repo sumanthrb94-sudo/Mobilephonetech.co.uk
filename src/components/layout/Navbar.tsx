@@ -160,7 +160,7 @@ export default function Navbar(_: NavbarProps) {
           ANNOUNCEMENT BAR & FIXED HEADER
       ═══════════════════════════════════════════════════ */}
       <motion.div
-        className="fixed top-0 left-0 right-0 z-[60]"
+        className="app-header fixed top-0 left-0 right-0 z-[60]"
         style={{
           backgroundColor: 'white',
           boxShadow,
@@ -473,6 +473,10 @@ export default function Navbar(_: NavbarProps) {
         {/* ═══════════════════════════════════════════════════
             CATEGORY NAV BAR — 48px — horizontal scroll
         ═══════════════════════════════════════════════════ */}
+        {/* Hidden below 1024px by .catnav — see the APP SHELL block in
+            index.css. On a phone these destinations are already one tap away
+            inside the Shop tab, and as permanent chrome they cost 48px of a
+            844px screen for a second row of navigation nobody asked for. */}
         <nav
           aria-label="Product categories"
           style={{
@@ -483,7 +487,7 @@ export default function Navbar(_: NavbarProps) {
             scrollbarWidth: 'none',
           }}
           ref={catNavRef}
-          className="no-scrollbar"
+          className="no-scrollbar catnav"
         >
           <div
             className="container-bm h-full flex items-center gap-1 px-4"

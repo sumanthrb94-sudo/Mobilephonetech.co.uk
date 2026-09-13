@@ -2,7 +2,11 @@
 <html lang="en-GB">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover lets the page paint under a notch and a gesture bar;
+         the app shell then pays that back with env(safe-area-inset-*). Without
+         it the tab bar floats above a white strip on every modern phone, and
+         inside an APK there is no browser chrome to disguise it. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Refurbished Phones UK — Unlocked iPhone, Samsung, Pixel | LeHart</title>
 
     <!-- Primary Meta Tags -->
@@ -31,7 +35,16 @@
     <meta property="twitter:image" content="https://lehart.co.uk/assets/TYsh56U5ZjIX.png" />
 
     <!-- Additional Meta Tags -->
-    <meta name="theme-color" content="#006c49" />
+    <!-- Installable / APK wrapping. A Trusted Web Activity takes its name,
+         icon, colours, orientation and start URL from this manifest, so the
+         Android build is a Bubblewrap run against it rather than a separate
+         project to keep in sync. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180" />
+    <meta name="theme-color" content="#a16207" />
+    <meta name="apple-mobile-web-app-title" content="LeHart" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
