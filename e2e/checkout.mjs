@@ -78,14 +78,39 @@ rec('No card inputs after switching method', (await cardInputs()) === 0);
 await page.getByRole('button', { name: /review order/i }).first().click();
 await page.waitForTimeout(1600);
 
-// ── Review → place order ──
+// ── Review → hand-off ──
+//
+// There is no "place your order" button here, and its absence is the point.
+// The button that used to sit here wrote a confirmed order and took no money,
+// so every checkout was free. Paying IS placing the order now: the only way
+// out of this step is PayPal, and the server writes the order only after it
+// reports a captured payment matching the re-priced basket.
+//
+// Which of the two endings shows depends on whether the build carries a PayPal
+// client id, so both are accepted — but only these two. Anything that looks
+// like a working submit button without a payment behind it is the regression
+// this asserts against.
 rec('Review step shows the address and method', /E2E Buyer/.test(await bodyText()));
-await page.getByRole('button', { name: /place your order/i }).first().click();
-await page.waitForTimeout(2500);
 
-const confirmation = await bodyText();
-rec('Order completes without any card data',
-  /(order confirmed|thank you|order number|confirmation)/i.test(confirmation), confirmation.slice(0, 120));
+const ending = await bodyText();
+const gatewayLive = await page
+  .locator('iframe[title*="PayPal" i], [data-funding-source], #paypal-button-container')
+  .count();
+const gatewayDown = /checkout is temporarily unavailable/i.test(ending);
+
+rec('Review step ends at the payment gateway, not a free submit',
+  gatewayLive > 0 || gatewayDown,
+  gatewayLive > 0 ? '' : ending.slice(0, 160));
+
+rec('An unconfigured gateway refuses the order rather than faking one',
+  gatewayLive > 0 || (gatewayDown && !/order confirmed|thank you|order number/i.test(ending)));
+
+// The regression itself: no control on this step may place an order on its own.
+const selfServeSubmit = await page
+  .getByRole('button', { name: /place (your )?order|complete order|confirm order|buy now/i })
+  .count();
+rec('No button places an order without paying', selfServeSubmit === 0, `${selfServeSubmit} found`);
+
 rec('No card inputs anywhere in the whole flow', (await cardInputs()) === 0);
 
 await browser.close();

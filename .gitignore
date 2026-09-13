@@ -16,7 +16,8 @@ sa-key.json
 
 # E2E screenshots are build output, not source
 e2e/screenshots/
-.env.e2e
+# Emulator placeholders only, no credentials — see the header in the file.
+!.env.e2e
 
 # esbuild output for the E2E API host (e2e/api-server.mjs)
 node_modules/.lehart-api/
