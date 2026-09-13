@@ -63,9 +63,20 @@ const BRAND_COLOUR_DEFAULTS: Record<string, string[]> = {
   Motorola: ['Black', 'Blue'],
 };
 
-interface ProductCardProps { phone: Product; }
+interface ProductCardProps {
+  phone: Product;
+  /**
+   * Tighter typography and padding, for the horizontal rails on the home
+   * page where a card is ~150px wide on a phone. The full-size card puts an
+   * 18px model name and a 26px price into that width, so the text set the
+   * card's height rather than the other way round: a rail of four brands
+   * came to 3,300px on a 664px screen. Scaling the box without scaling what
+   * is in it is what made them read as one enormous tile each.
+   */
+  compact?: boolean;
+}
 
-const ProductCard = memo(({ phone }: ProductCardProps) => {
+const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
   const navigate  = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { showToast } = useUI();
@@ -157,7 +168,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '18px',
+          padding: compact ? '10px' : '18px',
           overflow: 'hidden',
         }}>
           <ProductImage
@@ -262,7 +273,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
         {/* ── Card body ── */}
         <div style={{
-          padding: '18px 20px 20px',
+          padding: compact ? '12px 13px 13px' : '18px 20px 20px',
           display: 'flex',
           flexDirection: 'column',
           flexGrow: 1,
@@ -281,7 +292,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
 
           {/* Model name */}
           <h3 style={{
-            fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 900,
+            fontFamily: 'var(--font-sans)', fontSize: compact ? '14px' : '18px', fontWeight: 900,
             letterSpacing: '-0.03em', color: '#111827',
             lineHeight: 1.25, marginBottom: 2,
           }}>
@@ -323,14 +334,14 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
           {/* Price row */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 3 }}>
             <span style={{
-              fontFamily: 'var(--font-sans)', fontSize: '26px', fontWeight: 900,
+              fontFamily: 'var(--font-sans)', fontSize: compact ? '19px' : '26px', fontWeight: 900,
               letterSpacing: '-0.04em', color: '#111827',
             }}>
               £{phone.price}
             </span>
             {savings > 0 && (
               <span style={{
-                fontFamily: 'var(--font-body)', fontSize: '13px',
+                fontFamily: 'var(--font-body)', fontSize: compact ? '11px' : '13px',
                 color: '#9CA3AF', textDecoration: 'line-through',
               }}>
                 £{phone.originalPrice}
@@ -343,7 +354,7 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
               calculator the product page uses, so the two cannot disagree. */}
           {deliveryLabel && (
             <p style={{
-              fontFamily: 'var(--font-body)', fontSize: '12px', lineHeight: 1.3,
+              fontFamily: 'var(--font-body)', fontSize: compact ? '10.5px' : '12px', lineHeight: 1.3,
               color: '#047857', margin: '2px 0 0 0', fontWeight: 600,
             }}>
               Free delivery · {deliveryLabel}
@@ -355,17 +366,17 @@ const ProductCard = memo(({ phone }: ProductCardProps) => {
             onClick={handleViewProduct}
             aria-label={`View ${phone.model} details`}
             style={{
-              width: '100%', height: 48,
+              width: '100%', height: compact ? 38 : 48,
               background: 'var(--brand-cyan)',
               color: '#fff',
-              fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800,
+              fontFamily: 'var(--font-sans)', fontSize: compact ? '12.5px' : '14px', fontWeight: 800,
               letterSpacing: '-0.01em',
               border: 'none', borderRadius: '999px',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'background 0.18s, transform 0.12s',
               transform: 'translateZ(0)',
-              marginTop: 14,
+              marginTop: compact ? 10 : 14,
             }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-cyan-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-cyan)')}

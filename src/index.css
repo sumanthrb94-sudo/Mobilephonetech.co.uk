@@ -1349,6 +1349,13 @@ html.is-checkout .ai-fab {
   }
 }
 
+/* The inline search bar is desktop-default; the phone rules above narrow it
+   to Home. Stated here rather than left to a Tailwind class so the two
+   breakpoints are read together. */
+@media (min-width: 1024px) {
+  .navbar-search { display: block; }
+}
+
 /* Product detail: gallery beside the buy box on desktop.
    Same story as above — the element sets `gridTemplateColumns: '1fr'` inline,
    which outranks Tailwind's `lg:grid-cols-2` class, so the page stayed one
@@ -3033,6 +3040,40 @@ html.is-checkout .pdp-stickybuy {
 
   .catnav {
     display: none;
+  }
+
+  /* ── Home's app bar ──
+     Search inline where the wordmark was. The Home tab in the tab bar
+     carries the brand mark, so the app bar repeating it spent the widest
+     row on the screen on something already visible — and left search
+     behind a magnifier, one tap away from the thing most shoppers open
+     the app to do. Every other screen keeps the wordmark, because there
+     the Home tab is not selected and the brand is nowhere else. */
+  .navbar-search {
+    display: none;
+  }
+
+  html.is-home .navbar-search {
+    display: block;
+    padding-left: 8px;
+    margin-right: 4px;
+  }
+
+  .navbar-searchtoggle {
+    display: flex;
+  }
+
+  html.is-home .navbar-logo,
+  html.is-home .navbar-searchtoggle {
+    display: none;
+  }
+
+  /* The bar has to look like a field. Inside the app bar it sat on the same
+     white as the header, so it read as a stray line of grey text rather than
+     as somewhere to type. */
+  html.is-home .navbar-search input {
+    background: var(--grey-5);
+    border-color: var(--grey-10);
   }
 
   /* The tab bar owns primary navigation here. It has a Cart tab carrying the

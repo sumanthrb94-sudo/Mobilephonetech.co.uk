@@ -12,6 +12,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
+import { useBreakpoint } from '../../hooks/useBreakpoint';
 import BrandMegaMenu from '../BrandMegaMenu';
 import TabletMegaMenu from '../TabletMegaMenu';
 import { useAdmin } from '../../hooks/useAdmin';
@@ -34,6 +35,7 @@ const CATEGORIES = [
 ];
 
 export default function Navbar(_: NavbarProps) {
+  const { isDesktop } = useBreakpoint();
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
@@ -229,23 +231,35 @@ export default function Navbar(_: NavbarProps) {
               </span>
             </Link>
 
-            {/* ── Search hidden on mobile, shown desktop ── */}
-            <div className="hidden lg:block" style={{ flex: 1, maxWidth: '480px', margin: '0 auto', paddingLeft: '16px' }}>
-              <SearchAutocomplete />
+            {/* ── Search ──
+                Always inline on desktop. On a phone it is inline on Home
+                only, where it takes the place of the wordmark: the Home tab
+                carries the brand in the tab bar, so repeating it in the app
+                bar spends the widest row on the screen saying something the
+                shopper can already see. Everywhere else the wordmark stays
+                and search is behind the magnifier. */}
+            <div className="navbar-search" style={{ flex: 1, maxWidth: '480px', margin: '0 auto', paddingLeft: '16px' }}>
+              <SearchAutocomplete placeholder={isDesktop ? 'Search iPhone, Galaxy, Pixel…' : 'Search devices'} />
             </div>
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
               {/* Search — phones/tablets only; desktop has the inline bar above.
                   Without this, search was reachable only from the burger menu. */}
+              {/* The magnifier that expands a search row below the bar. On
+                  Home the bar itself is already a search field, so this would
+                  be a second way to do the same thing, six pixels away from
+                  the first. Hidden there by .navbar-searchtoggle. */}
               <button
-                className="lg:hidden"
+                className="lg:hidden navbar-searchtoggle"
                 onClick={() => setIsMobileSearchOpen(v => !v)}
                 aria-label="Search products"
                 aria-expanded={isMobileSearchOpen}
                 aria-controls="mobile-search-bar"
                 style={{
-                  display: 'flex',
+                  // No `display` here: .navbar-searchtoggle owns it so Home
+                  // can drop the button. An inline display beats a
+                  // stylesheet — the same way the cart pill resisted hiding.
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
