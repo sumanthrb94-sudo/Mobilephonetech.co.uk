@@ -52,6 +52,108 @@ async function run(view, contextOpts) {
     rec(view, 'Home shows catalogue-driven products', homeCards > 0 ? 'PASS' : 'FAIL', `${homeCards} cards`);
   } catch (e) { rec(view, 'Home renders', 'FAIL', e.message.slice(0, 100)); }
 
+  // ── Hero scrim (phones only) ──
+  //
+  // The full-bleed banners put white copy straight onto a photograph, and the
+  // only thing making it readable is the scrim behind it. That shipped broken:
+  // the gradient stayed fully transparent until 55% of the banner while the
+  // copy began at 40%, so the eyebrow and the top of the headline sat on the
+  // highlight coming off the phones. Nothing failed — the page rendered, the
+  // text was present, and the words were simply unreadable.
+  //
+  // Two independent numbers have to agree for that not to happen: where the
+  // copy starts, and where the gradient has darkened enough to carry white
+  // text. This asserts they agree, so either one moving on its own is caught —
+  // a headline wrapping to a third line as much as a retuned gradient.
+  if (isMobile) {
+    try {
+      await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(3000);
+      await dismissCookies(page);
+
+      // Stop the auto-advance first: which slide is showing three seconds
+      // after load is otherwise luck, and the check would silently land on a
+      // slide that has no scrim to test.
+      const pause = page.getByRole('button', { name: /pause/i }).first();
+      if (await pause.count()) await pause.click().catch(() => {});
+      await page.waitForTimeout(500);
+
+      const measure = () => page.evaluate(() => {
+        const sec = document.querySelector('section[aria-label="Hero carousel"]');
+        if (!sec) return { error: 'no hero' };
+
+        // The scrim is the layer holding a vertical gradient over the photo.
+        // A slide without one is not full-bleed and has nothing to check.
+        //
+        // Matched as the BROWSER serialises it, not as it is authored: Chromium
+        // drops `180deg` because down is the default direction, so the value
+        // read back begins with the first colour stop. That is also what
+        // distinguishes it from the section's own 135deg wash and from the
+        // desktop scrim, both of which keep an explicit direction.
+        const scrim = [...sec.querySelectorAll('div')]
+          .find(d => /^linear-gradient\(rgba/.test(d.style.background || ''));
+        if (!scrim) return { plain: true };
+
+        // Alpha at a given % down the banner, read off the gradient's own
+        // stops and interpolated between them — the same value the compositor
+        // paints, rather than a number copied into the test by hand.
+        const stops = [...scrim.style.background.matchAll(
+          /rgba\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*,\s*([\d.]+)\s*\)\s+([\d.]+)%/g,
+        )].map(m => ({ a: parseFloat(m[1]), at: parseFloat(m[2]) }));
+        if (stops.length < 2) return { error: 'could not read gradient stops' };
+
+        const alphaAt = (pct) => {
+          if (pct <= stops[0].at) return stops[0].a;
+          for (let i = 1; i < stops.length; i++) {
+            if (pct > stops[i].at) continue;
+            const a = stops[i - 1], b = stops[i];
+            const t = b.at === a.at ? 1 : (pct - a.at) / (b.at - a.at);
+            return a.a + (b.a - a.a) * t;
+          }
+          return stops[stops.length - 1].a;
+        };
+
+        // Topmost piece of copy on the slide: the eyebrow pill, else the
+        // headline. Whatever is highest is what the scrim has to reach.
+        const box = sec.getBoundingClientRect();
+        const copy = sec.querySelector('div[style*="999px"]') || sec.querySelector('h1, h2');
+        if (!copy) return { error: 'no copy found' };
+        const top = ((copy.getBoundingClientRect().top - box.top) / box.height) * 100;
+        const head = (sec.querySelector('h1, h2')?.textContent || '').replace(/\s+/g, ' ').slice(0, 24);
+
+        return { copyTopPct: Math.round(top), alpha: +alphaAt(top).toFixed(2), head };
+      });
+
+      const MIN_ALPHA = 0.3;
+      const worst = [];
+      let fullBleed = 0;
+
+      // Walk every slide rather than trusting whichever one happens to show.
+      for (let i = 0; i < 8; i++) {
+        const m = await measure();
+        if (m.error) { worst.push({ alpha: -1, detail: m.error }); break; }
+        if (!m.plain) {
+          fullBleed += 1;
+          worst.push({
+            alpha: m.alpha,
+            detail: `"${m.head}" copy at ${m.copyTopPct}%, alpha ${m.alpha}`,
+          });
+        }
+        const next = page.getByRole('button', { name: /next/i }).first();
+        if (!(await next.count())) break;
+        await next.click().catch(() => {});
+        await page.waitForTimeout(900);
+      }
+
+      const failing = worst.filter(w => w.alpha < MIN_ALPHA);
+      rec(view, 'Hero scrim covers the copy on every banner slide',
+        fullBleed > 0 && failing.length === 0 ? 'PASS' : 'FAIL',
+        failing.length
+          ? failing.map(f => f.detail).join(' | ') + ` (need >= ${MIN_ALPHA})`
+          : `${fullBleed} banner slides, weakest alpha ${Math.min(...worst.map(w => w.alpha)).toFixed(2)}`);
+    } catch (e) { rec(view, 'Hero scrim covers the copy on every banner slide', 'FAIL', e.message.slice(0, 100)); }
+  }
+
   // ── Products grid ──
   try {
     await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });

@@ -2779,6 +2779,13 @@ textarea,
     display: none;
   }
 
+  /* The tab bar owns primary navigation here, and it has an Account tab that
+     holds the wishlist. A heart in the app bar as well gave a phone two
+     entry points to one list. See Navbar.tsx and MobileBottomNav.tsx. */
+  .navbar-wishlist {
+    display: none;
+  }
+
   /* The trust strip stops being pinned chrome. It was sitting on top of
      page content — on /account it covered the email field — and a
      permanent marketing bar above the tabs is the single clearest tell

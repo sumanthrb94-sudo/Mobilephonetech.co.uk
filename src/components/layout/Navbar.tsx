@@ -408,8 +408,21 @@ export default function Navbar(_: NavbarProps) {
                 </AnimatePresence>
               </div>
 
-              {/* Wishlist */}
-              <Link to="/wishlist" id="navbar-wishlist-btn" style={{ textDecoration: 'none' }}>
+              {/* Wishlist — desktop only.
+                  Below 1024px this was the second of two wishlist controls on
+                  the same screen: a heart here, and a Wishlist tab in the bar
+                  at the bottom. Two entry points to one list is not a
+                  shortcut, it is a question the visitor has to answer ("are
+                  these the same thing?") before either is useful. The tab bar
+                  owns primary navigation on a phone, so the heart steps aside
+                  there; on desktop there is no tab bar and this is the only
+                  way in. See MobileBottomNav for where the tab itself went. */}
+              <Link
+                to="/wishlist"
+                id="navbar-wishlist-btn"
+                className="navbar-wishlist"
+                style={{ textDecoration: 'none' }}
+              >
                 <IconBtn icon={Heart} label="Wishlist" />
               </Link>
 
