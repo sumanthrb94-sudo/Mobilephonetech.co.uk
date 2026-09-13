@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { trackProductView } from '../lib/analytics';
 import {
-  ArrowLeft, ShieldCheck, RotateCcw, Battery, CheckCircle2,
+  ShieldCheck, RotateCcw, Battery, CheckCircle2,
   Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -20,6 +20,7 @@ import Breadcrumbs from './ui/Breadcrumbs';
 import GradeExplainer from './GradeExplainer';
 import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
+import StickyBuyBar from './StickyBuyBar';
 import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
@@ -29,6 +30,7 @@ import { addDoc, collection, doc, getDoc, serverTimestamp } from 'firebase/fires
 import { db, COL } from '../lib/firebase';
 import { docToProduct } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 import { generateProductDescription } from '../utils/productDescription';
 
@@ -188,6 +190,10 @@ const GRADE_CLASS: Record<ProductGrade, string> = {
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isDesktop } = useBreakpoint();
+  // Watched by StickyBuyBar so the pinned bar appears exactly when this
+  // button leaves the screen, rather than at a guessed scroll offset.
+  const addToCartRef = React.useRef<HTMLButtonElement>(null);
   const { addToCart } = useCart();
   const [quantity, setQuantity] = React.useState(1);
   const [selectedVariant, setSelectedVariant] = React.useState<ProductVariant | null>(null);
@@ -356,31 +362,111 @@ export default function ProductDetail() {
     else if (e.key === 'ArrowLeft') { e.preventDefault(); prevImage(); }
   };
 
-  return (
-    <div style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)', overflowX: 'hidden' }}>
-      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
-        
-        <Breadcrumbs
-          items={[
-            { label: 'Home', to: '/' },
-            { label: 'All devices', to: '/products' },
-            { label: phone.brand, to: `/products?brand=${encodeURIComponent(phone.brand)}` },
-            { label: phone.model },
-          ]}
-        />
+  /**
+   * Identity and price, defined once and rendered in one of two places: above
+   * the gallery on a phone, in the buy column on desktop. Two copies of this
+   * markup would drift the moment either is touched.
+   */
+  const identityBlock = (
+        <div>
+          <p className="overline" style={{ marginBottom: '8px', color: 'var(--grey-50)' }}>{phone.brand || 'Premium Device'}</p>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
+            {phone.model || 'Product Details'}
+          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            {phone.grade && (
+              <span className={`badge ${GRADE_CLASS[phone.grade]}`}>
+                {phone.grade}
+              </span>
+            )}
+            <button
+              onClick={() => setGradeExplainerOpen(true)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600,
+                color: 'var(--brand-cyan-hover)',
+                textDecoration: 'underline', textUnderlineOffset: '3px',
+                padding: 0,
+              }}
+            >
+              How does grading work?
+            </button>
+            {/* Rating is derived from the product's own reviews and hidden
+                when there are none. This previously rendered five filled
+                stars and a hardcoded "4.8★ (342 reviews)" on every product,
+                which is an invented aggregate — a banned practice under the
+                DMCC Act, and misleading regardless. */}
+            {reviewCount > 0 && (
+              <>
+                <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+                  ))}
+                </div>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
+                  {averageRating.toFixed(1)}★ ({reviewCount} review{reviewCount === 1 ? '' : 's'})
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+  );
 
-        {/* Back Navigation */}
-        <button
-          onClick={() => navigate(-1)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600,
-            color: 'var(--grey-50)', background: 'none', border: 'none',
-            cursor: 'pointer', padding: '0', marginBottom: 'var(--spacing-32)'
-          }}
-        >
-          <ArrowLeft size={16} /> Back
-        </button>
+  const priceBlock = (
+        <div style={{ paddingBottom: 'var(--spacing-16)', borderBottom: '1px solid var(--grey-10)' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
+            {savings > 0 && (
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+            )}
+          </div>
+
+          {savings > 0 && (
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--color-trust-text)' }}>
+              {/* Keyed on the variant so switching storage re-counts to the
+                  new saving rather than leaving the previous figure. */}
+              You save{' '}
+              <CountUp
+                key={`saving-${selectedVariant?.id ?? phone.id}-${savings}`}
+                to={savings}
+                prefix="£"
+                duration={900}
+              />
+            </div>
+          )}
+        </div>
+  );
+
+  return (
+    <div className="pdp-root" style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingBottom: 'var(--spacing-80)', overflowX: 'hidden' }}>
+      <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
+
+        {/* Breadcrumb and Back are desktop wayfinding. On a phone they cost
+            220px above the fold — a quarter of the screen — to repeat what
+            the app bar's back gesture and the tab bar already do. The
+            breadcrumb JSON-LD is emitted separately in useSeo, so hiding the
+            visual trail costs nothing in search. */}
+        {isDesktop && (
+          <>
+            <Breadcrumbs
+              items={[
+                { label: 'Home', to: '/' },
+                { label: 'All devices', to: '/products' },
+                { label: phone.brand, to: `/products?brand=${encodeURIComponent(phone.brand)}` },
+                { label: phone.model },
+              ]}
+            />
+
+          </>
+        )}
+
+        {/* On a phone the identity and the price come BEFORE the picture.
+            Measured on a 390x664 screen, the old order put neither on the
+            first screen at all — it opened on a breadcrumb and a square
+            image, and the price did not appear until you scrolled. What a
+            shopper is deciding is "is this the right phone at the right
+            price", and both halves of that now answer themselves. */}
+        {!isDesktop && <div className="pdp-lede">{identityBlock}{priceBlock}</div>}
 
         {/* Main Grid: Mobile-First Stacking. Columns live in CSS
             (.lg:pdp-grid) — an inline gridTemplateColumns would outrank the
@@ -402,12 +488,19 @@ export default function ProductDetail() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
+              className="pdp-gallery"
               style={{
                 position: 'relative',
                 borderRadius: 'var(--radius-xl)',
                 aspectRatio: '1/1',
                 overflow: 'hidden',
-                background: '#111827',
+                // Near-black with 24px of padding drew a heavy ring around
+                // every product. The catalogue photography is already shot on
+                // white, so the frame was a second background fighting the
+                // first — and on a phone it read as a border, not a backdrop.
+                background: 'var(--grey-5)',
+                border: '1px solid var(--grey-10)',
+                boxSizing: 'border-box',
                 touchAction: 'pan-y',
               }}
             >
@@ -416,7 +509,7 @@ export default function ProductDetail() {
                 style={{
                   width: '100%',
                   height: '100%',
-                  padding: '24px',
+                  padding: '12px',
                   boxSizing: 'border-box',
                 }}
               >
@@ -511,100 +604,31 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* ── Right Column: Info IA ────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
+          {/* ── Right Column: the buy box ────────────────────────
+              Sticky on desktop (see .pdp-buy): the page runs to 3300px of
+              specs, reviews and related products, and the price and Add to
+              cart used to scroll away on the first flick. Amazon keeps this
+              column pinned for the same reason — the decision travels with
+              the evidence. */}
+          <div className="pdp-buy" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}>
             
-            <div>
-              <p className="overline" style={{ marginBottom: '8px', color: 'var(--grey-50)' }}>{phone.brand || 'Premium Device'}</p>
-              <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4.5vw, 40px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
-                {phone.model || 'Product Details'}
-              </h1>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                {phone.grade && (
-                  <span className={`badge ${GRADE_CLASS[phone.grade]}`}>
-                    {phone.grade}
-                  </span>
-                )}
-                <button
-                  onClick={() => setGradeExplainerOpen(true)}
-                  style={{
-                    background: 'none', border: 'none', cursor: 'pointer',
-                    fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600,
-                    color: 'var(--brand-cyan-hover)',
-                    textDecoration: 'underline', textUnderlineOffset: '3px',
-                    padding: 0,
-                  }}
-                >
-                  How does grading work?
-                </button>
-                {/* Rating is derived from the product's own reviews and hidden
-                    when there are none. This previously rendered five filled
-                    stars and a hardcoded "4.8★ (342 reviews)" on every product,
-                    which is an invented aggregate — a banned practice under the
-                    DMCC Act, and misleading regardless. */}
-                {reviewCount > 0 && (
-                  <>
-                    <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
-                      ))}
-                    </div>
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
-                      {averageRating.toFixed(1)}★ ({reviewCount} review{reviewCount === 1 ? '' : 's'})
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
+            {isDesktop && identityBlock}
+            {isDesktop && priceBlock}
 
-            {/* Price Block */}
-            <div style={{ padding: 'var(--spacing-16) 0', borderBottom: '1px solid var(--grey-10)' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
-                <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
-                {savings > 0 && (
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
-                )}
-              </div>
-
-              {savings > 0 && (
-                <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--color-trust-text)' }}>
-                  {/* Keyed on the variant so switching storage re-counts to the
-                      new saving rather than leaving the previous figure. */}
-                  You save{' '}
-                  <CountUp
-                    key={`saving-${selectedVariant?.id ?? phone.id}-${savings}`}
-                    to={savings}
-                    prefix="£"
-                    duration={900}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Urgency + price-match cue row */}
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '-8px' }}>
-              <UrgencyCue productId={phone.id} stock={displayStock} />
-              <PriceMatchBadge />
-            </div>
+            {/* Only shows when stock is genuinely low; renders nothing
+                otherwise, rather than inventing a reason to hurry. */}
+            <UrgencyCue productId={phone.id} stock={displayStock} />
 
             {/* Finance split-payment breakdown */}
 
-            {/* Key Value Props Strip */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ padding: '16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <Battery size={20} style={{ color: 'var(--black)' }} />
-                <div style={{ minWidth: 0 }}>
-                  <p className="overline" style={{ fontSize: '9px', marginBottom: '2px' }}>Battery Health</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayBatteryHealth}%</p>
-                </div>
-              </div>
-              <div style={{ padding: '16px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                <ShieldCheck size={20} style={{ color: 'var(--black)' }} />
-                <div style={{ minWidth: 0 }}>
-                  <p className="overline" style={{ fontSize: '9px', marginBottom: '2px' }}>Warranty</p>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{phone.warrantyMonths}m</p>
-                </div>
-              </div>
+            {/* The two facts a refurb buyer checks before anything else.
+                They were two 64px cards stacked in a grid, which pushed Add to
+                cart a further 90px down the column for four short words. One
+                row says the same thing. */}
+            <div className="pdp-facts">
+              <span><Battery size={16} aria-hidden="true" /> Battery <strong>{displayBatteryHealth}%</strong></span>
+              <span><ShieldCheck size={16} aria-hidden="true" /> Warranty <strong>{phone.warrantyMonths} months</strong></span>
+              <span><RotateCcw size={16} aria-hidden="true" /> <strong>{phone.returnDays}-day</strong> returns</span>
             </div>
 
             {/* Variants — always render; VariantSelector derives sensible
@@ -615,7 +639,7 @@ export default function ProductDetail() {
             <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
 
             {/* Actions */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
               <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch' }}>
                 {/* Quantity */}
@@ -656,6 +680,7 @@ export default function ProductDetail() {
                 </div>
 
                 <button
+                  ref={addToCartRef}
                   onClick={handleAddToCart}
                   disabled={displayStock === 0}
                   className="btn btn-primary btn-lg"
@@ -712,19 +737,31 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Micro-trust Strip */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', paddingTop: 'var(--spacing-24)', borderTop: '1px solid var(--grey-10)' }}>
+            {/* Reassurance, below the decision rather than above it. Returns
+                moved into .pdp-facts, beside battery and warranty, so this no
+                longer says the same thing twice. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start', paddingTop: 'var(--spacing-16)', borderTop: '1px solid var(--grey-10)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <CheckCircle2 size={16} style={{ color: 'var(--grey-40)' }} />
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)' }}>Verified by independent technicians</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <RotateCcw size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)' }}>{phone.returnDays}-day returns</span>
-              </div>
+              <PriceMatchBadge />
             </div>
           </div>
         </div>
+
+        {/* Everything below here is evidence for a decision made above it, and
+            on a phone that evidence is several screens long. The bar keeps the
+            price and Add to cart one tap away throughout. */}
+        <StickyBuyBar
+          watch={addToCartRef}
+          title={`${phone.brand} ${phone.model}`}
+          price={`£${displayPrice}`}
+          originalPrice={savings > 0 ? `£${displayOriginalPrice}` : null}
+          label={displayStock > 0 ? 'Add to cart' : 'Out of stock'}
+          disabled={displayStock === 0}
+          onAdd={handleAddToCart}
+        />
 
         {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
         <TabPanel phone={phone} />
