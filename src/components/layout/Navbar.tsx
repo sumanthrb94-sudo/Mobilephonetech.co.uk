@@ -426,13 +426,25 @@ export default function Navbar(_: NavbarProps) {
                 <IconBtn icon={Heart} label="Wishlist" />
               </Link>
 
-              {/* Cart button — icon-only on mobile, pill on sm+ */}
+              {/* Cart button — desktop only, pill with the count inline.
+                  Same reasoning as the wishlist above: below 1024px the tab
+                  bar has a Cart tab carrying the same badge, and two carts on
+                  one screen is a question, not a shortcut. The tab is the
+                  better of the two on a phone anyway — thumb-height rather
+                  than at the top of the screen, and it does not scroll away.
+                  Adding to the basket still confirms in place via
+                  AddedToCartModal, so the path to checkout is unchanged. */}
               <Link
                 to="/cart"
                 id="navbar-cart-btn"
+                className="navbar-cart"
                 aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
                 style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  // No `display` here: .navbar-cart owns it, so the app shell
+                  // can drop the pill on phones. An inline display beats a
+                  // stylesheet, which is exactly how the old .navbar-cart
+                  // sizing rules ended up applying to nothing.
+                  alignItems: 'center', gap: 6,
                   height: 40,
                   background: cartCount > 0 ? 'var(--brand-cyan)' : 'transparent',
                   color: cartCount > 0 ? 'white' : '#374151',

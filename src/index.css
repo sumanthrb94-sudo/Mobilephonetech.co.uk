@@ -326,16 +326,14 @@ html.is-checkout .ai-fab {
   }
 }
 
-/* Cart pill: compact on mobile, comfortable on tablet+ */
+/* The cart pill's colours and sizing are set inline in Navbar.tsx, because
+   they depend on whether the basket has anything in it. Its `display` is not:
+   it lives here so the app shell can drop the pill on phones, where the tab
+   bar owns the cart. An inline display would win over that rule — which is
+   how the height and padding declarations that used to sit here ended up
+   applying to nothing at all. */
 .navbar-cart {
-  height: 40px;
-  padding: 0 10px;
-}
-
-@media (min-width: 640px) {
-  .navbar-cart {
-    padding: 0 16px;
-  }
+  display: inline-flex;
 }
 
 /* ──────────────────────────────────────────────────────────
@@ -2779,10 +2777,12 @@ textarea,
     display: none;
   }
 
-  /* The tab bar owns primary navigation here, and it has an Account tab that
-     holds the wishlist. A heart in the app bar as well gave a phone two
-     entry points to one list. See Navbar.tsx and MobileBottomNav.tsx. */
-  .navbar-wishlist {
+  /* The tab bar owns primary navigation here. It has a Cart tab carrying the
+     same count badge, and an Account tab holding the wishlist, so a heart and
+     a cart pill in the app bar as well gave a phone two entry points to each
+     of them. See Navbar.tsx and MobileBottomNav.tsx. */
+  .navbar-wishlist,
+  .navbar-cart {
     display: none;
   }
 

@@ -52,6 +52,42 @@ async function run(view, contextOpts) {
     rec(view, 'Home shows catalogue-driven products', homeCards > 0 ? 'PASS' : 'FAIL', `${homeCards} cards`);
   } catch (e) { rec(view, 'Home renders', 'FAIL', e.message.slice(0, 100)); }
 
+  // ── One entry point per destination (phones only) ──
+  //
+  // The phone showed a heart in the app bar AND a Wishlist tab, and a cart
+  // pill AND a Cart tab — two ways into each of two lists, which reads as two
+  // different features until you tap one. Nothing catches that: every control
+  // works, and the screen is simply asking the visitor a question.
+  //
+  // The rule below is what the app shell settled on: on a phone the tab bar
+  // owns navigation, so no destination in it may also sit in the app bar.
+  if (isMobile) {
+    try {
+      await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2500);
+      await dismissCookies(page);
+
+      const dupes = await page.evaluate(() => {
+        const shown = (sel) => [...document.querySelectorAll(sel)]
+          .some(el => el.getBoundingClientRect().width > 0);
+        const tabs = [...document.querySelectorAll('nav[aria-label="Primary"] a, nav[aria-label="Primary"] button')]
+          .map(el => el.textContent.replace(/\s+/g, ' ').trim().toLowerCase());
+        const has = (word) => tabs.some(t => t.includes(word));
+
+        const both = [];
+        if (has('cart') && shown('#navbar-cart-btn')) both.push('cart');
+        if (has('wishlist') && shown('#navbar-wishlist-btn')) both.push('wishlist');
+        return { both, tabs };
+      });
+
+      rec(view, 'No destination sits in both the app bar and the tab bar',
+        dupes.both.length === 0 ? 'PASS' : 'FAIL',
+        dupes.both.length ? `duplicated: ${dupes.both.join(', ')}` : `tabs: ${dupes.tabs.join(' / ')}`);
+    } catch (e) {
+      rec(view, 'No destination sits in both the app bar and the tab bar', 'FAIL', e.message.slice(0, 100));
+    }
+  }
+
   // ── Hero scrim (phones only) ──
   //
   // The full-bleed banners put white copy straight onto a photograph, and the
