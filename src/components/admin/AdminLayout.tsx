@@ -24,6 +24,7 @@ export default function AdminLayout() {
           <nav style={{ display: 'flex', gap: 4 }} aria-label="Admin sections">
             {/* `end` on the index link, or it stays active on every child route. */}
             <NavLink to="/admin" end style={navLinkStyle}>Dashboard</NavLink>
+            <NavLink to="/admin/orders" style={navLinkStyle}>Orders</NavLink>
             <NavLink to="/admin/inventory" style={navLinkStyle}>Inventory</NavLink>
             <NavLink to="/admin/analytics" style={navLinkStyle}>Analytics</NavLink>
             <NavLink to="/admin/returns" style={navLinkStyle}>Returns</NavLink>

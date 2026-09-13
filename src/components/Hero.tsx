@@ -14,17 +14,58 @@ import RevealText from './ui/RevealText';
 
 const SLIDES = [
   {
+    eyebrow: 'Foldables · Certified refurbished',
+    headline: 'A phone that\nopens up.',
+    subline: 'Foldable flagships, fully tested and unlocked — at refurbished prices.',
+    ctaLabel: 'Shop Samsung',
+    ctaHref: '/products?brand=Samsung',
+    image: '/assets/hero-foldable-duo.jpg',
+    imageMobile: '/assets/hero-foldable-duo-mobile.jpg',
+    imageAlt: 'Two folding smartphones, one white and one midnight blue, shown open and closed',
+    gradientFrom: '#0b0f1a',
+    gradientTo: '#1b2440',
+    glowColor: 'rgba(96, 120, 220, 0.30)',
+    savings: 'Unlocked · 12-month warranty',
+    // The product sits in the right two-thirds of this shot and the left is
+    // deliberate negative space, so the image is the background and the copy
+    // lives in that space rather than beside a shrunken panel.
+    fullBleed: true,
+    focal: '68% 50%',
+    focalMobile: '66% 6%',
+  },
+  {
+    eyebrow: 'iPhone Pro · 30-point audit',
+    headline: 'Pro, for less\nthan new.',
+    subline: 'Every iPhone tested across 30 checks, battery guaranteed, ready to use.',
+    ctaLabel: 'Shop iPhones',
+    ctaHref: '/products?brand=Apple',
+    image: '/assets/hero-iphone-pro-crimson.jpg',
+    imageMobile: '/assets/hero-iphone-pro-crimson-mobile.jpg',
+    imageAlt: 'An iPhone Pro in a deep crimson finish, shown front and back',
+    gradientFrom: '#170608',
+    gradientTo: '#3d1016',
+    glowColor: 'rgba(190, 60, 70, 0.28)',
+    savings: 'Save up to £600',
+    fullBleed: true,
+    focal: '62% 50%',
+    focalMobile: '50% 34%',
+  },
+  {
     eyebrow: 'LeHart Certified · 30-point audit',
     headline: 'Flagship iPhones.\nAuthentic quality.',
     subline: 'Battery 85%+ guaranteed. 12-month warranty. Up to 70% less than new.',
     ctaLabel: 'Shop iPhones',
     ctaHref: '/products?brand=Apple',
     image: '/assets/iphone-17-pro-max-orange.jpg',
+    imageMobile: '/assets/iphone-17-pro-max-orange.jpg',
     imageAlt: 'Certified iPhone 17 Pro Max',
     gradientFrom: '#0c0a09',
     gradientTo: '#44403c',
     glowColor: 'rgba(161, 98, 7, 0.45)',
     savings: 'Save up to £600',
+    fullBleed: false,
+    focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
   {
     eyebrow: 'Samsung Galaxy · Unlocked',
@@ -33,11 +74,15 @@ const SLIDES = [
     ctaLabel: 'Shop Samsung',
     ctaHref: '/products?brand=Samsung',
     image: '/assets/samsung-s24-ultra.png',
+    imageMobile: '/assets/samsung-s24-ultra.png',
     imageAlt: 'Samsung Galaxy S24 Ultra',
     gradientFrom: '#1c1917',
     gradientTo: '#57534e',
     glowColor: 'rgba(168, 162, 158, 0.30)',
     savings: 'From £199',
+    fullBleed: false,
+    focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
   {
     eyebrow: 'Google Pixel · Pure Android',
@@ -46,11 +91,15 @@ const SLIDES = [
     ctaLabel: 'Shop Pixel',
     ctaHref: '/products?brand=Google',
     image: '/assets/pixel-8-pro.png',
+    imageMobile: '/assets/pixel-8-pro.png',
     imageAlt: 'Google Pixel 8 Pro',
     gradientFrom: '#0c0a09',
     gradientTo: '#3f3a35',
     glowColor: 'rgba(202, 138, 4, 0.38)',
     savings: 'From £249',
+    fullBleed: false,
+    focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
   {
     eyebrow: 'Instant cash · Free collection',
@@ -59,11 +108,15 @@ const SLIDES = [
     ctaLabel: 'Get a free quote',
     ctaHref: '/#trade-in',
     image: '/assets/iphone-17-pro-max-trio.jpg',
+    imageMobile: '/assets/iphone-17-pro-max-trio.jpg',
     imageAlt: 'Trade in your phone',
     gradientFrom: '#1c1917',
     gradientTo: '#4b443c',
     glowColor: 'rgba(161, 98, 7, 0.36)',
     savings: 'Best prices guaranteed',
+    fullBleed: false,
+    focal: '50% 50%',
+    focalMobile: '50% 50%',
   },
 ] as const;
 
@@ -128,12 +181,12 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : 'clamp(360px, 80vw, 480px)',
+        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : (slide.fullBleed ? '125vw' : 'clamp(360px, 80vw, 480px)'),
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
         transition: 'background 0.6s ease',
-        paddingTop: 'var(--nav-total)',
+        paddingTop: (!isDesktop && slide.fullBleed) ? 0 : 'var(--nav-total)',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -159,6 +212,35 @@ export default function Hero() {
         pointerEvents: 'none',
       }} />
 
+      {/* Full-bleed slides carry their own scene, so the image IS the
+          background. A left-to-right scrim keeps the copy legible over it
+          without washing the product out; on phones it runs bottom-up
+          instead, because the copy sits under the shot rather than beside it. */}
+      {slide.fullBleed && (
+        <>
+          <img
+            key={slide.image}
+            src={isDesktop ? slide.image : slide.imageMobile}
+            alt={slide.imageAlt}
+            loading={current === 0 ? 'eager' : 'lazy'}
+            fetchPriority={current === 0 ? 'high' : 'auto'}
+            decoding="async"
+            style={{
+              position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
+              left: 0, right: 0, bottom: 0, zIndex: 0, width: '100%',
+              objectFit: isDesktop ? 'contain' : 'cover', objectPosition: 'center top',
+            }}
+          />
+          <div style={{
+            position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
+            left: 0, right: 0, bottom: 0, zIndex: 1, pointerEvents: 'none',
+            background: isDesktop
+              ? 'linear-gradient(90deg, rgba(6,8,14,0.88) 0%, rgba(6,8,14,0.62) 30%, rgba(6,8,14,0.06) 56%, rgba(6,8,14,0) 100%)'
+              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 55%, rgba(6,8,14,0.45) 68%, rgba(6,8,14,0.80) 82%, rgba(6,8,14,0.88) 100%)',
+          }} />
+        </>
+      )}
+
       <div
         style={{
           width: '100%', maxWidth: '1280px',
@@ -180,10 +262,10 @@ export default function Hero() {
             transition={{ duration: 0.42, ease: [0.2, 0, 0, 1] }}
             style={{
               display: 'grid',
-              gridTemplateColumns: isDesktop ? '1fr 1fr' : '1fr',
+              gridTemplateColumns: isDesktop && !slide.fullBleed ? '1fr 1fr' : '1fr',
               gap: isDesktop ? '48px' : '16px',
-              alignItems: 'center',
-              padding: isDesktop ? '48px 0 24px' : '16px 0 8px',
+              alignItems: !isDesktop && slide.fullBleed ? 'end' : 'center',
+              padding: isDesktop ? '48px 0 24px' : (slide.fullBleed ? '0 0 12px' : '16px 0 8px'),
               flex: 1, minHeight: 0,
             }}
           >
@@ -222,13 +304,18 @@ export default function Hero() {
                 {slide.headline}
               </RevealText>
 
-              <p style={{
-                fontFamily: 'var(--font-body)', fontSize: '15px',
-                color: 'rgba(255,255,255,0.72)', maxWidth: '400px',
-                marginBottom: 28, lineHeight: 1.6,
-              }}>
-                {slide.subline}
-              </p>
+              {/* The subline is the first thing to go in a phone-width banner:
+                  the headline and the CTA are what the slide is for, and two
+                  more lines of body copy push the product out of frame. */}
+              {!(slide.fullBleed && !isDesktop) && (
+                <p style={{
+                  fontFamily: 'var(--font-body)', fontSize: '15px',
+                  color: 'rgba(255,255,255,0.72)', maxWidth: '400px',
+                  marginBottom: 28, lineHeight: 1.6,
+                }}>
+                  {slide.subline}
+                </p>
+              )}
 
               {/* CTA row: pill button + savings text */}
               <div style={{
@@ -268,7 +355,12 @@ export default function Hero() {
                 </span>
               </div>
 
-              {/* Trust micro-badges */}
+              {/* Trust micro-badges. Held back inside a phone-width banner:
+                  eyebrow, headline, subline, CTA, savings and three badges
+                  do not fit over a 390px scene without landing on the
+                  product. They still run on every other slide, and the same
+                  three claims sit in the trust strip directly above. */}
+              {!(slide.fullBleed && !isDesktop) && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: isDesktop ? 20 : 14,
                 marginTop: 24, flexWrap: 'wrap',
@@ -289,9 +381,12 @@ export default function Hero() {
                   </div>
                 ))}
               </div>
+              )}
             </div>
 
-            {/* Image column */}
+            {/* Image column — only when the slide does not carry its own
+                scene as the background, or the shot renders twice. */}
+            {!slide.fullBleed && (
             <div
               style={{
                 display: 'flex', justifyContent: 'center', alignItems: 'center',
@@ -311,12 +406,16 @@ export default function Hero() {
                 fetchPriority={current === 0 ? 'high' : 'auto'}
                 decoding="async"
                 style={{
-                  height: '100%', width: '100%', objectFit: 'contain',
-                  filter: 'drop-shadow(0 24px 40px rgba(0,0,0,0.45))',
+                  height: '100%', width: '100%',
+                  objectFit: slide.fullBleed ? 'cover' : 'contain',
+                  objectPosition: slide.fullBleed ? '62% 45%' : 'center',
+                  borderRadius: slide.fullBleed ? 'var(--radius-lg)' : 0,
+                  filter: slide.fullBleed ? 'none' : 'drop-shadow(0 24px 40px rgba(0,0,0,0.45))',
                   position: 'relative', zIndex: 1,
                 }}
               />
             </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

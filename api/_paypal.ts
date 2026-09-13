@@ -131,7 +131,15 @@ export async function createPayPalOrder(
 }
 
 export interface CaptureResult {
+  /** The PayPal ORDER status. Reaches COMPLETED before the money has settled. */
   status: string;
+  /**
+   * The status of the capture itself, which is the one worth trusting. PayPal
+   * reports an order COMPLETED while its capture is still PENDING — a
+   * bank-funded payment, or one held for review — so treating the order status
+   * as proof of payment ships goods against money that may never arrive.
+   */
+  captureStatus: string;
   /** The amount PayPal actually captured, in major units, per purchase unit. */
   capturedTotal: number;
   currency: string;
@@ -169,12 +177,41 @@ export async function capturePayPalOrder(paypalOrderId: string): Promise<PayPalR
       ok: true,
       status: 200,
       data: {
-        status: String(body?.status ?? capture?.status ?? 'UNKNOWN'),
+        status: String(body?.status ?? 'UNKNOWN'),
+        captureStatus: String(capture?.status ?? 'UNKNOWN'),
         capturedTotal: Number(amount.value ?? NaN),
         currency: String(amount.currency_code ?? ''),
         captureId: capture?.id ?? null,
       },
     };
+  } catch (err) {
+    return { ok: false, status: 502, error: (err as Error).message };
+  }
+}
+
+/**
+ * Recover the capture id for a PayPal order we already captured.
+ *
+ * Orders written before the id was stored on the order document have only the
+ * PayPal ORDER id, and a refund needs the CAPTURE id. Rather than make those
+ * orders unrefundable from the back office, ask PayPal what the capture was.
+ */
+export async function lookupCaptureId(paypalOrderId: string): Promise<PayPalResult<string>> {
+  const token = await accessToken();
+  if (!token.ok) return { ok: false, status: token.status, error: token.error };
+
+  try {
+    const res = await fetch(`${paypalApiBase()}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}`, {
+      headers: { authorization: `Bearer ${token.data}` },
+      signal: deadline(),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const body = (await res.json().catch(() => ({}))) as any;
+    if (!res.ok) return { ok: false, status: 502, error: body?.message || `PayPal lookup failed (${res.status})` };
+
+    const id = body?.purchase_units?.[0]?.payments?.captures?.[0]?.id;
+    if (!id) return { ok: false, status: 404, error: 'That PayPal order has no capture to refund' };
+    return { ok: true, status: 200, data: String(id) };
   } catch (err) {
     return { ok: false, status: 502, error: (err as Error).message };
   }

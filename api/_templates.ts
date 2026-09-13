@@ -669,6 +669,49 @@ export function outForDeliveryEmail(order: OrderLike, info: DispatchInfo = {}): 
   };
 }
 
+/** ── 4b. Refunded ────────────────────────────────────────────────── */
+
+/**
+ * Sent when staff refund an order in full.
+ *
+ * Says the number, the card it is going back to, and how long banks take —
+ * because the support ticket this email exists to prevent is always "you said
+ * refunded, where is my money". No upsell and no apology template: someone who
+ * has just been refunded is not in the market for a recommendation.
+ */
+export function orderRefundedEmail(order: OrderLike, amount: number): Built {
+  const body = [
+    p(`We have refunded <strong style="color:${PALETTE.ink};">${money(amount)}</strong> for order ${esc(String(order.id))}.`),
+    p('The money goes back to the PayPal account or card you paid with. PayPal releases it straight away; if you paid by card your bank usually takes three to five working days to show it.'),
+    p(`<span style="font-size:13px;color:${PALETTE.muted};">Nothing else is needed from you. If it has not appeared after five working days, reply to this email and we will chase it with the reference above.</span>`),
+    button('View your orders', `${SHOP_URL}/orders`),
+  ].join('');
+
+  const text = [
+    `Refunded ${money(amount)}`,
+    `Order ${order.id}`,
+    '',
+    'The money goes back to the PayPal account or card you paid with.',
+    'PayPal releases it straight away; card refunds usually take three to five working days to appear.',
+    '',
+    'If it has not appeared after five working days, reply to this email and we will chase it.',
+    '',
+    `Your orders: ${SHOP_URL}/orders`,
+  ].join('\n');
+
+  return {
+    subject: `Refunded ${money(amount)} — order ${order.id}`,
+    html: shell({
+      preview: `${money(amount)} is on its way back to you.`,
+      kicker: 'Refund issued',
+      headline: `Refunded ${money(amount)}`,
+      subline: `Order ${order.id}`,
+      body,
+    }),
+    text,
+  };
+}
+
 /** ── 5. Abandoned cart ───────────────────────────────────────────── */
 
 /**

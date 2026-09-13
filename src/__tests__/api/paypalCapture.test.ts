@@ -100,13 +100,25 @@ function body(extra: Record<string, unknown> = {}) {
   };
 }
 
+/**
+ * One client ip per test. The rate limiter is module-level memory shared by
+ * every test in this file, so without this the suite starts 429ing itself as
+ * soon as it grows past the 12/min ceiling — a failure about test count
+ * rather than about the route.
+ */
+let testIp = 0;
+
 async function post(b: unknown) {
   const { r, out } = res();
-  await handler({ method: 'POST', body: b, headers: {}, socket: {} }, r);
+  await handler(
+    { method: 'POST', body: b, headers: { 'x-forwarded-for': `10.0.${testIp >> 8}.${testIp & 255}` }, socket: {} },
+    r,
+  );
   return out;
 }
 
 beforeEach(() => {
+  testIp += 1;
   vi.clearAllMocks();
   caller = { uid: 'u1', email: 'ram@example.com' };
   delete process.env.VITE_PREVIEW_MODE;
@@ -120,6 +132,14 @@ beforeEach(() => {
 });
 
 const incidents = () => Object.values(store.payment_incidents ?? {});
+/**
+ * The rows that mean "a human must do something". Every capture now also
+ * writes a capture-attempt row so a function killed mid-payment leaves a
+ * trace; it is bookkeeping, not an alarm, and is resolved on the way out.
+ */
+const alarms = () => incidents().filter((i: Doc) => i.kind !== 'capture-attempt');
+/** The attempt row for the order under test. */
+const attempt = () => store.payment_incidents?.['PP-1'];
 
 describe('POST /api/paypal/capture', () => {
   // £389 + £14.99 next-day, +20% VAT = £484.79. Standard shipping is free,
@@ -129,7 +149,7 @@ describe('POST /api/paypal/capture', () => {
   it('writes the order when the captured amount matches the re-priced basket', async () => {
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-1' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-1' },
     });
 
     const out = await post(body());
@@ -147,7 +167,7 @@ describe('POST /api/paypal/capture', () => {
     // A penny short — a tampered client, a stale approval, anything.
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: TOTAL - 0.01, currency: 'GBP', captureId: 'CAP-2' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: TOTAL - 0.01, currency: 'GBP', captureId: 'CAP-2' },
     });
     refundCapture.mockResolvedValue({ ok: true, status: 200, data: { status: 'COMPLETED' } });
 
@@ -163,7 +183,7 @@ describe('POST /api/paypal/capture', () => {
   it('refunds when a wrong currency comes back, even at the right number', async () => {
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: TOTAL, currency: 'USD', captureId: 'CAP-3' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: TOTAL, currency: 'USD', captureId: 'CAP-3' },
     });
     refundCapture.mockResolvedValue({ ok: true, status: 200, data: { status: 'COMPLETED' } });
 
@@ -177,7 +197,7 @@ describe('POST /api/paypal/capture', () => {
     store.products['apple-iphone-13-128gb'].stock = 0;
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-4' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-4' },
     });
     refundCapture.mockResolvedValue({ ok: true, status: 200, data: { status: 'COMPLETED' } });
 
@@ -210,14 +230,14 @@ describe('POST /api/paypal/capture', () => {
   it('writes a durable incident when the refund itself fails', async () => {
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
     });
     refundCapture.mockResolvedValue({ ok: false, status: 502, error: 'PayPal refund failed (422)' });
 
     const out = await post(body());
     expect(out.code).toBe(409);
 
-    const [incident] = incidents();
+    const [incident] = alarms();
     expect(incident).toMatchObject({
       kind: 'refund-failed',
       reason: 'amount-mismatch',
@@ -232,12 +252,12 @@ describe('POST /api/paypal/capture', () => {
   it('records nothing when the refund succeeds — the customer is whole', async () => {
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
     });
     refundCapture.mockResolvedValue({ ok: true, status: 200, data: { status: 'COMPLETED' } });
 
     expect((await post(body())).code).toBe(409);
-    expect(incidents()).toHaveLength(0);
+    expect(alarms()).toHaveLength(0);
   });
 
   /**
@@ -251,8 +271,8 @@ describe('POST /api/paypal/capture', () => {
 
     const out = await post(body());
     expect(out.code).toBe(502);
-    expect(incidents()).toHaveLength(1);
-    expect(incidents()[0]).toMatchObject({ kind: 'capture-failed', paypalOrderId: 'PP-1', resolved: false });
+    expect(alarms()).toHaveLength(1);
+    expect(alarms()[0]).toMatchObject({ kind: 'capture-failed', paypalOrderId: 'PP-1', resolved: false });
     expect(refundCapture).not.toHaveBeenCalled();
   });
 
@@ -260,13 +280,13 @@ describe('POST /api/paypal/capture', () => {
     commitFails = 'firestore is down';
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-7' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-7' },
     });
     refundCapture.mockResolvedValue({ ok: false, status: 502, error: 'nope' });
 
     const out = await post(body());
     expect(out.code).toBe(500);
-    expect(incidents()[0]).toMatchObject({
+    expect(alarms()[0]).toMatchObject({
       kind: 'refund-failed', reason: 'commit-failed', captureId: 'CAP-7',
       commitError: 'firestore is down',
     });
@@ -275,11 +295,69 @@ describe('POST /api/paypal/capture', () => {
   it('leaves no order behind when the money could not be kept', async () => {
     capturePayPalOrder.mockResolvedValue({
       ok: true, status: 200,
-      data: { status: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: 1.0, currency: 'GBP', captureId: 'CAP-9' },
     });
     refundCapture.mockResolvedValue({ ok: false, status: 502, error: 'nope' });
 
     await post(body());
     expect(Object.keys(store.orders)).toHaveLength(0);
+  });
+  // ── The three holes found in the pre-launch review ──────────────
+
+  it('refuses a PENDING capture that PayPal reports as a COMPLETED order', async () => {
+    // PayPal marks the ORDER completed as soon as the capture is made, while
+    // the capture itself sits PENDING for a bank-funded payment or one held
+    // for review. Trusting the order status ships goods against money that
+    // may never settle — and no attacker is needed, just an ordinary buyer.
+    capturePayPalOrder.mockResolvedValue({
+      ok: true, status: 200,
+      data: { status: 'COMPLETED', captureStatus: 'PENDING', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-P1' },
+    });
+    refundCapture.mockResolvedValue({ ok: true, status: 200, data: { status: 'COMPLETED' } });
+
+    const out = await post(body());
+
+    expect(out.code).toBe(409);
+    expect(refundCapture).toHaveBeenCalledWith('CAP-P1');
+    expect(Object.keys(store.orders)).toHaveLength(0);
+    expect(store.products['apple-iphone-13-128gb'].stock).toBe(5);
+  });
+
+  it('opens the incident row before capturing, and closes it once the order exists', async () => {
+    // The window this covers cannot be provoked from a test — the function
+    // being killed between the capture and the write — so what is pinned is
+    // the ordering that makes it survivable: unresolved while the money is in
+    // flight, resolved only once an order exists behind it.
+    let rowDuringCapture: Doc | undefined;
+    capturePayPalOrder.mockImplementation(async () => {
+      rowDuringCapture = structuredClone(store.payment_incidents?.['PP-1']);
+      return {
+        ok: true, status: 200,
+        data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: TOTAL, currency: 'GBP', captureId: 'CAP-W1' },
+      };
+    });
+
+    const out = await post(body());
+
+    expect(out.code).toBe(201);
+    expect(rowDuringCapture).toMatchObject({ kind: 'capture-attempt', resolved: false });
+    expect(attempt()).toMatchObject({ resolved: true, outcome: 'order-created' });
+  });
+
+  it('records an alarm, and does not claim a refund, when there is no capture id', async () => {
+    // An unparseable capture is the case most likely to strand real money, and
+    // it used to be the one case that recorded nothing while telling the
+    // customer they had not been charged.
+    capturePayPalOrder.mockResolvedValue({
+      ok: true, status: 200,
+      data: { status: 'COMPLETED', captureStatus: 'COMPLETED', capturedTotal: NaN, currency: '', captureId: null },
+    });
+
+    const out = await post(body());
+
+    expect(out.code).toBe(409);
+    expect(refundCapture).not.toHaveBeenCalled();
+    expect(alarms()[0]).toMatchObject({ kind: 'refund-failed', reason: 'amount-mismatch', captureId: null });
+    expect(out.body.error).not.toContain('You have not been charged');
   });
 });
