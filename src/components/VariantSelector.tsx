@@ -86,7 +86,7 @@ const labelStyle: React.CSSProperties = {
   letterSpacing: '0.06em',
   textTransform: 'uppercase' as const,
   color: 'var(--grey-60)',
-  marginBottom: '8px',
+  marginBottom: '6px',
   display: 'block',
 };
 
@@ -164,7 +164,10 @@ export default function VariantSelector({
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '20px', paddingTop: '20px', borderTop: '1px solid var(--grey-10)' }}>
+    // 20px of gap, 20px of margin and 20px of padding, inside a buy column
+    // that already spaces its children — three separate reasons for the same
+    // blank band between Colour, Storage and Condition.
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '4px', paddingTop: '14px', borderTop: '1px solid var(--grey-10)' }}>
 
       {/* Colour — circle swatches */}
       {colourOptions.length > 0 && (

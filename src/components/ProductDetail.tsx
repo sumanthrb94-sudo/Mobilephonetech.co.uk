@@ -75,7 +75,7 @@ function TabPanel({ phone }: { phone: Product }) {
   ];
 
   return (
-    <div style={{ marginTop: 'var(--spacing-48)', borderTop: '1px solid var(--grey-10)' }}>
+    <div style={{ marginTop: 'var(--spacing-24)', borderTop: '1px solid var(--grey-10)' }}>
       {/* Tab bar */}
       <div
         role="tablist"
@@ -438,7 +438,7 @@ export default function ProductDetail() {
   );
 
   return (
-    <div className="pdp-root" style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingBottom: 'var(--spacing-80)', overflowX: 'hidden' }}>
+    <div className="pdp-root" style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingBottom: 'var(--spacing-32)', overflowX: 'hidden' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
 
         {/* Breadcrumb and Back are desktop wayfinding. On a phone they cost
@@ -610,7 +610,7 @@ export default function ProductDetail() {
               cart used to scroll away on the first flick. Amazon keeps this
               column pinned for the same reason — the decision travels with
               the evidence. */}
-          <div className="pdp-buy" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}>
+          <div className="pdp-buy" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12)' }}>
             
             {isDesktop && identityBlock}
             {isDesktop && priceBlock}
@@ -636,7 +636,9 @@ export default function ProductDetail() {
             <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
 
             {/* Delivery */}
-            <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
+            <div style={{ marginTop: '-2px' }}>
+              <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
+            </div>
 
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

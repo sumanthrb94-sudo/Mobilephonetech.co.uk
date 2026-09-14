@@ -30,7 +30,7 @@ export default function RelatedProductsSection({ currentProduct }: RelatedProduc
   }
 
   return (
-    <section style={{ paddingTop: 'var(--spacing-64)', paddingBottom: 'var(--spacing-64)', borderTop: '1px solid var(--grey-10)' }}>
+    <section style={{ paddingTop: 'var(--spacing-32)', paddingBottom: 'var(--spacing-32)', borderTop: '1px solid var(--grey-10)' }}>
       <h2
         style={{
           fontFamily: 'var(--font-sans)',

@@ -35,7 +35,7 @@ export default function DeliveryPromiseComponent({
           background: 'var(--color-brand-subtle)',
           border: '1px solid rgba(0, 186, 219, 0.25)',
           borderRadius: 'var(--radius-lg)',
-          padding: 'var(--spacing-20) var(--spacing-24)',
+          padding: 'var(--spacing-16) var(--spacing-20)',
           display: 'flex',
           alignItems: 'flex-start',
           gap: '16px',

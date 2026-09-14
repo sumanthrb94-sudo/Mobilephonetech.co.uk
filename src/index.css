@@ -3085,8 +3085,10 @@ textarea,
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--grey-10);
+  padding: 10px 0 2px;
+  /* No border-bottom: the variant selector directly below draws its own
+     border-top, so the two stacked into a double rule with a dead band
+     between them. One line, drawn by the block that owns the section. */
   font-family: var(--font-body);
   font-size: 13.5px;
   color: var(--grey-60);
