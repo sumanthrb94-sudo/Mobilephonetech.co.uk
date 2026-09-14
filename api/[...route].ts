@@ -45,6 +45,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'paypal-capture': () => import('./_routes/paypal/capture.js'),
   products: () => import('./_routes/products.js'),
   'return-notify': () => import('./_routes/return-notify.js'),
+  'review-eligibility': () => import('./_routes/review-eligibility.js'),
   reviews: () => import('./_routes/reviews.js'),
   search: () => import('./_routes/search.js'),
   track: () => import('./_routes/track.js'),

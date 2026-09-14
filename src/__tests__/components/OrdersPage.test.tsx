@@ -12,7 +12,7 @@ import type { AdminOrder } from '../../lib/orders';
 
 const listOrders = vi.fn();
 const refundOrder = vi.fn(async () => {});
-const markDispatched = vi.fn(async () => {});
+const advanceOrder = vi.fn(async () => {});
 
 vi.mock('../../lib/orders', async (orig) => {
   const actual = await orig<typeof import('../../lib/orders')>();
@@ -20,8 +20,7 @@ vi.mock('../../lib/orders', async (orig) => {
     ...actual,
     listOrders: () => listOrders(),
     refundOrder: (...a: unknown[]) => refundOrder(...(a as [])),
-    markDispatched: (...a: unknown[]) => markDispatched(...(a as [])),
-    markOutForDelivery: vi.fn(async () => {}),
+    advanceOrder: (...a: unknown[]) => advanceOrder(...(a as [])),
     resendConfirmation: vi.fn(async () => {}),
   };
 });
@@ -86,9 +85,75 @@ describe('OrdersPage', () => {
     await userEvent.type(screen.getByLabelText('Tracking number'), 'AB123456789GB');
     await userEvent.click(screen.getByRole('button', { name: /Mark dispatched/ }));
 
-    await waitFor(() => expect(markDispatched).toHaveBeenCalledWith('ORD-1001', {
-      courier: 'Royal Mail', trackingNumber: 'AB123456789GB',
-    }));
+    await waitFor(() => expect(advanceOrder).toHaveBeenCalledWith(
+      'ORD-1001',
+      expect.objectContaining({ kind: 'dispatched' }),
+      { courier: 'Royal Mail', trackingNumber: 'AB123456789GB' },
+    ));
+  });
+
+  /**
+   * The defect that shipped: every action was offered at every stage, so an
+   * order already out for delivery still showed "Mark dispatched". Picking it
+   * emailed the customer that a parcel already on the van was on its way.
+   *
+   * One case per stage, because a single example would have passed against
+   * the broken screen too — it showed everything, so it showed the right
+   * thing as well.
+   */
+  describe('offers only the move the order is actually waiting for', () => {
+    const cases: Array<[string, string, string[]]> = [
+      ['pending',          'Mark dispatched',       ['Mark out for delivery', 'Mark delivered']],
+      ['dispatched',       'Mark out for delivery', ['Mark dispatched', 'Mark delivered']],
+      ['out-for-delivery', 'Mark delivered',        ['Mark dispatched', 'Mark out for delivery']],
+    ];
+
+    /** The default tab is "To pack", which by definition excludes anything
+     *  already moving — so these open on All. */
+    const openOrder = async () => {
+      await userEvent.click(await screen.findByRole('tab', { name: /All/ }));
+      await userEvent.click(await screen.findByRole('button', { name: /ORD-1001/ }));
+    };
+
+    it.each(cases)('at %s', async (status, expected, forbidden) => {
+      listOrders.mockResolvedValue([{ ...paid, status }]);
+      render(<OrdersPage />);
+      await openOrder();
+
+      expect(await screen.findByRole('button', { name: new RegExp(`^${expected}$`, 'i') })).toBeTruthy();
+      for (const gone of forbidden) {
+        expect(screen.queryByRole('button', { name: new RegExp(`^${gone}$`, 'i') })).toBeNull();
+      }
+    });
+
+    it('offers nothing further once delivered', async () => {
+      listOrders.mockResolvedValue([{ ...paid, status: 'delivered' }]);
+      render(<OrdersPage />);
+      await openOrder();
+
+      expect(screen.queryByRole('button', { name: /mark (dispatched|out for delivery|delivered)/i })).toBeNull();
+      // But a refund is still possible — a delivered order can still come back.
+      expect(await screen.findByRole('button', { name: /Refund & restock/ })).toBeTruthy();
+    });
+
+    it('asks for tracking only while there is a movement to record', async () => {
+      listOrders.mockResolvedValue([{ ...paid, status: 'out-for-delivery' }]);
+      render(<OrdersPage />);
+      await openOrder();
+
+      await screen.findByRole('button', { name: /Mark delivered/i });
+      expect(screen.queryByLabelText('Tracking number')).toBeNull();
+    });
+
+    it('shows how far along the order is', async () => {
+      listOrders.mockResolvedValue([{ ...paid, status: 'dispatched' }]);
+      render(<OrdersPage />);
+      await openOrder();
+
+      const steps = await screen.findByRole('list', { name: 'Order progress' });
+      const items = within(steps).getAllByRole('listitem');
+      expect(items.map(li => li.dataset.state)).toEqual(['done', 'now', 'todo', 'todo']);
+    });
   });
 
   it('offers no money actions on an order already refunded', async () => {

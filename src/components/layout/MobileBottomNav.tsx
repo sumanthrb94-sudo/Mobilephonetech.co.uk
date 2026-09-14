@@ -1,5 +1,5 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Store, ShoppingBag, UserCircle } from 'lucide-react';
+import { Store, ShoppingBag, UserCircle, RefreshCw } from 'lucide-react';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import { useCart } from '../../context/CartContext';
 
@@ -48,7 +48,7 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
           padding: 0,
         }}
       >
-        <Item to="/" label="Home" icon={Home} end />
+        <Item to="/" label="Home" icon={HomeMark} end />
         <Item to="/products" label="Shop" icon={Store} />
         <li>
           <button
@@ -90,6 +90,36 @@ export default function MobileBottomNav(_: { onCartClick?: () => void }) {
         <Item to="/account" label="Account" icon={UserCircle} />
       </ul>
     </nav>
+  );
+}
+
+/**
+ * The Home tab wears the brand mark rather than a generic house.
+ *
+ * With the wordmark gone from the app bar on Home (see .navbar-logo in the
+ * app-shell CSS), this is where the brand lives on that screen — the same
+ * rounded tile and refresh glyph as the installed icon and the boot splash,
+ * so the thing the user tapped to open the app is the thing marking the tab
+ * that goes back to it. Filled when active, outlined when not, so it still
+ * reads as a tab rather than as a logo dropped into the bar.
+ */
+function HomeMark({ size = 20 }: { size?: number }) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: size + 4,
+        height: size + 4,
+        borderRadius: 7,
+        border: '1.75px solid currentColor',
+        boxSizing: 'border-box',
+      }}
+    >
+      <RefreshCw size={size - 7} strokeWidth={2.75} />
+    </span>
   );
 }
 

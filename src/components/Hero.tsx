@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import CountUp from './ui/CountUp';
 import RevealText from './ui/RevealText';
+import { listLiveBanners } from '../lib/banners';
 
 /**
  * Hero — BM spec Section 3
@@ -12,7 +13,30 @@ import RevealText from './ui/RevealText';
  * Mobile-First: Fluid typography and responsive layout stacking.
  */
 
-const SLIDES = [
+/**
+ * One banner. Named so the built-in set and the staff-managed set are the
+ * same shape — the carousel below cannot tell which it was handed, which is
+ * what makes the fallback safe.
+ */
+interface Slide {
+  eyebrow: string;
+  headline: string;
+  subline: string;
+  ctaLabel: string;
+  ctaHref: string;
+  image: string;
+  imageMobile: string;
+  imageAlt: string;
+  gradientFrom: string;
+  gradientTo: string;
+  glowColor: string;
+  savings: string;
+  fullBleed: boolean;
+  focal: string;
+  focalMobile: string;
+}
+
+const BUILT_IN_SLIDES: Slide[] = [
   {
     eyebrow: 'Foldables · Certified refurbished',
     headline: 'A phone that\nopens up.',
@@ -144,7 +168,58 @@ function renderSavings(label: string, slideIndex: number) {
 }
 
 export default function Hero() {
+  /**
+   * Banners come from Firestore, where staff edit them (Admin → Banners).
+   * The built-in array is the fallback, not the source: an empty collection,
+   * a failed read or a shop that has not been given banners yet shows this
+   * instead of a blank rectangle where the home page should be.
+   */
+  const [managed, setManaged] = useState<Slide[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    listLiveBanners()
+      .then(rows => {
+        if (cancelled || rows.length === 0) return;
+        setManaged(rows.map(b => ({
+          eyebrow: b.eyebrow,
+          headline: b.headline,
+          subline: b.subline,
+          ctaLabel: b.ctaLabel,
+          ctaHref: b.ctaHref,
+          image: b.image || b.imageMobile,
+          imageMobile: b.imageMobile || b.image,
+          imageAlt: b.alt,
+          // Uploaded artwork carries its own colour, so the gradient behind
+          // it only shows through the scrim. Neutral dark suits every photo.
+          gradientFrom: '#0b0f1a',
+          gradientTo: '#1b2440',
+          glowColor: 'rgba(96, 120, 220, 0.30)',
+          savings: '',
+          fullBleed: true,
+          focal: '50% 50%',
+          focalMobile: '50% 30%',
+        })));
+      })
+      .catch((err) => {
+        // The built-in set stands, but say so: a silent catch here means a
+        // shop whose banners have stopped loading looks exactly like a shop
+        // that has none, and nobody ever finds out.
+        console.error('[hero] could not load managed banners:', err);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const SLIDES = managed ?? BUILT_IN_SLIDES;
+
   const [current, setCurrent] = useState(0);
+
+  // Managed banners replace the built-in set after the first paint, and there
+  // are usually fewer of them. Without this the index can point past the end
+  // of the new array, and the carousel renders nothing at all.
+  useEffect(() => {
+    setCurrent(c => (c < SLIDES.length ? c : 0));
+  }, [SLIDES.length]);
   const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -181,12 +256,24 @@ export default function Hero() {
       aria-label="Hero carousel"
       style={{
         width: '100%',
-        minHeight: isDesktop ? 'clamp(480px, 54vw, 600px)' : (slide.fullBleed ? '125vw' : 'clamp(360px, 80vw, 480px)'),
+        /* ── One box, every slide ──
+           Measured before this, walking the carousel: mobile ran 488, 488,
+           706, 706, 706, 741 and desktop 613, 613, 749, 681, 681, 681. Each
+           slide sized itself to its own content, so advancing the carousel
+           moved the whole page under the reader's thumb — a 253px jump
+           between the second slide and the third.
+
+           Fixed now, not merely minimum: content fits the banner rather than
+           the banner growing to the content. 125vw on a phone is 4:5, the
+           shape of the supplied assets, and is what the admin banner form
+           asks uploads to be. Desktop is a 21:9-ish letterbox that holds
+           without pushing the page below the fold. */
+        height: isDesktop ? 'clamp(460px, 40vw, 560px)' : '125vw',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
         transition: 'background 0.6s ease',
-        paddingTop: (!isDesktop && slide.fullBleed) ? 0 : 'var(--nav-total)',
+        paddingTop: isDesktop ? 'var(--nav-total)' : 0,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -284,8 +371,8 @@ export default function Hero() {
               display: 'grid',
               gridTemplateColumns: isDesktop && !slide.fullBleed ? '1fr 1fr' : '1fr',
               gap: isDesktop ? '48px' : '16px',
-              alignItems: !isDesktop && slide.fullBleed ? 'end' : 'center',
-              padding: isDesktop ? '48px 0 24px' : (slide.fullBleed ? '0 0 12px' : '16px 0 8px'),
+              alignItems: isDesktop ? 'center' : 'end',
+              padding: isDesktop ? '28px 0 22px' : '0 0 12px',
               flex: 1, minHeight: 0,
             }}
           >
@@ -304,17 +391,22 @@ export default function Hero() {
                 borderRadius: '999px', padding: '4px 12px',
                 fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700,
                 letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.85)', marginBottom: 16,
+                color: 'rgba(255,255,255,0.85)', marginBottom: 12,
               }}>
                 {slide.eyebrow}
               </div>
 
               <RevealText
                 as="h1"
-                key={`headline-${current}`}
+                /* Keyed on the TEXT, not just the index. Managed banners
+                   arrive after the first paint and replace the built-in set
+                   in place; at index 0 the key did not change, so React
+                   reused this instance and the headline stayed on the old
+                   copy while the button beside it updated. */
+                key={`headline-${current}-${slide.headline}`}
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: 'clamp(36px, 5.2vw, 68px)',
+                  fontSize: 'clamp(32px, 3.8vw, 50px)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em', lineHeight: 1.0,
                   color: '#ffffff',
@@ -327,7 +419,7 @@ export default function Hero() {
               {/* The subline is the first thing to go in a phone-width banner:
                   the headline and the CTA are what the slide is for, and two
                   more lines of body copy push the product out of frame. */}
-              {!(slide.fullBleed && !isDesktop) && (
+              {isDesktop && (
                 <p style={{
                   fontFamily: 'var(--font-body)', fontSize: '15px',
                   color: 'rgba(255,255,255,0.72)', maxWidth: '400px',
@@ -380,10 +472,10 @@ export default function Hero() {
                   do not fit over a 390px scene without landing on the
                   product. They still run on every other slide, and the same
                   three claims sit in the trust strip directly above. */}
-              {!(slide.fullBleed && !isDesktop) && (
+              {isDesktop && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: isDesktop ? 20 : 14,
-                marginTop: 24, flexWrap: 'wrap',
+                marginTop: 18, flexWrap: 'wrap',
                 justifyContent: isDesktop ? 'flex-start' : 'center',
               }}>
                 {[
@@ -414,7 +506,7 @@ export default function Hero() {
                 // to be ordered first, which pushed the headline and the primary
                 // CTA below the fold on a 390×644 viewport.
                 order: 0,
-                height: isDesktop ? '360px' : '168px',
+                height: isDesktop ? '300px' : '168px',
                 width: '100%',
                 position: 'relative',
               }}

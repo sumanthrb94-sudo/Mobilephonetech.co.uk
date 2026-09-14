@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Package, Loader2, AlertTriangle, Check, Truck, MapPin, Mail, Undo2, ChevronDown, Inbox,
+  PackageCheck,
 } from 'lucide-react';
 import {
-  listOrders, markDispatched, markOutForDelivery, resendConfirmation, refundOrder,
-  orderStatusLabel, gbp, OPEN_STATUSES, type AdminOrder,
+  listOrders, advanceOrder, resendConfirmation, refundOrder,
+  orderStatusLabel, gbp, OPEN_STATUSES, STAGES, stageOf, nextAction,
+  type AdminOrder,
 } from '../../lib/orders';
 import { describeError } from '../../lib/adminApi';
 
 type Filter = 'open' | 'dispatched' | 'refunded' | 'all';
+
+const STEP_LABEL: Record<string, string> = {
+  paid: 'Paid',
+  dispatched: 'In transit',
+  'out-for-delivery': 'Out for delivery',
+  delivered: 'Delivered',
+};
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'open',       label: 'To pack' },
@@ -20,7 +29,13 @@ const FILTERS: { value: Filter; label: string }[] = [
 function matches(order: AdminOrder, filter: Filter): boolean {
   if (filter === 'all') return true;
   if (filter === 'open') return OPEN_STATUSES.includes(order.status);
-  if (filter === 'dispatched') return order.status === 'dispatched' || order.status === 'out-for-delivery';
+  // Delivered belongs here too: an order does not stop existing when it
+  // lands, and before this it dropped out of every tab except All.
+  if (filter === 'dispatched') {
+    return order.status === 'dispatched'
+      || order.status === 'out-for-delivery'
+      || order.status === 'delivered';
+  }
   return order.status === 'refunded';
 }
 
@@ -145,6 +160,7 @@ export default function OrdersPage() {
           const open = expanded === order.id;
           const busy = busyId === order.id;
           const refunded = order.status === 'refunded';
+          const next = nextAction(order.status);
           const f = field(order.id);
           const panelId = `order-${order.id}`;
 
@@ -181,6 +197,27 @@ export default function OrdersPage() {
                     ))}
                   </div>
 
+                  {/* Where this order actually is. The chip in the header
+                      says the same thing in one word; this says what has
+                      happened and what has not, which is the question staff
+                      are answering when they open a row. */}
+                  {!refunded && (
+                    <ol className="ord-steps" aria-label="Order progress">
+                      {STAGES.map(stage => {
+                        const at = stageOf(order.status);
+                        const here = STAGES.indexOf(at ?? 'paid');
+                        const i = STAGES.indexOf(stage);
+                        const state = i < here ? 'done' : i === here ? 'now' : 'todo';
+                        return (
+                          <li key={stage} data-state={state}>
+                            <span className="ord-steps__dot" aria-hidden="true" />
+                            <span className="ord-steps__label">{STEP_LABEL[stage]}</span>
+                          </li>
+                        );
+                      })}
+                    </ol>
+                  )}
+
                   <div className="ord-facts">
                     <span className="ord-fact">
                       <MapPin size={15} />
@@ -209,6 +246,10 @@ export default function OrdersPage() {
 
                   {!refunded && (
                     <>
+                      {/* Only while there is a movement to record. Asking for
+                          a tracking number when the parcel is already out for
+                          delivery invites someone to overwrite a good one. */}
+                      {next?.needsTracking && (
                       <div className="ord-fields">
                         <div className="ord-field">
                           <label htmlFor={`courier-${order.id}`}>Courier</label>
@@ -231,28 +272,32 @@ export default function OrdersPage() {
                           />
                         </div>
                       </div>
+                      )}
 
                       <div className="ord-actions">
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-md"
-                          disabled={busy}
-                          onClick={() => void run(order.id, 'dispatched, customer notified', () =>
-                            markDispatched(order.id, { courier: f.courier, trackingNumber: f.tracking }))}
-                        >
-                          {busy ? <Loader2 size={15} className="admin-spin" /> : <Truck size={15} />}
-                          Mark dispatched
-                        </button>
-
-                        <button
-                          type="button"
-                          className="admin-ghost"
-                          disabled={busy}
-                          onClick={() => void run(order.id, 'out for delivery', () =>
-                            markOutForDelivery(order.id, { courier: f.courier, trackingNumber: f.tracking }))}
-                        >
-                          <MapPin size={15} /> Out for delivery
-                        </button>
+                        {/* One button, not four. An order stands at exactly one
+                            stage and is waiting for exactly one thing; the
+                            screen used to offer every move at every stage, so
+                            an order already out for delivery still offered to
+                            dispatch it. The server refuses that now too — see
+                            api/_orderFlow.ts — this is what stops staff being
+                            asked to guess in the first place. */}
+                        {next && (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-md"
+                            disabled={busy}
+                            onClick={() => void run(order.id, next.done, () =>
+                              advanceOrder(order.id, next, { courier: f.courier, trackingNumber: f.tracking }))}
+                          >
+                            {busy
+                              ? <Loader2 size={15} className="admin-spin" />
+                              : next.kind === 'dispatched' ? <Truck size={15} />
+                              : next.kind === 'out-for-delivery' ? <MapPin size={15} />
+                              : <PackageCheck size={15} />}
+                            {next.label}
+                          </button>
+                        )}
 
                         <button
                           type="button"

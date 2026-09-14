@@ -38,13 +38,62 @@ export interface AdminOrder {
 export const ORDER_STATUS_LABEL: Record<string, string> = {
   pending: 'Paid — to pack',
   confirmed: 'Paid — to pack',
-  dispatched: 'Dispatched',
+  dispatched: 'In transit',
   'out-for-delivery': 'Out for delivery',
   delivered: 'Delivered',
   refunded: 'Refunded',
 };
 
 export const OPEN_STATUSES = ['pending', 'confirmed'];
+
+/**
+ * The one action an order at each stage is waiting for.
+ *
+ * An order moves forward one stage at a time and never back, so at any moment
+ * there is exactly one "next" — which is the whole point. The screen used to
+ * show Mark dispatched, Out for delivery, Resend receipt and Refund at every
+ * stage, so an order already out for delivery still offered to dispatch it,
+ * and nothing in the UI said which button was the right one. Picking wrong
+ * emailed the customer about a parcel that had already moved on.
+ *
+ * api/_orderFlow.ts holds the same rules for the server, which is what
+ * actually enforces them; orderFlow.test.ts asserts the two agree, so this
+ * cannot quietly drift into offering something the route will refuse.
+ */
+export const STAGES = ['paid', 'dispatched', 'out-for-delivery', 'delivered'] as const;
+export type Stage = typeof STAGES[number];
+
+/** Which stage an order is standing at. `null` for refunded — off the line. */
+export function stageOf(status: string): Stage | null {
+  if (status === 'refunded') return null;
+  if (status === 'dispatched') return 'dispatched';
+  if (status === 'out-for-delivery') return 'out-for-delivery';
+  if (status === 'delivered') return 'delivered';
+  return 'paid';
+}
+
+export interface NextAction {
+  kind: 'dispatched' | 'out-for-delivery' | 'delivered';
+  label: string;
+  /** Past tense, for the confirmation line after it succeeds. */
+  done: string;
+  /** Whether the courier and tracking fields are worth showing. */
+  needsTracking: boolean;
+}
+
+export function nextAction(status: string): NextAction | null {
+  switch (stageOf(status)) {
+    case 'paid':
+      return { kind: 'dispatched', label: 'Mark dispatched', done: 'dispatched, customer notified', needsTracking: true };
+    case 'dispatched':
+      return { kind: 'out-for-delivery', label: 'Mark out for delivery', done: 'out for delivery', needsTracking: true };
+    case 'out-for-delivery':
+      return { kind: 'delivered', label: 'Mark delivered', done: 'delivered', needsTracking: false };
+    default:
+      // Delivered, or refunded: nothing further to move.
+      return null;
+  }
+}
 
 export function orderStatusLabel(status: string): string {
   return ORDER_STATUS_LABEL[status] ?? status;
@@ -125,6 +174,21 @@ export function markDispatched(orderId: string, info: DispatchDetails): Promise<
 
 export function markOutForDelivery(orderId: string, info: DispatchDetails): Promise<void> {
   return adminPost('/api/order-notify', { orderId, kind: 'out-for-delivery', ...info });
+}
+
+/**
+ * The end of the line. Stamps deliveredAt, which is the date a return window
+ * is measured from — so this is a fact about the order, not just a label.
+ */
+export function markDelivered(orderId: string): Promise<void> {
+  return adminPost('/api/order-notify', { orderId, kind: 'delivered' });
+}
+
+/** Runs whichever move the order's stage calls for. */
+export function advanceOrder(orderId: string, action: NextAction, info: DispatchDetails): Promise<void> {
+  if (action.kind === 'delivered') return markDelivered(orderId);
+  if (action.kind === 'out-for-delivery') return markOutForDelivery(orderId, info);
+  return markDispatched(orderId, info);
 }
 
 export function resendConfirmation(orderId: string): Promise<void> {

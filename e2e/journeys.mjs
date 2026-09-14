@@ -258,6 +258,87 @@ async function run(view, contextOpts) {
     rec(view, 'Delivery estimate shown', /delivery|get it by/i.test(t) ? 'PASS' : 'WARN');
   } catch (e) { rec(view, 'Product detail renders', 'FAIL', e.message.slice(0, 100)); }
 
+  // ── The product page answers the buy question without scrolling ──
+  //
+  // Measured before the redesign, on a 390x664 phone: the page opened on a
+  // breadcrumb and a square photograph, showed no price at all, and Add to
+  // cart sat 1624px down — two and a half screens. On a 1440x900 desktop the
+  // button was at 1126px. Nothing failed: every element rendered, in order,
+  // and the shopper simply could not see what they were deciding.
+  //
+  // Two properties, one per direction of the problem. The price has to be on
+  // the first screen, and Add to cart has to be reachable from anywhere on a
+  // page that runs to thousands of pixels.
+  try {
+    const priceOnFirstScreen = await page.evaluate(() => {
+      const vh = window.innerHeight;
+      return [...document.querySelectorAll('body *')].some((el) => {
+        if (el.children.length) return false;
+        if (!/^£[\d,]+$/.test((el.textContent || '').trim())) return false;
+        const r = el.getBoundingClientRect();
+        return r.top >= 0 && r.top < vh && r.width > 0;
+      });
+    });
+    rec(view, 'Product page shows a price without scrolling',
+      priceOnFirstScreen ? 'PASS' : 'FAIL');
+
+    // Deep in the page, past the specs and reviews, the bar must take over.
+    await page.evaluate(() => window.scrollTo(0, 2400));
+    await page.waitForTimeout(700);
+    const reachable = await page.evaluate(() => {
+      const btn = [...document.querySelectorAll('button')]
+        .find(b => /add to cart|out of stock/i.test(b.textContent || ''));
+      const r = btn?.getBoundingClientRect();
+      const realOnScreen = r ? r.top < window.innerHeight && r.bottom > 0 : false;
+      const bar = document.querySelector('.pdp-stickybuy');
+      const barOnScreen = Boolean(bar && bar.getBoundingClientRect().width > 0);
+      return { realOnScreen, barOnScreen };
+    });
+    rec(view, 'Add to cart stays reachable deep in the product page',
+      reachable.realOnScreen || reachable.barOnScreen ? 'PASS' : 'FAIL',
+      JSON.stringify(reachable));
+
+    // And never two of them at once, which is what a scroll-offset trigger
+    // gets wrong: a second Add to cart floating beside the first.
+    rec(view, 'Never two Add to cart buttons at once',
+      !(reachable.realOnScreen && reachable.barOnScreen) ? 'PASS' : 'FAIL');
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(400);
+  } catch (e) { rec(view, 'Product page buy box', 'FAIL', e.message.slice(0, 100)); }
+
+  // ── Reviews are for customers who bought the thing ──
+  //
+  // The endpoint behind this took no authentication at all: any caller could
+  // post any rating for any product under any name. Two things must hold on
+  // the page — no write control is offered to someone who has not bought it,
+  // and the page says why rather than going quiet.
+  //
+  // There were TWO write buttons, one in the ratings sidebar and one in the
+  // empty state. Gating the first and not the second left every product with
+  // no reviews yet — which is every new product — wide open. So this counts
+  // buttons rather than checking a selector.
+  try {
+    const tab = page.getByRole('tab', { name: 'Reviews', exact: true });
+    if (await tab.count()) {
+      await tab.first().click();
+      await page.waitForTimeout(2500);
+
+      const state = await page.evaluate(() => ({
+        writeButtons: [...document.querySelectorAll('button')]
+          .filter(b => /write a review/i.test(b.textContent || '')).length,
+        gate: document.querySelector('.rv-gate')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
+      }));
+
+      rec(view, 'No review form is offered to a visitor who has not bought it',
+        state.writeButtons === 0 ? 'PASS' : 'FAIL', `${state.writeButtons} write buttons`);
+      rec(view, 'The page says why it cannot be reviewed',
+        state.gate && state.gate.length > 10 ? 'PASS' : 'FAIL', state.gate ?? 'no explanation shown');
+    } else {
+      rec(view, 'Reviews tab present', 'WARN', 'no reviews tab found');
+    }
+  } catch (e) { rec(view, 'Review gating', 'FAIL', e.message.slice(0, 100)); }
+
   // ── Quantity stepper ──
   try {
     const plus = page.locator('button').filter({ hasText: /^\+$/ }).first();

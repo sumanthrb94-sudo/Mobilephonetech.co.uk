@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Star, ThumbsUp, MessageCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Star, ThumbsUp, MessageCircle, ShieldCheck, Lock, Loader2 } from 'lucide-react';
 import { Review } from '../types';
 import { motion } from 'motion/react';
 import { sanitizeUserInput } from '../utils/sanitize';
 import { useUI } from '../context/UIContext';
+import { reviewEligibility, type ReviewEligibility } from '../lib/reviews';
 
 interface ReviewsSectionProps {
   productId: string;
   reviews?: Review[];
-  onAddReview?: (review: Omit<Review, 'id' | 'date'>) => void;
+  /** May reject: the server decides who is allowed to review. */
+  onAddReview?: (review: Omit<Review, 'id' | 'date'>) => void | Promise<void>;
 }
 
 export default function ReviewsSection({ productId, reviews = [], onAddReview }: ReviewsSectionProps) {
@@ -20,6 +22,32 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
     userName: '',
   });
 
+  /**
+   * Whether this visitor may review, answered by the server before the form
+   * is offered. `null` while asking.
+   *
+   * Reviews here come from people who bought the device and took delivery of
+   * it, so most visitors cannot write one — and the honest thing is to say so
+   * up front rather than to show a box and reject what they typed.
+   */
+  const [eligibility, setEligibility] = useState<ReviewEligibility | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setEligibility(null);
+    reviewEligibility(productId)
+      .then(r => { if (!cancelled) setEligibility(r); })
+      .catch(() => {
+        if (!cancelled) {
+          setEligibility({
+            eligible: false, code: 'no-order', waitDays: 0,
+            reason: 'We could not check your orders just now. Please try again shortly.',
+          });
+        }
+      });
+    return () => { cancelled = true; };
+  }, [productId]);
+
   const averageRating = reviews.length > 0
     ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
     : 0;
@@ -29,18 +57,25 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
     count: reviews.filter(r => r.rating === rating).length,
   }));
 
-  const handleSubmitReview = (e: React.FormEvent) => {
+  const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
     const sanitizedName = sanitizeUserInput(formData.userName);
     const sanitizedComment = sanitizeUserInput(formData.comment);
 
     if (sanitizedComment.trim() && sanitizedName.trim()) {
-      onAddReview?.({
-        productId,
-        rating: formData.rating,
-        comment: sanitizedComment,
-        userName: sanitizedName,
-      });
+      try {
+        // Awaited, unlike before: the server decides whether this person may
+        // review, so "thank you" must wait until it has said yes.
+        await onAddReview?.({
+          productId,
+          rating: formData.rating,
+          comment: sanitizedComment,
+          userName: sanitizedName,
+        });
+      } catch (err) {
+        showToast(err instanceof Error ? err.message : 'We could not save your review.', 'error');
+        return;
+      }
       setFormData({ rating: 5, comment: '', userName: '' });
       setIsWritingReview(false);
       showToast('Thank you for your review!', 'success');
@@ -49,6 +84,53 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
     }
   };
 
+  /**
+   * The write control, or the reason there isn't one.
+   *
+   * Defined once and used by both branches below. It was gated in the
+   * ratings sidebar first and not in the empty state, so a product with no
+   * reviews yet still offered a form to anybody — which is the branch new
+   * products are always in.
+   */
+  const writeGate = (
+    <>
+      {eligibility === null && (
+        <p className="rv-gate" role="status">
+          <Loader2 size={15} className="admin-spin" /> Checking your orders…
+        </p>
+      )}
+
+      {eligibility?.eligible && (
+        <>
+          <button onClick={() => setIsWritingReview(true)} className="btn btn-primary btn-md">
+            Write a Review
+          </button>
+          <p className="rv-gate rv-gate--ok">
+            <ShieldCheck size={15} /> {eligibility.reason}
+          </p>
+        </>
+      )}
+
+      {eligibility && !eligibility.eligible && (
+        <p className="rv-gate">
+          <Lock size={15} />
+          <span>
+            {eligibility.reason}
+            {eligibility.availableFrom && (
+              <> You can write one from{' '}
+                <strong>
+                  {new Date(eligibility.availableFrom).toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                  })}
+                </strong>.
+              </>
+            )}
+          </span>
+        </p>
+      )}
+    </>
+  );
+
   return (
     <div className="border-t border-slate-100 pt-12 mt-12">
       <h3 className="text-2xl font-black text-slate-900 mb-8">Customer Reviews</h3>
@@ -56,13 +138,8 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
       {reviews.length === 0 ? (
         <div className="text-center py-12">
           <MessageCircle className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-          <p className="text-slate-600 font-medium mb-6">No reviews yet. Be the first to review this product!</p>
-          <button
-            onClick={() => setIsWritingReview(true)}
-            className="btn btn-primary btn-md"
-          >
-            Write a Review
-          </button>
+          <p className="text-slate-600 font-medium mb-6">No reviews yet.</p>
+          <div className="rv-gatewrap">{writeGate}</div>
         </div>
       ) : (
         <div className="grid lg:grid-cols-3 gap-12">
@@ -99,12 +176,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
                 ))}
               </div>
 
-              <button
-                onClick={() => setIsWritingReview(true)}
-                className="btn btn-primary btn-md btn-full mt-8"
-              >
-                Write a Review
-              </button>
+              <div className="rv-gatewrap mt-8">{writeGate}</div>
             </div>
           </div>
 

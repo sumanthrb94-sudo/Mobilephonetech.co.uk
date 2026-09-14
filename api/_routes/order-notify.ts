@@ -1,7 +1,10 @@
 import { adminDb, callerIsAdmin } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
 import { sendEmail, emailConfigured } from '../_email.js';
-import { orderConfirmationEmail, orderDispatchedEmail, outForDeliveryEmail } from '../_templates.js';
+import {
+  orderConfirmationEmail, orderDispatchedEmail, outForDeliveryEmail, orderDeliveredEmail,
+} from '../_templates.js';
+import { STATUS_FOR_KIND, canTransition, type NotifyKind } from '../_orderFlow.js';
 import { sendSms, smsConfigured } from '../_sms.js';
 import type { OrderLike, DispatchInfo } from '../_templates.js';
 
@@ -26,14 +29,10 @@ import type { OrderLike, DispatchInfo } from '../_templates.js';
  * steps.
  */
 
-type Kind = 'confirmation' | 'dispatched' | 'out-for-delivery';
+type Kind = NotifyKind;
 
-/** The order status each notification implies. */
-const STATUS_FOR: Record<Kind, string> = {
-  confirmation: 'confirmed',
-  dispatched: 'dispatched',
-  'out-for-delivery': 'out-for-delivery',
-};
+/** The order status each notification implies. Defined in _orderFlow. */
+const STATUS_FOR: Record<string, string> = STATUS_FOR_KIND;
 
 const clean = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max);
 
@@ -70,7 +69,9 @@ export default async function handler(req: any, res: any) {
   const kind = clean(req.body?.kind, 40) as Kind;
   if (!orderId) return res.status(400).json({ error: 'orderId is required' });
   if (!STATUS_FOR[kind]) {
-    return res.status(400).json({ error: 'kind must be confirmation, dispatched or out-for-delivery' });
+    return res.status(400).json({
+      error: 'kind must be confirmation, dispatched, out-for-delivery or delivered',
+    });
   }
 
   const db = await adminDb();
@@ -80,7 +81,7 @@ export default async function handler(req: any, res: any) {
   const snap = await ref.get();
   if (!snap.exists) return res.status(404).json({ error: 'Order not found' });
 
-  const order = snap.data() as OrderLike & { contactEmail?: string };
+  const order = snap.data() as OrderLike & { contactEmail?: string; status?: string };
 
   const to = clean(order.contactEmail, 254);
   if (!to) return res.status(422).json({ error: 'Order has no contact address' });
@@ -92,12 +93,27 @@ export default async function handler(req: any, res: any) {
     estimatedDelivery: clean(req.body?.estimatedDelivery, 120) || undefined,
   };
 
+  /**
+   * An order only moves forward, one stage at a time. Checked here rather
+   * than only in the admin screen: a hidden button is a courtesy, this is the
+   * rule. A replayed request, a stale tab or a second member of staff all
+   * arrive here, and before this check every kind was accepted in any order —
+   * so a delivered order could be marked dispatched again, mailing the
+   * customer "on its way" for a parcel already in their hands.
+   */
+  const move = canTransition(String(order.status ?? 'pending'), STATUS_FOR[kind], kind);
+  if (!move.ok) {
+    return res.status(409).json({ error: move.reason });
+  }
+
   const built =
     kind === 'dispatched'
       ? orderDispatchedEmail(order, info)
       : kind === 'out-for-delivery'
         ? outForDeliveryEmail(order, info)
-        : orderConfirmationEmail(order);
+        : kind === 'delivered'
+          ? orderDeliveredEmail(order)
+          : orderConfirmationEmail(order);
 
   // Status first. If the write fails the customer must not be told the parcel
   // moved — an email cannot be recalled, but an unsent one can be retried.
@@ -114,6 +130,10 @@ export default async function handler(req: any, res: any) {
               trackingUrl: info.trackingUrl ?? null,
             }
           : {}),
+        // The 14-day cancellation right under the Consumer Contracts
+        // Regulations runs from delivery, so this timestamp is what a returns
+        // dispute is measured against. It is not decoration.
+        ...(kind === 'delivered' ? { deliveredAt: new Date().toISOString() } : {}),
       },
       { merge: true },
     );

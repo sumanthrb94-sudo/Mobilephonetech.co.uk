@@ -1349,6 +1349,13 @@ html.is-checkout .ai-fab {
   }
 }
 
+/* The inline search bar is desktop-default; the phone rules above narrow it
+   to Home. Stated here rather than left to a Tailwind class so the two
+   breakpoints are read together. */
+@media (min-width: 1024px) {
+  .navbar-search { display: block; }
+}
+
 /* Product detail: gallery beside the buy box on desktop.
    Same story as above — the element sets `gridTemplateColumns: '1fr'` inline,
    which outranks Tailwind's `lg:grid-cols-2` class, so the page stayed one
@@ -2737,6 +2744,507 @@ textarea,
   overflow-wrap: anywhere;
 }
 
+/* Order progress — where the order stands, at a glance.
+   A horizontal rail of four stops: done, now, still to come. */
+.ord-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  list-style: none;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.ord-steps li {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  position: relative;
+}
+
+/* The rail runs between dots, drawn by each step except the first, so it
+   cannot overhang either end of the row. */
+.ord-steps li::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 50%;
+  left: -50%;
+  height: 2px;
+  background: var(--grey-10);
+}
+.ord-steps li:first-child::before { display: none; }
+.ord-steps li[data-state='done']::before,
+.ord-steps li[data-state='now']::before { background: var(--brand-cyan); }
+
+.ord-steps__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--grey-0);
+  border: 2px solid var(--grey-20);
+  box-sizing: border-box;
+  z-index: 1;
+}
+.ord-steps li[data-state='done'] .ord-steps__dot { background: var(--brand-cyan); border-color: var(--brand-cyan); }
+.ord-steps li[data-state='now'] .ord-steps__dot {
+  background: var(--brand-cyan);
+  border-color: var(--brand-cyan);
+  box-shadow: 0 0 0 4px var(--color-brand-subtle);
+}
+
+.ord-steps__label {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--grey-50);
+  /* Wraps rather than truncating: "Out for delivery" is the longest and the
+     one most worth reading in full. */
+  overflow-wrap: anywhere;
+}
+.ord-steps li[data-state='now'] .ord-steps__label {
+  color: var(--black);
+  font-weight: 800;
+}
+
+/* Why someone can or cannot write a review. Shown where the button would be,
+   so the answer arrives before the writing does. */
+/* Holds the write button and its explanation together, centred in the empty
+   state and left-aligned beside the ratings summary. */
+.rv-gatewrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.rv-gate {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--grey-5);
+  border: 1px solid var(--grey-10);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--grey-60);
+}
+
+.rv-gate svg { flex-shrink: 0; margin-top: 2px; }
+
+.rv-gate--ok {
+  background: var(--color-trust-subtle, #ecfdf5);
+  border-color: #a7f3d0;
+  color: var(--color-trust-text, #047857);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   ADMIN — home banners
+─────────────────────────────────────────────────────────────── */
+
+.bn-card { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+.bn-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bn-card__title {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--black);
+  margin-right: auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bn-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  /* The preview keeps a fixed 4:5 column so the form reflows around it
+     rather than the other way round. */
+  .bn-grid { grid-template-columns: minmax(0, 1fr) 220px; }
+}
+
+.bn-fields { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+.bn-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .bn-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+
+.bn-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+/* The label wraps its control so the two are associated without an id, while
+   the hint stays outside it — see the note on Field in BannersPage. */
+.bn-field__labelwrap { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+
+.bn-field__label {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey-60);
+}
+
+.bn-field__hint {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--grey-50);
+}
+
+.bn-upload { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.bn-upload__thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--grey-10);
+  object-fit: cover;
+  background: var(--grey-5);
+}
+
+.bn-upload__thumb--empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--grey-40, #9ca3af);
+}
+
+/* The preview is the phone banner's real box: 4:5, copy over the bottom,
+   behind the same scrim. Approving something here approves what ships. */
+.bn-preview { display: flex; flex-direction: column; gap: 6px; }
+
+.bn-preview__label {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--grey-60);
+  margin: 0;
+}
+
+.bn-preview__frame {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--grey-5);
+  border: 1px solid var(--grey-10);
+  display: grid;
+  place-items: center;
+}
+
+.bn-preview__frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bn-preview__empty {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--grey-50);
+}
+
+.bn-preview__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 8, 14, 0) 0%,
+    rgba(6, 8, 14, 0) 26%,
+    rgba(6, 8, 14, 0.4) 38%,
+    rgba(6, 8, 14, 0.68) 48%,
+    rgba(6, 8, 14, 0.84) 66%,
+    rgba(6, 8, 14, 0.9) 100%
+  );
+}
+
+.bn-preview__copy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+  color: #fff;
+}
+
+.bn-preview__eyebrow {
+  font-family: var(--font-sans);
+  font-size: 7.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.bn-preview__copy strong {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.bn-preview__cta {
+  background: #fff;
+  color: #111;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.bn-problems {
+  margin: 0;
+  padding: 10px 12px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-radius: var(--radius-md);
+  background: var(--color-warn-subtle, #fffbeb);
+  border: 1px solid #fde68a;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: #92400e;
+}
+
+.bn-problems li { display: flex; align-items: center; gap: 7px; }
+
+/* ───────────────────────────────────────────────────────────────
+   PRODUCT DETAIL — the buy decision, at a glance
+
+   Measured before this pass, on a 390x664 phone and a 1440x900 desktop:
+
+                        phone      desktop
+     price on screen     no         yes
+     storage swatches    1196px     774px
+     delivery date       1401px     979px
+     Add to cart         1624px     1126px
+
+   A phone opened on a breadcrumb and a square photograph and showed no
+   price at all; Add to cart was two and a half screens down. Both numbers
+   below are what the rest of this block exists to fix.
+─────────────────────────────────────────────────────────────── */
+
+.pdp-root {
+  padding-top: var(--spacing-16);
+}
+
+/* Identity and price, above the gallery on a phone. */
+.pdp-lede {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+/* Battery / warranty / returns on one line instead of in stacked cards. */
+.pdp-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--grey-10);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--grey-60);
+}
+
+.pdp-facts span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.pdp-facts strong {
+  color: var(--black);
+  font-weight: 800;
+}
+
+@media (max-width: 1023px) {
+  /* The page starts at the buy decision, so it does not need 48px of
+     runway before it. */
+  .pdp-root {
+    padding-top: 16px;
+  }
+
+  /* A 1:1 gallery at full width is 390px tall on this screen — on its own
+     more than half the viewport. Capped so identity, price AND the top of
+     the photograph share the first screen. The aspect ratio is unchanged,
+     so nothing is cropped; the frame simply stops growing with the width. */
+  .pdp-gallery {
+    max-height: 46vh;
+    margin-inline: auto;
+    width: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* The buy box travels with the evidence. Clears the fixed header, and
+     scrolls normally again once it is taller than the viewport. */
+  .pdp-buy {
+    position: sticky;
+    top: calc(var(--nav-total) + 20px);
+    align-self: start;
+  }
+}
+
+/* ── Sticky buy bar (phones) ──
+   Sits directly above the tab bar. Portalled to <body> — see StickyBuyBar —
+   because `position: fixed` inside a transformed ancestor anchors to that
+   ancestor, not the viewport. */
+.pdp-stickybuy {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  z-index: 44;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--grey-0);
+  border-top: 1px solid var(--grey-10);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.pdp-stickybuy__price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  font-family: var(--font-sans);
+}
+
+.pdp-stickybuy__price strong {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--black);
+  letter-spacing: -0.02em;
+}
+
+.pdp-stickybuy__price s {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--grey-40);
+}
+
+.pdp-stickybuy .btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* Checkout hides the tab bar, so the bar would otherwise float 64px up. */
+html.is-checkout .pdp-stickybuy {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* The bar is new chrome, and the floating bubbles were landing on top of the
+   Add to cart button at both widths. :has() rather than a prop threaded
+   through the app: the bar is portalled to <body> and is a sibling of both
+   bubbles, so the DOM already knows the answer. Where :has() is unsupported
+   the bubbles stay where they are, which is the behaviour before this rule.
+
+   64px is the bar on a phone (10px padding, 44px button, 10px); 68px on
+   desktop, which pads to 12px and sits on top of the 36px trust strip. */
+@media (max-width: 1023px) {
+  body:has(.pdp-stickybuy) .support-fab {
+    bottom: calc(64px + 64px + 12px + env(safe-area-inset-bottom, 0px));
+  }
+  body:has(.pdp-stickybuy) .ai-fab {
+    bottom: calc(64px + 64px + 12px + 52px + 10px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 1024px) {
+  body:has(.pdp-stickybuy) .support-fab {
+    bottom: calc(36px + 68px + 16px);
+  }
+  body:has(.pdp-stickybuy) .ai-fab {
+    bottom: calc(36px + 68px + 16px + 52px + 10px);
+  }
+}
+
+/* The product name only has room to be said on a wide screen. */
+.pdp-stickybuy__title { display: none; }
+
+@media (min-width: 1024px) {
+  .pdp-stickybuy {
+    /* Above the trust strip, which stays pinned to the bottom edge here. */
+    bottom: 36px;
+    gap: 20px;
+    padding: 12px 24px;
+    justify-content: flex-end;
+  }
+
+  .pdp-stickybuy__title {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 46ch;
+    margin-right: auto;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--black);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Not full width: a checkout-sized button spanning 1440px reads as a page
+     footer rather than as the thing you press. */
+  .pdp-stickybuy .btn {
+    flex: 0 0 auto;
+    min-width: 200px;
+  }
+}
+
 /* ────────────────────────────────────────────────────────────
    APP SHELL (< 1024px)
 
@@ -2775,6 +3283,40 @@ textarea,
 
   .catnav {
     display: none;
+  }
+
+  /* ── Home's app bar ──
+     Search inline where the wordmark was. The Home tab in the tab bar
+     carries the brand mark, so the app bar repeating it spent the widest
+     row on the screen on something already visible — and left search
+     behind a magnifier, one tap away from the thing most shoppers open
+     the app to do. Every other screen keeps the wordmark, because there
+     the Home tab is not selected and the brand is nowhere else. */
+  .navbar-search {
+    display: none;
+  }
+
+  html.is-home .navbar-search {
+    display: block;
+    padding-left: 8px;
+    margin-right: 4px;
+  }
+
+  .navbar-searchtoggle {
+    display: flex;
+  }
+
+  html.is-home .navbar-logo,
+  html.is-home .navbar-searchtoggle {
+    display: none;
+  }
+
+  /* The bar has to look like a field. Inside the app bar it sat on the same
+     white as the header, so it read as a stray line of grey text rather than
+     as somewhere to type. */
+  html.is-home .navbar-search input {
+    background: var(--grey-5);
+    border-color: var(--grey-10);
   }
 
   /* The tab bar owns primary navigation here. It has a Cart tab carrying the
@@ -2834,6 +3376,7 @@ textarea,
   html.is-checkout .support-fab {
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
+
   html.is-checkout .ai-fab {
     bottom: calc(16px + 52px + 10px + env(safe-area-inset-bottom, 0px));
   }

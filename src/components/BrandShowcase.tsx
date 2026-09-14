@@ -415,12 +415,16 @@ function ProductRail({
             role="listitem"
             style={{
               flex: '0 0 auto',
-              width: 'clamp(200px, 56vw, 260px)',
+              // 56vw showed less than two cards on a 390px phone, so each
+              // rail read as one enormous tile you had to scroll to discover
+              // was a rail at all. 42vw shows two and the edge of a third —
+              // enough to say "there are more of these" without a hint arrow.
+              width: 'clamp(150px, 42vw, 240px)',
               scrollSnapAlign: 'start',
               display: 'flex',
             }}
           >
-            <ProductCard phone={p} />
+            <ProductCard phone={p} compact />
           </div>
         ))}
       </div>
