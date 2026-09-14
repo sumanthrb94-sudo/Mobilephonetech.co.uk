@@ -307,6 +307,38 @@ async function run(view, contextOpts) {
     await page.waitForTimeout(400);
   } catch (e) { rec(view, 'Product page buy box', 'FAIL', e.message.slice(0, 100)); }
 
+  // ── Reviews are for customers who bought the thing ──
+  //
+  // The endpoint behind this took no authentication at all: any caller could
+  // post any rating for any product under any name. Two things must hold on
+  // the page — no write control is offered to someone who has not bought it,
+  // and the page says why rather than going quiet.
+  //
+  // There were TWO write buttons, one in the ratings sidebar and one in the
+  // empty state. Gating the first and not the second left every product with
+  // no reviews yet — which is every new product — wide open. So this counts
+  // buttons rather than checking a selector.
+  try {
+    const tab = page.getByRole('tab', { name: 'Reviews', exact: true });
+    if (await tab.count()) {
+      await tab.first().click();
+      await page.waitForTimeout(2500);
+
+      const state = await page.evaluate(() => ({
+        writeButtons: [...document.querySelectorAll('button')]
+          .filter(b => /write a review/i.test(b.textContent || '')).length,
+        gate: document.querySelector('.rv-gate')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
+      }));
+
+      rec(view, 'No review form is offered to a visitor who has not bought it',
+        state.writeButtons === 0 ? 'PASS' : 'FAIL', `${state.writeButtons} write buttons`);
+      rec(view, 'The page says why it cannot be reviewed',
+        state.gate && state.gate.length > 10 ? 'PASS' : 'FAIL', state.gate ?? 'no explanation shown');
+    } else {
+      rec(view, 'Reviews tab present', 'WARN', 'no reviews tab found');
+    }
+  } catch (e) { rec(view, 'Review gating', 'FAIL', e.message.slice(0, 100)); }
+
   // ── Quantity stepper ──
   try {
     const plus = page.locator('button').filter({ hasText: /^\+$/ }).first();

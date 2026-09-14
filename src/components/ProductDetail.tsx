@@ -25,11 +25,11 @@ import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
-import { useAuth } from '../context/AuthContext';
-import { addDoc, collection, doc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db, COL } from '../lib/firebase';
 import { docToProduct } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
+import { submitReview } from '../lib/reviews';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 import { generateProductDescription } from '../utils/productDescription';
@@ -42,7 +42,6 @@ type Tab = 'overview' | 'specs' | 'reviews';
 function TabPanel({ phone }: { phone: Product }) {
   const [tab, setTab] = React.useState<Tab>('overview');
   const [reviews, setReviews] = React.useState<import('../types').Review[]>(phone.reviews ?? []);
-  const { user } = useAuth();
   const enrichedSpecs = enrichSpecs(phone.brand, phone.model, phone.specs);
 
   const handleAddReview = async (review: Omit<import('../types').Review, 'id' | 'date'>) => {
@@ -53,18 +52,19 @@ function TabPanel({ phone }: { phone: Product }) {
     };
     setReviews(prev => [newReview, ...prev]);
     try {
-      await addDoc(collection(db, COL.reviews), {
+      await submitReview({
         productId: phone.id,
-        userId: user?.id ?? null,
         rating: review.rating,
         comment: review.comment,
         userName: review.userName,
-        isVerified: false,
-        createdAt: serverTimestamp(),
       });
-    } catch {
-      // The review is already shown optimistically; a failed write should not
-      // yank it back out from under the person who just typed it.
+    } catch (err) {
+      // Optimistic no longer: the server decides whether this person may
+      // review, so a refusal has to take the review back off the screen and
+      // say why. Leaving it there would show someone a review of theirs that
+      // nobody else can see.
+      setReviews(prev => prev.filter(r => r.id !== newReview.id));
+      throw err;
     }
   };
 

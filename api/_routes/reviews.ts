@@ -1,5 +1,6 @@
-import { adminDb } from '../_firebaseAdmin.js';
+import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
+import { checkEligibility } from '../_reviewEligibility.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -7,7 +8,9 @@ export default async function handler(req: any, res: any) {
     return getReviews(req, res);
   }
   if (req.method === 'POST') {
-    // Unauthenticated write — cap it. Review floods are the classic abuse here.
+    // Still capped, though the eligibility check below is now the real
+    // defence: a caller has to be signed in AND have taken delivery of this
+    // exact product before anything is written.
     if (!enforceRateLimit(req, res, 'reviews', { limit: 5, windowMs: 60_000 })) return;
     return postReview(req, res);
   }
@@ -91,7 +94,24 @@ async function postReview(req: any, res: any) {
   const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Reviews are unavailable' });
 
+  /**
+   * Who is asking. This endpoint used to take no authentication at all, so
+   * any caller could post any rating for any product under any name — which
+   * is both the obvious abuse and, under the DMCC Act 2024, a compliance
+   * problem in its own right.
+   */
+  const caller = await verifyCaller(req);
+  const uid = caller?.uid ?? null;
+
   try {
+    const eligibility = await checkEligibility(db, uid, String(productId));
+    if (!eligibility.eligible) {
+      // 401 when signing in would fix it, 403 when it would not — so the
+      // client knows whether to offer a sign-in or an explanation.
+      const status = eligibility.code === 'not-signed-in' ? 401 : 403;
+      return res.status(status).json({ error: eligibility.reason, code: eligibility.code });
+    }
+
     const createdAt = new Date().toISOString();
     const body = {
       productId,
@@ -99,9 +119,12 @@ async function postReview(req: any, res: any) {
       title: title?.trim() ?? null,
       comment: comment?.trim() ?? null,
       userName: userName.trim(),
-      // Never trusted from the request: the badge means a verified purchase,
-      // so a reviewer must not be able to award it to themselves.
-      isVerified: false,
+      userId: uid,
+      orderId: eligibility.orderId ?? null,
+      // Not taken from the request — it never was. It is true because the
+      // check above proved it, which is the only way this badge means
+      // anything to the person reading it.
+      isVerified: true,
       createdAt,
     };
     const ref = await db.collection('reviews').add(body);

@@ -2809,6 +2809,42 @@ textarea,
   font-weight: 800;
 }
 
+/* Why someone can or cannot write a review. Shown where the button would be,
+   so the answer arrives before the writing does. */
+/* Holds the write button and its explanation together, centred in the empty
+   state and left-aligned beside the ratings summary. */
+.rv-gatewrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.rv-gate {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--grey-5);
+  border: 1px solid var(--grey-10);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--grey-60);
+}
+
+.rv-gate svg { flex-shrink: 0; margin-top: 2px; }
+
+.rv-gate--ok {
+  background: var(--color-trust-subtle, #ecfdf5);
+  border-color: #a7f3d0;
+  color: var(--color-trust-text, #047857);
+}
+
 /* ───────────────────────────────────────────────────────────────
    ADMIN — home banners
 ─────────────────────────────────────────────────────────────── */

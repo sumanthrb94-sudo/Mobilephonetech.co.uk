@@ -94,12 +94,18 @@ service cloud.firestore {
     // forced false on create so a reviewer cannot award themselves the badge.
     match /reviews/{reviewId} {
       allow read: if true;
-      allow create: if signedIn()
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.rating is number
-                    && request.resource.data.rating >= 1
-                    && request.resource.data.rating <= 5
-                    && request.resource.data.isVerified == false;
+      // Writes go through POST /api/reviews, never straight from a browser.
+      // A review may only be written by someone who bought the device and
+      // took delivery of it, and that cannot be expressed here: it needs a
+      // scan of the caller's orders for a line item matching this product,
+      // with a delivered status and a delivery date old enough. Rules can
+      // get() a known document, not search a collection.
+      //
+      // This used to allow a signed-in user to write their own review
+      // directly, which meant the purchase check could be skipped entirely by
+      // talking to Firestore instead of the API. The Admin SDK bypasses rules,
+      // so the route still works.
+      allow create: if false;
       // The create rule forces isVerified false, but an update that could set
       // it true would hand every reviewer the Verified Purchase badge — the
       // exact trust signal the badge exists to provide. Only staff may move it.
