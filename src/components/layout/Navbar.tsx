@@ -473,20 +473,14 @@ export default function Navbar(_: NavbarProps) {
                 }}
               >
                 <ShoppingCart size={16} />
-                <span className="hidden sm:inline">
-                  {cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}
-                </span>
-                {cartCount > 0 && (
-                  <span className="sm:hidden" style={{
-                    position: 'absolute', top: -4, right: -4,
-                    width: 16, height: 16, borderRadius: '50%',
-                    background: 'var(--brand-cyan)', color: 'white',
-                    fontSize: '9px', fontWeight: 800,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    {cartCount > 9 ? '9+' : cartCount}
-                  </span>
-                )}
+                {/* One count, not two. This pill only renders at 1024px and
+                    up (.navbar-cart is display:none below that), so the inline
+                    label is always on screen here — the corner bubble that
+                    used to sit alongside it carried an inline display:flex,
+                    which beats the `sm:hidden` class, so both showed the same
+                    number at once. Below 1024px the tab bar's Cart badge is
+                    the only count. */}
+                <span>{cartCount > 0 ? `Cart (${cartCount})` : 'Cart'}</span>
               </Link>
             </div>
           </div>

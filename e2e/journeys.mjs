@@ -88,6 +88,50 @@ async function run(view, contextOpts) {
     }
   }
 
+  // ── The basket count appears once (every viewport) ──
+  //
+  // The rule above covers two ways into the cart. This covers one control
+  // saying the same number twice: the desktop pill rendered the count as a
+  // label AND as a corner bubble, so a basket of two read "Cart (2)" with a
+  // "2" stuck to its edge. The bubble was meant to be the phone-only half of
+  // the pair and was tagged `sm:hidden`, but it carried an inline
+  // `display: flex`, and an inline style beats a class — so the class hid
+  // nothing and both halves drew at once.
+  //
+  // Asserted by counting what is actually painted rather than by reading the
+  // markup, because that is the part the class was lying about.
+  try {
+    await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => localStorage.setItem('mpm_cart', JSON.stringify([
+      { id: 'guard-1', productId: 'guard-1', name: 'Guard handset', price: 199, quantity: 2, image: '' },
+    ])));
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2500);
+    await dismissCookies(page);
+
+    const counts = await page.evaluate(() => {
+      const found = [];
+      for (const el of document.querySelectorAll('body *')) {
+        if (el.children.length) continue;            // leaf nodes only
+        const text = (el.textContent || '').trim();
+        if (!/^(2|Cart \(2\))$/.test(text)) continue;
+        const r = el.getBoundingClientRect();
+        if (r.width === 0 || r.height === 0) continue;
+        if (getComputedStyle(el).visibility === 'hidden') continue;
+        found.push(`"${text}"@${Math.round(r.x)},${Math.round(r.y)}`);
+      }
+      return found;
+    });
+
+    rec(view, 'Basket count is shown once, not twice',
+      counts.length <= 1 ? 'PASS' : 'FAIL',
+      counts.length ? counts.join(' + ') : 'no count rendered');
+  } catch (e) {
+    rec(view, 'Basket count is shown once, not twice', 'FAIL', e.message.slice(0, 100));
+  } finally {
+    await page.evaluate(() => localStorage.removeItem('mpm_cart')).catch(() => {});
+  }
+
   // ── Hero scrim (phones only) ──
   //
   // The full-bleed banners put white copy straight onto a photograph, and the
