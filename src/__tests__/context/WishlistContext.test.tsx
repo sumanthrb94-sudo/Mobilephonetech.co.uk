@@ -243,6 +243,20 @@ describe('WishlistContext', () => {
     expect(JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]')).toEqual([saved.id]);
   });
 
+  it('keeps a saved id the catalogue cannot resolve yet, rather than dropping it', () => {
+    // The live catalogue arrives after the bundled fallback. An id only the
+    // live one knows must survive the first render untouched, or it is gone
+    // before the catalogue that could show it has loaded.
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(['only-in-the-live-catalogue', MOCK_PHONES[0].id]));
+
+    const { result } = renderHook(() => useWishlist(), { wrapper });
+
+    expect(result.current.items.map(i => i.id)).toEqual([MOCK_PHONES[0].id]);
+    expect(JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]')).toEqual(
+      expect.arrayContaining(['only-in-the-live-catalogue', MOCK_PHONES[0].id]),
+    );
+  });
+
   it('a heart survives a remount, as it must survive a page load', () => {
     const first = renderHook(() => useWishlist(), { wrapper });
     act(() => first.result.current.addToWishlist(MOCK_PHONES[1]));

@@ -27,9 +27,11 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   // Store full product objects locally; only ids are persisted remotely.
   const [items, setItems] = useState<Product[]>([]);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
-  const hydrated = useRef(false);
+  // Saved ids not yet resolved to products. null until storage has been
+  // read, which is what stops the first render overwriting it.
+  const pending = useRef<string[] | null>(null);
 
-  // Read the saved ids back once the catalogue can resolve them.
+  // Resolve saved ids against the catalogue, every time the catalogue changes.
   //
   // This never happened for a guest. Ids were written to localStorage on
   // every change but only ever read at sign-in, so a shopper who hearted a
@@ -37,19 +39,31 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   // worse, the persist effect below ran on the empty first render and wiped
   // the stored ids before anything could read them, so the hearts were gone
   // for good, sign-in merge included.
+  //
+  // Every change, not once: the catalogue arrives in two waves — the bundled
+  // fallback first, then the live one — and an id the first wave cannot
+  // resolve must still be waiting when the second arrives. Until then it is
+  // kept in `pending` and written back to storage untouched.
   useEffect(() => {
-    if (hydrated.current || catalogue.length === 0) return;
+    if (pending.current === null) pending.current = loadLocal();
+    if (pending.current.length === 0 || catalogue.length === 0) return;
+
     const byId = new Map(catalogue.map(p => [p.id, p]));
-    const saved = loadLocal().map(id => byId.get(id)).filter(Boolean) as Product[];
-    hydrated.current = true;
-    if (saved.length) setItems(prev => (prev.length ? prev : saved));
+    const found = pending.current.map(id => byId.get(id)).filter(Boolean) as Product[];
+    if (found.length === 0) return;
+
+    pending.current = pending.current.filter(id => !byId.has(id));
+    setItems(prev => {
+      const have = new Set(prev.map(i => i.id));
+      return [...prev, ...found.filter(f => !have.has(f.id))];
+    });
   }, [catalogue]);
 
-  // Persist IDs to localStorage — but not before hydration, or the empty
-  // first render overwrites what was saved.
+  // Persist IDs to localStorage — what is shown plus what is still waiting
+  // to be resolved, and never before storage has been read.
   useEffect(() => {
-    if (!hydrated.current) return;
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(items.map(i => i.id)));
+    if (pending.current === null) return;
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify([...items.map(i => i.id), ...pending.current]));
   }, [items]);
 
   // On login: push local IDs, then read the merged set back.
@@ -100,6 +114,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   const isInWishlist = (id: string) => items.some(i => i.id === id);
 
   const clearWishlist = async () => {
+    pending.current = [];
     setItems([]);
     if (session && user && !user.isGuest) {
       try { await clearWishlistRemote(user.id); } catch { /* local already cleared */ }
