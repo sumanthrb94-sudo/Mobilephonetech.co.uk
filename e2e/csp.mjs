@@ -90,7 +90,10 @@ const EXPECT = {
   '/products': /refurbished/i,
   '/returns': /14 days.*change your mind|change your mind/i,
   '/delivery': /next.working.day|next-day/i,
-  '/cookies': /no analytics|none at present/i,
+  // The policy must say analytics is opt-in — that is the promise the consent
+  // banner makes. It used to say there was no analytics at all; now there is
+  // GA and Clarity behind consent, and the policy says so.
+  '/cookies': /only if you accept/i,
   '/privacy': /privacy/i,
   '/faq': /./,
   '/checkout': /./,
