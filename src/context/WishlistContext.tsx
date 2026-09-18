@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { Product } from '../types';
 import { readWishlist, addWishlistItem, removeWishlistItem, mergeLocalWishlist, clearWishlistRemote } from '../lib/userData';
 import { useCatalogue } from './CatalogueContext';
@@ -27,9 +27,28 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   // Store full product objects locally; only ids are persisted remotely.
   const [items, setItems] = useState<Product[]>([]);
   const [syncedUserId, setSyncedUserId] = useState<string | null>(null);
+  const hydrated = useRef(false);
 
-  // Persist IDs to localStorage
+  // Read the saved ids back once the catalogue can resolve them.
+  //
+  // This never happened for a guest. Ids were written to localStorage on
+  // every change but only ever read at sign-in, so a shopper who hearted a
+  // few phones and opened the wishlist page found "Nothing saved yet" — and
+  // worse, the persist effect below ran on the empty first render and wiped
+  // the stored ids before anything could read them, so the hearts were gone
+  // for good, sign-in merge included.
   useEffect(() => {
+    if (hydrated.current || catalogue.length === 0) return;
+    const byId = new Map(catalogue.map(p => [p.id, p]));
+    const saved = loadLocal().map(id => byId.get(id)).filter(Boolean) as Product[];
+    hydrated.current = true;
+    if (saved.length) setItems(prev => (prev.length ? prev : saved));
+  }, [catalogue]);
+
+  // Persist IDs to localStorage — but not before hydration, or the empty
+  // first render overwrites what was saved.
+  useEffect(() => {
+    if (!hydrated.current) return;
     localStorage.setItem(WISHLIST_KEY, JSON.stringify(items.map(i => i.id)));
   }, [items]);
 

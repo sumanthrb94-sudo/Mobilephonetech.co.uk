@@ -293,7 +293,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           {/* Brand row */}
           <div style={{ marginBottom: 6 }}>
             <span style={{
-              fontFamily: 'var(--font-sans)', fontSize: '9px', fontWeight: 700,
+              fontFamily: 'var(--font-sans)', fontSize: '10.5px', fontWeight: 700,
               letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF',
             }}>
               {phone.brand}

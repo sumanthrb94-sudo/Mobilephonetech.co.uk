@@ -4,6 +4,7 @@ import React from 'react';
 import { WishlistProvider, useWishlist } from '../../context/WishlistContext';
 import { AuthProvider } from '../../context/AuthContext';
 import type { Product } from '../../types';
+import { MOCK_PHONES } from '../../data';
 
 // WishlistProvider depends on AuthProvider (calls useAuth() internally)
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -205,16 +206,50 @@ describe('WishlistContext', () => {
   });
 
   it('writes current item ids to localStorage on mount (initial empty state)', () => {
-    // WishlistContext stores only product IDs in localStorage; full Product
-    // objects are only rehydrated from Supabase when a real user is logged in.
-    // Without an authenticated user the context initialises items as [] and
-    // the persistence effect writes [] to the key on first render.
-    // This verifies the key is created/owned by the context from the start.
+    // With nothing saved, the first render still leaves the key owned by the
+    // context, as an empty list.
     renderHook(() => useWishlist(), { wrapper });
 
     const stored = JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? 'null');
     expect(Array.isArray(stored)).toBe(true);
     expect(stored).toHaveLength(0);
+  });
+
+  // ── A guest's saved hearts come back ──────────────────────────────────────
+  //
+  // Ids were written on every change but only ever read back at sign-in, so a
+  // signed-out shopper who hearted a phone and opened the wishlist page found
+  // it empty — and the empty first render then overwrote the saved ids, so
+  // the hearts were gone for good, sign-in merge included. These pin both
+  // halves: saved ids hydrate to products from the catalogue, and mounting
+  // never wipes what was saved.
+
+  it('hydrates a guest wishlist from saved ids on mount', () => {
+    const saved = MOCK_PHONES[0];
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify([saved.id]));
+
+    const { result } = renderHook(() => useWishlist(), { wrapper });
+
+    expect(result.current.items.map(i => i.id)).toEqual([saved.id]);
+    expect(result.current.isInWishlist(saved.id)).toBe(true);
+  });
+
+  it('does not wipe saved ids on the first render', () => {
+    const saved = MOCK_PHONES[0];
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify([saved.id]));
+
+    renderHook(() => useWishlist(), { wrapper });
+
+    expect(JSON.parse(localStorage.getItem(WISHLIST_KEY) ?? '[]')).toEqual([saved.id]);
+  });
+
+  it('a heart survives a remount, as it must survive a page load', () => {
+    const first = renderHook(() => useWishlist(), { wrapper });
+    act(() => first.result.current.addToWishlist(MOCK_PHONES[1]));
+    first.unmount();
+
+    const second = renderHook(() => useWishlist(), { wrapper });
+    expect(second.result.current.items.map(i => i.id)).toEqual([MOCK_PHONES[1].id]);
   });
 
   // ── clearWishlist ─────────────────────────────────────────────────────────
