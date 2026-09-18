@@ -19,11 +19,12 @@
 import { chromium } from 'playwright';
 import { resolveChromium } from './chromium-path.mjs';
 import {
-  seed, waitForEmulators, getProduct, attemptMessageAs, attemptReturnReadAs,
+  seed, waitForEmulators, getProduct, attemptMessageAs, attemptReturnReadAs, signInForToken,
   PASSWORD, CUSTOMER_EMAIL, ADMIN_EMAIL,
 } from './emulator-seed.mjs';
 
 const BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
+const API = process.env.E2E_API_URL || 'http://127.0.0.1:4174';
 const EXE = resolveChromium();
 
 const results = [];
@@ -174,10 +175,37 @@ await Promise.all([
 
     await cust.getByRole('button', { name: /review order/i }).first().click();
     await cust.waitForTimeout(1500);
-    await cust.getByRole('button', { name: /place your order/i }).first().click();
-    await cust.waitForTimeout(2500);
-    rec('customer', 'Order completes',
-      /(order confirmed|thank you|order number|confirmation)/i.test(await text(cust)));
+
+    // There is no "place your order" button any more, and its absence is the
+    // point: PayPal is the only gateway, so the review step hands off to it
+    // or, with no credentials in the suite, says checkout is unavailable.
+    // e2e/checkout.mjs asserts that in depth; this only confirms the walk
+    // reaches the hand-off while the admin is busy elsewhere.
+    const review = await text(cust);
+    rec('customer', 'Review step ends at the payment gateway, not a free submit',
+      /checkout is temporarily unavailable|paypal/i.test(review) && !/place your order/i.test(review),
+      review.slice(0, 120));
+
+    // The joins below need an order on the books, so one is placed through
+    // the order route — the same way a phone order would be — for the buyer
+    // the customer thread just walked through checkout.
+    // As the signed-in customer, so the order carries their uid and shows on
+    // their /orders page for the return step below; a bare call would write
+    // a guest order they could never see.
+    const token = await signInForToken(CUSTOMER_EMAIL);
+    const placed = await fetch(`${API}/api/orders`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        items: [{ productId: 'apple-iphone-17', quantity: 1 }],
+        shippingOptionId: 'standard',
+        shippingAddress: {
+          fullName: BUYER, addressLine1: '2 Concurrency Close', city: 'London',
+          postalCode: 'NW1 6XE', phone: '07700900456', email: CUSTOMER_EMAIL,
+        },
+      }),
+    }).then(r => r.status).catch(() => 0);
+    rec('customer', 'Order completes', placed === 201, `POST /api/orders -> ${placed}`);
   })(),
 ]);
 
