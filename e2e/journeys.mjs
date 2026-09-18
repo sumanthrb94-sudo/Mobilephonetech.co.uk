@@ -31,6 +31,30 @@ async function dismissCookies(page) {
   if (await b.count()) { await b.first().click().catch(() => {}); await page.waitForTimeout(400); }
 }
 
+/**
+ * Open the first product the shop lists that can actually be bought.
+ *
+ * Cards for sold-out stock say so on the card; skipping those keeps the
+ * add-to-cart checks below about the control, not about whether the first
+ * listing happened to have stock that day.
+ */
+async function openInStockProduct(page) {
+  await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2500);
+  await dismissCookies(page);
+  const cards = page.locator('article[id^="product-card-"]');
+  const n = await cards.count();
+  for (let i = 0; i < n; i++) {
+    const card = cards.nth(i);
+    const text = (await card.innerText().catch(() => '')).toLowerCase();
+    if (/out of stock|sold out/.test(text)) continue;
+    await card.locator('[aria-label^="View "]').first().click();
+    await page.getByRole('button', { name: /add to cart/i }).first().waitFor({ timeout: 25000 });
+    return;
+  }
+  throw new Error(`no in-stock product among ${n} cards on /products`);
+}
+
 async function run(view, contextOpts) {
   const browser = await chromium.launch({ ...(EXE ? { executablePath: EXE } : {}), args: ['--no-sandbox'] });
   const ctx = await browser.newContext(contextOpts);
@@ -291,14 +315,23 @@ async function run(view, contextOpts) {
   } catch (e) { rec(view, 'Search returns Samsung matches', 'FAIL', e.message.slice(0, 100)); }
 
   // ── Product detail (wait for price, not a fixed delay) ──
+  //
+  // The product is found from the shop, not hard-coded. This used to open
+  // /product/apple-iphone-17-unlocked, an id that exists only in the mock
+  // catalogue — so against the emulator seed every product-page check below
+  // failed on a "no longer available" page, and against mock data the suite
+  // never exercised the real catalogue at all. Taking the first card the
+  // shop lists that is not sold out makes the walk the shopper's walk,
+  // whatever the data behind it.
   try {
-    await page.goto(`${BASE}/product/apple-iphone-17-unlocked`, { waitUntil: 'domcontentloaded' });
-    await page.getByRole('button', { name: /add to cart/i }).first().waitFor({ timeout: 25000 });
+    await openInStockProduct(page);
     await dismissCookies(page);
     await shot(page, view, 'product-detail');
     const t = await txt(page);
     rec(view, 'Product detail renders', /£\d/.test(t) ? 'PASS' : 'FAIL');
-    rec(view, 'Variant selectors present', /256GB|512GB/.test(t) ? 'PASS' : 'FAIL');
+    // WARN, not FAIL: a single-configuration listing has nothing to select.
+    rec(view, 'Variant selectors present', /\b(64|128|256|512)\s?GB\b|\b1\s?TB\b/.test(t) ? 'PASS' : 'WARN',
+      'no storage variants on this listing');
     rec(view, 'Delivery estimate shown', /delivery|get it by/i.test(t) ? 'PASS' : 'WARN');
   } catch (e) { rec(view, 'Product detail renders', 'FAIL', e.message.slice(0, 100)); }
 
@@ -325,6 +358,21 @@ async function run(view, contextOpts) {
     });
     rec(view, 'Product page shows a price without scrolling',
       priceOnFirstScreen ? 'PASS' : 'FAIL');
+
+    // A price with nothing to act on is half a buy box. On a phone the real
+    // button sits about 1,200px down, so the sticky bar has to be up on its
+    // own — the bar used to arm only after the button had been seen once,
+    // which on a phone meant no buy control anywhere on the first screen.
+    await page.waitForTimeout(1200);
+    const buyOnFirstScreen = await page.evaluate(() => {
+      const vh = window.innerHeight;
+      const onScreen = (el) => { const r = el?.getBoundingClientRect(); return !!r && r.width > 0 && r.top < vh && r.bottom > 0; };
+      const real = [...document.querySelectorAll('button')]
+        .find(b => /add to cart|out of stock/i.test(b.textContent || '') && !b.closest('.pdp-stickybuy'));
+      return onScreen(real) || onScreen(document.querySelector('.pdp-stickybuy'));
+    });
+    rec(view, 'Product page shows a buy control without scrolling',
+      buyOnFirstScreen ? 'PASS' : 'FAIL');
 
     // Deep in the page, past the specs and reviews, the bar must take over.
     await page.evaluate(() => window.scrollTo(0, 2400));

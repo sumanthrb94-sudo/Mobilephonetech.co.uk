@@ -34,8 +34,19 @@ const accept = page.getByRole('button', { name: /accept all cookies/i });
 if (await accept.count()) await accept.first().click().catch(() => {});
 
 // ── Into the basket ──
-await page.locator('[role="article"]').first().click();
-await page.waitForTimeout(2200);
+// The first card that is not sold out. The first listing in the catalogue is
+// whichever one sorts first, and a suite that ran after another suite bought
+// it out found "Out of stock" where it expected Add to cart and crashed.
+const cards = page.locator('article[id^="product-card-"]');
+let opened = false;
+for (let i = 0, n = await cards.count(); i < n && !opened; i++) {
+  const card = cards.nth(i);
+  if (/out of stock|sold out/i.test(await card.innerText().catch(() => ''))) continue;
+  await card.click();
+  opened = true;
+}
+if (!opened) throw new Error('no in-stock product on /products');
+await page.getByRole('button', { name: /^add to cart$/i }).first().waitFor({ timeout: 25000 });
 await page.getByRole('button', { name: /^add to cart$/i }).first().click();
 await page.waitForTimeout(1400);
 const keepShopping = page.getByRole('button', { name: /continue shopping|close/i }).first();
