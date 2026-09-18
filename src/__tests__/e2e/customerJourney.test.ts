@@ -197,16 +197,19 @@ describe('the whole journey, in order', () => {
       // The browser offers a price of £1. It must be ignored entirely.
       items: [{ productId: 'apple-iphone-13-128gb', quantity: 1, price: 1 }],
       shippingAddress: ADDRESS,
-      shippingOptionId: 'nextday',
+      shippingOptionId: 'next_day',
     });
 
     expect(out.code).toBe(201);
     orderId = out.body.order.id;
 
-    // £389 + £14.99 shipping, then 20% VAT on the lot.
+    // £389 + £19.99 Next Day — the price the checkout screen shows — then
+    // 20% VAT on the lot. This used to send `nextday`, a key only the server
+    // knew, at a price only the server had; the screen has always sent
+    // `next_day` at £19.99, and the server now agrees with it.
     expect(out.body.order.subtotal).toBe(389);
-    expect(out.body.order.shippingCost).toBe(14.99);
-    expect(out.body.order.total).toBe(484.79);
+    expect(out.body.order.shippingCost).toBe(19.99);
+    expect(out.body.order.total).toBe(490.79);
     expect(out.body.order.status).toBe('pending');
     expect(out.body.confirmationEmail.sent).toBe(true);
 
