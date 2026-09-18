@@ -51,9 +51,9 @@ export default function ComparisonTool() {
           >
             <Scale className="h-3 w-3" /> Comparison tool
           </div>
-          <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px, 4.5vw, 52px)', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--black)', lineHeight: 1.1 }}>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(32px, 4.5vw, 52px)', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--black)', lineHeight: 1.1 }}>
             Side-by-side comparison
-          </h2>
+          </h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '16px', color: 'var(--grey-50)', maxWidth: '640px', margin: '16px auto 0' }}>
             Compare specs, pricing, and features to find the perfect device for your needs.
           </p>

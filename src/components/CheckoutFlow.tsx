@@ -458,7 +458,7 @@ export default function CheckoutFlow() {
               {/* Login / Guest Selection */}
               {checkoutMode === 'selection' && !isAuthenticated && !user?.isGuest && (
                 <motion.div key="selection" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Checkout</h2>
+                  <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Checkout</h1>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     
                     <div style={{ padding: 'var(--spacing-24)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>

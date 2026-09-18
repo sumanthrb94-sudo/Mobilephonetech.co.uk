@@ -40,11 +40,15 @@ export interface StickyBuyBarProps {
   onAdd: () => void;
 }
 
+/** Long enough for layout and the gallery to settle; short enough to feel like part of the page. */
+const SETTLE_MS = 700;
+
 export default function StickyBuyBar({
   watch, title, price, originalPrice, label, disabled = false, onAdd,
 }: StickyBuyBarProps) {
   const [show, setShow] = useState(false);
-  const seen = useRef(false);
+  const armed = useRef(false);
+  const offScreen = useRef(false);
 
   useEffect(() => {
     const el = watch.current;
@@ -52,20 +56,30 @@ export default function StickyBuyBar({
       setShow(false);
       return;
     }
+    const apply = () => setShow(armed.current && offScreen.current);
 
     const io = new IntersectionObserver(
       ([entry]) => {
-        // Only once the button has actually been on screen. Without this the
-        // bar flashes on during the first paint, before layout settles, and
-        // reads as a dialog appearing by itself.
-        if (entry.isIntersecting) seen.current = true;
-        setShow(seen.current && !entry.isIntersecting);
+        offScreen.current = !entry.isIntersecting;
+        // Seeing the button on screen is one way to arm the bar: from then on
+        // it shows whenever the button has gone.
+        if (entry.isIntersecting) armed.current = true;
+        apply();
       },
       { rootMargin: '0px 0px -8px 0px' },
     );
-
     io.observe(el);
-    return () => io.disconnect();
+
+    // The other way is time. This used to arm ONLY once the button had been
+    // on screen, to stop the bar flashing during the first paint before
+    // layout settled. On a phone that meant no buy control at all on the
+    // first screen: the real button sits about 1,200px down, so a shopper
+    // who had not yet scrolled to it and back saw a price and no way to act
+    // on it — the exact gap the bar exists to close. A short settle delay
+    // keeps the first paint quiet and still puts the bar up on its own.
+    const settle = window.setTimeout(() => { armed.current = true; apply(); }, SETTLE_MS);
+
+    return () => { io.disconnect(); window.clearTimeout(settle); };
   }, [watch]);
 
   if (!show || typeof document === 'undefined') return null;

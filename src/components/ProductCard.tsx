@@ -76,6 +76,12 @@ interface ProductCardProps {
   compact?: boolean;
 }
 
+/** True on a device with a real pointer; false on touch screens. */
+const canHover = () =>
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(hover: hover)').matches
+    : true;
+
 const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
   const navigate  = useNavigate();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -130,7 +136,11 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
         whileHover={{ y: -4 }}
         transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
         onClick={() => navigate(`/product/${phone.id}`)}
-        onMouseEnter={() => { setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
+        // Hover only where hovering exists. A tap on a touch screen fires
+        // mouseenter too and nothing ever fires mouseleave, so the Quick view
+        // pill appeared on the first card tapped and stayed there, clipped at
+        // the card edge, until the page was left.
+        onMouseEnter={() => { if (canHover()) setIsHovering(true); prefetchProductDetail.onMouseEnter(); }}
         onMouseLeave={() => setIsHovering(false)}
         onFocus={prefetchProductDetail.onFocus}
         onTouchStart={prefetchProductDetail.onTouchStart}
