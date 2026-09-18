@@ -191,7 +191,13 @@ check('EXPLOIT', 'Customer edits a message after the fact',
 // The rules stop the browser writing orders at all, so the attack surface
 // moved to /api/orders. These probe the handler itself.
 const API = process.env.E2E_API_URL || 'http://127.0.0.1:4174';
-const ADDRESS = { fullName: 'Attacker', addressLine1: '1 Test St', postalCode: 'NW1 6XE', email: 'a@example.com' };
+// Every field the order route requires. It gained a phone requirement after
+// this was written, and without one every request below was refused for the
+// missing phone before any pricing ran — so each "exploit" was denied for the
+// wrong reason and the control that would have caught it read as FAIL. A
+// control that fails makes every denial above it unproven, which is the point
+// of having one; keep this address complete.
+const ADDRESS = { fullName: 'Attacker', addressLine1: '1 Test St', postalCode: 'NW1 6XE', email: 'a@example.com', phone: '07700900123' };
 
 async function postOrder(payload) {
   try {

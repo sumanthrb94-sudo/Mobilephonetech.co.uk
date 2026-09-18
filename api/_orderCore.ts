@@ -21,10 +21,23 @@ import { orderConfirmationEmail } from './_templates.js';
 /** A basket that priced correctly but could no longer be filled. */
 export class StockConflict extends Error {}
 
+/**
+ * The delivery services the checkout screen offers, priced as the screen
+ * prices them. Keyed by the ids SHIPPING_OPTIONS in CheckoutContext sends —
+ * `next_day` with the underscore, which is what the screen has always sent.
+ *
+ * This table used to know that service as `nextday`, at a different price,
+ * and an unrecognised id quietly fell back to standard. So every Next Day
+ * order was charged £0 for delivery and written as "Standard Delivery": the
+ * customer paid for nothing they were promised, and the promise never reached
+ * the warehouse. The screen, /api/delivery and this table must agree, and
+ * src/__tests__/api/orderCoreShipping.test.ts drives this from the screen's
+ * own list so they cannot drift apart again.
+ */
 const SHIPPING: Record<string, { name: string; cost: number }> = {
   standard: { name: 'Standard Delivery', cost: 0 },
   express: { name: 'Express Delivery', cost: 9.99 },
-  nextday: { name: 'Next Day Delivery', cost: 14.99 },
+  next_day: { name: 'Next Day Delivery', cost: 19.99 },
 };
 
 const COUPONS: Record<string, { type: 'percentage' | 'fixed'; value: number; minOrder?: number }> = {
@@ -121,7 +134,11 @@ export async function priceAndValidate(
     ? typedEmail
     : null;
 
-  const shipping = SHIPPING[String(body.shippingOptionId ?? 'standard')] ?? SHIPPING.standard;
+  // Unknown is refused, not defaulted. Defaulting to free standard delivery is
+  // how a mis-keyed Next Day went out free for as long as it did.
+  const shippingId = String(body.shippingOptionId ?? 'standard');
+  const shipping = Object.prototype.hasOwnProperty.call(SHIPPING, shippingId) ? SHIPPING[shippingId] : null;
+  if (!shipping) return fail(400, 'That delivery option is not available');
 
   const priced: Array<Record<string, unknown>> = [];
   let subtotal = 0;
