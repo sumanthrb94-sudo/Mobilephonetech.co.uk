@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
           </section>
 
           <section style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)', marginTop: 'var(--spacing-16)' }}>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>Data protection contact</h3>
+            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>Contact our Data Protection Officer</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Mail size={16} style={{ color: 'var(--grey-40)' }} />
