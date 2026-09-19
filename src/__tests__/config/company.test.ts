@@ -35,10 +35,10 @@ describe('company identity', () => {
     expect(COMPANY.vatNumber).toMatch(/^GB ?\d{3} ?\d{4} ?\d{2}$/);
   });
 
-  it('never prints an invented address anywhere in the source', () => {
-    // The privacy notice used to name a data controller at an address that
-    // does not exist. Keeping the placeholder out of the tree is the whole
-    // point of having one config file.
+  it('never prints the old placeholder address anywhere in the source', () => {
+    // The privacy notice used to name the data controller at an address
+    // other than the registered office. Keeping that string out of the tree
+    // is the whole point of having one config file.
     const files = ['src/components/legal/PrivacyPolicy.tsx', 'src/components/layout/CheckoutFooter.tsx', 'src/components/layout/Footer.tsx', 'api/_templates.ts'];
     for (const f of files) {
       const text = readFileSync(resolve(process.cwd(), f), 'utf8');

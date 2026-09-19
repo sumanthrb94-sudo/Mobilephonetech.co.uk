@@ -107,17 +107,21 @@ export default function PrivacyPolicy() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Mail size={16} style={{ color: 'var(--grey-40)' }} />
-                {/* The monitored inbox. dpo@ was printed here but no such
-                    mailbox exists on the mail plan (see company.ts), so a
-                    data-subject request sent to it bounced. */}
+                {/* The monitored inbox from company.ts, which documents info@
+                    as the mailbox that exists and is read. This line printed
+                    dpo@lehart.co.uk before; whether that mailbox is provisioned
+                    was not verified — if it is, and someone reads it, it is
+                    the better address here and should be restored. */}
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>{COMPANY.supportEmail}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <MapPin size={16} style={{ color: 'var(--grey-40)' }} />
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
-                  {/* From company.ts, never typed here: this line used to carry an
-                      invented address, which on a privacy notice is a false
-                      statement about who the data controller is. */}
+                  {/* From company.ts, never typed here. This line used to carry
+                      a typed-in London address that is not the registered
+                      office the company supplied; a privacy notice has to name
+                      the controller at its real address. (Not quoted: a test
+                      keeps that string out of the tree.) */}
                   {[COMPANY.legalName, COMPANY.registeredOffice].filter(Boolean).join(', ')}
                 </span>
               </div>
