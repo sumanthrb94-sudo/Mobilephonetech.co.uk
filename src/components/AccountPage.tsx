@@ -10,6 +10,7 @@ import { useSeo } from '../hooks/useSeo';
 import ProductImage from './ProductImage';
 import AuthModal from './AuthModal';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { COMPANY, companyDetailsComplete } from '../config/company';
 
 type Tab = 'profile' | 'orders' | 'addresses' | 'security';
 
@@ -271,6 +272,30 @@ export default function AccountPage() {
           <button type="button" className="btn btn-primary btn-md" onClick={() => setAuthOpen(true)}>
             Sign in or create an account
           </button>
+
+          {/* Phones only: the footer that carries the legal links and the
+              registered identity is hidden below 1024px, and a visitor who
+              has not signed in never reaches the Help & legal list below.
+              Without this a phone visitor had no way to the terms or privacy
+              notice from here, and no page telling them who the company is. */}
+          {!isDesktop && (
+            <div style={{ marginTop: 28 }}>
+              <nav aria-label="Legal" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px' }}>
+                {MORE_LINKS.filter(l => /terms|privacy|cookies|returns|delivery/.test(l.to)).map(l => (
+                  <Link key={l.to} to={l.to} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: 'var(--grey-60)' }}>
+                    {l.label}
+                  </Link>
+                ))}
+              </nav>
+              {companyDetailsComplete() && (
+                <p className="app-legal" style={{ textAlign: 'center' }}>
+                  {COMPANY.legalName} · Registered in England &amp; Wales, company no. {COMPANY.companyNumber}
+                  {' '}· Registered office: {COMPANY.registeredOffice}
+                  {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
+                </p>
+              )}
+            </div>
+          )}
         </div>
         <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       </div>
@@ -331,6 +356,16 @@ export default function AccountPage() {
                 );
               })}
             </nav>
+            {/* The registered identity, here because the footer that carries
+                it on desktop is hidden on phones. Same source as the footer:
+                src/config/company.ts, nothing typed here. */}
+            {companyDetailsComplete() && (
+              <p className="app-legal">
+                {COMPANY.legalName} · Registered in England &amp; Wales, company no. {COMPANY.companyNumber}
+                {' '}· Registered office: {COMPANY.registeredOffice}
+                {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
+              </p>
+            )}
 
             <button type="button" className="app-list app-list__row app-list__row--danger" onClick={handleLogout}>
               <span className="app-list__icon"><LogOut size={18} /></span>

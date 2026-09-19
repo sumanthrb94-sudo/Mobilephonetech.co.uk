@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Lock } from 'lucide-react';
+import { COMPANY } from '../../config/company';
 
 /**
  * CheckoutFooter — minimal legal footer shown only on /checkout.
@@ -50,7 +51,11 @@ export default function CheckoutFooter() {
             color: 'var(--grey-50)',
           }}
         >
-          © 2026 LeHart.co.uk Ltd · Registered in England &amp; Wales
+          {/* Same source as the site footer, so the checkout never names a
+              company that does not exist at Companies House. */}
+          © 2026 {COMPANY.legalName || COMPANY.tradingName}
+          {COMPANY.companyNumber ? ` · Registered in England & Wales, company no. ${COMPANY.companyNumber}` : ''}
+          {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
         </div>
         <nav style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px' }}>
           {[

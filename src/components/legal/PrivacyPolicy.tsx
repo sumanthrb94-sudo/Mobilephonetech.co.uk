@@ -103,15 +103,23 @@ export default function PrivacyPolicy() {
           </section>
 
           <section style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)', marginTop: 'var(--spacing-16)' }}>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>Contact our Data Protection Officer</h3>
+            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>Data protection contact</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <Mail size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>dpo@lehart.co.uk</span>
+                {/* The monitored inbox. dpo@ was printed here but no such
+                    mailbox exists on the mail plan (see company.ts), so a
+                    data-subject request sent to it bounced. */}
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>{COMPANY.supportEmail}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <MapPin size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>LeHart Ltd, 124 Tech Hub, London, EC1A 1BB, United Kingdom</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
+                  {/* From company.ts, never typed here: this line used to carry an
+                      invented address, which on a privacy notice is a false
+                      statement about who the data controller is. */}
+                  {[COMPANY.legalName, COMPANY.registeredOffice].filter(Boolean).join(', ')}
+                </span>
               </div>
             </div>
           </section>

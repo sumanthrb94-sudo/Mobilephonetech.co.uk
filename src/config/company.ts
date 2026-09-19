@@ -10,22 +10,26 @@
  * Empty string means "not yet provided": the UI renders nothing rather than a
  * placeholder, because publishing an invented company number or ICO reference
  * is worse than publishing none — it is a false statement on a legal document.
+ *
+ * The identity below is as supplied by the company on 19 September 2026, in
+ * the exact form Companies House holds it. The ICO reference is still to
+ * come; the privacy policy omits the line until it does.
  */
 export const COMPANY = {
   /** Trading name shown across the storefront. */
   tradingName: 'LeHart',
 
   /** Registered company name, e.g. "LeHart Ltd". Companies House exact form. */
-  legalName: '',
+  legalName: 'LE HART LTD',
 
   /** Companies House number, e.g. "12345678". */
-  companyNumber: '',
+  companyNumber: '12379174',
 
   /** Registered office address, single line. */
-  registeredOffice: '',
+  registeredOffice: '250a High Road, Ilford, Essex, England, IG1 1YS',
 
   /** VAT registration number, e.g. "GB 123 4567 89". Leave empty if not registered. */
-  vatNumber: '',
+  vatNumber: 'GB 343 0196 26',
 
   /** ICO data-protection registration reference, e.g. "ZA123456". */
   icoRegistration: '',
