@@ -36,7 +36,8 @@
     "lint:api": "tsc -p tsconfig.api.json --noEmit",
     "pdf:brevo": "node scripts/make-brevo-pdf.mjs",
     "e2e:chrome": "node e2e/chrome-collisions.mjs",
-    "e2e:search": "node e2e/search.mjs"
+    "e2e:search": "node e2e/search.mjs",
+    "e2e:postcode": "node e2e/postcode.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
@@ -50,6 +51,7 @@
     "firebase": "^12.17.1",
     "firebase-admin": "^13.10.0",
     "graphql": "^16.13.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.0",
@@ -62,6 +64,7 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/express": "^4.17.21",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

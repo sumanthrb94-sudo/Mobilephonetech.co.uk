@@ -37,6 +37,13 @@ export default defineConfig(() => {
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return undefined;
+            /* Leaflet is only ever imported dynamically, by the checkout's
+               postcode map. Rolling it into `vendor` — which every page
+               modulepreloads — would have made every visitor download a
+               map library to look at a phone, which is the opposite of what
+               the dynamic import was for. Returning undefined leaves it in
+               the lazy chunk its importer created. */
+            if (id.includes('leaflet')) return undefined;
             if (id.includes('react-router'))  return 'router';
             if (id.includes('lucide-react'))  return 'lucide';
             if (

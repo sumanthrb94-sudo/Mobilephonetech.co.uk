@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,7 @@ import AuthModal from './AuthModal';
 import ProductImage from './ProductImage';
 import PayPalCheckout, { PayPalPayload, isPayPalConfigured } from './PayPalCheckout';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
-import { lookupPostcode } from '../utils/postcodeLookup';
+import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
 
 // PayPal is the only payment gateway. This form NEVER collects card details.
 //
@@ -24,6 +24,11 @@ import { lookupPostcode } from '../utils/postcodeLookup';
 // checkout, so there is now exactly one, and it is the one that works.
 
 const PAYPAL_METHOD = { brand: 'PayPal', last4: 'PYPL', display: 'PayPal' } as const;
+
+/* Leaflet plus its stylesheet is ~42KB gzipped and is only ever wanted by a
+   shopper who pressed Find address. Split out so checkout — the page least
+   able to afford weight — never loads it for anyone else. */
+const AddressMap = lazy(() => import('./AddressMap'));
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -47,6 +52,67 @@ export default function CheckoutFlow() {
   const { user, isAuthenticated, continueAsGuest } = useAuth();
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  /**
+   * The postcode lookup's one piece of state. A union rather than a bag of
+   * booleans: "loading and errored and found" is not a state this can reach
+   * by construction, so it cannot be rendered by accident either.
+   */
+  type LookupState =
+    | { status: 'idle' }
+    | { status: 'loading' }
+    | { status: 'found'; place: PostcodePlace }
+    | { status: 'error'; message: string };
+  const [lookupState, setLookupState] = useState<LookupState>({ status: 'idle' });
+
+  /**
+   * Look the postcode up and fill in what came back.
+   *
+   * Writes through the DOM nodes rather than through state because this form
+   * is uncontrolled — defaultValue plus FormData on submit — so the inputs
+   * ARE the source of truth here, and setting state instead would leave the
+   * boxes showing the old values while the submit sent new ones. The pattern
+   * matches the "use this address" shortcut above it.
+   *
+   * Only ever fills the town, county and postcode. The house number and
+   * street are left alone even when empty: the old demo invented "1 <some
+   * street>" and a plausible wrong address that a shopper skims past is how
+   * a parcel goes to the wrong door.
+   */
+  const runPostcodeLookup = async () => {
+    const field = document.getElementById('postcode-lookup') as HTMLInputElement | null;
+    const typed = field?.value?.trim() ?? '';
+
+    setLookupState({ status: 'loading' });
+    const result = await lookupPostcode(typed);
+
+    if (!result.ok) {
+      setLookupState({ status: 'error', message: result.message });
+      return;
+    }
+
+    const { place } = result;
+    const set = (name: string, value: string, { overwrite = true } = {}) => {
+      const el = document.querySelector<HTMLInputElement>(`input[name="${name}"]`);
+      if (!el || !value) return;
+      if (!overwrite && el.value.trim()) return;
+      el.value = value;
+    };
+
+    set('postalCode', place.postcode);
+    set('city', place.town);
+    // County has no field of its own; line 2 is where it belongs, and only
+    // if the shopper has not already put something there.
+    if (place.county && place.county !== place.town) {
+      set('addressLine2', place.county, { overwrite: false });
+    }
+
+    setLookupState({ status: 'found', place });
+
+    // Straight to the one thing still to type.
+    const line1 = document.querySelector<HTMLInputElement>('input[name="addressLine1"]');
+    line1?.focus();
+  };
 
   // Why the server refused the order, shown on the review step. Empty when
   // there is nothing wrong.
@@ -558,43 +624,72 @@ export default function CheckoutFlow() {
                     )}
                   </div>
 
-                  {/* Postcode quick-lookup — mocks a PAF-style lookup so the
-                      pattern is in place when a real PAF / Loqate feed lands. */}
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: 'var(--spacing-20)' }}>
+                  {/* Postcode lookup — real, against postcodes.io.
+                      What it fills is the town and county, checked against
+                      the ONS database, plus a map of where that postcode is.
+                      It does NOT offer a list of houses to pick from: that
+                      list is Royal Mail's PAF and PAF is licensed. See
+                      src/utils/postcodeLookup.ts. */}
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: 'var(--spacing-12)' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={labelStyle}>Postcode lookup <span style={{ fontWeight: 500, color: 'var(--grey-40)' }}>(demo)</span></label>
+                      <label style={labelStyle} htmlFor="postcode-lookup">Postcode lookup</label>
                       <input
                         type="text"
                         id="postcode-lookup"
+                        name="postcodeLookup"
                         placeholder="e.g. SW1A 1AA"
+                        autoComplete="postal-code"
                         style={inputStyle}
                         aria-describedby="postcode-lookup-hint"
+                        onChange={() => { if (lookupState.status !== 'idle') setLookupState({ status: 'idle' }); }}
+                        onKeyDown={(e) => {
+                          // Enter in this field means "look up", not "submit
+                          // the whole checkout" — which is what it meant
+                          // before, one keystroke from a half-filled address.
+                          if (e.key === 'Enter') { e.preventDefault(); void runPostcodeLookup(); }
+                        }}
                       />
                     </div>
                     <button
                       type="button"
-                      onClick={() => {
-                        const el = document.getElementById('postcode-lookup') as HTMLInputElement | null;
-                        const pc = el?.value?.trim() || '';
-                        if (!pc) return;
-                        const resolved = lookupPostcode(pc);
-                        if (!resolved) return;
-                        const line1El = document.querySelector<HTMLInputElement>('input[name="addressLine1"]');
-                        const cityEl  = document.querySelector<HTMLInputElement>('input[name="city"]');
-                        const pcEl    = document.querySelector<HTMLInputElement>('input[name="postalCode"]');
-                        if (pcEl) pcEl.value = resolved.postcode;
-                        if (cityEl) cityEl.value = resolved.city || cityEl.value;
-                        if (line1El && !line1El.value) line1El.value = `1 ${resolved.street}`;
-                        line1El?.focus();
-                        line1El?.setSelectionRange(0, 1);
-                      }}
+                      onClick={() => { void runPostcodeLookup(); }}
+                      disabled={lookupState.status === 'loading'}
                       className="btn btn-secondary btn-md"
                     >
-                      Find address
+                      {lookupState.status === 'loading' ? 'Finding…' : 'Find address'}
                     </button>
                   </div>
+
+                  {/* One live region for every outcome, so a screen reader is
+                      told what happened without hunting for it. */}
+                  <div aria-live="polite">
+                    {lookupState.status === 'error' && (
+                      <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-sale)', margin: '0 0 var(--spacing-12) 0' }}>
+                        {lookupState.message}
+                      </p>
+                    )}
+                    {lookupState.status === 'found' && (
+                      <div style={{ marginBottom: 'var(--spacing-12)' }}>
+                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-70)', margin: '0 0 8px 0' }}>
+                          Found <strong style={{ color: 'var(--black)' }}>{lookupState.place.postcode}</strong>
+                          {lookupState.place.town ? <> — {lookupState.place.town}</> : null}
+                          . Add your house number and street below.
+                        </p>
+                        {hasCoordinates(lookupState.place) && (
+                          <Suspense fallback={<div style={{ height: 170, borderRadius: 'var(--radius-lg)', background: 'var(--grey-5)', border: '1px solid var(--grey-20)' }} />}>
+                            <AddressMap
+                              latitude={lookupState.place.latitude}
+                              longitude={lookupState.place.longitude}
+                              label={lookupState.place.postcode}
+                            />
+                          </Suspense>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <p id="postcode-lookup-hint" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', margin: '0 0 var(--spacing-24) 0' }}>
-                    Demo lookup — fills a sample London address. A real PAF/Loqate integration replaces this in production.
+                    Checks your postcode and fills in the town and county. Your house number and street are yours to add.
                   </p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
