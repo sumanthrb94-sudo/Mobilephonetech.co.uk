@@ -117,11 +117,20 @@ export default function TechnicalSpecs({ specs }: TechnicalSpecsProps) {
 
   const currentGroup = visibleGroups[activeTab] || visibleGroups[0];
 
-  // No heading or top margin of its own: its only caller is the product
-  // page, which wraps it in a titled "Specifications" section. Rendering
-  // "Technical specifications" underneath that said the same thing twice.
   return (
-    <div>
+    <div style={{ marginTop: 'var(--spacing-48)' }}>
+      <h2
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: 'clamp(22px, 2.5vw, 28px)',
+          fontWeight: 800,
+          letterSpacing: '-0.02em',
+          marginBottom: 'var(--spacing-24)',
+          color: 'var(--black)',
+        }}
+      >
+        Technical specifications
+      </h2>
 
       {/* Tabs */}
       <div

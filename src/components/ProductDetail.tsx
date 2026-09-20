@@ -37,7 +37,10 @@ import { generateProductDescription } from '../utils/productDescription';
 import type { Product } from '../types';
 import CountUp from './ui/CountUp';
 
+type Tab = 'overview' | 'specs' | 'reviews';
+
 function TabPanel({ phone }: { phone: Product }) {
+  const [tab, setTab] = React.useState<Tab>('overview');
   const [reviews, setReviews] = React.useState<import('../types').Review[]>(phone.reviews ?? []);
   const enrichedSpecs = enrichSpecs(phone.brand, phone.model, phone.specs);
 
@@ -65,103 +68,107 @@ function TabPanel({ phone }: { phone: Product }) {
     }
   };
 
-  /**
-   * Stacked sections, not tabs.
-   *
-   * Everything below the buy box was behind three tabs, and only the first
-   * was ever open. Measured on a Pixel 7: the page ran to 5,109px, of which
-   * the product's own evidence — description, what is included, the spec
-   * table, the reviews — occupied 821px behind a tab bar, while four
-   * full-width "you may also like" cards took 2,811px, 55% of the page. A
-   * shopper deciding whether to buy THIS phone scrolled past four other
-   * phones to reach the end and never saw a review, because reviews cost a
-   * tap that nothing prompted.
-   *
-   * So the tabs are gone and each panel is a section the shopper scrolls
-   * through, in the order the decision is made: what it is, what comes with
-   * it, what the numbers are, what other buyers said. Reviews carry an id so
-   * the rating line beside the title can link straight down to them.
-   */
-  const sections: { id: string; heading: string; body: React.ReactNode }[] = [
-    {
-      id: 'pdp-about',
-      heading: `About this ${phone.brand} ${phone.model}`,
-      body: (
-        <div style={{ display: 'grid', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
-          <div style={{ gridColumn: '1 / -1' }}>
-            <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-70)', lineHeight: 1.75, margin: 0 }}>
-              {phone.description || generateProductDescription(phone)}
-            </p>
-          </div>
-          {phone.conditionDescription && (
-            <div>
-              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>Condition notes</h3>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.7 }}>{phone.conditionDescription}</p>
-            </div>
-          )}
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>What's included</h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                `${phone.warrantyMonths}-month warranty`,
-                `${phone.returnDays}-day free returns`,
-                'Independently tested & verified',
-                'Unlocked — works with any UK network',
-                'Charger & cable included',
-              ].map((item) => (
-                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
-                  <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <EcoImpact productId={phone.id} />
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'pdp-specs',
-      heading: 'Specifications',
-      body: <TechnicalSpecs specs={enrichedSpecs} />,
-    },
-    {
-      id: 'pdp-reviews',
-      heading: 'Reviews',
-      body: (
-        <ReviewsSection
-          productId={phone.id}
-          reviews={reviews}
-          onAddReview={handleAddReview}
-        />
-      ),
-    },
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'specs',    label: 'Specifications' },
+    { id: 'reviews',  label: 'Reviews' },
   ];
 
   return (
-    <div style={{ marginTop: 'var(--spacing-24)' }}>
-      {sections.map(({ id, heading, body }) => (
-        <section
-          key={id}
-          id={id}
-          aria-labelledby={`${id}-h`}
-          style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-24)', paddingBottom: 'var(--spacing-24)' }}
-        >
-          <h2
-            id={`${id}-h`}
+    <div style={{ marginTop: 'var(--spacing-24)', borderTop: '1px solid var(--grey-10)' }}>
+      {/* Tab bar */}
+      <div
+        role="tablist"
+        style={{
+          display: 'flex',
+          gap: 0,
+          borderBottom: '1px solid var(--grey-10)',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+        }}
+      >
+        {tabs.map(({ id, label }) => (
+          <button
+            key={id}
+            role="tab"
+            aria-selected={tab === id}
+            onClick={() => setTab(id)}
             style={{
-              fontFamily: 'var(--font-sans)', fontSize: 'clamp(19px, 3vw, 22px)',
-              fontWeight: 800, color: 'var(--black)', margin: '0 0 var(--spacing-16)',
-              letterSpacing: '-0.01em',
+              padding: '14px 28px',
+              fontFamily: 'var(--font-body)',
+              fontSize: '14px',
+              fontWeight: tab === id ? 700 : 500,
+              color: tab === id ? 'var(--brand-cyan)' : 'var(--grey-50)',
+              background: 'none',
+              border: 'none',
+              borderBottom: tab === id ? '2px solid var(--brand-cyan)' : '2px solid transparent',
+              marginBottom: '-1px',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'color 0.15s, border-color 0.15s',
             }}
           >
-            {heading}
-          </h2>
-          {body}
-        </section>
-      ))}
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div style={{ padding: 'var(--spacing-32) 0' }}>
+        {/* No inline gridTemplateColumns below: it would outrank
+            lg:grid-cols-2. A bare `display: grid` is single-column anyway. */}
+        {tab === 'overview' && (
+          <div style={{ display: 'grid', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
+            {/* Product description — always shown */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-70)', lineHeight: 1.75, margin: 0 }}>
+                {phone.description || generateProductDescription(phone)}
+              </p>
+            </div>
+            {/* Condition notes */}
+            {phone.conditionDescription && (
+              <div>
+                <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>Condition notes</h3>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.7 }}>{phone.conditionDescription}</p>
+              </div>
+            )}
+            {/* Key highlights */}
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>What's included</h3>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[
+                  `${phone.warrantyMonths}-month warranty`,
+                  `${phone.returnDays}-day free returns`,
+                  'Independently tested & verified',
+                  'Unlocked — works with any UK network',
+                  'Charger & cable included',
+                ].map((item) => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+                    <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* Eco impact — compact row */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <EcoImpact productId={phone.id} />
+            </div>
+          </div>
+        )}
+
+        {tab === 'specs' && (
+          <TechnicalSpecs specs={enrichedSpecs} />
+        )}
+
+        {tab === 'reviews' && (
+          <ReviewsSection
+            productId={phone.id}
+            reviews={reviews}
+            onAddReview={handleAddReview}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -389,38 +396,18 @@ export default function ProductDetail() {
                 stars and a hardcoded "4.8★ (342 reviews)" on every product,
                 which is an invented aggregate — a banned practice under the
                 DMCC Act, and misleading regardless. */}
-            {/* Always present, and always a link down to the reviews section.
-                It used to render nothing at all when a product had no
-                reviews yet — which is every product until the first verified
-                buyer writes one — so the page gave no sign that reviews
-                existed. Saying "no reviews yet" is honest and still points
-                at the section; inventing an average is what the DMCC Act
-                prohibits and what this page used to do with a hardcoded
-                "4.8★ (342 reviews)" on every product. */}
-            <a
-              href="#pdp-reviews"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                textDecoration: 'none', color: 'inherit',
-              }}
-            >
-              {reviewCount > 0 ? (
-                <>
-                  <span style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
-                    ))}
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    {averageRating.toFixed(1)} ({reviewCount} review{reviewCount === 1 ? '' : 's'})
-                  </span>
-                </>
-              ) : (
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                  No reviews yet
+            {reviewCount > 0 && (
+              <>
+                <div style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+                  ))}
+                </div>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500 }}>
+                  {averageRating.toFixed(1)}★ ({reviewCount} review{reviewCount === 1 ? '' : 's'})
                 </span>
-              )}
-            </a>
+              </>
+            )}
           </div>
         </div>
   );
