@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Clock, TrendingUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCatalogue } from '../context/CatalogueContext';
@@ -64,21 +64,54 @@ export default function SearchAutocomplete({
   const { searchQuery, setSearchQuery } = useSearch();
   const { products } = useCatalogue();
   const navigate = useNavigate();
+  const { search: locationSearch } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [recent, setRecent] = useState<string[]>(() => (typeof window === 'undefined' ? [] : loadRecent()));
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Close on outside click
+  /**
+   * Whether the URL carries a search the shopper actually committed to.
+   *
+   * This is the line between a DRAFT and a SEARCH, and the whole reason the
+   * abandoned-text bug existed. searchQuery is a single useState in
+   * SearchContext and the Navbar is the app shell, so it never unmounts:
+   * type "Iph", think better of it, tap the page — and "Iph" sits in the bar
+   * for the rest of the visit. Worse than untidy, because the same value
+   * feeds ProductsPage's filter, so an abandoned three letters can quietly
+   * narrow the shop to iPhones without anyone having searched for one.
+   *
+   * On /products?search=X the term IS committed: it is in the URL, it is
+   * what the results are, and dismissing the dropdown must not wipe it. So
+   * the draft is discarded only when there is no committed search behind it.
+   */
+  const hasCommittedSearch = new URLSearchParams(locationSearch).has('search');
+
+  /**
+   * Put the field back how it was found. Used when the panel is dismissed
+   * without submitting — a tap outside, or Escape.
+   */
+  const abandonDraft = () => {
+    setIsOpen(false);
+    setActiveIndex(-1);
+    if (!hasCommittedSearch) setSearchQuery('');
+  };
+
+  // Close on outside click, and drop whatever was half-typed with it.
+  // Suggestions and Recent rows live inside containerRef, so choosing one is
+  // never "outside" and never loses the term on the way to submitting it.
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
       if (!containerRef.current) return;
-      if (!containerRef.current.contains(e.target as Node)) setIsOpen(false);
+      if (!containerRef.current.contains(e.target as Node)) abandonDraft();
     };
     document.addEventListener('mousedown', onDown);
     return () => document.removeEventListener('mousedown', onDown);
-  }, []);
+    // Re-registered when the committed search changes, so the handler is
+    // never deciding with a stale answer to "is there a search behind this".
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasCommittedSearch]);
 
   const matches = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -156,7 +189,7 @@ export default function SearchAutocomplete({
         submit();
       }
     } else if (e.key === 'Escape') {
-      setIsOpen(false);
+      abandonDraft();
     }
   };
 

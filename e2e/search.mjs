@@ -113,6 +113,35 @@ async function run() {
     rec('clearing drops the keyboard', false, after.stillFocused);
   }
 
+  // ── 3b. An abandoned draft must not outlive the dropdown ──────────
+  // searchQuery is one useState in SearchContext and the Navbar never
+  // unmounts, so a half-typed term used to sit in the bar for the whole
+  // visit — and feed ProductsPage's filter while it sat there.
+  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await dismissCookies(page);
+  await page.waitForTimeout(800);
+  const draft = page.locator('input[role="combobox"]').first();
+  await draft.click();
+  await draft.fill('Iph');
+  await page.waitForTimeout(500);
+  await page.mouse.click(200, 700);           // tap the page, not the panel
+  await page.waitForTimeout(600);
+  const leftBehind = await page.evaluate(() =>
+    document.querySelector('input[role="combobox"]').value);
+  rec('an abandoned draft is discarded', '', leftBehind);
+
+  // ...but a committed search is NOT a draft. Dismissing the dropdown on a
+  // results page must leave the term, and the results, alone.
+  await page.goto(`${BASE}/products?search=${encodeURIComponent('Pixel')}`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1500);
+  const committedCards = await cards(page);
+  await page.mouse.click(200, 700);
+  await page.waitForTimeout(600);
+  const kept = await page.evaluate(() =>
+    document.querySelector('input[role="combobox"]').value);
+  rec('a committed search survives a dismiss', 'Pixel', kept);
+  rec('and its results survive too', true, (await cards(page)) === committedCards, `${committedCards} cards`);
+
   // ── 4. The URL is the search ──────────────────────────────────────
   await page.goto(`${BASE}/products?search=${encodeURIComponent('iPhone 17 Pro Max')}`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1500);
