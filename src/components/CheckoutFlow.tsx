@@ -41,7 +41,7 @@ export default function CheckoutFlow() {
   const { items, cartTotal, clearCart } = useCart();
   const { 
     currentStep, setCurrentStep, shippingAddress, setShippingAddress,
-    shippingOption, paymentMethod, setPaymentMethod,
+    shippingOption, setShippingOption, paymentMethod, setPaymentMethod,
     appliedCoupon, applyCoupon, removeCoupon, recordServerOrder, lastOrder,
   } = useCheckout();
   const { user, isAuthenticated, continueAsGuest } = useAuth();
@@ -626,10 +626,37 @@ export default function CheckoutFlow() {
 
                   <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginTop: 'var(--spacing-48)', marginBottom: 'var(--spacing-20)' }}>Delivery Method</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {SHIPPING_OPTIONS.map((option) => (
-                      <label key={option.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: shippingOption?.id === option.id ? '2px solid var(--black)' : '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', background: 'var(--grey-0)' }}>
+                    {SHIPPING_OPTIONS.map((option) => {
+                      const selected = shippingOption?.id === option.id;
+                      return (
+                      /* A real radio input, visually hidden inside the label.
+                         This card used to be a <label> around a <div> drawn to
+                         look like a radio, with no input and no handler
+                         anywhere on it — so tapping Express or Next Day did
+                         nothing at all. setShippingOption existed on the
+                         context and was called from the context's own unit
+                         tests and from nowhere else, which is why a green
+                         suite sat on top of a delivery picker that could not
+                         pick. Every order went out on Standard/FREE whatever
+                         the shopper chose, and the two paid options were
+                         unreachable.
+
+                         An input rather than an onClick on the div: the label
+                         then makes the whole card a hit target for free, and
+                         the group gets keyboard arrows, focus and screen
+                         reader semantics that a clickable div would have to
+                         reimplement badly. */
+                      <label key={option.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: selected ? '2px solid var(--black)' : '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', background: 'var(--grey-0)' }}>
+                        <input
+                          type="radio"
+                          name="shipping-option"
+                          value={option.id}
+                          checked={selected}
+                          onChange={() => setShippingOption(option)}
+                          className="sr-only"
+                        />
                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: shippingOption?.id === option.id ? '5px solid var(--black)' : '1px solid var(--grey-30)', background: 'white' }} />
+                          <div aria-hidden="true" style={{ width: '18px', height: '18px', borderRadius: '50%', border: selected ? '5px solid var(--black)' : '1px solid var(--grey-30)', background: 'white', flexShrink: 0 }} />
                           <div>
                             <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', marginBottom: '2px' }}>{option.name}</p>
                             <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>{option.description}</p>
@@ -637,7 +664,8 @@ export default function CheckoutFlow() {
                         </div>
                         <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--black)' }}>{option.cost === 0 ? 'FREE' : `£${option.cost.toFixed(2)}`}</span>
                       </label>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>

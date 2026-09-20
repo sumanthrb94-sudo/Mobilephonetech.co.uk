@@ -71,6 +71,45 @@ const city = page.locator('input[name="city"]');
 if (await city.count()) await city.fill('London');
 const postcode = page.locator('input[name="postcode"], input[name="postCode"]').first();
 if (await postcode.count()) await postcode.fill('NW1 6XE');
+// ── Delivery method: the shopper must be able to pick one ──
+//
+// This card was a <label> wrapping a <div> drawn to look like a radio, with
+// no input and no handler anywhere on it, so tapping Express or Next Day did
+// nothing. setShippingOption was called from the context's own unit tests and
+// from nowhere else — a green suite sitting on top of a picker that could not
+// pick. Every order left on Standard/FREE whatever was chosen, and the two
+// paid options were unreachable. Asserted through the summary rather than the
+// radio, because "the input is checked" would have been just as true with the
+// cost never reaching the bill.
+{
+  const summary = () => page.evaluate(() => {
+    const txt = document.body.innerText;
+    // Anchored: "Subtotal" ends in "total" and will happily answer to it.
+    const grab = (label) => {
+      const m = txt.match(new RegExp('(?:^|\\n)\\s*' + label + '\\s*\\n?\\s*(FREE|£\\s*[\\d,.]+)', 'i'));
+      return m ? m[1].replace(/\s+/g, '') : null;
+    };
+    return { shipping: grab('Shipping'), total: grab('Total') };
+  });
+  const radios = page.locator('input[name="shipping-option"]');
+  rec('Delivery options are real radios', (await radios.count()) === 3, `${await radios.count()} found`);
+
+  const seen = [];
+  for (const id of ['express', 'next_day', 'standard']) {
+    const r = page.locator(`input[name="shipping-option"][value="${id}"]`);
+    if (!(await r.count())) { seen.push(`${id}:missing`); continue; }
+    await r.click({ force: true });
+    await page.waitForTimeout(700);
+    const picked = await page.evaluate(() =>
+      ([...document.querySelectorAll('input[name="shipping-option"]')].find((x) => x.checked) || {}).value);
+    const s = await summary();
+    seen.push(`${id}->${picked}/${s.shipping}`);
+  }
+  rec('Choosing a delivery option selects it and prices it',
+    seen.join(' ') === 'express->express/£9.99 next_day->next_day/£19.99 standard->standard/£0.00',
+    seen.join('  '));
+}
+
 await page.locator('form').getByRole('button', { name: /continue|payment/i }).first().click();
 await page.waitForTimeout(1600);
 
