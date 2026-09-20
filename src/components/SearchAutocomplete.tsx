@@ -1,13 +1,38 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Clock } from 'lucide-react';
+import { Search, Clock, TrendingUp, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCatalogue } from '../context/CatalogueContext';
+import type { Product } from '../types';
 import { useSearch } from '../context/SearchContext';
 import ProductImage from './ProductImage';
 
 const RECENT_KEY = 'lehart:recent-searches';
 const MAX_RECENT = 6;
+const MAX_SUGGESTIONS = 6;
+
+/**
+ * A model name trimmed to the bit a person would actually type.
+ *
+ * Catalogue models carry retail tails — "Google Pixel 7 Pro - Unlocked",
+ * "Playstation 5 Digital Edition Console (Disc Free)" — which in a narrow
+ * dropdown truncate to "Google Pixel 7 ..." and "Sony Playstati...". A
+ * suggestion you cannot read is not a suggestion.
+ *
+ * Cutting at the first " - " or " (" leaves a PREFIX of the model, and a
+ * prefix is still a substring of it, so the term still matches the product
+ * it came from under ProductsPage's substring filter. Collapsing an
+ * immediately repeated word — some rows are literally "Nintendo Nintendo
+ * Switch" in the data — leaves a substring too, for the same reason.
+ *
+ * Both of those are arguments, not guarantees, so e2e checks that every
+ * suggestion on screen actually returns results.
+ */
+export function suggestionTerm(model: string): string {
+  let term = model.split(' - ')[0].split(' (')[0].trim();
+  term = term.replace(/\b(\w+)\s+\1\b/gi, '$1');
+  return term;
+}
 
 function loadRecent(): string[] {
   try {
@@ -43,6 +68,7 @@ export default function SearchAutocomplete({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [recent, setRecent] = useState<string[]>(() => (typeof window === 'undefined' ? [] : loadRecent()));
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Close on outside click
   useEffect(() => {
@@ -64,7 +90,45 @@ export default function SearchAutocomplete({
     ).slice(0, 6);
   }, [searchQuery, products]);
 
-  const showPanel = isOpen && (searchQuery.trim().length > 0 || recent.length > 0);
+  /**
+   * What to offer someone who has tapped the field and typed nothing.
+   *
+   * That visitor used to get nothing at all. There was an empty-state branch
+   * below reading "Start typing to see devices", but showPanel required a
+   * query or a saved search, so on a first visit the panel never opened and
+   * that message could not render — a keyboard came up over a blank screen,
+   * and the only way forward was to already know what we sell.
+   *
+   * Drawn from the live catalogue rather than hard-coded, so a suggestion is
+   * always a device that exists and is in stock. Hard-coded names rot the
+   * moment a line is discontinued, and a suggestion that returns no results
+   * is worse than no suggestion.
+   *
+   * One per brand, dearest first. Dearest because the flagship is the name
+   * people recognise and search for — "iPhone 15 Pro Max" is a better prompt
+   * than whatever happens to sit first in the catalogue. One per brand
+   * because six of the same make is a list that only helps a shopper who had
+   * already decided.
+   */
+  const suggestions = useMemo<Product[]>(() => {
+    const pool = products.filter((p) => p.stock > 0);
+    const flagshipPerBrand = new Map<string, Product>();
+    for (const p of (pool.length ? pool : products)) {
+      const held = flagshipPerBrand.get(p.brand);
+      if (!held || p.price > held.price) flagshipPerBrand.set(p.brand, p);
+    }
+    return [...flagshipPerBrand.values()]
+      .sort((a, b) => b.price - a.price)
+      .slice(0, MAX_SUGGESTIONS);
+  }, [products]);
+
+  // Opens on focus now, not only once there is something to match against.
+  // suggestions is effectively never empty — the catalogue falls back to
+  // MOCK_PHONES — but an empty panel is still worse than no panel, so the
+  // condition asks rather than assumes.
+  const showPanel = isOpen && (
+    searchQuery.trim().length > 0 || recent.length > 0 || suggestions.length > 0
+  );
 
   const submit = (value?: string) => {
     const q = (value ?? searchQuery).trim();
@@ -96,6 +160,25 @@ export default function SearchAutocomplete({
     }
   };
 
+  /**
+   * Get me out of search.
+   *
+   * Until this existed the only way out of an open panel was to delete the
+   * query one character at a time, or to tap some part of the page the
+   * dropdown was not already covering — on a phone, with the keyboard up,
+   * that is most of it.
+   *
+   * One behaviour, not two: it always empties the field, closes the panel
+   * and drops the keyboard. A button that clears on the first tap and
+   * closes on the second is a button you have to experiment with.
+   */
+  const dismiss = () => {
+    setSearchQuery('');
+    setActiveIndex(-1);
+    setIsOpen(false);
+    inputRef.current?.blur();
+  };
+
   const clearRecent = () => {
     setRecent([]);
     saveRecent([]);
@@ -118,6 +201,7 @@ export default function SearchAutocomplete({
           }}
         />
         <input
+          ref={inputRef}
           type="text"
           role="combobox"
           aria-expanded={showPanel}
@@ -130,7 +214,10 @@ export default function SearchAutocomplete({
           onKeyDown={onKeyDown}
           style={{
             width: '100%',
-            paddingLeft: '44px', paddingRight: '16px',
+            paddingLeft: '44px',
+            // Room for the clear button, but only when one is there — a
+            // permanently indented field looks broken when it is empty.
+            paddingRight: searchQuery.length > 0 ? '44px' : '16px',
             height: '40px',
             borderRadius: 'var(--radius-full)',
             background: 'var(--grey-0)',
@@ -142,6 +229,26 @@ export default function SearchAutocomplete({
           }}
           aria-label="Search products"
         />
+
+        {/* Only once there is something to clear. An X on an empty field
+            offers to undo nothing, and on this navbar it would sit a few
+            pixels from the More menu at every width. */}
+        {searchQuery.length > 0 && (
+          <button
+            type="button"
+            onClick={dismiss}
+            aria-label="Clear search"
+            style={{
+              position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+              width: '28px', height: '28px', borderRadius: 'var(--radius-full)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'var(--grey-10)', border: 'none', cursor: 'pointer',
+              color: 'var(--grey-60)', padding: 0,
+            }}
+          >
+            <X size={15} />
+          </button>
+        )}
       </form>
 
       <AnimatePresence>
@@ -278,10 +385,71 @@ export default function SearchAutocomplete({
               </div>
             )}
 
-            {matches.length === 0 && searchQuery.trim().length === 0 && recent.length === 0 && (
-              <div style={{ padding: '16px', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)' }}>
-                Start typing to see devices.
-              </div>
+            {/* Popular searches — the answer to an empty field.
+                Shown whenever nothing has been typed, under Recent if there
+                is a Recent. Each row submits the search rather than opening
+                the product: the shopper asked to search, so this fills in
+                the words they did not know to type and lands them on results
+                they can filter, not on one device chosen for them. It also
+                writes to Recent, so the second visit is theirs. */}
+            {matches.length === 0 && searchQuery.trim().length === 0 && suggestions.length > 0 && (
+              <>
+                <div style={{ padding: '10px 16px 6px', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-50)', borderTop: recent.length > 0 ? '1px solid var(--grey-10)' : undefined }}>
+                  Popular searches
+                </div>
+                {suggestions.map((p) => {
+                  /* The term is the model on its own, and that is load-bearing
+                     rather than cosmetic. ProductsPage matches the query as a
+                     substring of ONE field (see its filteredProducts: model,
+                     brand, category, processor, display, features), so
+                     "Apple iPhone 17 Pro Max" is in no single field and
+                     returns nothing at all — the suggestion would hand the
+                     shopper an empty results page, which is worse than
+                     offering nothing. p.model always matches, because
+                     p.model.includes(p.model).
+
+                     It also stops the brand being said twice. Plenty of
+                     models already carry it — "Samsung Galaxy Z Fold4",
+                     "Nintendo Switch" — so prefixing the brand produced
+                     "Nintendo Nintendo Switch". Where the model does not
+                     carry it, the brand is shown beside it instead. */
+                  /* Label and term are the same string, deliberately. An
+                     earlier pass prefixed the brand when the model did not
+                     carry it, so a row read "Apple iPhone 17 Pro Max" while
+                     the search it ran was "iPhone 17 Pro Max" — the box then
+                     filled with something other than what was tapped, and
+                     Recent remembered a third thing. The brand cannot join
+                     the term either: "Apple iPhone 17 Pro Max" is in no
+                     single field and returns nothing. So the term stands
+                     alone, which it can afford to — "iPhone 17 Pro Max" and
+                     "Playstation 5" need no help being recognised. */
+                  const term = suggestionTerm(p.model);
+                  return (
+                    <button
+                      key={`s-${p.id}`}
+                      type="button"
+                      onClick={() => { setSearchQuery(term); submit(term); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        width: '100%', padding: '10px 16px', background: 'transparent', border: 'none',
+                        cursor: 'pointer', textAlign: 'left',
+                        fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--grey-5)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <TrendingUp size={14} style={{ color: 'var(--grey-40)', flexShrink: 0 }} />
+                      {/* Wraps rather than truncating. At 390px the longer
+                          names ended "...Mixed Reality Head..." — an
+                          unreadable suggestion is no suggestion, and two
+                          lines cost less than a name nobody can parse. */}
+                      <span style={{ flex: 1, minWidth: 0, lineHeight: 1.35 }}>
+                        {term}
+                      </span>
+                    </button>
+                  );
+                })}
+              </>
             )}
           </motion.div>
         )}

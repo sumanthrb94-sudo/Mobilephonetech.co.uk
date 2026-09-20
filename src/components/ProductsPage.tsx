@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
@@ -122,7 +122,7 @@ const BRAND_CATEGORY_MATCHES: Record<string, { label: string; brand: string; cat
 };
 
 export default function ProductsPage() {
-  const { searchQuery, filters, setFilters, resetFilters, priceCap } = useSearch();
+  const { searchQuery, setSearchQuery, filters, setFilters, resetFilters, priceCap } = useSearch();
   const location = useLocation();
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
   const [sortBy, setSortBy] = React.useState<SortKey>(null);
@@ -138,6 +138,42 @@ export default function ProductsPage() {
   const brandParam    = searchParams.get('brand') || '';
   const modelParam    = searchParams.get('model') || '';
   const dealOnly      = searchParams.get('deal') === 'true';
+  const searchParam   = searchParams.get('search') || '';
+
+  /**
+   * Take the search out of the URL, not just out of the context.
+   *
+   * The navbar submits to /products?search=<term>, but this page read
+   * category, brand, model and deal from the URL and never search — the
+   * filter below ran purely off SearchContext, which survives a client-side
+   * navigation and nothing else. So the term worked when you typed it, and
+   * vanished the moment the URL was loaded rather than navigated to: a
+   * reload, a shared link, a bookmark, a result opened in a new tab, or
+   * anything arriving from outside the app. All of them quietly showed the
+   * entire catalogue as though the shopper had searched for nothing, which
+   * reads as "we have no idea what you asked for" rather than as an error.
+   * Measured before the fix: /products?search=iPhone 17 Pro Max returned all
+   * 133 products.
+   *
+   * Keyed on the URL value alone and guarded by a ref, which is what keeps
+   * this from fighting the person typing. If it also watched searchQuery it
+   * would push the URL's term back over every keystroke made afterwards;
+   * applying each distinct URL value exactly once means the URL seeds the
+   * search and then gets out of the way.
+   *
+   * An absent param clears rather than being ignored, so leaving a search
+   * for a category link does not silently carry the old term along and
+   * filter the category down to nothing.
+   */
+  const appliedSearchParam = useRef<string | null>(null);
+  useEffect(() => {
+    if (appliedSearchParam.current === searchParam) return;
+    appliedSearchParam.current = searchParam;
+    if (searchParam !== searchQuery) setSearchQuery(searchParam);
+    // searchQuery is deliberately not a dependency; see above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParam, setSearchQuery]);
+
   const brandCategory = BRAND_CATEGORY_MATCHES[categoryParam];
   const selectedDepartment = CATEGORY_DEPARTMENTS.find(department => department.matches.includes(categoryParam));
 
