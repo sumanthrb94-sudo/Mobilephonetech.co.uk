@@ -112,6 +112,54 @@ async function run(view, contextOpts) {
     }
   }
 
+  // ── The search row closes when you leave the page (phones only) ──
+  //
+  // The Navbar is the app shell and never unmounts, so the flag that opens
+  // the expanding search row survived every in-app navigation. One tap on
+  // the magnifier and the row followed the shopper to Shop, Cart and
+  // Account; on Home it rendered underneath the inline search bar, putting
+  // two search fields on the screen six pixels apart. Nothing failed — search
+  // just became permanent chrome nobody had asked to keep.
+  //
+  // Driven through the tab bar rather than page loads on purpose: a full load
+  // remounts the Navbar and resets the flag, so goto() cannot see this bug at
+  // all. Only client-side navigation reproduces it, which is what a shopper
+  // actually does.
+  if (isMobile) {
+    try {
+      const visibleSearches = () => page.evaluate(() =>
+        [...document.querySelectorAll('input')]
+          .filter(i => /search/i.test(i.placeholder || '') && i.getBoundingClientRect().width > 0)
+          .map(i => i.placeholder));
+
+      await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2500);
+      await dismissCookies(page);
+
+      const toggle = page.locator('button[aria-label="Search products"]:visible').first();
+      await toggle.click();
+      await page.waitForTimeout(700);
+      const opened = await visibleSearches();
+      rec(view, 'The magnifier opens exactly one search field',
+        opened.length === 1 ? 'PASS' : 'FAIL', JSON.stringify(opened));
+
+      const carried = [];
+      for (const tab of ['Home', 'Cart', 'Account', 'Shop']) {
+        await page.locator(`nav[aria-label="Primary"] >> text=${tab}`).first().click();
+        await page.waitForTimeout(1200);
+        const here = await visibleSearches();
+        // Home's app bar IS a search field by design — one is right there,
+        // two is the bug. Everywhere else search lives behind the magnifier.
+        const allowed = tab === 'Home' ? 1 : 0;
+        if (here.length > allowed) carried.push(`${tab}: ${JSON.stringify(here)}`);
+      }
+      rec(view, 'The search row does not follow the shopper between tabs',
+        carried.length === 0 ? 'PASS' : 'FAIL', carried.join(' | '));
+    } catch (e) {
+      rec(view, 'The search row does not follow the shopper between tabs', 'FAIL', e.message.slice(0, 100));
+    }
+  }
+
   // ── The basket count appears once (every viewport) ──
   //
   // The rule above covers two ways into the cart. This covers one control
@@ -410,24 +458,34 @@ async function run(view, contextOpts) {
   // empty state. Gating the first and not the second left every product with
   // no reviews yet — which is every new product — wide open. So this counts
   // buttons rather than checking a selector.
+  //
+  // Reviews used to be the third of three tabs, so this clicked the tab
+  // first. They are a section on the page now — the tabs hid two thirds of
+  // the product's own evidence behind a tap nobody made — so the check
+  // scrolls to the section instead of opening it.
   try {
-    const tab = page.getByRole('tab', { name: 'Reviews', exact: true });
-    if (await tab.count()) {
-      await tab.first().click();
+    const section = page.locator('#pdp-reviews');
+    if (await section.count()) {
+      await section.scrollIntoViewIfNeeded();
       await page.waitForTimeout(2500);
 
       const state = await page.evaluate(() => ({
         writeButtons: [...document.querySelectorAll('button')]
           .filter(b => /write a review/i.test(b.textContent || '')).length,
         gate: document.querySelector('.rv-gate')?.textContent?.replace(/\s+/g, ' ').trim() ?? null,
+        // The section has to be reachable without a click for any of this to
+        // be in front of a shopper at all.
+        visible: (document.querySelector('#pdp-reviews')?.getBoundingClientRect().height ?? 0) > 0,
       }));
 
+      rec(view, 'Reviews are on the page, not behind a tab',
+        state.visible ? 'PASS' : 'FAIL');
       rec(view, 'No review form is offered to a visitor who has not bought it',
         state.writeButtons === 0 ? 'PASS' : 'FAIL', `${state.writeButtons} write buttons`);
       rec(view, 'The page says why it cannot be reviewed',
         state.gate && state.gate.length > 10 ? 'PASS' : 'FAIL', state.gate ?? 'no explanation shown');
     } else {
-      rec(view, 'Reviews tab present', 'WARN', 'no reviews tab found');
+      rec(view, 'Reviews are on the page, not behind a tab', 'FAIL', '#pdp-reviews not found');
     }
   } catch (e) { rec(view, 'Review gating', 'FAIL', e.message.slice(0, 100)); }
 

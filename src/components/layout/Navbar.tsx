@@ -53,6 +53,7 @@ export default function Navbar(_: NavbarProps) {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
+  const isHome = pathname === '/';
 
   // Spring-based scroll shadow — smooth interpolation instead of binary toggle
   const scrollY = useMotionValue(0);
@@ -71,6 +72,22 @@ export default function Navbar(_: NavbarProps) {
 
   // Close the brand mega-menu on any route change
   useEffect(() => { setOpenBrand(null); }, [pathname, search]);
+
+  /**
+   * Close the expanding mobile search row when the shopper leaves the page.
+   *
+   * The Navbar never unmounts — it is the app shell — so this state survived
+   * every in-app navigation. One tap on the magnifier and the search row
+   * followed the shopper to Shop, Cart and Account, and on Home it sat
+   * underneath the inline search bar, so the screen carried two search
+   * fields six pixels apart. Nothing failed; search simply became permanent
+   * chrome that nobody had asked to keep open.
+   *
+   * Keyed on pathname alone, not on the query string: submitting a search
+   * changes ?q= on the same page, and closing the row mid-refinement would
+   * take the input away the moment it was used.
+   */
+  useEffect(() => { setIsMobileSearchOpen(false); }, [pathname]);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -504,8 +521,13 @@ export default function Navbar(_: NavbarProps) {
         </header>
 
         {/* Expanding mobile search row. Sits outside <header> deliberately: the
-            header is a fixed-height flex row, so a child here collapses to 0px. */}
-        {isMobileSearchOpen && (
+            header is a fixed-height flex row, so a child here collapses to 0px.
+
+            Never on Home, where the app bar IS a search field: the magnifier
+            is hidden there, but a row opened elsewhere and carried in on a
+            stale flag would render a second search input under the first.
+            Structural, so the two-search state cannot exist at all. */}
+        {isMobileSearchOpen && !isHome && (
           <div
             id="mobile-search-bar"
             className="lg:hidden"

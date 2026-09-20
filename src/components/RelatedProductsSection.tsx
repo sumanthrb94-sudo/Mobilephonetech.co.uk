@@ -44,7 +44,11 @@ export default function RelatedProductsSection({ currentProduct }: RelatedProduc
         You may also like
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* Two across on a phone, matching the shop grid. One per row made
+          each card a full screen tall: four upsells came to 2,811px, 55% of
+          the product page, so a shopper reached the end of someone else's
+          phone before the end of the one they opened. */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {relatedProducts.map((product, index) => (
           <motion.div
             key={product.id}
@@ -53,7 +57,9 @@ export default function RelatedProductsSection({ currentProduct }: RelatedProduc
             transition={{ delay: index * 0.08 }}
             viewport={{ once: true }}
           >
-            <ProductCard phone={product} />
+            {/* compact: two to a row needs the denser card, the same one
+                the shop grid uses at this width. */}
+            <ProductCard phone={product} compact />
           </motion.div>
         ))}
       </div>
