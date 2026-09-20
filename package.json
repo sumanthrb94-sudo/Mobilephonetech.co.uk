@@ -34,7 +34,8 @@
     "email:preview": "tsx scripts/preview-emails.ts",
     "listmonk:sync": "node scripts/listmonk-sync.mjs",
     "lint:api": "tsc -p tsconfig.api.json --noEmit",
-    "pdf:brevo": "node scripts/make-brevo-pdf.mjs"
+    "pdf:brevo": "node scripts/make-brevo-pdf.mjs",
+    "e2e:chrome": "node e2e/chrome-collisions.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",

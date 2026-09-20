@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { auth } from '../lib/firebase';
+import { openPaymentOverlay, closePaymentOverlay } from '../lib/paymentOverlay';
 
 /**
  * PayPal checkout — the client half.
@@ -109,6 +110,11 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
     const buttons = window.paypal.Buttons({
       style: { layout: 'vertical', label: 'pay', shape: 'pill' },
 
+      // PayPal is about to take the screen — for the card flow, with its own
+      // header in the same band as ours. Stand ours down before it opens
+      // rather than after, so the two are never on screen together.
+      onClick: () => { openPaymentOverlay(); },
+
       // Ask our server to open the order. The body is the basket only; the
       // server prices it and opens PayPal for that total.
       createOrder: async () => {
@@ -133,6 +139,7 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
           body: JSON.stringify({ ...payloadRef.current, paypalOrderId: data.orderID }),
         });
         const body = await res.json().catch(() => ({}));
+        closePaymentOverlay();
         if (!res.ok || !body.order) {
           onError(body.error || 'The payment could not be completed.');
           return;
@@ -140,13 +147,26 @@ export default function PayPalCheckout({ payload, onPaid, onError }: Props) {
         onPaid(body.order);
       },
 
-      onError: () => onError('Something went wrong with PayPal. You have not been charged.'),
+      // Every way out of the overlay gives the header back. Backing out is
+      // the common one: the shopper taps PayPal's close button, lands back
+      // on our checkout, and needs its chrome again.
+      onCancel: () => { closePaymentOverlay(); },
+
+      onError: () => {
+        closePaymentOverlay();
+        onError('Something went wrong with PayPal. You have not been charged.');
+      },
     });
 
     if (buttons.isEligible && !buttons.isEligible()) { setFailed(true); return; }
     buttons.render(holder.current).catch(() => setFailed(true));
 
-    return () => { try { buttons.close(); } catch { /* already gone */ } };
+    return () => {
+      // The backstop for a callback PayPal never fired: leaving /checkout
+      // unmounts this, and the header must not stay hidden behind us.
+      closePaymentOverlay();
+      try { buttons.close(); } catch { /* already gone */ }
+    };
   }, [ready, onPaid, onError]);
 
   // The single most important rule for this component: invisible unless the

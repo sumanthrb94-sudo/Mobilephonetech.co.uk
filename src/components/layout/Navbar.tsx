@@ -382,7 +382,23 @@ export default function Navbar(_: NavbarProps) {
                         </Link>
                       )}
 
-                      {isAuthenticated ? (
+                      {/* Account — desktop only, and the same argument the
+                          wishlist heart and the cart pill already lost above.
+                          On a phone the tab bar carries an Account tab at
+                          thumb height that never scrolls away, so this row
+                          was the second of three ways into one page; the
+                          drawer held a third. Three doors to one room is not
+                          convenience, it is three chances to wonder whether
+                          they go somewhere different.
+
+                          Above 1024px there is no tab bar and no drawer, so
+                          this is the only way in and it stays. isDesktop
+                          rather than a `hidden lg:flex` class on purpose:
+                          every row here sets display:flex inline, and an
+                          inline style beats a class, so the class would be
+                          silently ignored and the row would show on phones
+                          anyway. */}
+                      {isDesktop && (isAuthenticated ? (
                         <Link
                           to="/account"
                           onClick={() => setIsAccountOpen(false)}
@@ -416,7 +432,7 @@ export default function Navbar(_: NavbarProps) {
                             Sign In
                           </span>
                         </button>
-                      )}
+                      ))}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -768,38 +784,26 @@ export default function Navbar(_: NavbarProps) {
                 ))}
               </div>
 
-              {/* Auth */}
-              <div className="p-4" style={{ borderTop: '1px solid var(--grey-10)' }}>
-                {isAdmin && (
-                  <Link
-                    to="/admin/inventory"
-                    onClick={() => setIsMobileOpen(false)}
-                    className="btn btn-secondary btn-md btn-full"
-                    style={{ textDecoration: 'none', marginBottom: 10 }}
-                  >
-                    <Boxes size={16} /> Admin
-                  </Link>
-                )}
-                {isAuthenticated ? (
-                  <Link
-                    to="/account"
-                    onClick={() => setIsMobileOpen(false)}
-                    className="btn btn-primary btn-md btn-full"
-                    id="mobile-menu-auth-btn"
-                    style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    My Account
-                  </Link>
-                ) : (
-                  <button
-                    onClick={() => { setIsMobileOpen(false); setIsAuthModalOpen(true); }}
-                    className="btn btn-primary btn-md btn-full"
-                    id="mobile-menu-auth-btn"
-                  >
-                    Sign in / Register
-                  </button>
-                )}
-              </div>
+              {/* The drawer ends at the categories, and deliberately.
+                  It used to pin an Admin button and a full-width My Account /
+                  Sign in button here, which made this the third way into the
+                  account on a phone — after the Account tab in the bar at the
+                  bottom and the row in the More menu at the top — and the
+                  second way into Admin.
+
+                  A search box and a list of brands is what this menu is: it
+                  answers "where do I want to shop". The account buttons were
+                  left over from before the tab bar existed and had quietly
+                  become the loudest thing in it — the only brown primary
+                  button on the panel, pulling the eye away from the
+                  categories on the way past.
+
+                  Nothing is lost by dropping the signed-out one: AccountPage
+                  renders a real signed-out state rather than bouncing you
+                  (see its comment at "Signed out is rendered below"), so the
+                  Account tab still lands a signed-out shopper on "Sign in or
+                  create an account". Admin now lives in the More menu only,
+                  which is also the one place it appears on desktop. */}
             </motion.div>
           </>
         )}
