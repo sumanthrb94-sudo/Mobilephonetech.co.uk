@@ -104,6 +104,38 @@ async function run() {
     const all = [...resting, ...drawer, ...more];
     rec(view, 'ways into the account', 1, all.length, all.join(' + ') || 'none');
 
+    // ── The screen behind that one door ──────────────────────────────
+    // The signed-out account screen ends with the registered-office and VAT
+    // line, which exists specifically so it can be read. The support FAB
+    // floats above the same corner and is repositioned at four different
+    // breakpoints in index.css, so "it clears it at 390px" is not a fact
+    // about the other widths. Assert it everywhere instead of trusting the
+    // arithmetic in .account-gate to hold.
+    await page.goto(`${BASE}/account`, { waitUntil: 'networkidle' });
+    const cookies = page.getByRole('button', { name: /accept all cookies/i });
+    if (await cookies.count()) { await cookies.first().click().catch(() => {}); await page.waitForTimeout(400); }
+    await page.waitForTimeout(800);
+
+    const collision = await page.evaluate(() => {
+      const box = (el) => {
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return { l: r.left, r: r.right, t: r.top, b: r.bottom };
+      };
+      const legal = box(document.querySelector('.account-gate .app-legal'));
+      const fab = box(document.querySelector('.support-fab'));
+      // Desktop has no folded-in legal strip here (the site footer carries
+      // it), so there is nothing to collide.
+      if (!legal || !fab) return { checked: false, hit: false };
+      const hit = legal.r > fab.l && legal.l < fab.r && legal.b > fab.t && legal.t < fab.b;
+      return { checked: true, hit };
+    });
+    if (collision.checked) {
+      rec(view, 'support button clear of the legal line', false, collision.hit);
+    } else {
+      console.log(`[${view.padEnd(11)}] SKIP  support button vs legal line: no folded-in legal strip at this width`);
+    }
+
     await ctx.close();
   }
 

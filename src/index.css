@@ -3579,3 +3579,56 @@ html.is-checkout .pdp-stickybuy {
     user-select: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SIGNED-OUT ACCOUNT SCREEN
+   ══════════════════════════════════════════════════════════════
+   The panel used to sit in a 70vh box, which on a 390x844 phone left the
+   content ending at y=655 with the tab bar starting at 781 — 126px of dead
+   grey under the call to action. It read as a page that had failed to load
+   the rest of itself.
+
+   The height subtracts two things, and getting either wrong is what made
+   the first attempt at this scroll for no reason:
+
+     --nav-total   the fixed header this page already starts below, since
+                   AnimatedPage offsets every route by it.
+     the clearance body ALREADY reserves at the bottom for fixed chrome —
+                   64px for the tab bar below 1024px, 36px for the
+                   announcement strip above it (see "Reserve bottom room"
+                   near the top of this file). That padding sits outside
+                   #root, so it lengthens the document without shortening
+                   this box. Reserving it a second time here is what turned
+                   a screen that fits into a screen with 64px of phantom
+                   scroll.
+
+   dvh needs a vh fallback and an inline style object cannot declare the
+   same property twice, which is the whole reason this lives in CSS. The dvh
+   line wins wherever it is understood, and on a phone that is what keeps
+   the box honest while the address bar collapses — 100vh there is taller
+   than the screen.
+
+   The element sets box-sizing:border-box inline, so the padding below is
+   inside these heights and does not add to them. Nothing else about it may
+   set min-height or padding-bottom inline: inline beats a class, and these
+   rules would be dropped without a word. */
+.account-gate {
+  min-height: calc(100vh - var(--nav-total) - 36px - env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - var(--nav-total) - 36px - env(safe-area-inset-bottom, 0px));
+  padding-bottom: 24px;
+}
+
+@media (max-width: 1023px) {
+  /* Below 1024px the thing body clears is the 64px tab bar. */
+  .account-gate {
+    min-height: calc(100vh - var(--nav-total) - 64px - env(safe-area-inset-bottom, 0px));
+    min-height: calc(100dvh - var(--nav-total) - 64px - env(safe-area-inset-bottom, 0px));
+    /* Clears the support FAB, which floats 52px tall at
+       bottom: calc(36px + 64px + 16px) and so covers a band 168px up from
+       the bottom of the screen. body already accounts for 64px of that, and
+       this is the rest. Without it the button parks itself on top of the
+       registered-office line — the one piece of text on this screen that
+       exists specifically so it can be read. */
+    padding-bottom: calc(36px + 16px + 52px);
+  }
+}

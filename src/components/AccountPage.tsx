@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, MapPin, Lock, ChevronRight, ChevronLeft, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart, LifeBuoy, Truck, RotateCcw, FileText, ShieldCheck, Cookie } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useReducedMotion, type Variants } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
 import { updatePassword } from 'firebase/auth';
@@ -9,6 +9,7 @@ import { auth, db, COL } from '../lib/firebase';
 import { useSeo } from '../hooks/useSeo';
 import ProductImage from './ProductImage';
 import AuthModal from './AuthModal';
+import BrandMark from './ui/BrandMark';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { COMPANY, companyDetailsComplete } from '../config/company';
 
@@ -27,6 +28,44 @@ const MORE_LINKS: { to: string; label: string; icon: React.ElementType }[] = [
   { to: '/privacy',   label: 'Privacy policy',         icon: ShieldCheck },
   { to: '/cookies',   label: 'Cookies',                icon: Cookie },
 ];
+
+/**
+ * The case for making an account, on the screen that asks for one.
+ *
+ * The signed-out panel used to ask and give no reason, which is a form the
+ * visitor has to want to fill in before they know what it buys them. Each of
+ * these names something they get; none of them names something we keep.
+ * Three, not six — a list long enough to scroll is a wall, not an argument.
+ */
+const GATE_REASONS: { icon: React.ElementType; title: string; detail: string }[] = [
+  { icon: Package, title: 'Your orders in one place',   detail: 'Every order and where it has got to, without digging through your email.' },
+  { icon: MapPin,  title: 'Addresses already filled in', detail: 'Check out without typing the same postcode again.' },
+  { icon: Heart,   title: 'A wishlist that follows you', detail: 'Save it on your phone, find it on your laptop.' },
+];
+
+/**
+ * Entrance for the signed-out panel: the mark lands, then each line follows
+ * it in. Staggered rather than all at once because the eye should arrive at
+ * the brand first and the button last, in the order the screen is read.
+ *
+ * Short and small on purpose — 340ms and 10px. This runs every time the
+ * Account tab is tapped while signed out, and anything longer turns a tab
+ * into a wait.
+ */
+const GATE_LIST: Variants = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+};
+const GATE_ITEM: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.34, ease: [0.16, 1, 0.3, 1] } },
+};
+
+/* prefers-reduced-motion: the same screen, already arrived. Not a slower
+   version of the same slide — that setting is often vestibular, and a gentle
+   drift is still drift. */
+const GATE_LIST_STILL: Variants = { hidden: {}, shown: {} };
+const GATE_ITEM_STILL: Variants = { hidden: { opacity: 1, y: 0 }, shown: { opacity: 1, y: 0 } };
 
 /** Shape of an order document in Firestore, camelCase throughout. */
 interface StoredOrder {
@@ -113,6 +152,12 @@ export default function AccountPage() {
   const [pwSuccess, setPwSuccess] = useState('');
   const [savingPw, setSavingPw] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+
+  // Called here, above the signed-out early return, so the hook order is the
+  // same on both branches of this component.
+  const reduceMotion = useReducedMotion();
+  const gateList = reduceMotion ? GATE_LIST_STILL : GATE_LIST;
+  const gateItem = reduceMotion ? GATE_ITEM_STILL : GATE_ITEM;
 
   // undefined while providers are still unknown, so neither panel flashes.
   const hasPassword = user?.providers
@@ -252,51 +297,130 @@ export default function AccountPage() {
   // ── Signed out ──────────────────────────────────────────────
   if (!user || user.isGuest) {
     return (
-      <div style={{ minHeight: '70vh', background: 'var(--grey-5)', display: 'grid', placeItems: 'center', paddingInline: 20 }}>
-        <div style={{ maxWidth: 420, textAlign: 'center' }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: '50%', margin: '0 auto 18px',
-            display: 'grid', placeItems: 'center',
-            background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)',
-          }}>
-            <User size={26} />
-          </div>
-          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 22, fontWeight: 900, color: 'var(--black)', margin: '0 0 8px' }}>
-            {user?.isGuest ? 'You are browsing as a guest' : 'Sign in to your account'}
-          </h1>
-          <p style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--grey-60)', lineHeight: 1.6, margin: '0 0 22px' }}>
-            {user?.isGuest
-              ? 'Create an account to keep your orders, addresses and wishlist across devices.'
-              : 'See your orders, saved addresses and account details.'}
-          </p>
-          <button type="button" className="btn btn-primary btn-md" onClick={() => setAuthOpen(true)}>
-            Sign in or create an account
-          </button>
+      <div
+        className="account-gate"
+        style={{
+          background: 'var(--grey-5)',
+          display: 'flex', flexDirection: 'column',
+          paddingInline: 20, boxSizing: 'border-box',
+        }}
+      >
+        {/* flex:1 rather than a fixed height: the block sits in the optical
+            centre of whatever room is left, and the legal strip below keeps
+            its place at the bottom instead of being pushed off. */}
+        <motion.div
+          style={{ flex: 1, display: 'grid', placeItems: 'center', width: '100%' }}
+          variants={gateList}
+          initial="hidden"
+          animate="shown"
+        >
+          <div style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
+            {/* The brand, not a stock silhouette. This screen is the first
+                thing behind the Account tab and it was introducing the shop
+                with a generic Lucide user glyph — the one mark on it that
+                belongs to nobody. BrandMark is the same tile the navbar
+                draws, the installed icon uses and the boot splash paints, so
+                the thing they tapped to open the app is the thing greeting
+                them here. Still, not spinning: spinning is how this mark
+                says "working", and nothing is loading. */}
+            <motion.div variants={gateItem} style={{ marginBottom: 20 }}>
+              <BrandMark size="lg" />
+            </motion.div>
 
-          {/* Phones only: the footer that carries the legal links and the
-              registered identity is hidden below 1024px, and a visitor who
-              has not signed in never reaches the Help & legal list below.
-              Without this a phone visitor had no way to the terms or privacy
-              notice from here, and no page telling them who the company is. */}
-          {!isDesktop && (
-            <div style={{ marginTop: 28 }}>
-              <nav aria-label="Legal" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px' }}>
-                {MORE_LINKS.filter(l => /terms|privacy|cookies|returns|delivery/.test(l.to)).map(l => (
-                  <Link key={l.to} to={l.to} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: 'var(--grey-60)' }}>
-                    {l.label}
-                  </Link>
-                ))}
-              </nav>
-              {companyDetailsComplete() && (
-                <p className="app-legal" style={{ textAlign: 'center' }}>
-                  {COMPANY.legalName} · Registered in England &amp; Wales, company no. {COMPANY.companyNumber}
-                  {' '}· Registered office: {COMPANY.registeredOffice}
-                  {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+            <motion.h1
+              variants={gateItem}
+              style={{ fontFamily: 'var(--font-sans)', fontSize: 24, fontWeight: 900, color: 'var(--black)', margin: '0 0 8px', letterSpacing: '-0.02em' }}
+            >
+              {user?.isGuest ? 'You are browsing as a guest' : 'Sign in to your account'}
+            </motion.h1>
+            <motion.p
+              variants={gateItem}
+              style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--grey-60)', lineHeight: 1.6, margin: '0 0 24px' }}
+            >
+              {user?.isGuest
+                ? 'Create an account to keep your orders, addresses and wishlist across devices.'
+                : 'See your orders, saved addresses and account details.'}
+            </motion.p>
+
+            {/* What the empty half of this screen is for. The old version
+                asked for a sign-in and gave no reason to want one, then left
+                126px of grey underneath the ask. Three lines, left-aligned
+                because a list is read rather than admired, each naming
+                something the visitor gets rather than something we store. */}
+            <motion.ul
+              variants={gateItem}
+              style={{
+                listStyle: 'none', margin: '0 0 26px', padding: 16,
+                display: 'grid', gap: 14, textAlign: 'left',
+                background: 'var(--grey-0)', borderRadius: 14,
+                border: '1px solid var(--grey-10)',
+              }}
+            >
+              {GATE_REASONS.map(({ icon: Icon, title, detail }) => (
+                <li key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      flexShrink: 0, width: 34, height: 34, borderRadius: 10,
+                      display: 'grid', placeItems: 'center',
+                      background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)',
+                    }}
+                  >
+                    <Icon size={17} />
+                  </span>
+                  <span style={{ minWidth: 0 }}>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 14.5, fontWeight: 700, color: 'var(--black)' }}>
+                      {title}
+                    </span>
+                    <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-60)', lineHeight: 1.5 }}>
+                      {detail}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </motion.ul>
+
+            {/* btn-full below 1024px: a centred pill on a phone is a smaller
+                target than the thumb arriving at it. */}
+            <motion.div variants={gateItem}>
+              <button
+                type="button"
+                className={isDesktop ? 'btn btn-primary btn-md' : 'btn btn-primary btn-md btn-full'}
+                onClick={() => setAuthOpen(true)}
+              >
+                Sign in or create an account
+              </button>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Phones only: the footer that carries the legal links and the
+            registered identity is hidden below 1024px, and a visitor who
+            has not signed in never reaches the Help & legal list below.
+            Without this a phone visitor had no way to the terms or privacy
+            notice from here, and no page telling them who the company is.
+
+            A sibling of the centred block rather than a child of it, so it
+            settles at the bottom of the screen where a footer belongs
+            instead of riding up and down with the panel above it. */}
+        {!isDesktop && (
+          <div style={{ marginTop: 28 }}>
+            <nav aria-label="Legal" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px' }}>
+              {MORE_LINKS.filter(l => /terms|privacy|cookies|returns|delivery/.test(l.to)).map(l => (
+                <Link key={l.to} to={l.to} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: 'var(--grey-60)' }}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+            {companyDetailsComplete() && (
+              <p className="app-legal" style={{ textAlign: 'center' }}>
+                {COMPANY.legalName} · Registered in England &amp; Wales, company no. {COMPANY.companyNumber}
+                {' '}· Registered office: {COMPANY.registeredOffice}
+                {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
+              </p>
+            )}
+          </div>
+        )}
         <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       </div>
     );
