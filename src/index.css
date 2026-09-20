@@ -3632,3 +3632,23 @@ html.is-checkout .pdp-stickybuy {
     padding-bottom: calc(36px + 16px + 52px);
   }
 }
+
+/* ── Checkout header stands down for a payment overlay ──────────────
+   CheckoutHeader is fixed across the top 64px of /checkout. PayPal puts
+   its own card-form header — a "Debit or Credit Card" pill and a close
+   button — in that same band, so the two drew on top of each other: their
+   pill across our centred logo, our back arrow and padlock still showing
+   either side of it. Two headers interleaved, on the screen where the card
+   number gets typed.
+
+   Hidden rather than restacked because the z-index belongs to PayPal's SDK
+   and is theirs to change; taking ours out of the band fixes it whether we
+   were drawing above them or below them. See src/lib/paymentOverlay.ts for
+   who sets this class and for the guarantee it is removed again.
+
+   display is safe to set from here: the element sets position, top, left,
+   right, z-index, background and border-bottom inline, but never display,
+   so nothing here is beaten by an inline style. */
+html.is-paying .checkout-header {
+  display: none;
+}

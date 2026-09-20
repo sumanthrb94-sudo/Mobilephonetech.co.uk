@@ -1,29 +1,41 @@
-// Navigation entry-point suite: count how many ways one destination can be
-// reached from a single screen, and assert it is one.
+// Chrome-collision suite: two pieces of fixed furniture must not fight over
+// the same patch of screen, and one destination must not have three doors.
 //
 //   npm run build && npx vite preview --port 4173 &
-//   npm run e2e:nav
+//   npm run e2e:chrome
 //
 // Exits non-zero on any FAIL.
 //
-// WHY THIS IS A BROWSER TEST AND NOT A UNIT TEST
+// WHY THESE ARE BROWSER TESTS AND NOT UNIT TESTS
 //
-// The failure this guards against is a computed-style failure, and jsdom does
-// not apply the Tailwind stylesheet, so an RTL test would render every control
-// as "present" and pass no matter what. Worse, the specific bug that put three
-// account doors on one phone screen is a class being silently beaten by an
-// inline style — `className="lg:hidden"` on an element that also sets
-// `display:'flex'` inline. Only a real engine resolving a real cascade can see
-// that. So this suite asks the browser what is actually visible at a width,
-// and never asks the markup what it intended.
+// Every failure here is a computed-style or a geometry failure, and jsdom
+// applies no stylesheet and lays nothing out, so an RTL test would report
+// every control as "present", every box as 0x0, and pass no matter what. The
+// account-doors bug was a class silently beaten by an inline style —
+// `className="lg:hidden"` on an element that also sets `display:'flex'`
+// inline — which only a real engine resolving a real cascade can see. So this
+// suite asks the browser what is actually on screen and where, and never asks
+// the markup what it intended.
 //
-// WHY ONE DOOR
+// WHAT IT COVERS
 //
-// Settled twice already in Navbar.tsx, for the wishlist heart and the cart
-// pill: "Two entry points to one list is not a shortcut, it is a question the
-// visitor has to answer (are these the same thing?) before either is useful."
-// Account was missed at the time and had accumulated three on a phone — the
-// tab bar, the More menu and the drawer — and Admin had two.
+// 1. ONE DOOR. Settled twice in Navbar.tsx, for the wishlist heart and the
+//    cart pill: "Two entry points to one list is not a shortcut, it is a
+//    question the visitor has to answer (are these the same thing?) before
+//    either is useful." Account was missed and had three on a phone — tab
+//    bar, More menu, drawer — and Admin had two.
+//
+// 2. THE SUPPORT BUTTON vs THE LEGAL LINE. The signed-out account screen ends
+//    with the registered-office and VAT line, which exists so it can be read.
+//    The FAB floats over the same corner and is repositioned at four separate
+//    breakpoints in index.css.
+//
+// 3. THE CHECKOUT HEADER vs A PAYMENT OVERLAY. CheckoutHeader is fixed across
+//    the top 64px of /checkout; PayPal puts its own card-form header in that
+//    same band. Ours stands down via html.is-paying — see
+//    src/lib/paymentOverlay.ts. This asserts the rule actually bites, which
+//    matters because the element carries inline styles and an inline style
+//    beats a class.
 import { chromium } from 'playwright';
 import { resolveChromium } from './chromium-path.mjs';
 
@@ -136,6 +148,42 @@ async function run() {
       console.log(`[${view.padEnd(11)}] SKIP  support button vs legal line: no folded-in legal strip at this width`);
     }
 
+    await ctx.close();
+  }
+
+  // ── 3. Checkout header vs a payment overlay ────────────────────────
+  // Driven by adding the class by hand rather than by opening PayPal: the
+  // SDK needs a real client id and a live call to paypal.com, neither of
+  // which a CI box has. What is worth asserting here is ours anyway — that
+  // html.is-paying actually removes the header from the band, against an
+  // element whose position and z-index are set inline.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(1000);
+
+    const read = () => page.evaluate(() => {
+      const h = document.querySelector('.checkout-header');
+      if (!h) return null;
+      return { display: getComputedStyle(h).display, height: Math.round(h.getBoundingClientRect().height) };
+    });
+
+    const before = await read();
+    if (!before) {
+      console.log('[checkout   ] SKIP  header vs payment overlay: no checkout header on this build');
+    } else {
+      await page.evaluate(() => document.documentElement.classList.add('is-paying'));
+      await page.waitForTimeout(150);
+      const during = await read();
+      await page.evaluate(() => document.documentElement.classList.remove('is-paying'));
+      await page.waitForTimeout(150);
+      const after = await read();
+
+      rec('checkout', 'header occupies the band normally', true, before.height > 0, `${before.height}px`);
+      rec('checkout', 'header yields it while paying', true, during.display === 'none' && during.height === 0, `display:${during.display}`);
+      rec('checkout', 'header comes back afterwards', true, after.height > 0, `${after.height}px`);
+    }
     await ctx.close();
   }
 

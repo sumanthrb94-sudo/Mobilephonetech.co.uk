@@ -19,6 +19,7 @@ export default function CheckoutHeader() {
   const navigate = useNavigate();
   return (
     <header
+      className="checkout-header"
       style={{
         position: 'fixed',
         top: 0,
