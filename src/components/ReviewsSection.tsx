@@ -131,9 +131,11 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
     </>
   );
 
+  // No heading or top rule of its own: the product page wraps this in a
+  // titled section, and rendering "Customer Reviews" under "Reviews" said the
+  // same thing twice with a divider between them.
   return (
-    <div className="border-t border-slate-100 pt-12 mt-12">
-      <h3 className="text-2xl font-black text-slate-900 mb-8">Customer Reviews</h3>
+    <div>
 
       {reviews.length === 0 ? (
         <div className="text-center py-12">
