@@ -159,6 +159,58 @@ async function run() {
     await ctx.close();
   }
 
+  // ── 2b. The search bar must not move between routes ───────────────
+  // There used to be two phone app bars. On Home the wordmark gave way to an
+  // inline search field; everywhere else the wordmark returned and search
+  // retreated behind a magnifier into a row that opened below the header. So
+  // searching from Home made the field you had just typed into jump down a
+  // row and change shape, while the logo reappeared in the space it left.
+  // On the results page the field was hidden entirely, which meant the page
+  // said "1 result" without saying what you had asked for.
+  //
+  // Measured, not asserted from the markup: "the element exists" was true
+  // the whole time it was in the wrong place.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    const cookies = page.getByRole('button', { name: /accept all cookies/i });
+    if (await cookies.count()) { await cookies.first().click().catch(() => {}); await page.waitForTimeout(400); }
+
+    const probe = async (path) => {
+      await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(1300);
+      return page.evaluate(() => {
+        const shown = [...document.querySelectorAll('input[role="combobox"]')]
+          .filter((i) => { const r = i.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+        const r = shown[0]?.getBoundingClientRect();
+        const logo = document.querySelector('#navbar-logo');
+        const logoShown = logo ? (() => { const b = logo.getBoundingClientRect(); return b.width > 0 && b.height > 0; })() : false;
+        return {
+          count: shown.length,
+          box: r ? `${Math.round(r.top)},${Math.round(r.left)},${Math.round(r.width)}` : null,
+          value: shown[0]?.value ?? '',
+          logoShown,
+        };
+      });
+    };
+
+    const home = await probe('/');
+    const results = await probe(`/products?search=${encodeURIComponent('Galaxy S23 Ultra')}`);
+    const cart = await probe('/cart');
+
+    rec('phone', 'exactly one search field per screen', '1/1/1',
+      [home.count, results.count, cart.count].join('/'));
+    rec('phone', 'the search bar sits in the same place everywhere', true,
+      home.box !== null && home.box === results.box && home.box === cart.box,
+      `${home.box} | ${results.box} | ${cart.box}`);
+    rec('phone', 'the results page shows what was searched for', 'Galaxy S23 Ultra', results.value);
+    rec('phone', 'the wordmark does not reappear mid-journey', false,
+      home.logoShown || results.logoShown || cart.logoShown);
+
+    await ctx.close();
+  }
+
   // ── 3. Checkout header vs a payment overlay ────────────────────────
   // Driven by adding the class by hand rather than by opening PayPal: the
   // SDK needs a real client id and a live call to paypal.com, neither of

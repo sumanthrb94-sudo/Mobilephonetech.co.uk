@@ -37,7 +37,6 @@ const CATEGORIES = [
 export default function Navbar(_: NavbarProps) {
   const { isDesktop } = useBreakpoint();
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
   const [isAccountOpen, setIsAccountOpen]         = useState(false);
 
@@ -53,7 +52,6 @@ export default function Navbar(_: NavbarProps) {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
-  const isHome = pathname === '/';
 
   // Spring-based scroll shadow — smooth interpolation instead of binary toggle
   const scrollY = useMotionValue(0);
@@ -73,21 +71,6 @@ export default function Navbar(_: NavbarProps) {
   // Close the brand mega-menu on any route change
   useEffect(() => { setOpenBrand(null); }, [pathname, search]);
 
-  /**
-   * Close the expanding mobile search row when the shopper leaves the page.
-   *
-   * The Navbar never unmounts — it is the app shell — so this state survived
-   * every in-app navigation. One tap on the magnifier and the search row
-   * followed the shopper to Shop, Cart and Account, and on Home it sat
-   * underneath the inline search bar, so the screen carried two search
-   * fields six pixels apart. Nothing failed; search simply became permanent
-   * chrome that nobody had asked to keep open.
-   *
-   * Keyed on pathname alone, not on the query string: submitting a search
-   * changes ?q= on the same page, and closing the row mid-refinement would
-   * take the input away the moment it was used.
-   */
-  useEffect(() => { setIsMobileSearchOpen(false); }, [pathname]);
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -275,40 +258,12 @@ export default function Navbar(_: NavbarProps) {
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
-              {/* Search — phones/tablets only; desktop has the inline bar above.
-                  Without this, search was reachable only from the burger menu. */}
-              {/* The magnifier that expands a search row below the bar. On
-                  Home the bar itself is already a search field, so this would
-                  be a second way to do the same thing, six pixels away from
-                  the first. Hidden there by .navbar-searchtoggle. */}
-              <button
-                className="lg:hidden navbar-searchtoggle"
-                onClick={() => setIsMobileSearchOpen(v => !v)}
-                aria-label="Search products"
-                aria-expanded={isMobileSearchOpen}
-                aria-controls="mobile-search-bar"
-                style={{
-                  // No `display` here: .navbar-searchtoggle owns it so Home
-                  // can drop the button. An inline display beats a
-                  // stylesheet — the same way the cart pill resisted hiding.
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '2px',
-                  padding: '4px 8px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  width: '40px',
-                  height: '40px',
-                }}
-              >
-                <Search size={22} style={{ color: '#374151' }} />
-                <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-body)', fontSize: '10px', color: '#6b7280', lineHeight: 1 }}>
-                  Search
-                </span>
-              </button>
+              {/* The magnifier that used to open a search row below the bar
+                  is gone, and so is the row. The app bar carries a real
+                  search field at every width now, so this was a second way
+                  to reach a thing already on screen — and the row it opened
+                  was where a search bar went to move itself out from under
+                  the shopper's finger. See .navbar-search in index.css. */}
 
               {/* Profile Menu Dropdown */}
               <div style={{ position: 'relative' }} ref={dropdownRef}>
@@ -541,19 +496,6 @@ export default function Navbar(_: NavbarProps) {
             is hidden there, but a row opened elsewhere and carried in on a
             stale flag would render a second search input under the first.
             Structural, so the two-search state cannot exist at all. */}
-        {isMobileSearchOpen && !isHome && (
-          <div
-            id="mobile-search-bar"
-            className="lg:hidden"
-            style={{
-              padding: '12px 16px',
-              borderTop: '1px solid var(--grey-10)',
-              background: 'white',
-            }}
-          >
-            <SearchAutocomplete />
-          </div>
-        )}
 
         {/* ═══════════════════════════════════════════════════
             CATEGORY NAV BAR — 48px — horizontal scroll

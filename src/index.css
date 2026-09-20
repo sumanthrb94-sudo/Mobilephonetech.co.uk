@@ -3287,36 +3287,43 @@ html.is-checkout .pdp-stickybuy {
     display: none;
   }
 
-  /* ── Home's app bar ──
-     Search inline where the wordmark was. The Home tab in the tab bar
-     carries the brand mark, so the app bar repeating it spent the widest
-     row on the screen on something already visible — and left search
-     behind a magnifier, one tap away from the thing most shoppers open
-     the app to do. Every other screen keeps the wordmark, because there
-     the Home tab is not selected and the brand is nowhere else. */
-  .navbar-search {
-    display: none;
-  }
+  /* ── The phone app bar: search, in one place, on every screen ──
+     This used to be two different app bars. On Home the wordmark gave way
+     to an inline search field; everywhere else the wordmark came back and
+     search retreated behind a magnifier into a row that opened below the
+     header. Search for something from Home and the thing you were typing
+     into visibly jumped down a row and changed shape, while the logo
+     reappeared in the space it left. A control that moves when you use it
+     is a control you have to find again every time.
 
-  html.is-home .navbar-search {
+     Worse on the results page specifically: the app-bar field was hidden
+     there, so what you had just searched for appeared nowhere. The page
+     said "1 result" and left you to remember what you asked for.
+
+     The argument that removed the wordmark on Home was that the Home tab
+     in the tab bar already carries the brand mark. The tab bar is on every
+     screen, so that argument was never about Home — it just got applied
+     there first. Search is what most people open a shop to do; it gets the
+     widest row, always, and the brand stays where it already is: the tab
+     bar, the splash and the installed icon.
+
+     This is also what removes a whole family of bugs by construction. No
+     magnifier means no open/closed flag to leak across navigations, and no
+     second search input that could ever appear six pixels under the
+     first. */
+  .navbar-search {
     display: block;
     padding-left: 8px;
     margin-right: 4px;
   }
 
-  .navbar-searchtoggle {
-    display: flex;
-  }
-
-  html.is-home .navbar-logo,
-  html.is-home .navbar-searchtoggle {
+  .navbar-logo {
     display: none;
   }
 
-  /* The bar has to look like a field. Inside the app bar it sat on the same
-     white as the header, so it read as a stray line of grey text rather than
-     as somewhere to type. */
-  html.is-home .navbar-search input {
+  /* The bar has to look like a field. On the header's own white it read as
+     a stray line of grey text rather than as somewhere to type. */
+  .navbar-search input {
     background: var(--grey-5);
     border-color: var(--grey-10);
   }
