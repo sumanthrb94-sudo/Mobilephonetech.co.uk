@@ -7476,8 +7476,14 @@ export const MOCK_PHONES: Product[] = [
     },
   },
   {
+    // The id keeps the doubled word on purpose: it is the Firestore document
+    // key and the product URL, and renaming it would 404 every link, share
+    // and bookmark already pointing at this console. Only the name a shopper
+    // reads is corrected. It arrived doubled from the supplier export —
+    // docs/inventory_export_1.csv row 506 — and was the only one of the 133
+    // models with a word repeated back to back.
     id: "nintendo-nintendo-switch-neon-oled-model",
-    model: "Nintendo Nintendo Switch - Neon (OLED Model)",
+    model: "Nintendo Switch - Neon (OLED Model)",
     brand: "Nintendo",
     category: "Playables",
     price: 259,

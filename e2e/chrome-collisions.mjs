@@ -116,6 +116,14 @@ async function run() {
     const all = [...resting, ...drawer, ...more];
     rec(view, 'ways into the account', 1, all.length, all.join(' + ') || 'none');
 
+    // The phone drawer has no business above 1024px, where the category row
+    // under the header already lists every destination it holds. It carried
+    // className="lg:hidden" and showed anyway, because the same element sets
+    // display:'flex' inline and inline beats a class — which is why this is
+    // asserted against computed visibility rather than against the markup.
+    const burgerShown = await page.locator('#navbar-hamburger').isVisible().catch(() => false);
+    rec(view, 'phone drawer button only below 1024px', view !== 'desktop', burgerShown);
+
     // ── The screen behind that one door ──────────────────────────────
     // The signed-out account screen ends with the registered-office and VAT
     // line, which exists specifically so it can be read. The support FAB

@@ -200,16 +200,30 @@ export default function Navbar(_: NavbarProps) {
             }}
             className="navbar-header"
           >
-            {/* ── Left: Mobile hamburger ── */}
-            <button
-              onClick={() => setIsMobileOpen(true)}
-              style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', flexShrink: 0 }}
-              aria-label="Open menu"
-              id="navbar-hamburger"
-              className="lg:hidden"
-            >
-              <Menu size={22} style={{ color: '#374151' }} />
-            </button>
+            {/* ── Left: Mobile hamburger ──
+                Carried className="lg:hidden" and was visible at 1440px
+                anyway, because the same element sets display:'flex' inline
+                and an inline style beats a class. The class had never done
+                anything. So desktop showed a hamburger opening a phone
+                drawer that listed the same ten categories already spelled
+                out in the row underneath the header — every destination on
+                the site, twice, one of them behind a control that has no
+                business being there at that width.
+
+                isDesktop rather than fixing the class, to match the tab bar
+                (MobileBottomNav returns null on desktop) and the More menu's
+                account row. Three pieces of chrome, one rule, no cascade to
+                lose an argument with. */}
+            {!isDesktop && (
+              <button
+                onClick={() => setIsMobileOpen(true)}
+                style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', flexShrink: 0 }}
+                aria-label="Open menu"
+                id="navbar-hamburger"
+              >
+                <Menu size={22} style={{ color: '#374151' }} />
+              </button>
+            )}
 
             {/* ── Logo: a normal left-aligned flex item at every width.
                  It used to be absolutely centred on mobile, which was fine
@@ -725,7 +739,7 @@ export default function Navbar(_: NavbarProps) {
           MOBILE FULL-SCREEN MENU
       ═══════════════════════════════════════════════════ */}
       <AnimatePresence>
-        {isMobileOpen && (
+        {isMobileOpen && !isDesktop && (
           <>
             <motion.div
               initial={{ opacity: 0 }}
