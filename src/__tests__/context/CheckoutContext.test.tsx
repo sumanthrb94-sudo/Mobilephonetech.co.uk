@@ -135,12 +135,14 @@ describe('CheckoutContext', () => {
       act(() => result.current.setShippingAddress(MOCK_ADDRESS));
       const raw = localStorage.getItem('mt_shipping_address');
       expect(raw).not.toBeNull();
-      expect(JSON.parse(raw!)).toEqual(MOCK_ADDRESS);
+      // Saved against whoever saved it — null here, because these tests run
+      // signed out. See the SavedAddress note in CheckoutContext.
+      expect(JSON.parse(raw!)).toEqual({ owner: null, address: MOCK_ADDRESS });
     });
 
     it('address loads from localStorage on mount', () => {
       // Pre-seed localStorage before the hook mounts
-      localStorage.setItem('mt_shipping_address', JSON.stringify(MOCK_ADDRESS));
+      localStorage.setItem('mt_shipping_address', JSON.stringify({ owner: null, address: MOCK_ADDRESS }));
       const { result } = renderHook(() => useCheckout(), { wrapper });
       expect(result.current.shippingAddress).toEqual(MOCK_ADDRESS);
     });
@@ -149,6 +151,60 @@ describe('CheckoutContext', () => {
       localStorage.setItem('mt_shipping_address', 'not-valid-json{{{');
       const { result } = renderHook(() => useCheckout(), { wrapper });
       expect(result.current.shippingAddress).toBeNull();
+    });
+
+    /**
+     * The reported bug: a shopper signed in as one account saw a different
+     * name, email, phone and home address already filled in at checkout.
+     *
+     * Two causes, both here. An address saved under the browser rather than
+     * under an account, and a demo profile a removed effect once seeded —
+     * whose cleanup only recognised it while all four of its fields were
+     * still untouched.
+     */
+    describe('never shows one person the details of another', () => {
+      it('discards an address saved in the old ownerless shape', () => {
+        localStorage.setItem('mt_shipping_address', JSON.stringify(MOCK_ADDRESS));
+
+        const { result } = renderHook(() => useCheckout(), { wrapper });
+
+        expect(result.current.shippingAddress).toBeNull();
+        // And cleared, so it is not re-read on every subsequent load.
+        expect(localStorage.getItem('mt_shipping_address')).toBeNull();
+      });
+
+      it('discards the seeded demo profile even after it has been edited', () => {
+        // Exactly the state in the bug report: the demo name, street and
+        // phone still there, but the email swapped for a real one and a
+        // stray "nw1" typed onto the street. The old exact-four-field
+        // cleanup stopped matching the moment either was changed.
+        localStorage.setItem('mt_shipping_address', JSON.stringify({
+          fullName: 'Alex Morgan',
+          email: 'someone.else@gmail.com',
+          phone: '07700 900123',
+          addressLine1: '221B Baker Streetnw1',
+          addressLine2: 'Flat 2',
+          city: 'Westminster',
+          postalCode: 'NW1 6XE',
+          country: 'United Kingdom',
+        }));
+
+        const { result } = renderHook(() => useCheckout(), { wrapper });
+
+        expect(result.current.shippingAddress).toBeNull();
+        expect(localStorage.getItem('mt_shipping_address')).toBeNull();
+      });
+
+      it('ignores an address saved by a different account', () => {
+        localStorage.setItem('mt_shipping_address', JSON.stringify({
+          owner: 'some-other-uid',
+          address: MOCK_ADDRESS,
+        }));
+
+        const { result } = renderHook(() => useCheckout(), { wrapper });
+
+        expect(result.current.shippingAddress).toBeNull();
+      });
     });
   });
 

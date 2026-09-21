@@ -7,32 +7,57 @@ import { useAuth } from './AuthContext';
 const ADDRESS_KEY = 'mt_shipping_address';
 
 /**
- * A now-removed mount effect used to seed a brand-new shopper's shipping
- * form with this exact invented profile before they had typed anything.
- * That effect wrote it through to localStorage like any real address, so a
- * browser that loaded the app before the fix still has it saved and would
- * otherwise keep showing it forever — this is not a live bug re-appearing,
- * it is old poisoned state. Any saved address that still matches it,
- * untouched, is discarded on read rather than trusted, so a browser that
- * already has it self-heals the next time the app loads.
+ * A saved address belongs to one account, and now says so.
+ *
+ * It used to be stored as a bare address under a single browser-wide key,
+ * owned by nobody. The checkout form reads the saved address ahead of the
+ * signed-in user's own details (`shippingAddress?.email || user?.email`),
+ * so signing in as a different person still showed the previous one's name,
+ * email, phone and home address. On a shared device — a counter tablet, a
+ * family phone — that is one customer's address prefilled for the next.
+ *
+ * `owner` is the uid that saved it, or null for a guest. An address saved
+ * by anyone else is ignored rather than shown.
+ *
+ * This also settles the other half of that history. A since-removed mount
+ * effect seeded every new shopper's form with an invented demo profile
+ * (Alex Morgan, 221B Baker Street, 07700 900123) and wrote it through to
+ * storage like a real address. The cleanup written for it matched all four
+ * of those fields exactly — so the moment a shopper corrected any one of
+ * them, their own email, a typo in the street, it stopped being recognised
+ * and stuck permanently. Anything still in the old ownerless shape is
+ * discarded on read instead, which catches every edited copy the exact
+ * match could not.
  */
-function looksLikeInventedDemoAddress(a: ShippingAddress): boolean {
-  return a.fullName === 'Alex Morgan' && a.email === 'alex@lehart.co.uk'
-    && a.phone === '07700 900123' && a.addressLine1 === '221B Baker Street';
+interface SavedAddress {
+  owner: string | null;
+  address: ShippingAddress;
 }
 
-function readSavedAddress(): ShippingAddress | null {
+function readSavedAddress(owner: string | null): ShippingAddress | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(ADDRESS_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as ShippingAddress;
-    if (looksLikeInventedDemoAddress(parsed)) {
+    const parsed = JSON.parse(raw) as Partial<SavedAddress>;
+
+    // The old ownerless shape: pre-dates per-account scoping, and is how the
+    // demo profile above got saved. Never trusted, and cleared so it stops
+    // being re-read on every load.
+    if (!parsed || typeof parsed !== 'object' || !('owner' in parsed) || !parsed.address) {
       window.localStorage.removeItem(ADDRESS_KEY);
       return null;
     }
-    return parsed;
+
+    return parsed.owner === owner ? parsed.address : null;
   } catch { return null; }
+}
+
+function writeSavedAddress(owner: string | null, address: ShippingAddress): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(ADDRESS_KEY, JSON.stringify({ owner, address } satisfies SavedAddress));
+  } catch { /* quota / private mode — ignore */ }
 }
 
 export interface ShippingAddress {
@@ -167,21 +192,39 @@ const SHIPPING_OPTIONS: ShippingOption[] = [
 export function CheckoutProvider({ children }: { children: React.ReactNode }) {
   const { user, session } = useAuth();
   const [currentStep, setCurrentStep] = useState<'cart' | 'shipping' | 'payment' | 'review' | 'confirmation'>('cart');
-  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(() => readSavedAddress());
+  // Who the saved address belongs to. A guest has no account to file one
+  // under, so guests share the null bucket — they can still refresh
+  // mid-checkout without losing what they typed.
+  const addressOwner = user && !user.isGuest ? user.id : null;
+
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(
+    () => readSavedAddress(addressOwner),
+  );
   const [shippingOption, setShippingOption] = useState<ShippingOption | null>(SHIPPING_OPTIONS[0]);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
 
-  // Persist the shipping address so the user never has to re-enter
-  // it once accepted/edited. Demo seed in CheckoutFlow only fires
-  // if this is null on mount, so a real edit always sticks.
+  /**
+   * Swap to this account's own saved address the moment the account changes.
+   *
+   * Adjusted during render rather than in an effect on purpose: an effect
+   * would let one render commit with the previous occupant's address still
+   * in state, and the persist effect below would then file it under the
+   * account that just signed in — which is the leak this is here to close.
+   * Sign-in resolves after first paint, so this runs on a real visit.
+   */
+  const [loadedFor, setLoadedFor] = useState<string | null>(addressOwner);
+  if (loadedFor !== addressOwner) {
+    setLoadedFor(addressOwner);
+    setShippingAddress(readSavedAddress(addressOwner));
+  }
+
+  // Persist the shipping address so the user never has to re-enter it once
+  // accepted/edited — against their own account, never the browser at large.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (shippingAddress) window.localStorage.setItem(ADDRESS_KEY, JSON.stringify(shippingAddress));
-    } catch { /* quota / private mode — ignore */ }
-  }, [shippingAddress]);
+    if (shippingAddress) writeSavedAddress(addressOwner, shippingAddress);
+  }, [shippingAddress, addressOwner]);
 
   // Fetch order history when the user signs in.
   //
