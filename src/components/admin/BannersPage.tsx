@@ -209,32 +209,39 @@ function BannerEditor({
         <div className="bn-fields">
           <Field label="Eyebrow" hint="Small line above the headline. Optional.">
             <input className="input" value={b.eyebrow} maxLength={60}
+              placeholder="e.g. iPhone Pro · 30-point audit"
               onChange={e => onChange({ eyebrow: e.target.value })} />
           </Field>
 
-          <Field label="Headline" hint="Two short lines read better than one long one.">
-            <input className="input" value={b.headline} maxLength={90}
+          <Field label="Headline" hint="Two short lines read better than one long one — press Enter for the second.">
+            <textarea className="input" style={{ height: 56, paddingTop: 10, paddingBottom: 10, resize: 'none', lineHeight: 1.3 }}
+              value={b.headline} maxLength={90} rows={2}
+              placeholder={"e.g. Pro, for less\nthan new."}
               onChange={e => onChange({ headline: e.target.value })} />
           </Field>
 
           <Field label="Supporting line" hint="Shown on desktop only — a phone banner has no room for it.">
             <input className="input" value={b.subline} maxLength={160}
+              placeholder="e.g. Every iPhone tested across 30 checks, battery guaranteed, ready to use."
               onChange={e => onChange({ subline: e.target.value })} />
           </Field>
 
           <div className="bn-row">
             <Field label="Button text">
               <input className="input" value={b.ctaLabel} maxLength={40}
+                placeholder="e.g. Shop iPhones"
                 onChange={e => onChange({ ctaLabel: e.target.value })} />
             </Field>
             <Field label="Button link" hint="A path inside the shop, e.g. /products?brand=Apple">
               <input className="input" value={b.ctaHref} maxLength={200}
+                placeholder="/products?brand=Apple"
                 onChange={e => onChange({ ctaHref: e.target.value })} />
             </Field>
           </div>
 
           <Field label="Image description" hint="Read aloud by screen readers, and shown if the picture fails to load.">
             <input className="input" value={b.alt} maxLength={160}
+              placeholder="e.g. An iPhone Pro in a deep crimson finish, shown front and back"
               onChange={e => onChange({ alt: e.target.value })} />
           </Field>
 
@@ -271,7 +278,7 @@ function BannerEditor({
             <div className="bn-preview__scrim" />
             <div className="bn-preview__copy">
               {b.eyebrow && <span className="bn-preview__eyebrow">{b.eyebrow}</span>}
-              <strong>{b.headline || 'Your headline'}</strong>
+              <strong style={{ whiteSpace: 'pre-line' }}>{b.headline || 'Your headline'}</strong>
               <span className="bn-preview__cta">{b.ctaLabel || 'Shop now'}</span>
             </div>
           </div>
