@@ -1,8 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import BannersPage from '../../components/admin/BannersPage';
 import { bannerProblems, type Banner } from '../../lib/banners';
+
+/** The live preview embeds the real home-page carousel, which links out
+ *  via react-router — so it needs a Router in the tree, same as the page
+ *  itself would have in the app. */
+function renderPage() {
+  return render(
+    <MemoryRouter initialEntries={['/admin/banners']}>
+      <BannersPage />
+    </MemoryRouter>,
+  );
+}
 
 /**
  * The banner editor hands staff the home page.
@@ -70,13 +82,13 @@ describe('bannerProblems', () => {
 
 describe('BannersPage', () => {
   it('lists a saved banner and says whether it is live', async () => {
-    render(<BannersPage />);
+    renderPage();
     expect(await screen.findByDisplayValue('Up to 40% off')).toBeTruthy();
     expect(screen.getByText('Live')).toBeTruthy();
   });
 
   it('saves an edited headline', async () => {
-    render(<BannersPage />);
+    renderPage();
     const field = await screen.findByDisplayValue('Up to 40% off');
 
     await userEvent.clear(field);
@@ -90,7 +102,7 @@ describe('BannersPage', () => {
 
   it('will not let an incomplete banner be saved', async () => {
     listBanners.mockResolvedValue([{ ...live, headline: '', alt: '', active: false }]);
-    render(<BannersPage />);
+    renderPage();
     await screen.findByText('Off');
 
     const save = screen.getByRole('button', { name: /^Save$/i });
@@ -101,7 +113,7 @@ describe('BannersPage', () => {
   });
 
   it('never deletes on a single click', async () => {
-    render(<BannersPage />);
+    renderPage();
     await screen.findByDisplayValue('Up to 40% off');
 
     await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
@@ -112,20 +124,22 @@ describe('BannersPage', () => {
     await waitFor(() => expect(deleteBanner).toHaveBeenCalledWith('summer-sale-x1'));
   });
 
-  it('shows the overlay over the artwork, in the shape the phone will use', async () => {
-    render(<BannersPage />);
+  it('shows the real home-page carousel, not a mockup of it', async () => {
+    renderPage();
     await screen.findByDisplayValue('Up to 40% off');
 
-    // What staff approve here is the real box — same 4:5, same scrim.
-    const preview = document.querySelector('.bn-preview__frame');
-    expect(preview).toBeTruthy();
-    expect(preview!.querySelector('img')?.getAttribute('src')).toBe('https://example.test/m.jpg');
-    expect(within(preview as HTMLElement).getByText('Up to 40% off')).toBeTruthy();
-    expect(within(preview as HTMLElement).getByText('Shop deals')).toBeTruthy();
+    // What staff approve here is the actual HeroCarousel component (see
+    // BannersPage's bannerToSlide) — not a hand-rolled copy that could drift
+    // from what the home page renders.
+    const frame = document.querySelector('.bn-preview__frame2');
+    expect(frame).toBeTruthy();
+    expect(frame!.querySelector('img')?.getAttribute('src')).toBe('https://example.test/m.jpg');
+    expect(frame!.textContent).toContain('Up to 40% off');
+    expect(frame!.textContent).toContain('Shop deals');
   });
 
   it('adds a new banner switched off, so nothing reaches the shop by accident', async () => {
-    render(<BannersPage />);
+    renderPage();
     await screen.findByDisplayValue('Up to 40% off');
 
     await userEvent.click(screen.getByRole('button', { name: /New banner/i }));
