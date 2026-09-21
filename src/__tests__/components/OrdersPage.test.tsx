@@ -165,4 +165,93 @@ describe('OrdersPage', () => {
     expect(screen.queryByRole('button', { name: /Refund & restock/ })).toBeNull();
     expect(screen.getByText(/Refunded £199\.00/)).toBeTruthy();
   });
+
+  /**
+   * Bulk move — dispatched -> out for delivery, or out for delivery ->
+   * delivered. Deliberately not offered for the very first move: that one
+   * needs a distinct tracking number typed per parcel, which bulk selection
+   * cannot honestly shortcut.
+   */
+  describe('bulk move', () => {
+    const dispatched1: AdminOrder = {
+      ...paid, id: 'ORD-2001', status: 'dispatched',
+      courier: 'Royal Mail', trackingNumber: 'RM111',
+    };
+    const dispatched2: AdminOrder = {
+      ...paid, id: 'ORD-2002', status: 'dispatched',
+      courier: 'DPD', trackingNumber: 'DPD222',
+    };
+    const outForDelivery1: AdminOrder = {
+      ...paid, id: 'ORD-2003', status: 'out-for-delivery',
+      courier: 'Evri', trackingNumber: 'EV333',
+    };
+
+    it('offers no checkbox on an order still waiting to be packed', async () => {
+      listOrders.mockResolvedValue([paid]);
+      render(<OrdersPage />);
+      await screen.findByText('ORD-1001');
+
+      expect(screen.queryByRole('checkbox')).toBeNull();
+    });
+
+    it('selects a whole group in one click, and Clear empties it again', async () => {
+      listOrders.mockResolvedValue([dispatched1, dispatched2]);
+      render(<OrdersPage />);
+      await userEvent.click(await screen.findByRole('tab', { name: /All/ }));
+
+      const selectAll = await screen.findByRole('button', { name: /Select all in transit \(2\)/ });
+      await userEvent.click(selectAll);
+      expect(screen.getAllByRole('checkbox', { checked: true })).toHaveLength(2);
+      expect(screen.getByText('2 selected')).toBeTruthy();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Clear' }));
+      expect(screen.queryByText('2 selected')).toBeNull();
+      expect(screen.queryAllByRole('checkbox', { checked: true })).toHaveLength(0);
+    });
+
+    it('moves every selected order, carrying forward its own saved courier and tracking', async () => {
+      listOrders.mockResolvedValue([dispatched1, dispatched2]);
+      render(<OrdersPage />);
+      await userEvent.click(await screen.findByRole('tab', { name: /All/ }));
+      await userEvent.click(await screen.findByRole('button', { name: /Select all in transit \(2\)/ }));
+
+      await userEvent.click(screen.getByRole('button', { name: /Mark 2 out for delivery/ }));
+
+      await waitFor(() => expect(advanceOrder).toHaveBeenCalledTimes(2));
+      expect(advanceOrder).toHaveBeenCalledWith(
+        'ORD-2001', expect.objectContaining({ kind: 'out-for-delivery' }),
+        { courier: 'Royal Mail', trackingNumber: 'RM111' },
+      );
+      expect(advanceOrder).toHaveBeenCalledWith(
+        'ORD-2002', expect.objectContaining({ kind: 'out-for-delivery' }),
+        { courier: 'DPD', trackingNumber: 'DPD222' },
+      );
+      expect(await screen.findByText(/2 orders marked out for delivery/)).toBeTruthy();
+    });
+
+    it('refuses to guess when the selection spans two different stages', async () => {
+      listOrders.mockResolvedValue([dispatched1, outForDelivery1]);
+      render(<OrdersPage />);
+      await userEvent.click(await screen.findByRole('tab', { name: /All/ }));
+
+      const boxes = await screen.findAllByRole('checkbox');
+      await userEvent.click(boxes[0]);
+      await userEvent.click(boxes[1]);
+
+      expect(screen.getByText('2 selected')).toBeTruthy();
+      expect(screen.queryByRole('button', { name: /Mark 2/ })).toBeNull();
+      expect(screen.getByText(/Select orders at the same stage/)).toBeTruthy();
+      expect(advanceOrder).not.toHaveBeenCalled();
+    });
+
+    it('shows the tracking number already on file, not a blank box, at the next move', async () => {
+      listOrders.mockResolvedValue([dispatched1]);
+      render(<OrdersPage />);
+      await userEvent.click(await screen.findByRole('tab', { name: /All/ }));
+      await userEvent.click(await screen.findByRole('button', { name: /ORD-2001/ }));
+
+      expect(await screen.findByLabelText('Courier')).toHaveValue('Royal Mail');
+      expect(screen.getByLabelText('Tracking number')).toHaveValue('RM111');
+    });
+  });
 });

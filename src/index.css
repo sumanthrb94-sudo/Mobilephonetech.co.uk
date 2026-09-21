@@ -2448,13 +2448,44 @@ textarea,
   border-bottom: none;
 }
 
+/* The checkbox sits beside the header button, not inside it — a button
+   cannot contain another interactive control, and the whole header is
+   already the hit target for expanding the row. */
+.ord-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.ord-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Same width, no checkbox — so a row that cannot be bulk-selected still
+   lines its text up with one that can, in the same list. */
+.ord-select--spacer {
+  cursor: default;
+}
+
+.ord-select input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--black);
+  cursor: pointer;
+}
+
 .ord-head {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 14px;
-  width: 100%;
-  padding: 14px;
+  padding: 14px 14px 14px 0;
   border: none;
   background: transparent;
   text-align: left;
@@ -2637,6 +2668,33 @@ textarea,
   justify-items: center;
   gap: 10px;
   padding: 40px 20px;
+  color: var(--color-text-subtle);
+}
+
+/* Quick-select links when nothing is checked yet, or the live selection and
+   its one action once something is. Sits between the filter tabs and the
+   list, so it is always where the rows it acts on are in view. */
+.ord-bulkbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--grey-5);
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.ord-bulkbar__count {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--black);
+  margin-right: 2px;
+}
+
+.ord-bulkbar__hint {
+  font-family: var(--font-body);
+  font-size: 12.5px;
   color: var(--color-text-subtle);
 }
 

@@ -50,6 +50,11 @@ function chipClass(status: string): string {
 const shortDate = (iso: string) =>
   iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
 
+/** Whether an order can be moved on in bulk — see the note above the bulk bar. */
+function bulkEligible(status: string): boolean {
+  return status === 'dispatched' || status === 'out-for-delivery';
+}
+
 export default function OrdersPage() {
   const [rows, setRows] = useState<AdminOrder[]>([]);
   const [filter, setFilter] = useState<Filter>('open');
@@ -63,6 +68,20 @@ export default function OrdersPage() {
   // tracking number onto another.
   const [dispatch, setDispatch] = useState<Record<string, { courier: string; tracking: string }>>({});
   const [confirmRefund, setConfirmRefund] = useState<string | null>(null);
+
+  // Bulk move — dispatched -> out for delivery, or out for delivery ->
+  // delivered. Deliberately NOT offered for the first move (paid -> dispatched):
+  // that one needs a real, distinct tracking number typed per parcel, which is
+  // exactly the one step bulk selection cannot shortcut honestly. The other two
+  // moves need nothing new — the courier and tracking number are already on
+  // the order from when it was dispatched — so a whole batch can go through
+  // in one click with nothing to mistype.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Switching tabs can hide a selected row; clearing avoids a "3 selected"
+  // that staff can no longer see or verify.
+  useEffect(() => { setSelected(new Set()); }, [filter]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,9 +114,62 @@ export default function OrdersPage() {
   };
 
   const visible = rows.filter(o => matches(o, filter));
-  const field = (id: string) => dispatch[id] ?? { courier: '', tracking: '' };
-  const setField = (id: string, patch: Partial<{ courier: string; tracking: string }>) =>
-    setDispatch(d => ({ ...d, [id]: { ...field(id), ...patch } }));
+  // Defaults to what is already saved on the order, not a blank box — an
+  // order moving from dispatched to out for delivery already has a courier
+  // and tracking number, and leaving the fields blank here would mail the
+  // customer an "arriving today" notice with no tracking number on it.
+  const field = (order: AdminOrder) =>
+    dispatch[order.id] ?? { courier: order.courier ?? '', tracking: order.trackingNumber ?? '' };
+  const setField = (order: AdminOrder, patch: Partial<{ courier: string; tracking: string }>) =>
+    setDispatch(d => ({ ...d, [order.id]: { ...field(order), ...patch } }));
+
+  const toggleSelect = (id: string) => setSelected(s => {
+    const next = new Set(s);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
+
+  const selectGroup = (ids: string[]) => setSelected(new Set(ids));
+
+  const dispatchedVisible = visible.filter(o => o.status === 'dispatched');
+  const outForDeliveryVisible = visible.filter(o => o.status === 'out-for-delivery');
+
+  const selectedOrders = rows.filter(o => selected.has(o.id));
+  const selectedStatuses = new Set(selectedOrders.map(o => o.status));
+  // Only one meaning per click: a mixed selection has no single honest label
+  // for what the button would do, so none is offered — same reasoning as the
+  // single-order screen never showing more than the one move an order is
+  // actually waiting for.
+  const bulkKind: 'out-for-delivery' | 'delivered' | null =
+    selectedStatuses.size === 1
+      ? selectedStatuses.has('dispatched') ? 'out-for-delivery'
+        : selectedStatuses.has('out-for-delivery') ? 'delivered'
+          : null
+      : null;
+
+  const runBulk = async () => {
+    if (!bulkKind) return;
+    setBulkBusy(true);
+    setError(null);
+    setNotice(null);
+    const ids = [...selected];
+    const results = await Promise.allSettled(ids.map(id => {
+      const order = rows.find(o => o.id === id);
+      const action = order && nextAction(order.status);
+      if (!order || !action) return Promise.reject(new Error('Order changed — refresh and try again.'));
+      return advanceOrder(id, action, { courier: order.courier ?? '', trackingNumber: order.trackingNumber ?? '' });
+    }));
+    const failed = ids.filter((_, i) => results[i].status === 'rejected');
+    const okCount = ids.length - failed.length;
+    const doneWord = bulkKind === 'out-for-delivery' ? 'out for delivery' : 'delivered';
+    if (okCount > 0) setNotice(`${okCount} order${okCount === 1 ? '' : 's'} marked ${doneWord}.`);
+    if (failed.length > 0) {
+      setError(`${failed.length} order${failed.length === 1 ? '' : 's'} could not be updated — still selected, try again.`);
+    }
+    setSelected(new Set(failed));
+    setBulkBusy(false);
+    await load();
+  };
 
   return (
     <div className="ops-stack">
@@ -143,6 +215,56 @@ export default function OrdersPage() {
           })}
         </div>
 
+        {/* Bulk move — appears once there is something to move together.
+            Nothing to select on "To pack": that first move needs a real,
+            distinct tracking number typed per parcel, so it stays one order
+            at a time regardless of how many rows are showing. */}
+        {(selected.size > 0 || dispatchedVisible.length > 0 || outForDeliveryVisible.length > 0) && (
+          <div className="ord-bulkbar" role="group" aria-label="Bulk order actions">
+            {selected.size === 0 ? (
+              <>
+                {dispatchedVisible.length > 0 && (
+                  <button
+                    type="button"
+                    className="admin-ghost"
+                    onClick={() => selectGroup(dispatchedVisible.map(o => o.id))}
+                  >
+                    Select all in transit ({dispatchedVisible.length})
+                  </button>
+                )}
+                {outForDeliveryVisible.length > 0 && (
+                  <button
+                    type="button"
+                    className="admin-ghost"
+                    onClick={() => selectGroup(outForDeliveryVisible.map(o => o.id))}
+                  >
+                    Select all out for delivery ({outForDeliveryVisible.length})
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <span className="ord-bulkbar__count">{selected.size} selected</span>
+                <button type="button" className="admin-ghost" disabled={bulkBusy} onClick={() => setSelected(new Set())}>
+                  Clear
+                </button>
+                {bulkKind ? (
+                  <button type="button" className="btn btn-secondary btn-md" disabled={bulkBusy} onClick={() => void runBulk()}>
+                    {bulkBusy
+                      ? <Loader2 size={15} className="admin-spin" />
+                      : bulkKind === 'out-for-delivery' ? <MapPin size={15} /> : <PackageCheck size={15} />}
+                    {bulkKind === 'out-for-delivery'
+                      ? `Mark ${selected.size} out for delivery`
+                      : `Mark ${selected.size} delivered`}
+                  </button>
+                ) : (
+                  <span className="ord-bulkbar__hint">Select orders at the same stage to update them together.</span>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         {loading && rows.length === 0 && (
           <p className="ord-empty"><Loader2 size={18} className="admin-spin" /> Loading orders…</p>
         )}
@@ -161,11 +283,26 @@ export default function OrdersPage() {
           const busy = busyId === order.id;
           const refunded = order.status === 'refunded';
           const next = nextAction(order.status);
-          const f = field(order.id);
+          const f = field(order);
           const panelId = `order-${order.id}`;
+          const selectable = bulkEligible(order.status);
 
           return (
             <div key={order.id} className="ord-card">
+              <div className="ord-row">
+                {selectable ? (
+                  <span className="ord-select">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(order.id)}
+                      disabled={bulkBusy}
+                      onChange={() => toggleSelect(order.id)}
+                      aria-label={`Select order ${order.id}`}
+                    />
+                  </span>
+                ) : (
+                  <span className="ord-select ord-select--spacer" aria-hidden="true" />
+                )}
               <button
                 type="button"
                 className="ord-head"
@@ -185,6 +322,7 @@ export default function OrdersPage() {
                 <span className={chipClass(order.status)}>{orderStatusLabel(order.status)}</span>
                 <ChevronDown size={17} className={open ? 'ord-caret ord-caret-open' : 'ord-caret'} />
               </button>
+              </div>
 
               {open && (
                 <div className="ord-body" id={panelId}>
@@ -258,7 +396,7 @@ export default function OrdersPage() {
                             className="input"
                             value={f.courier}
                             placeholder="Royal Mail"
-                            onChange={e => setField(order.id, { courier: e.target.value })}
+                            onChange={e => setField(order, { courier: e.target.value })}
                           />
                         </div>
                         <div className="ord-field">
@@ -268,7 +406,7 @@ export default function OrdersPage() {
                             className="input"
                             value={f.tracking}
                             placeholder="AB123456789GB"
-                            onChange={e => setField(order.id, { tracking: e.target.value })}
+                            onChange={e => setField(order, { tracking: e.target.value })}
                           />
                         </div>
                       </div>
