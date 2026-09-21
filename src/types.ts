@@ -82,6 +82,8 @@ export interface Review {
   comment: string;
   userName: string;
   date: string;
+  /** Photos the reviewer attached, most recent upload last. Optional — most reviews have none. */
+  images?: string[];
 }
 
 export type ProductCategory = 'Phones' | 'Tablets' | 'Computing' | 'Gaming' | 'Smartwatches' | 'TV' | 'Accessories' | 'Ipads & Tabs' | 'Speakers' | 'Hearables' | 'Playables' | 'Apple' | 'Samsung' | 'Google';

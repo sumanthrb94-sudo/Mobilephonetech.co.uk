@@ -1,10 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { Star, ThumbsUp, MessageCircle, ShieldCheck, Lock, Loader2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Star, ThumbsUp, MessageCircle, ShieldCheck, Lock, Loader2, Camera, X } from 'lucide-react';
 import { Review } from '../types';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { sanitizeUserInput } from '../utils/sanitize';
 import { useUI } from '../context/UIContext';
-import { reviewEligibility, type ReviewEligibility } from '../lib/reviews';
+import { useAuth } from '../context/AuthContext';
+import {
+  reviewEligibility, uploadReviewPhoto, MAX_REVIEW_PHOTOS, ACCEPTED_REVIEW_PHOTO_TYPES,
+  type ReviewEligibility,
+} from '../lib/reviews';
 
 interface ReviewsSectionProps {
   productId: string;
@@ -15,12 +19,40 @@ interface ReviewsSectionProps {
 
 export default function ReviewsSection({ productId, reviews = [], onAddReview }: ReviewsSectionProps) {
   const { showToast } = useUI();
+  const { user } = useAuth();
   const [isWritingReview, setIsWritingReview] = useState(false);
   const [formData, setFormData] = useState({
     rating: 5,
     comment: '',
     userName: '',
   });
+  const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
+  const photoInput = useRef<HTMLInputElement>(null);
+
+  // Object URLs are a leak if the component unmounts mid-flow — same reason
+  // ReturnFlowModal revokes them.
+  useEffect(() => () => { photos.forEach(p => URL.revokeObjectURL(p.preview)); }, [photos]);
+
+  const addPhotos = (files: FileList | null) => {
+    if (!files) return;
+    const room = MAX_REVIEW_PHOTOS - photos.length;
+    const accepted = Array.from(files)
+      .filter(f => ACCEPTED_REVIEW_PHOTO_TYPES.includes(f.type))
+      .slice(0, room);
+    if (accepted.length < files.length) {
+      showToast('Photos must be JPEG, PNG, WebP or AVIF.', 'warning');
+    }
+    setPhotos(prev => [...prev, ...accepted.map(file => ({ file, preview: URL.createObjectURL(file) }))]);
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos(prev => {
+      URL.revokeObjectURL(prev[index].preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
 
   /**
    * Whether this visitor may review, answered by the server before the form
@@ -63,7 +95,13 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
     const sanitizedComment = sanitizeUserInput(formData.comment);
 
     if (sanitizedComment.trim() && sanitizedName.trim()) {
+      let images: string[] = [];
       try {
+        if (photos.length) {
+          if (!user || user.isGuest) throw new Error('Please sign in to attach photos.');
+          setUploadingPhotos(true);
+          images = await Promise.all(photos.map(p => uploadReviewPhoto(user.id, p.file)));
+        }
         // Awaited, unlike before: the server decides whether this person may
         // review, so "thank you" must wait until it has said yes.
         await onAddReview?.({
@@ -71,12 +109,17 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
           rating: formData.rating,
           comment: sanitizedComment,
           userName: sanitizedName,
+          images,
         });
       } catch (err) {
         showToast(err instanceof Error ? err.message : 'We could not save your review.', 'error');
         return;
+      } finally {
+        setUploadingPhotos(false);
       }
       setFormData({ rating: 5, comment: '', userName: '' });
+      photos.forEach(p => URL.revokeObjectURL(p.preview));
+      setPhotos([]);
       setIsWritingReview(false);
       showToast('Thank you for your review!', 'success');
     } else {
@@ -189,16 +232,55 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
         />
       </div>
 
+      <div className="mb-6">
+        <label className="block text-sm font-bold text-slate-900 mb-3">
+          Photos <span className="font-medium text-slate-400">(optional)</span>
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          {photos.map((p, i) => (
+            <div key={p.preview} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
+              <img src={p.preview} alt={`Review photo ${i + 1}`} className="w-full h-full object-cover" />
+              <button
+                type="button" onClick={() => removePhoto(i)}
+                aria-label={`Remove photo ${i + 1}`}
+                className="absolute top-1 right-1 w-6 h-6 grid place-items-center rounded-full bg-black/65 text-white"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))}
+          {photos.length < MAX_REVIEW_PHOTOS && (
+            <button
+              type="button" onClick={() => photoInput.current?.click()}
+              className="w-16 h-16 grid place-items-center gap-1 rounded-xl border-[1.5px] border-dashed border-slate-300 text-slate-500"
+            >
+              <Camera size={18} />
+              <span className="text-[11px] font-semibold">Add</span>
+            </button>
+          )}
+        </div>
+        <input
+          ref={photoInput} type="file" accept="image/*" multiple
+          onChange={e => { addPhotos(e.target.files); e.target.value = ''; }}
+          style={{ display: 'none' }} aria-label="Upload review photos"
+        />
+        <p className="text-xs text-slate-400 mt-2">Up to {MAX_REVIEW_PHOTOS} photos, 5MB each.</p>
+      </div>
+
       <div className="flex gap-3">
         <button
-          type="submit"
+          type="submit" disabled={uploadingPhotos}
           className="btn btn-primary btn-md" style={{ flex: 1 }}
         >
-          Submit Review
+          {uploadingPhotos ? <><Loader2 size={15} className="admin-spin" /> Uploading photos…</> : 'Submit Review'}
         </button>
         <button
-          type="button"
-          onClick={() => setIsWritingReview(false)}
+          type="button" disabled={uploadingPhotos}
+          onClick={() => {
+            photos.forEach(p => URL.revokeObjectURL(p.preview));
+            setPhotos([]);
+            setIsWritingReview(false);
+          }}
           className="btn btn-secondary btn-md" style={{ flex: 1 }}
         >
           Cancel
@@ -306,6 +388,21 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
 
                 <p className="text-slate-600 font-medium mb-4">{review.comment}</p>
 
+                {review.images && review.images.length > 0 && (
+                  <div className="flex gap-2 flex-wrap mb-4">
+                    {review.images.map((src, i) => (
+                      <button
+                        key={src} type="button"
+                        onClick={() => setLightboxSrc(src)}
+                        aria-label={`Open photo ${i + 1} from this review`}
+                        className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0"
+                      >
+                        <img src={src} alt="" className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
                   <button className="flex items-center gap-2 text-slate-500 hover:text-[var(--brand-cyan-hover)] transition-colors text-sm font-medium">
                     <ThumbsUp size={16} />
@@ -317,6 +414,55 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
           </div>
         </div>
       )}
+
+      <AnimatePresence>
+        {lightboxSrc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setLightboxSrc(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Review photo — full-screen view"
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(0,0,0,0.96)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '24px',
+            }}
+          >
+            <motion.img
+              key={lightboxSrc}
+              src={lightboxSrc}
+              alt="Review photo, full size"
+              initial={{ scale: 0.92, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.92, opacity: 0 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                width: '90vmin', height: '90vmin', maxWidth: '100%', maxHeight: '100%',
+                objectFit: 'contain',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => setLightboxSrc(null)}
+              aria-label="Close full-screen view"
+              style={{
+                position: 'absolute', top: '20px', right: '20px',
+                width: '40px', height: '40px', borderRadius: '50%',
+                background: 'rgba(255,255,255,0.14)', border: 'none',
+                color: '#fff', display: 'grid', placeItems: 'center', cursor: 'pointer',
+              }}
+            >
+              <X size={20} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

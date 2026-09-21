@@ -53,6 +53,22 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+    // Review photos. Public to read — they're shown on the product page
+    // alongside the review — but only the reviewer who uploaded one can
+    // create it, and never overwrite it afterwards: the eligibility check
+    // that guards posting a review runs once, at submit time, so a photo
+    // that could be silently swapped later would let someone re-point an
+    // already-approved review at different evidence.
+    match /review-photos/{userId}/{fileName} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && isImage()
+                    && withinSizeLimit();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }

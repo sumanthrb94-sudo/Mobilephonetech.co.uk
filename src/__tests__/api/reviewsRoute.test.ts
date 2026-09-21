@@ -101,4 +101,41 @@ describe('POST /api/reviews', () => {
     }
     expect(added).toHaveLength(0);
   });
+
+  it('saves photos uploaded to the caller\'s own review-photos folder', async () => {
+    const images = [
+      'https://firebasestorage.googleapis.com/v0/b/x/o/review-photos%2Fu1%2Fa.jpg?alt=media',
+      'https://firebasestorage.googleapis.com/v0/b/x/o/review-photos%2Fu1%2Fb.jpg?alt=media',
+    ];
+    const out = await post({ ...valid, images });
+
+    expect(out.code).toBe(201);
+    expect(added[0].images).toEqual(images);
+    expect(out.body.review.images).toEqual(images);
+  });
+
+  it('drops a photo URL that belongs to a different uid, rather than writing it', async () => {
+    const images = [
+      'https://firebasestorage.googleapis.com/v0/b/x/o/review-photos%2Fu1%2Fmine.jpg?alt=media',
+      'https://firebasestorage.googleapis.com/v0/b/x/o/review-photos%2Fsomeone-else%2Ftheirs.jpg?alt=media',
+    ];
+    const out = await post({ ...valid, images });
+
+    expect(out.code).toBe(403);
+    expect(added).toHaveLength(0);
+  });
+
+  it('rejects more than 4 images, or an images value that is not an array of strings', async () => {
+    const tooMany = Array.from({ length: 5 }, (_, i) => `https://x/review-photos%2Fu1%2F${i}.jpg`);
+    expect((await post({ ...valid, images: tooMany })).code).toBe(400);
+    expect((await post({ ...valid, images: 'not-an-array' })).code).toBe(400);
+    expect((await post({ ...valid, images: [123] })).code).toBe(400);
+    expect(added).toHaveLength(0);
+  });
+
+  it('is happy with no images at all', async () => {
+    const out = await post(valid);
+    expect(out.code).toBe(201);
+    expect(added[0].images).toEqual([]);
+  });
 });
