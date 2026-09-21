@@ -5,7 +5,7 @@ import { Spinner } from './ui/Loading';
 import { useAuth } from '../context/AuthContext';
 import { resolveLoginIdentifier, isValidLoginIdentifier } from '../utils/loginIdentifier';
 import {
-  describePhoneProblem, formatPhoneForDisplay,
+  describePhoneProblem, formatPhoneForDisplay, toE164,
   COUNTRIES, DEFAULT_COUNTRY_ISO, countryForIso,
 } from '../utils/phoneNumber';
 
@@ -123,6 +123,41 @@ function describeGoogleError(err: unknown): string {
     default:
       return message || 'Could not start Google sign-in. Please try again.';
   }
+}
+
+/**
+ * Live feedback under the phone field, before the customer ever presses
+ * "Text me a code".
+ *
+ * WHY THIS EXISTS
+ *
+ * A UK mobile and an Indian mobile are both 10 digits, and both can start
+ * with 7 — so a number typed with the country selector left on the wrong
+ * setting does not always get caught by validation. Left on "United
+ * Kingdom", an Indian number like 7700144003 passes every UK check and is
+ * sent as +447700144003: a real-shaped number that answers to nobody, so
+ * Firebase reports success and no code ever arrives. That silent failure —
+ * "it asked for a number, said nothing was wrong, and the text never
+ * came" — is indistinguishable from a broken SMS provider unless the
+ * customer is shown, before they submit, exactly what number is about to
+ * be texted.
+ */
+function phoneLivePreview(value: string, dial: string): React.ReactNode {
+  if (!value.trim()) return null;
+  // A problem is left to the on-submit error banner alone — duplicating it
+  // here as well means the same sentence on screen twice. This preview only
+  // ever adds information the banner doesn't have: what number a currently
+  // VALID-looking entry actually resolves to, so a shopper can catch the
+  // country selector being wrong before they press send.
+  if (describePhoneProblem(value, dial)) return null;
+
+  const e164 = toE164(value, dial);
+  if (!e164) return null;
+  return (
+    <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', margin: '-4px 0 0' }}>
+      We’ll text <strong style={{ color: 'var(--black)' }}>{e164}</strong> — wrong country? Change it above.
+    </p>
+  );
 }
 
 export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }: AuthModalProps) {
@@ -516,6 +551,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                         />
                       </div>
                     </div>
+                    <div style={{ marginTop: '6px' }}>{phoneLivePreview(phone, dialCode)}</div>
                     <button
                       type="button"
                       disabled={isLoading}
@@ -615,6 +651,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                     </div>
                   </div>
                 )}
+                {(mode === 'phone' || mode === 'add-phone') && phoneLivePreview(phone, dialCode)}
 
                 {mode === 'code' && (
                   <div style={{ position: 'relative' }}>

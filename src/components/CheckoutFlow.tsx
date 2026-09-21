@@ -146,23 +146,13 @@ export default function CheckoutFlow() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'selection' | 'shipping'>(isAuthenticated || user?.isGuest ? 'shipping' : 'selection');
 
-  // Demo seed: checkout starts with a plausible UK address pre-selected
-  // so a demo walk-through goes straight from cart -> payment. Uses the
-  // authenticated user's name/email when available, otherwise a generic
-  // demo profile. The user can still edit any field before continuing.
-  useEffect(() => {
-    if (shippingAddress) return;
-    setShippingAddress({
-      fullName:    user?.fullName || 'Alex Morgan',
-      email:       user?.email    || 'alex@lehart.co.uk',
-      phone:       '07700 900123',
-      addressLine1:'221B Baker Street',
-      addressLine2:'Flat 2',
-      city:        'London',
-      postalCode:  'NW1 6XE',
-      country:     'United Kingdom',
-    });
-  }, [user, shippingAddress, setShippingAddress]);
+  // shippingAddress starts as whatever was saved from a previous real order
+  // (readSavedAddress, in CheckoutContext) or null for a first-time
+  // shopper. Nothing pre-fills it beyond that: the form's own inputs below
+  // already fall back to the signed-in user's real name/email/phone
+  // (`shippingAddress?.field || user?.field || ''`), and the address lines
+  // have no fallback at all, so a new shopper sees their own details where
+  // known and empty boxes for the rest — never an invented address.
 
   const shippingCost = shippingOption?.cost || 0;
   const subtotal = cartTotal;

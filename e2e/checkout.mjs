@@ -63,13 +63,39 @@ await page.waitForTimeout(1800);
 
 // ── Shipping ──
 rec('No card inputs on the shipping step', (await cardInputs()) === 0, `${await cardInputs()} found`);
+
+// A brand-new guest must see their own (empty) address, never an invented
+// demo profile. This regressed once: a mount-time effect force-filled
+// fullName/phone/address with "Alex Morgan" / "221B Baker Street" the
+// instant the shipping step rendered, for anyone with no saved address —
+// which is every first-time shopper. Checked before this suite fills
+// anything itself, so a reintroduced seed shows up here first.
+{
+  const val = (name) => page.locator(`input[name="${name}"]`).inputValue().catch(() => '');
+  const seeded = {
+    fullName: await val('fullName'), phone: await val('phone'),
+    addressLine1: await val('addressLine1'), city: await val('city'), postalCode: await val('postalCode'),
+  };
+  // fullName may legitimately read "Guest" — that's the account's own label
+  // for itself, set by continueAsGuest, not an invented person. Everything
+  // else has no legitimate source yet and must be empty.
+  rec('New guest sees no invented address (name/phone/address blank)',
+    (seeded.fullName === '' || seeded.fullName === 'Guest') &&
+    !seeded.phone && !seeded.addressLine1 && !seeded.city && !seeded.postalCode,
+    JSON.stringify(seeded));
+  // Email is the one field allowed to be pre-filled here, and only with what
+  // the guest gate itself just collected — never a fabricated address.
+  rec('Guest email is the one they just typed, not a demo address',
+    (await val('email')) === 'e2e-buyer@example.com', await val('email'));
+}
+
 await page.locator('input[name="fullName"]').fill('E2E Buyer');
 const phone = page.locator('input[name="phone"]');
 if (await phone.count()) await phone.fill('07700 900123');
 await page.locator('input[name="addressLine1"]').fill('1 Test Terrace');
 const city = page.locator('input[name="city"]');
 if (await city.count()) await city.fill('London');
-const postcode = page.locator('input[name="postcode"], input[name="postCode"]').first();
+const postcode = page.locator('input[name="postalCode"]').first();
 if (await postcode.count()) await postcode.fill('NW1 6XE');
 // ── Delivery method: the shopper must be able to pick one ──
 //
