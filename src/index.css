@@ -2448,13 +2448,44 @@ textarea,
   border-bottom: none;
 }
 
+/* The checkbox sits beside the header button, not inside it — a button
+   cannot contain another interactive control, and the whole header is
+   already the hit target for expanding the row. */
+.ord-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.ord-select {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+/* Same width, no checkbox — so a row that cannot be bulk-selected still
+   lines its text up with one that can, in the same list. */
+.ord-select--spacer {
+  cursor: default;
+}
+
+.ord-select input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--black);
+  cursor: pointer;
+}
+
 .ord-head {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 14px;
-  width: 100%;
-  padding: 14px;
+  padding: 14px 14px 14px 0;
   border: none;
   background: transparent;
   text-align: left;
@@ -2637,6 +2668,33 @@ textarea,
   justify-items: center;
   gap: 10px;
   padding: 40px 20px;
+  color: var(--color-text-subtle);
+}
+
+/* Quick-select links when nothing is checked yet, or the live selection and
+   its one action once something is. Sits between the filter tabs and the
+   list, so it is always where the rows it acts on are in view. */
+.ord-bulkbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--grey-5);
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.ord-bulkbar__count {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--black);
+  margin-right: 2px;
+}
+
+.ord-bulkbar__hint {
+  font-family: var(--font-body);
+  font-size: 12.5px;
   color: var(--color-text-subtle);
 }
 
@@ -2935,9 +2993,17 @@ textarea,
   color: var(--grey-40, #9ca3af);
 }
 
-/* The preview is the phone banner's real box: 4:5, copy over the bottom,
-   behind the same scrim. Approving something here approves what ships. */
-.bn-preview { display: flex; flex-direction: column; gap: 6px; }
+/* The preview embeds the real HeroCarousel component — see BannersPage's
+   bannerToSlide and HeroCarousel.tsx. Approving something here approves
+   exactly what ships, because it is not a copy, it is the same component. */
+.bn-preview { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+
+.bn-preview--desktop { grid-column: 1 / -1; }
+
+.bn-preview__head {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px;
+}
 
 .bn-preview__label {
   font-family: var(--font-sans);
@@ -2949,90 +3015,48 @@ textarea,
   margin: 0;
 }
 
-.bn-preview__frame {
-  position: relative;
-  width: 100%;
-  max-width: 220px;
-  aspect-ratio: 4 / 5;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
+.bn-preview__tools { display: flex; align-items: center; gap: 8px; }
+
+.bn-preview__toggle {
+  display: flex; align-items: center;
   background: var(--grey-5);
   border: 1px solid var(--grey-10);
-  display: grid;
-  place-items: center;
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
 }
 
-.bn-preview__frame img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.bn-preview__empty {
-  font-family: var(--font-body);
+.bn-preview__toggle-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  border: none; background: none; cursor: pointer;
+  padding: 5px 10px;
+  border-radius: calc(var(--radius-md) - 2px);
+  font-family: var(--font-sans);
   font-size: 12px;
+  font-weight: 700;
+  color: var(--grey-60);
+}
+
+.bn-preview__toggle-btn.is-active {
+  background: #fff;
+  color: var(--black);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.bn-preview__empty-note {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.4;
   color: var(--grey-50);
 }
 
-.bn-preview__scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(6, 8, 14, 0) 0%,
-    rgba(6, 8, 14, 0) 26%,
-    rgba(6, 8, 14, 0.4) 38%,
-    rgba(6, 8, 14, 0.68) 48%,
-    rgba(6, 8, 14, 0.84) 66%,
-    rgba(6, 8, 14, 0.9) 100%
-  );
-}
+.bn-preview__stage { max-width: 100%; }
 
-.bn-preview__copy {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  text-align: center;
-  color: #fff;
-}
-
-.bn-preview__eyebrow {
-  font-family: var(--font-sans);
-  font-size: 7.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 999px;
-  padding: 2px 7px;
-}
-
-.bn-preview__copy strong {
-  font-family: var(--font-sans);
-  font-size: 15px;
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  overflow-wrap: anywhere;
-}
-
-.bn-preview__cta {
-  background: #fff;
-  color: #111;
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-family: var(--font-sans);
-  font-size: 10px;
-  font-weight: 800;
+.bn-preview__frame2 {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--grey-10);
 }
 
 .bn-problems {

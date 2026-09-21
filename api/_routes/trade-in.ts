@@ -1,5 +1,6 @@
-import { adminDb } from '../_firebaseAdmin.js';
+import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
+import { sendEmail, layout, esc } from '../_email.js';
 
 const VALID_CONDITIONS = ['Pristine', 'Excellent', 'Good', 'Fair'] as const;
 type Condition = (typeof VALID_CONDITIONS)[number];
@@ -73,8 +74,14 @@ export default async function handler(req: any, res: any) {
   const db = await adminDb();
   if (!db) return res.status(503).json({ error: 'Trade-in quotes are unavailable' });
 
+  // Optional: a signed-in shopper's token, if they sent one. The form works
+  // for guests too, so a missing or invalid token is not an error here —
+  // verifyCaller already returns null for either, same as the checkout flow.
+  const caller = await verifyCaller(req);
+
   try {
     const body = {
+      userId:          caller?.uid ?? null,
       email:           email.trim().toLowerCase(),
       deviceBrand:     brand.trim(),
       deviceModel:     model.trim(),
@@ -88,10 +95,35 @@ export default async function handler(req: any, res: any) {
     const ref = await db.collection('tradeInQuotes').add(body);
     const data = { id: ref.id, estimated_value: body.estimatedValue, status: body.status };
 
+    // Best-effort: a missing email provider key or a send failure should
+    // never turn a real, saved quote into a 500 the customer sees as
+    // rejection. sendEmail already reports skipped/failed distinctly from
+    // sent, which is what confirmationEmail.sent downstream is for.
+    const confirmationEmail = await sendEmail({
+      to: body.email,
+      subject: `Your trade-in quote — £${estimatedValue ?? '?'} for your ${body.deviceBrand} ${body.deviceModel}`,
+      tag: 'trade-in-quote',
+      html: layout('Trade-in quote received', `
+        <p style="margin:0 0 14px;font-size:15px;line-height:1.6;">
+          ${estimatedValue
+            ? `We'll pay <strong>£${estimatedValue}</strong> for your ${esc(body.deviceBrand)} ${esc(body.deviceModel)} in ${esc(body.deviceCondition)} condition.`
+            : `Thanks — we've logged your ${esc(body.deviceBrand)} ${esc(body.deviceModel)}. Our team will follow up with a personalised quote.`}
+        </p>
+        <p style="margin:0 0 14px;font-size:15px;line-height:1.6;">
+          Next: reply to this email or wait for us to get in touch, and we'll send a free prepaid label so you can post the device in. We pay out within 24 hours of it passing inspection.
+        </p>
+        <p style="margin:0;font-size:13px;color:#78716c;">Quote reference: ${esc(ref.id)}</p>
+      `),
+      text: estimatedValue
+        ? `We'll pay £${estimatedValue} for your ${body.deviceBrand} ${body.deviceModel} in ${body.deviceCondition} condition. We'll be in touch with a free prepaid label — quote reference ${ref.id}.`
+        : `We've logged your ${body.deviceBrand} ${body.deviceModel}. Our team will follow up with a personalised quote — reference ${ref.id}.`,
+    });
+
     return res.status(201).json({
       id:             data.id,
       estimatedValue: data.estimated_value,
       status:         data.status,
+      confirmationEmail,
       message:        estimatedValue
         ? `We'll pay £${estimatedValue} for your ${brand} ${model} in ${condition} condition.`
         : 'Your device has been logged. Our team will contact you with a personalised quote.',

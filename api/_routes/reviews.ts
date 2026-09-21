@@ -52,6 +52,7 @@ async function getReviews(req: any, res: any) {
         user_name: v.userName ?? null,
         is_verified: Boolean(v.isVerified),
         created_at: v.createdAt ?? null,
+        images: Array.isArray(v.images) ? v.images : [],
       };
     });
 
@@ -74,8 +75,10 @@ async function getReviews(req: any, res: any) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MAX_REVIEW_IMAGES = 4;
+
 async function postReview(req: any, res: any) {
-  const { productId, rating, title, comment, userName } = req.body ?? {};
+  const { productId, rating, title, comment, userName, images } = req.body ?? {};
 
   if (!productId) return res.status(400).json({ error: 'productId is required' });
   if (!userName || typeof userName !== 'string' || userName.trim().length === 0) {
@@ -89,6 +92,12 @@ async function postReview(req: any, res: any) {
   }
   if (title && (typeof title !== 'string' || title.length > 200)) {
     return res.status(400).json({ error: 'title must be under 200 characters' });
+  }
+  if (images !== undefined) {
+    if (!Array.isArray(images) || images.length > MAX_REVIEW_IMAGES
+        || images.some((u: unknown) => typeof u !== 'string' || u.length > 600)) {
+      return res.status(400).json({ error: `images must be at most ${MAX_REVIEW_IMAGES} URLs` });
+    }
   }
 
   const db = await adminDb();
@@ -112,6 +121,16 @@ async function postReview(req: any, res: any) {
       return res.status(status).json({ error: eligibility.reason, code: eligibility.code });
     }
 
+    // A photo's Storage download URL is only ever handed back after
+    // storage.rules has accepted an upload to review-photos/{uid}/... — so a
+    // URL under anyone else's uid could only get here by being typed in by
+    // hand, not uploaded. The check is cheap and closes that off without a
+    // network round-trip to Storage.
+    const ownImages: string[] = (images ?? []).filter((u: string) => u.includes(`review-photos%2F${uid}%2F`));
+    if ((images ?? []).length !== ownImages.length) {
+      return res.status(403).json({ error: 'Photos must be ones you uploaded yourself.' });
+    }
+
     const createdAt = new Date().toISOString();
     const body = {
       productId,
@@ -121,6 +140,7 @@ async function postReview(req: any, res: any) {
       userName: userName.trim(),
       userId: uid,
       orderId: eligibility.orderId ?? null,
+      images: ownImages,
       // Not taken from the request — it never was. It is true because the
       // check above proved it, which is the only way this badge means
       // anything to the person reading it.
@@ -128,7 +148,7 @@ async function postReview(req: any, res: any) {
       createdAt,
     };
     const ref = await db.collection('reviews').add(body);
-    const data = { id: ref.id, rating, user_name: body.userName, created_at: createdAt };
+    const data = { id: ref.id, rating, user_name: body.userName, images: ownImages, created_at: createdAt };
 
     return res.status(201).json({ review: data });
   } catch (err) {

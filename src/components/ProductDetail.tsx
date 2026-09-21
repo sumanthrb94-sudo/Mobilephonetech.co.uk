@@ -29,7 +29,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, COL } from '../lib/firebase';
 import { docToProduct } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
-import { submitReview } from '../lib/reviews';
+import { submitReview, listReviews } from '../lib/reviews';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { productSeo, productJsonLd, breadcrumbJsonLd } from '../utils/seo';
 import { generateProductDescription } from '../utils/productDescription';
@@ -37,8 +37,13 @@ import { generateProductDescription } from '../utils/productDescription';
 import type { Product } from '../types';
 import CountUp from './ui/CountUp';
 
-function TabPanel({ phone }: { phone: Product }) {
-  const [reviews, setReviews] = React.useState<import('../types').Review[]>(phone.reviews ?? []);
+function TabPanel({
+  phone, reviews, setReviews,
+}: {
+  phone: Product;
+  reviews: import('../types').Review[];
+  setReviews: React.Dispatch<React.SetStateAction<import('../types').Review[]>>;
+}) {
   const enrichedSpecs = enrichSpecs(phone.brand, phone.model, phone.specs);
 
   const handleAddReview = async (review: Omit<import('../types').Review, 'id' | 'date'>) => {
@@ -54,6 +59,7 @@ function TabPanel({ phone }: { phone: Product }) {
         rating: review.rating,
         comment: review.comment,
         userName: review.userName,
+        images: review.images,
       });
     } catch (err) {
       // Optimistic no longer: the server decides whether this person may
@@ -203,12 +209,20 @@ export default function ProductDetail() {
   const [phone, setPhone] = React.useState<Product | null | undefined>(undefined); // undefined = loading
   const [loadError, setLoadError] = React.useState(false);
 
-  // Real review aggregate, derived from this product's own reviews. Zero when
-  // there are none, in which case the rating row is not rendered at all.
-  const productReviews = phone?.reviews ?? [];
-  const reviewCount    = productReviews.length;
+  // Real review aggregate, fetched from the reviews collection — a product
+  // document carries no reviews of its own. Zero while loading or when there
+  // are none, in which case the rating row is not rendered at all.
+  const [reviews, setReviews] = React.useState<import('../types').Review[]>([]);
+  React.useEffect(() => {
+    if (!phone?.id) { setReviews([]); return; }
+    let cancelled = false;
+    listReviews(phone.id).then(rs => { if (!cancelled) setReviews(rs); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [phone?.id]);
+
+  const reviewCount    = reviews.length;
   const averageRating  = reviewCount
-    ? productReviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
     : 0;
 
   // One count per listing viewed. No identifier is sent — see src/lib/analytics.ts.
@@ -786,7 +800,7 @@ export default function ProductDetail() {
         )}
 
         {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
-        <TabPanel phone={phone} />
+        <TabPanel phone={phone} reviews={reviews} setReviews={setReviews} />
 
         <RelatedProductsSection currentProduct={phone} />
         <RecentlyViewed excludeId={phone.id} />

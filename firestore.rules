@@ -117,11 +117,15 @@ service cloud.firestore {
     }
 
     // ── Trade-in quotes ─────────────────────────────────────
-    // Anyone may request a quote, including guests — the form is public and
-    // asks for an email rather than an account. Only staff can read them back:
-    // they contain contact details.
+    // Created only by /api/trade-in, with the Admin SDK — never directly by
+    // the client. estimatedValue is a real £ figure this business will
+    // actually pay out on; `allow create: if true` let a shopper write any
+    // number they liked straight into a document staff would read as a
+    // trusted quote, the same class of hole server-side order pricing
+    // already closed for the cart. The route looks the device up in its own
+    // valuations table, so nothing client-supplied decides the price.
     match /tradeInQuotes/{quoteId} {
-      allow create: if true;
+      allow create: if false;
       allow read: if isAdmin()
                   || (signedIn() && resource.data.userId == request.auth.uid);
       allow update, delete: if isAdmin();

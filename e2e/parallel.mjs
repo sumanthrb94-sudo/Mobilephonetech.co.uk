@@ -168,7 +168,7 @@ await Promise.all([
     await cust.locator('input[name="addressLine1"]').fill('2 Concurrency Close');
     const city = cust.locator('input[name="city"]');
     if (await city.count()) await city.fill('London');
-    const postcode = cust.locator('input[name="postcode"], input[name="postCode"]').first();
+    const postcode = cust.locator('input[name="postalCode"]').first();
     if (await postcode.count()) await postcode.fill('NW1 6XE');
     await cust.locator('form').getByRole('button', { name: /continue|payment/i }).first().click();
     await cust.waitForTimeout(1500);

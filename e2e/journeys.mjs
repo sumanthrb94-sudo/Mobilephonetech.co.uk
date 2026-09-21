@@ -112,19 +112,22 @@ async function run(view, contextOpts) {
     }
   }
 
-  // ── The search row closes when you leave the page (phones only) ──
+  // ── Search never duplicates itself across the app bar (phones only) ──
   //
-  // The Navbar is the app shell and never unmounts, so the flag that opens
-  // the expanding search row survived every in-app navigation. One tap on
-  // the magnifier and the row followed the shopper to Shop, Cart and
-  // Account; on Home it rendered underneath the inline search bar, putting
-  // two search fields on the screen six pixels apart. Nothing failed — search
-  // just became permanent chrome nobody had asked to keep.
+  // Search used to be a toggle: a magnifier tap opened an expanding row, and
+  // because the Navbar is the app shell and never unmounts, that row survived
+  // every in-app navigation — one tap and it followed the shopper to Shop,
+  // Cart and Account, landing on top of Home's own inline search bar and
+  // putting two fields on screen at once.
+  //
+  // Search is no longer a toggle at all — it is the combobox sitting
+  // directly in the app bar on every screen (see interactions.mjs) — so the
+  // failure mode worth guarding now is simpler: is it ever duplicated.
   //
   // Driven through the tab bar rather than page loads on purpose: a full load
-  // remounts the Navbar and resets the flag, so goto() cannot see this bug at
-  // all. Only client-side navigation reproduces it, which is what a shopper
-  // actually does.
+  // remounts the Navbar, which would hide a bug that only client-side
+  // navigation reproduces — the same reason the original version of this
+  // test did.
   if (isMobile) {
     try {
       const visibleSearches = () => page.evaluate(() =>
@@ -136,27 +139,21 @@ async function run(view, contextOpts) {
       await page.waitForTimeout(2500);
       await dismissCookies(page);
 
-      const toggle = page.locator('button[aria-label="Search products"]:visible').first();
-      await toggle.click();
-      await page.waitForTimeout(700);
-      const opened = await visibleSearches();
-      rec(view, 'The magnifier opens exactly one search field',
-        opened.length === 1 ? 'PASS' : 'FAIL', JSON.stringify(opened));
+      const onLoad = await visibleSearches();
+      rec(view, 'Exactly one search field is visible, no toggle needed',
+        onLoad.length === 1 ? 'PASS' : 'FAIL', JSON.stringify(onLoad));
 
-      const carried = [];
+      const duplicated = [];
       for (const tab of ['Home', 'Cart', 'Account', 'Shop']) {
         await page.locator(`nav[aria-label="Primary"] >> text=${tab}`).first().click();
         await page.waitForTimeout(1200);
         const here = await visibleSearches();
-        // Home's app bar IS a search field by design — one is right there,
-        // two is the bug. Everywhere else search lives behind the magnifier.
-        const allowed = tab === 'Home' ? 1 : 0;
-        if (here.length > allowed) carried.push(`${tab}: ${JSON.stringify(here)}`);
+        if (here.length > 1) duplicated.push(`${tab}: ${JSON.stringify(here)}`);
       }
-      rec(view, 'The search row does not follow the shopper between tabs',
-        carried.length === 0 ? 'PASS' : 'FAIL', carried.join(' | '));
+      rec(view, 'The search field never duplicates itself between tabs',
+        duplicated.length === 0 ? 'PASS' : 'FAIL', duplicated.join(' | '));
     } catch (e) {
-      rec(view, 'The search row does not follow the shopper between tabs', 'FAIL', e.message.slice(0, 100));
+      rec(view, 'The search field never duplicates itself between tabs', 'FAIL', e.message.slice(0, 100));
     }
   }
 
@@ -342,16 +339,15 @@ async function run(view, contextOpts) {
   } catch (e) { rec(view, 'Brand filter narrows results', 'FAIL', e.message.slice(0, 100)); }
 
   // ── Search ──
+  //
+  // Used to be behind a magnifier toggle on phones, tapped open here before
+  // typing. Search is now the combobox sitting directly in the app bar on
+  // every screen (see interactions.mjs), so there is nothing left to open —
+  // the field this test types into is already visible on page load.
   try {
     await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(2500);
     await dismissCookies(page);
-    if (isMobile) {
-      // The desktop autocomplete input shares this label, so match the button.
-      const toggle = page.locator('button[aria-label="Search products"]').first();
-      await toggle.click();
-      await page.waitForTimeout(900);
-    }
     const input = page.locator('input:visible').filter({ has: undefined })
       .and(page.getByPlaceholder(/search/i)).first();
     await input.waitFor({ timeout: 10000 });
@@ -542,12 +538,16 @@ async function run(view, contextOpts) {
   } catch (e) { rec(view, 'Checkout renders a form', 'FAIL', e.message.slice(0, 100)); }
 
   // ── Auth modal ──
+  //
+  // /account is the sign-in entry point at every viewport: its signed-out
+  // gate offers the same "Sign in or create an account" control regardless
+  // of width. Desktop's "More" menu used to be the only way in on a wide
+  // screen, but mobile's one entry point is the bottom tab bar's Account
+  // link, not that menu — so a viewport-independent path here.
   try {
-    await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2500);
+    await page.goto(`${BASE}/account`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(2000);
     await dismissCookies(page);
-    const more = page.locator('[aria-label="More options"], [aria-label="Open menu"]').first();
-    if (await more.count()) { await more.click(); await page.waitForTimeout(1000); }
     const signIn = page.getByRole('button', { name: /sign in|log in|account/i }).first();
     if (await signIn.count()) {
       await signIn.click(); await page.waitForTimeout(1500);

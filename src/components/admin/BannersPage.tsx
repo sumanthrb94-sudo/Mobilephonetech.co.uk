@@ -1,13 +1,40 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image as ImageIcon, Loader2, AlertTriangle, Check, Plus, Trash2, Upload,
-  Eye, EyeOff, ArrowUp, ArrowDown,
+  Eye, EyeOff, ArrowUp, ArrowDown, RotateCw, Smartphone, Monitor,
 } from 'lucide-react';
 import {
   listBanners, saveBanner, deleteBanner, bannerId, bannerProblems,
   BANNER_SPEC, EMPTY_BANNER, type Banner,
 } from '../../lib/banners';
 import { uploadImage, describeError, BANNER_BUCKET } from '../../lib/adminApi';
+import HeroCarousel, { type Slide } from '../HeroCarousel';
+
+/**
+ * A draft banner, rendered through the exact same carousel the home page
+ * uses — see the note on HeroCarousel. Mirrors the mapping Hero.tsx applies
+ * to a saved banner, so what staff see here does not silently disagree with
+ * what a visitor gets once this is switched on.
+ */
+function bannerToSlide(b: Banner): Slide {
+  return {
+    eyebrow: b.eyebrow,
+    headline: b.headline,
+    subline: b.subline,
+    ctaLabel: b.ctaLabel,
+    ctaHref: b.ctaHref,
+    image: b.image || b.imageMobile,
+    imageMobile: b.imageMobile || b.image,
+    imageAlt: b.alt,
+    gradientFrom: '#0b0f1a',
+    gradientTo: '#1b2440',
+    glowColor: 'rgba(96, 120, 220, 0.30)',
+    savings: '',
+    fullBleed: true,
+    focal: '50% 50%',
+    focalMobile: '50% 30%',
+  };
+}
 
 /**
  * Home-page banners, editable without a deploy.
@@ -173,6 +200,8 @@ function BannerEditor({
   const [uploading, setUploading] = useState<'image' | 'imageMobile' | null>(null);
   const deskRef = useRef<HTMLInputElement>(null);
   const mobRef = useRef<HTMLInputElement>(null);
+  const [previewDevice, setPreviewDevice] = useState<'phone' | 'desktop'>('phone');
+  const [replayKey, setReplayKey] = useState(0);
 
   const pick = async (which: 'image' | 'imageMobile', file: File | undefined) => {
     if (!file) return;
@@ -209,32 +238,39 @@ function BannerEditor({
         <div className="bn-fields">
           <Field label="Eyebrow" hint="Small line above the headline. Optional.">
             <input className="input" value={b.eyebrow} maxLength={60}
+              placeholder="e.g. iPhone Pro · 30-point audit"
               onChange={e => onChange({ eyebrow: e.target.value })} />
           </Field>
 
-          <Field label="Headline" hint="Two short lines read better than one long one.">
-            <input className="input" value={b.headline} maxLength={90}
+          <Field label="Headline" hint="Two short lines read better than one long one — press Enter for the second.">
+            <textarea className="input" style={{ height: 56, paddingTop: 10, paddingBottom: 10, resize: 'none', lineHeight: 1.3 }}
+              value={b.headline} maxLength={90} rows={2}
+              placeholder={"e.g. Pro, for less\nthan new."}
               onChange={e => onChange({ headline: e.target.value })} />
           </Field>
 
           <Field label="Supporting line" hint="Shown on desktop only — a phone banner has no room for it.">
             <input className="input" value={b.subline} maxLength={160}
+              placeholder="e.g. Every iPhone tested across 30 checks, battery guaranteed, ready to use."
               onChange={e => onChange({ subline: e.target.value })} />
           </Field>
 
           <div className="bn-row">
             <Field label="Button text">
               <input className="input" value={b.ctaLabel} maxLength={40}
+                placeholder="e.g. Shop iPhones"
                 onChange={e => onChange({ ctaLabel: e.target.value })} />
             </Field>
             <Field label="Button link" hint="A path inside the shop, e.g. /products?brand=Apple">
               <input className="input" value={b.ctaHref} maxLength={200}
+                placeholder="/products?brand=Apple"
                 onChange={e => onChange({ ctaHref: e.target.value })} />
             </Field>
           </div>
 
           <Field label="Image description" hint="Read aloud by screen readers, and shown if the picture fails to load.">
             <input className="input" value={b.alt} maxLength={160}
+              placeholder="e.g. An iPhone Pro in a deep crimson finish, shown front and back"
               onChange={e => onChange({ alt: e.target.value })} />
           </Field>
 
@@ -260,19 +296,52 @@ function BannerEditor({
           </div>
         </div>
 
-        {/* The same fixed box the home page uses, so what is approved here is
-            what a visitor gets. */}
-        <div className="bn-preview">
-          <p className="bn-preview__label">Preview — phone</p>
-          <div className="bn-preview__frame">
-            {preview
-              ? <img src={preview} alt="" />
-              : <span className="bn-preview__empty">No image yet</span>}
-            <div className="bn-preview__scrim" />
-            <div className="bn-preview__copy">
-              {b.eyebrow && <span className="bn-preview__eyebrow">{b.eyebrow}</span>}
-              <strong>{b.headline || 'Your headline'}</strong>
-              <span className="bn-preview__cta">{b.ctaLabel || 'Shop now'}</span>
+        {/* Not a mockup of the home page banner — it IS the home page banner
+            component (HeroCarousel), fed this one draft. Same code, same
+            animation, so nothing here can quietly disagree with what ships. */}
+        <div className={previewDevice === 'desktop' ? 'bn-preview bn-preview--desktop' : 'bn-preview'}>
+          <div className="bn-preview__head">
+            <p className="bn-preview__label">Live preview</p>
+            <div className="bn-preview__tools">
+              <div className="bn-preview__toggle" role="group" aria-label="Preview device">
+                <button type="button" aria-pressed={previewDevice === 'phone'}
+                  className={previewDevice === 'phone' ? 'bn-preview__toggle-btn is-active' : 'bn-preview__toggle-btn'}
+                  onClick={() => setPreviewDevice('phone')}>
+                  <Smartphone size={13} /> Phone
+                </button>
+                <button type="button" aria-pressed={previewDevice === 'desktop'}
+                  className={previewDevice === 'desktop' ? 'bn-preview__toggle-btn is-active' : 'bn-preview__toggle-btn'}
+                  onClick={() => setPreviewDevice('desktop')}>
+                  <Monitor size={13} /> Desktop
+                </button>
+              </div>
+              <button type="button" className="admin-ghost" onClick={() => setReplayKey(k => k + 1)}>
+                <RotateCw size={13} /> Replay
+              </button>
+            </div>
+          </div>
+
+          {!preview && (
+            <p className="bn-preview__empty-note">
+              No image uploaded yet — the preview below shows the real layout with a placeholder background.
+            </p>
+          )}
+
+          <div
+            className="bn-preview__stage"
+            style={{
+              containerType: 'inline-size',
+              width: previewDevice === 'phone' ? 220 : '100%',
+              maxWidth: previewDevice === 'phone' ? 220 : 640,
+            }}
+          >
+            <div className="bn-preview__frame2">
+              <HeroCarousel
+                slides={[bannerToSlide(b)]}
+                autoAdvance={false}
+                isDesktopOverride={previewDevice === 'desktop'}
+                replayKey={replayKey}
+              />
             </div>
           </div>
         </div>

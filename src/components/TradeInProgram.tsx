@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, Smartphone, Banknote, PackageCheck, Lightbulb, CheckCircle2, ChevronDown } from 'lucide-react';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db, COL } from '../lib/firebase';
 import { useAuth } from '../context/AuthContext';
+import { auth } from '../lib/firebase';
 
 const STEPS = [
   {
@@ -116,10 +115,14 @@ export default function TradeInProgram() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  // What the server actually priced and saved — the number shown before
+  // submitting is this component's own guess, kept only so the "quote" step
+  // has something to show while typing. See handleSubmit.
+  const [confirmedValue, setConfirmedValue] = useState<number | null>(null);
 
-  const quoteValue = selectedModel && selectedCondition
+  const quoteValue = confirmedValue ?? (selectedModel && selectedCondition
     ? selectedModel.prices[selectedCondition]
-    : null;
+    : null);
 
   const handleBrandSelect = (brand: Brand) => {
     setSelectedBrand(brand);
@@ -147,19 +150,31 @@ export default function TradeInProgram() {
     setIsSubmitting(true);
     setError('');
     try {
-      await addDoc(collection(db, COL.tradeInQuotes), {
-        userId: user?.id ?? null,
-        email: contactEmail,
-        deviceBrand: selectedBrand,
-        deviceModel: selectedModel.name,
-        deviceCondition: selectedCondition,
-        estimatedValue: quoteValue,
-        status: 'quoted',
-        createdAt: serverTimestamp(),
+      // The number on screen up to now is this component's own copy of the
+      // pricing table — never trusted for the real quote. /api/trade-in
+      // looks the device up in the server's own table and is what actually
+      // gets saved, the same way order totals are only ever real once the
+      // server has priced them, not whatever the browser displayed.
+      const token = await auth.currentUser?.getIdToken().catch(() => null);
+      const res = await fetch('/api/trade-in', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          brand: selectedBrand,
+          model: selectedModel.name,
+          condition: selectedCondition,
+          email: contactEmail,
+        }),
       });
+      const data = await res.json().catch(() => ({} as { error?: string; estimatedValue?: number }));
+      if (!res.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+      setConfirmedValue(typeof data.estimatedValue === 'number' ? data.estimatedValue : quoteValue);
       setFormStep('submitted');
-    } catch {
-      setError('Something went wrong. Please try again.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -172,6 +187,7 @@ export default function TradeInProgram() {
     setSelectedCondition(null);
     setEmail('');
     setError('');
+    setConfirmedValue(null);
   };
 
   return (
@@ -453,7 +469,7 @@ export default function TradeInProgram() {
                         Quote confirmed!
                       </h3>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6, maxWidth: '280px', margin: '0 auto var(--spacing-24)' }}>
-                        We've emailed your prepaid label. Drop off your {selectedModel?.name} and we'll transfer <span style={{ color: 'var(--brand-cyan)', fontWeight: 700 }}>£{quoteValue}</span> within 24 hours of inspection.
+                        Check your email to confirm. We'll follow up with a free prepaid label for your {selectedModel?.name}, then transfer <span style={{ color: 'var(--brand-cyan)', fontWeight: 700 }}>£{quoteValue}</span> within 24 hours of inspection.
                       </p>
                       <button
                         onClick={resetForm}
