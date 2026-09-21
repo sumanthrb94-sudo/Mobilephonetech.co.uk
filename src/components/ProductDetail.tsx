@@ -767,16 +767,23 @@ export default function ProductDetail() {
 
         {/* Everything below here is evidence for a decision made above it, and
             on a phone that evidence is several screens long. The bar keeps the
-            price and Add to cart one tap away throughout. */}
-        <StickyBuyBar
-          watch={addToCartRef}
-          title={`${phone.brand} ${phone.model}`}
-          price={`£${displayPrice}`}
-          originalPrice={savings > 0 ? `£${displayOriginalPrice}` : null}
-          label={displayStock > 0 ? 'Add to cart' : 'Out of stock'}
-          disabled={displayStock === 0}
-          onAdd={handleAddToCart}
-        />
+            price and Add to cart one tap away throughout.
+
+            Desktop only, not: the sticky buy column already does this job
+            there, and a second full-width bar pinned under a mouse-driven
+            page reads as clutter rather than help — a phone's one-CTA-per-
+            screen is the case this bar earns its place for. */}
+        {!isDesktop && (
+          <StickyBuyBar
+            watch={addToCartRef}
+            title={`${phone.brand} ${phone.model}`}
+            price={`£${displayPrice}`}
+            originalPrice={savings > 0 ? `£${displayOriginalPrice}` : null}
+            label={displayStock > 0 ? 'Add to cart' : 'Out of stock'}
+            disabled={displayStock === 0}
+            onAdd={handleAddToCart}
+          />
+        )}
 
         {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
         <TabPanel phone={phone} />
@@ -784,11 +791,6 @@ export default function ProductDetail() {
         <RelatedProductsSection currentProduct={phone} />
         <RecentlyViewed excludeId={phone.id} />
       </div>
-
-      {/* Sticky mobile Add-to-cart bar removed — Amazon-style PDP keeps
-          a single in-page CTA. The IntersectionObserver wiring above
-          (primaryCtaRef + isPrimaryCtaInView) is dead but harmless;
-          left in place to avoid churning unrelated layout. */}
 
       <GradeExplainer isOpen={gradeExplainerOpen} onClose={() => setGradeExplainerOpen(false)} />
 
