@@ -155,12 +155,22 @@ async function run(view, contextOpts) {
   } catch (e) { rec(view, 'Add to cart', 'confirmation appears', false, e.message.slice(0, 80)); }
 
   // ── Auth modal -> Google button present ─────────────────────
+  // Desktop reaches it through the "More" menu's account row; mobile has no
+  // such row any more (consolidated to one entry point, the Account tab),
+  // so it goes to /account and signs in from the gate screen there instead.
   try {
-    await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(2500);
+    if (isMobile) {
+      await page.goto(`${BASE}/account`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2000);
+    } else {
+      await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(2500);
+    }
     await dismissCookies(page);
-    const more = page.locator('[aria-label="More options"], [aria-label="Open menu"]').first();
-    if (await more.count()) { await more.click(); await page.waitForTimeout(1000); }
+    if (!isMobile) {
+      const more = page.locator('[aria-label="More options"], [aria-label="Open menu"]').first();
+      if (await more.count()) { await more.click(); await page.waitForTimeout(1000); }
+    }
     const signIn = page.getByRole('button', { name: /sign in|log in|account/i }).first();
     if (await signIn.count()) {
       await signIn.click();
@@ -193,16 +203,17 @@ async function run(view, contextOpts) {
     }
   } catch (e) { rec(view, 'nav/filters', 'panel opens', false, e.message.slice(0, 80)); }
 
-  // ── Mobile search toggle -> search field ────────────────────
+  // ── Mobile search field is always present, not behind a toggle ──
+  // The header used to hide search behind a button click; it is now the
+  // combobox sitting directly in the app bar on every screen, so this just
+  // confirms it is there and usable rather than opening anything.
   if (isMobile) {
     try {
       await gotoProducts(page);
-      await page.locator('button[aria-label="Search products"]').first().click();
-      await page.waitForTimeout(900);
       await shot(page, view, 'mobile-search-open');
-      rec(view, 'Search (header)', 'search field becomes usable',
-          await page.locator('#mobile-search-bar input').isVisible());
-    } catch (e) { rec(view, 'Search (header)', 'search opens', false, e.message.slice(0, 80)); }
+      rec(view, 'Search (header)', 'search field is present and usable',
+          await page.getByRole('combobox').first().isVisible());
+    } catch (e) { rec(view, 'Search (header)', 'search field usable', false, e.message.slice(0, 80)); }
   }
 
   await browser.close();
