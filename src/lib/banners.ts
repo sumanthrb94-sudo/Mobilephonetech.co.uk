@@ -1,7 +1,7 @@
 import {
   collection, deleteDoc, doc, getDocs, orderBy, query, setDoc,
 } from 'firebase/firestore';
-import { db, COL } from './firebase';
+import { db, COL, withAdminRetry } from './firebase';
 
 /**
  * Home-page banners, editable by staff.
@@ -113,15 +113,15 @@ export async function saveBanner(b: Banner): Promise<void> {
   const problems = bannerProblems(b);
   if (problems.length) throw new Error(problems[0]);
 
-  await setDoc(doc(db, COL.banners, b.id), {
+  await withAdminRetry(() => setDoc(doc(db, COL.banners, b.id), {
     ...b,
     ctaHref: b.ctaHref.trim() || '/products',
     updatedAt: new Date().toISOString(),
-  });
+  }));
 }
 
 export function deleteBanner(id: string): Promise<void> {
-  return deleteDoc(doc(db, COL.banners, id));
+  return withAdminRetry(() => deleteDoc(doc(db, COL.banners, id)));
 }
 
 /** Slug-ish id from the headline, so the document is readable in the console. */

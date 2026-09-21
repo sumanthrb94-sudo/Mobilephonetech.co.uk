@@ -69,6 +69,48 @@ if (usingEmulators) {
   console.info('[firebase] using local emulators');
 }
 
+/**
+ * Run an admin write, and if it is refused for looking unauthorised, force a
+ * genuinely fresh ID token and try exactly once more before giving up.
+ *
+ * WHY THIS EXISTS
+ *
+ * AdminRoute already forces a fresh token before it lets someone into
+ * /admin at all, which closes the common case: a claim granted while a tab
+ * was already open. But a mobile connection can drop that very refresh —
+ * weak signal, a battery saver throttling background requests — and
+ * AdminRoute has no way to know its own refresh silently failed; it just
+ * falls back to whatever token was already cached, which is exactly the
+ * stale one the refresh was supposed to replace. The person then sees the
+ * console (the UI is reading the same stale-but-still-decodable cached
+ * claims) and gets refused the instant they try to change anything,
+ * because Firestore checks the token actually attached to the write, not
+ * what the UI believes. Retrying the write itself, immediately after its
+ * own forced refresh, catches that case regardless of why the earlier one
+ * didn't stick — and costs nothing extra for the overwhelmingly common
+ * case where the first attempt just works.
+ */
+export async function withAdminRetry<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    const code = (err as { code?: string })?.code ?? '';
+    const message = (err as { message?: string })?.message ?? '';
+    const looksUnauthorised = code === 'permission-denied' || code === 'storage/unauthorized'
+      || /insufficient permissions/i.test(message);
+    if (!looksUnauthorised || !auth.currentUser) throw err;
+
+    try {
+      await auth.currentUser.getIdToken(true);
+    } catch {
+      // The refresh itself failed (offline, etc.) — the original error is
+      // the more useful one to surface, not a network error about the retry.
+      throw err;
+    }
+    return await fn();
+  }
+}
+
 /** Collection names, in one place so a rename cannot drift between callers. */
 export const COL = {
   products: 'products',

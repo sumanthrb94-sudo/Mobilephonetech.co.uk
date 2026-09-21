@@ -13,6 +13,9 @@ import BrandMark from './ui/BrandMark';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { COMPANY, companyDetailsComplete } from '../config/company';
 import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
+import ReturnFlowModal from './ReturnFlowModal';
+import { listMyReturns, isReturnable, RETURN_STATUS_LABEL, WARRANTY_MONTHS } from '../lib/returns';
+import type { ReturnItem, ReturnRequest } from '../types';
 
 // Same lazy split as checkout, and for the same reason: Leaflet plus its
 // stylesheet is ~42KB gzipped, wanted only by someone who pressed Find
@@ -144,6 +147,13 @@ export default function AccountPage() {
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  // Returns already raised, keyed against their order so a customer cannot
+  // start a second request for something already in progress — see
+  // OrderHistoryPage, which this mirrors. This tab is the one shoppers
+  // actually reach (nothing links to /orders), so the return flow has to
+  // live here too, not only on that orphaned page.
+  const [returns, setReturns] = useState<ReturnRequest[]>([]);
+  const [returnOrder, setReturnOrder] = useState<{ id: string; createdAt: string; items: ReturnItem[] } | null>(null);
 
   // Address state
   const [address, setAddress] = useState({ line1: '', line2: '', city: '', postcode: '', country: 'United Kingdom' });
@@ -209,8 +219,20 @@ export default function AccountPage() {
   }, [user]);
 
   useEffect(() => {
-    if (openTab === 'orders') loadOrders();
+    if (openTab === 'orders') { loadOrders(); loadReturns(); }
   }, [openTab]);
+
+  async function loadReturns() {
+    if (!user || user.isGuest) { setReturns([]); return; }
+    try {
+      setReturns(await listMyReturns(user.id));
+    } catch {
+      setReturns([]);
+    }
+  }
+
+  const returnFor = (orderId: string) =>
+    returns.find(r => r.orderId === orderId && r.status !== 'cancelled' && r.status !== 'rejected');
 
   async function loadProfile() {
     if (!session) return;
@@ -741,6 +763,53 @@ export default function AccountPage() {
                                       </div>
                                     </div>
                                   )}
+                                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--grey-10)' }}>
+                                    {(() => {
+                                      const existing = returnFor(order.id);
+                                      if (existing) {
+                                        return (
+                                          <span style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 34,
+                                            padding: '0 12px', borderRadius: 999,
+                                            background: 'var(--color-brand-subtle)', border: '1px solid rgba(161,98,7,0.25)',
+                                            fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 600, color: 'var(--brand-cyan-hover)',
+                                          }}>
+                                            <RotateCcw size={14} />
+                                            {existing.id} · {RETURN_STATUS_LABEL[existing.status]}
+                                          </span>
+                                        );
+                                      }
+                                      if (!isReturnable(order.createdAt)) {
+                                        return (
+                                          <span style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: '#6b7280' }}>
+                                            This order is past its {WARRANTY_MONTHS}-month warranty period.
+                                          </span>
+                                        );
+                                      }
+                                      return (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setReturnOrder({
+                                              id: order.id,
+                                              createdAt: order.createdAt,
+                                              items: order.items.map(i => ({
+                                                productId: i.id,
+                                                model: i.model,
+                                                brand: i.brand,
+                                                quantity: i.quantity,
+                                                price: i.price,
+                                                imageUrl: i.imageUrl,
+                                              })),
+                                            });
+                                          }}
+                                          className="btn btn-secondary btn-md"
+                                        >
+                                          <RotateCcw size={14} /> Start a return
+                                        </button>
+                                      );
+                                    })()}
+                                  </div>
                                 </div>
                               </motion.div>
                             )}
@@ -912,6 +981,14 @@ export default function AccountPage() {
           )}
         </div>
       </div>
+      <ReturnFlowModal
+        orderId={returnOrder?.id ?? ''}
+        orderDate={returnOrder?.createdAt ?? new Date().toISOString()}
+        items={returnOrder?.items ?? []}
+        isOpen={!!returnOrder}
+        onClose={() => setReturnOrder(null)}
+        onCreated={loadReturns}
+      />
     </div>
   );
 }

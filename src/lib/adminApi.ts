@@ -5,7 +5,7 @@ import {
 import {
   deleteObject, getDownloadURL, listAll, ref, uploadBytes,
 } from 'firebase/storage';
-import { db, storage, COL } from './firebase';
+import { db, storage, COL, withAdminRetry } from './firebase';
 import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
 import type { Product, ProductGrade } from '../types';
 
@@ -404,27 +404,27 @@ export async function createProduct(draft: ProductDraft): Promise<Product> {
   if (existing.exists()) throw new AlreadyExistsError('A product with that slug already exists.');
 
   const body = { ...draftToRow(draft), createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-  await setDoc(ref, body);
+  await withAdminRetry(() => setDoc(ref, body));
   return { ...docToProduct(draft.id, body as Record<string, unknown>) };
 }
 
 export async function updateProduct(draft: ProductDraft): Promise<Product> {
   const ref = doc(db, COL.products, draft.id);
   const body = { ...draftToRow(draft), updatedAt: serverTimestamp() };
-  await updateDoc(ref, body);
+  await withAdminRetry(() => updateDoc(ref, body));
   return { ...docToProduct(draft.id, body as Record<string, unknown>) };
 }
 
 export async function setStock(id: string, stock: number): Promise<void> {
   if (!Number.isInteger(stock) || stock < 0) throw new Error('Stock must be a whole number of 0 or more.');
-  await updateDoc(doc(db, COL.products, id), { stock, updatedAt: serverTimestamp() });
+  await withAdminRetry(() => updateDoc(doc(db, COL.products, id), { stock, updatedAt: serverTimestamp() }));
 }
 
 export async function deleteProduct(id: string): Promise<void> {
   // Stored images are removed first: losing an image is recoverable, but a
   // deleted document leaves no record of which files belonged to it.
   await deleteAllImagesFor(id).catch(() => { /* orphaned files are not fatal */ });
-  await deleteDoc(doc(db, COL.products, id));
+  await withAdminRetry(() => deleteDoc(doc(db, COL.products, id)));
 }
 
 // ── Images ─────────────────────────────────────────────────────
@@ -468,10 +468,10 @@ export async function uploadImage(
   const path = imagePath(productId, file.name, unique);
 
   const objectRef = ref(storage, `${bucket}/${path}`);
-  await uploadBytes(objectRef, file, {
+  await withAdminRetry(() => uploadBytes(objectRef, file, {
     contentType: file.type,
     cacheControl: 'public, max-age=31536000',
-  });
+  }));
   return getDownloadURL(objectRef);
 }
 
@@ -499,11 +499,11 @@ export function pathFromPublicUrl(url: string): string | null {
 export async function deleteImage(url: string): Promise<void> {
   const path = pathFromPublicUrl(url);
   if (!path) return; // bundled asset — nothing stored to remove
-  await deleteObject(ref(storage, `${IMAGE_BUCKET}/${path}`));
+  await withAdminRetry(() => deleteObject(ref(storage, `${IMAGE_BUCKET}/${path}`)));
 }
 
 async function deleteAllImagesFor(productId: string): Promise<void> {
   const folder = ref(storage, `${IMAGE_BUCKET}/${productId}`);
   const listing = await listAll(folder);
-  await Promise.all(listing.items.map(item => deleteObject(item)));
+  await withAdminRetry(() => Promise.all(listing.items.map(item => deleteObject(item))));
 }
