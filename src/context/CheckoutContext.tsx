@@ -6,11 +6,32 @@ import { useAuth } from './AuthContext';
 
 const ADDRESS_KEY = 'mt_shipping_address';
 
+/**
+ * A now-removed mount effect used to seed a brand-new shopper's shipping
+ * form with this exact invented profile before they had typed anything.
+ * That effect wrote it through to localStorage like any real address, so a
+ * browser that loaded the app before the fix still has it saved and would
+ * otherwise keep showing it forever — this is not a live bug re-appearing,
+ * it is old poisoned state. Any saved address that still matches it,
+ * untouched, is discarded on read rather than trusted, so a browser that
+ * already has it self-heals the next time the app loads.
+ */
+function looksLikeInventedDemoAddress(a: ShippingAddress): boolean {
+  return a.fullName === 'Alex Morgan' && a.email === 'alex@lehart.co.uk'
+    && a.phone === '07700 900123' && a.addressLine1 === '221B Baker Street';
+}
+
 function readSavedAddress(): ShippingAddress | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(ADDRESS_KEY);
-    return raw ? (JSON.parse(raw) as ShippingAddress) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ShippingAddress;
+    if (looksLikeInventedDemoAddress(parsed)) {
+      window.localStorage.removeItem(ADDRESS_KEY);
+      return null;
+    }
+    return parsed;
   } catch { return null; }
 }
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldAlert, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -9,12 +10,36 @@ import { useAdmin } from '../../hooks/useAdmin';
  * Presentation only — it hides the console from people who should not see it.
  * The database is the real boundary: RLS rejects writes from non-admins even
  * if someone renders these components by hand.
+ *
+ * WHY THIS FORCES A TOKEN REFRESH ON MOUNT
+ *
+ * The `admin` claim is read from the ID token cached in this tab, and
+ * granting it happens entirely server-side (scripts/create-users.mjs) —
+ * nothing tells an already-open browser to go fetch a new one. Someone
+ * granted admin and then trying it in a tab they signed into earlier the
+ * same session got exactly this: the UI can still be showing an old
+ * decoded token, and Firestore rejects the write with a permission error
+ * for a reason invisible from here, since the write itself carries the
+ * same stale token. Forcing a fresh token before deciding access means a
+ * just-granted admin works without a manual sign-out, and it costs nothing
+ * for everyone else — one extra token fetch, already the cheapest call
+ * Firebase Auth makes.
  */
 export default function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, refreshClaims } = useAuth();
   const { isAdmin, isLoading: adminLoading } = useAdmin();
+  const [refreshing, setRefreshing] = useState(isAuthenticated);
+  const refreshedFor = useRef<boolean | null>(null);
 
-  if (authLoading || adminLoading) {
+  useEffect(() => {
+    if (!isAuthenticated) { refreshedFor.current = null; setRefreshing(false); return; }
+    if (refreshedFor.current === isAuthenticated) return;
+    refreshedFor.current = isAuthenticated;
+    setRefreshing(true);
+    refreshClaims().finally(() => setRefreshing(false));
+  }, [isAuthenticated, refreshClaims]);
+
+  if (authLoading || adminLoading || refreshing) {
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', paddingTop: 'var(--nav-total)' }}>
         <div
