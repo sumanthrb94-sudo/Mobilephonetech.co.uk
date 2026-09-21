@@ -131,6 +131,82 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
     </>
   );
 
+  /**
+   * The form itself, shared by both branches below for the same reason
+   * `writeGate` is: it used to live only in the has-reviews branch, so
+   * pressing "Write a Review" on any product that had none yet — which is
+   * every product before its first one — flipped `isWritingReview` to true
+   * and nothing on screen ever showed it. Nobody could leave the first
+   * review for anything.
+   */
+  const writeForm = isWritingReview && (
+    <motion.form
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      onSubmit={handleSubmitReview}
+      className="bg-slate-50 rounded-3xl p-8 border-2 border-[var(--brand-cyan)] text-left"
+    >
+      <h4 className="text-lg font-black text-slate-900 mb-6">Write Your Review</h4>
+
+      <div className="mb-6">
+        <label className="block text-sm font-bold text-slate-900 mb-3">Your Name</label>
+        <input
+          type="text"
+          value={formData.userName}
+          onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
+          placeholder="Enter your name"
+          className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,108,73,0.25)]"
+        />
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-bold text-slate-900 mb-3">Rating</label>
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => setFormData({ ...formData, rating: star })}
+              className="transition-transform hover:scale-110"
+            >
+              <Star
+                size={24}
+                className={star <= formData.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-bold text-slate-900 mb-3">Your Review</label>
+        <textarea
+          value={formData.comment}
+          onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+          placeholder="Share your experience with this product..."
+          rows={4}
+          className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,108,73,0.25)] resize-none"
+        />
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="submit"
+          className="btn btn-primary btn-md" style={{ flex: 1 }}
+        >
+          Submit Review
+        </button>
+        <button
+          type="button"
+          onClick={() => setIsWritingReview(false)}
+          className="btn btn-secondary btn-md" style={{ flex: 1 }}
+        >
+          Cancel
+        </button>
+      </div>
+    </motion.form>
+  );
+
   // No heading or top rule of its own: the product page wraps this in a
   // titled section, and rendering "Customer Reviews" under "Reviews" said the
   // same thing twice with a divider between them.
@@ -142,6 +218,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
           <MessageCircle className="h-12 w-12 text-slate-200 mx-auto mb-4" />
           <p className="text-slate-600 font-medium mb-6">No reviews yet.</p>
           <div className="rv-gatewrap">{writeGate}</div>
+          {writeForm && <div className="mt-8 max-w-xl mx-auto">{writeForm}</div>}
         </div>
       ) : (
         <div className="grid lg:grid-cols-3 gap-12">
@@ -184,73 +261,7 @@ export default function ReviewsSection({ productId, reviews = [], onAddReview }:
 
           {/* Reviews List */}
           <div className="lg:col-span-2 space-y-6">
-            {isWritingReview && (
-              <motion.form
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onSubmit={handleSubmitReview}
-                className="bg-slate-50 rounded-3xl p-8 border-2 border-[var(--brand-cyan)]"
-              >
-                <h4 className="text-lg font-black text-slate-900 mb-6">Write Your Review</h4>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-bold text-slate-900 mb-3">Your Name</label>
-                  <input
-                    type="text"
-                    value={formData.userName}
-                    onChange={(e) => setFormData({ ...formData, userName: e.target.value })}
-                    placeholder="Enter your name"
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,108,73,0.25)]"
-                  />
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-bold text-slate-900 mb-3">Rating</label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, rating: star })}
-                        className="transition-transform hover:scale-110"
-                      >
-                        <Star
-                          size={24}
-                          className={star <= formData.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-300'}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-bold text-slate-900 mb-3">Your Review</label>
-                  <textarea
-                    value={formData.comment}
-                    onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-                    placeholder="Share your experience with this product..."
-                    rows={4}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium outline-none focus:ring-2 focus:ring-[rgba(0,108,73,0.25)] resize-none"
-                  />
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-md" style={{ flex: 1 }}
-                  >
-                    Submit Review
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsWritingReview(false)}
-                    className="btn btn-secondary btn-md" style={{ flex: 1 }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.form>
-            )}
+            {writeForm}
 
             {reviews.map((review) => (
               <motion.div
