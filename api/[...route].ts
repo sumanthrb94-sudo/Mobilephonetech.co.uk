@@ -31,6 +31,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   analytics: () => import('./_routes/analytics.js'),
   'brevo-webhook': () => import('./_routes/brevo-webhook.js'),
   'cart-events': () => import('./_routes/cart-events.js'),
+  catalogue: () => import('./_routes/catalogue.js'),
   'coupons-validate': () => import('./_routes/coupons/validate.js'),
   'cron-abandoned-cart': () => import('./_routes/cron-abandoned-cart.js'),
   delivery: () => import('./_routes/delivery.js'),

@@ -46,6 +46,51 @@ describe('fetchCatalogue', () => {
 
     expect((await fetchCatalogue()).map(p => p.id)).toEqual(['newest', 'middle', 'older']);
   });
+
+  /**
+   * The whole point of routing through /api/catalogue: a visitor should be
+   * served from its CDN cache, not cost a direct Firestore read, whenever the
+   * endpoint is reachable. Firestore only enters the picture as a fallback.
+   */
+  describe('goes through the cached endpoint first', () => {
+    it('uses the endpoint response and never touches Firestore when it succeeds', async () => {
+      const fetchMock = vi.fn(async () => ({
+        ok: true,
+        json: async () => ({ products: [{ id: 'from-endpoint', model: 'X', brand: 'Apple', price: 1 }] }),
+      }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const rows = await fetchCatalogue();
+
+      expect(rows.map(p => p.id)).toEqual(['from-endpoint']);
+      expect(fetchMock).toHaveBeenCalledWith('/api/catalogue');
+      expect(getDocs).not.toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
+    });
+
+    it('falls back to a direct read when the endpoint errors', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) })));
+      vi.mocked(getDocs).mockResolvedValueOnce(snapshot([
+        { id: 'direct-read', data: { model: 'Y', brand: 'Apple', price: 1, updatedAt: '2026-01-01T00:00:00.000Z' } },
+      ]) as never);
+
+      expect((await fetchCatalogue()).map(p => p.id)).toEqual(['direct-read']);
+
+      vi.unstubAllGlobals();
+    });
+
+    it('falls back to a direct read when the endpoint is unreachable', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('network down'); }));
+      vi.mocked(getDocs).mockResolvedValueOnce(snapshot([
+        { id: 'direct-read-2', data: { model: 'Z', brand: 'Apple', price: 1, updatedAt: '2026-01-01T00:00:00.000Z' } },
+      ]) as never);
+
+      expect((await fetchCatalogue()).map(p => p.id)).toEqual(['direct-read-2']);
+
+      vi.unstubAllGlobals();
+    });
+  });
 });
 
 describe('useProducts', () => {

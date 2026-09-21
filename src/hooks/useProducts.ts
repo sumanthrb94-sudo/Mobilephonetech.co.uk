@@ -155,8 +155,33 @@ export async function searchProducts(term: string, max = 20): Promise<Product[]>
   return snap.docs.map(d => docToProduct(d.id, d.data()));
 }
 
-/** Newest-first products, used by the catalogue provider. */
+/**
+ * Newest-first products, used by the catalogue provider.
+ *
+ * Goes through /api/catalogue first — a CDN-cached endpoint, so most visitors
+ * are served without touching Firestore at all, rather than every single
+ * visitor paying for a direct read of the whole catalogue (see api/_routes/
+ * catalogue.ts). A visitor who hits it while it happens to be unreachable
+ * falls back to the direct read below, so a flaky endpoint degrades to "one
+ * real read", never to an empty shop.
+ */
 export async function fetchCatalogue(max = FETCH_CAP): Promise<Product[]> {
+  try {
+    const res = await fetch('/api/catalogue');
+    if (!res.ok) throw new Error(`catalogue endpoint returned ${res.status}`);
+    const data = await res.json() as { products?: Product[] };
+    if (!data.products?.length) throw new Error('empty');
+    return data.products;
+  } catch {
+    return fetchCatalogueDirect(max);
+  }
+}
+
+/**
+ * The direct Firestore read /api/catalogue itself wraps, kept here as the
+ * fallback for when that endpoint cannot be reached.
+ */
+async function fetchCatalogueDirect(max: number): Promise<Product[]> {
   // Deliberately unordered in the query, and sorted below instead.
   //
   // Firestore silently drops every document that lacks the field an orderBy

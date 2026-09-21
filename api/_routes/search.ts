@@ -1,10 +1,16 @@
 import { adminDb } from '../_firebaseAdmin.js';
+import { enforceRateLimit } from '../_rateLimit.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  // Unauthenticated and, on the Spark plan, reading straight out of the same
+  // daily Firestore quota every real visitor draws from — a loop hitting this
+  // with no limit could exhaust that quota on its own, with no real traffic
+  // involved.
+  if (!enforceRateLimit(req, res, 'search', { limit: 30, windowMs: 60_000 })) return;
 
   const q = (req.query?.q ?? '').toString().trim();
   if (!q || q.length < 2) {

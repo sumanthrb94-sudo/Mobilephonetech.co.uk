@@ -17,6 +17,24 @@
         { "fieldPath": "productId", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "//": "Abandoned-cart sweep (api/_routes/cron-abandoned-cart.ts): carts still 'started' and old enough to remind, oldest-ready first. Without this index the query throws FAILED_PRECONDITION and the daily cron sends nothing.",
+      "collectionGroup": "abandonedCarts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "startedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "//": "Autocomplete search (api/_routes/search.ts): array-contains on searchTerms plus a stock > 0 filter is an array-contains + range combination, which also needs a composite index. Without it every call 500s.",
+      "collectionGroup": "products",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "searchTerms", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "stock", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

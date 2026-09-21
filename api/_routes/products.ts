@@ -1,4 +1,5 @@
 import { adminDb } from '../_firebaseAdmin.js';
+import { enforceRateLimit } from '../_rateLimit.js';
 
 const VALID_SORTS = ['price_asc', 'price_desc', 'newest', 'discount'] as const;
 type SortMode = (typeof VALID_SORTS)[number];
@@ -18,6 +19,10 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  // Unauthenticated, and each call can read up to 1,000 documents — on the
+  // Spark plan that is 2% of the entire day's Firestore read quota in one
+  // request, with nothing else stopping it being called on a loop.
+  if (!enforceRateLimit(req, res, 'products', { limit: 60, windowMs: 60_000 })) return;
 
   const q = req.query as Record<string, string | undefined>;
 
