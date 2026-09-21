@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { Upload, Trash2, Star, ArrowLeft, ArrowRight, Loader2, AlertTriangle, Link as LinkIcon } from 'lucide-react';
+import { Upload, Trash2, Star, ArrowLeft, ArrowRight, Loader2, AlertTriangle, Link as LinkIcon, Sparkles } from 'lucide-react';
 import {
   uploadImage, deleteImage, validateImageFile, describeError,
   ACCEPTED_IMAGE_TYPES, pathFromPublicUrl,
 } from '../../lib/adminApi';
+import { optimizeImage } from '../../lib/imageOptimize';
 
 /**
  * Gallery editor: upload, reorder, set the primary shot, delete.
@@ -25,6 +26,10 @@ export default function ImageManager({
   const [errors, setErrors] = useState<string[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [urlValue, setUrlValue] = useState('');
+  // Last batch's savings, for the confirmation line under the button — the
+  // one piece of feedback that tells whoever is uploading it actually did
+  // something, since a well-optimised file still just looks like a photo.
+  const [lastSavings, setLastSavings] = useState<{ before: number; after: number } | null>(null);
 
   /**
    * Link an image that is already hosted somewhere else.
@@ -80,10 +85,21 @@ export default function ImageManager({
     setPendingCount(accepted.length);
     const uploaded: string[] = [];
     const failures: string[] = [];
+    let beforeBytes = 0;
+    let afterBytes = 0;
 
     for (const file of accepted) {
       try {
-        uploaded.push(await uploadImage(productId, file));
+        // Resized and re-encoded in the browser before a single byte goes
+        // over the wire. This is what keeps "upload the 4K photo the client
+        // sent" from turning into every visitor's phone downloading a 4K
+        // photo — see src/lib/imageOptimize.ts. It fails open: if anything
+        // about this file cannot be processed, the original upload proceeds
+        // exactly as it always did.
+        const { file: toUpload, originalBytes, finalBytes } = await optimizeImage(file);
+        beforeBytes += originalBytes;
+        afterBytes += finalBytes;
+        uploaded.push(await uploadImage(productId, toUpload));
       } catch (err) {
         failures.push(`${file.name}: ${describeError(err)}`);
       }
@@ -94,6 +110,7 @@ export default function ImageManager({
     // failed would be worse than a partial success the admin can see.
     if (uploaded.length) onChange([...images, ...uploaded]);
     if (failures.length) setErrors(prev => [...prev, ...failures]);
+    if (beforeBytes > 0) setLastSavings({ before: beforeBytes, after: afterBytes });
 
     setBusy(false);
     if (inputRef.current) inputRef.current.value = '';
@@ -160,6 +177,18 @@ export default function ImageManager({
           ? <><Loader2 size={16} className="admin-spin" /> Uploading {pendingCount} more…</>
           : <><Upload size={16} /> Upload images</>}
       </button>
+
+      {/* Confirms the optimisation pass actually did something. A well
+          compressed photo looks identical to the source, so without this
+          line there is no visible sign anything happened to it. */}
+      {!busy && lastSavings && lastSavings.after < lastSavings.before && (
+        <p style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: '8px 0 0', fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>
+          <Sparkles size={13} style={{ color: 'var(--brand-cyan-hover)', flexShrink: 0 }} />
+          Optimised for the web: {(lastSavings.before / 1024 / 1024).toFixed(1)} MB
+          {' → '}{(lastSavings.after / 1024 / 1024).toFixed(1)} MB
+          {' '}({Math.round((1 - lastSavings.after / lastSavings.before) * 100)}% smaller)
+        </p>
+      )}
 
       <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
         <input

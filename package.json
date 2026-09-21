@@ -37,7 +37,8 @@
     "pdf:brevo": "node scripts/make-brevo-pdf.mjs",
     "e2e:chrome": "node e2e/chrome-collisions.mjs",
     "e2e:search": "node e2e/search.mjs",
-    "e2e:postcode": "node e2e/postcode.mjs"
+    "e2e:postcode": "node e2e/postcode.mjs",
+    "e2e:image-optimize": "node e2e/image-optimize.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
