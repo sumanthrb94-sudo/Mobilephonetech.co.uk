@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, MapPin, Lock, ChevronRight, ChevronLeft, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart, LifeBuoy, Truck, RotateCcw, FileText, ShieldCheck, Cookie } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'motion/react';
@@ -12,6 +12,12 @@ import AuthModal from './AuthModal';
 import BrandMark from './ui/BrandMark';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { COMPANY, companyDetailsComplete } from '../config/company';
+import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
+
+// Same lazy split as checkout, and for the same reason: Leaflet plus its
+// stylesheet is ~42KB gzipped, wanted only by someone who pressed Find
+// address on this tab specifically, not by every visit to My Account.
+const AddressMap = lazy(() => import('./AddressMap'));
 
 type Tab = 'profile' | 'orders' | 'addresses' | 'security';
 
@@ -143,6 +149,36 @@ export default function AccountPage() {
   const [address, setAddress] = useState({ line1: '', line2: '', city: '', postcode: '', country: 'United Kingdom' });
   const [editingAddress, setEditingAddress] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
+
+  // Postcode lookup, same as checkout's: a union rather than a bag of
+  // booleans so "loading and errored" is not a state this can reach.
+  type LookupState =
+    | { status: 'idle' }
+    | { status: 'loading' }
+    | { status: 'found'; place: PostcodePlace }
+    | { status: 'error'; message: string };
+  const [addressLookup, setAddressLookup] = useState<LookupState>({ status: 'idle' });
+  const [postcodeQuery, setPostcodeQuery] = useState('');
+
+  async function runAddressLookup() {
+    const typed = postcodeQuery.trim();
+    setAddressLookup({ status: 'loading' });
+    const result = await lookupPostcode(typed);
+    if (!result.ok) {
+      setAddressLookup({ status: 'error', message: result.message });
+      return;
+    }
+    const { place } = result;
+    setAddress((a) => ({
+      ...a,
+      postcode: place.postcode,
+      city: place.town || a.city,
+      // County has no field of its own here either; line 2 is where it
+      // belongs, and only if nothing is already sitting there.
+      line2: !a.line2 && place.county && place.county !== place.town ? place.county : a.line2,
+    }));
+    setAddressLookup({ status: 'found', place });
+  }
 
   // Security state
   const [newPw, setNewPw] = useState('');
@@ -734,6 +770,59 @@ export default function AccountPage() {
                       </div>
                     )}
                   </div>
+                  {editingAddress && (
+                    <div style={{ marginBottom: 20 }}>
+                      <label style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                        Postcode lookup
+                      </label>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 12 }}>
+                        <input
+                          value={postcodeQuery}
+                          onChange={(e) => { setPostcodeQuery(e.target.value); if (addressLookup.status !== 'idle') setAddressLookup({ status: 'idle' }); }}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void runAddressLookup(); } }}
+                          placeholder="e.g. SW1A 1AA"
+                          autoComplete="postal-code"
+                          style={{ ...inputStyle, flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => { void runAddressLookup(); }}
+                          disabled={addressLookup.status === 'loading'}
+                          className="btn btn-secondary btn-md"
+                        >
+                          {addressLookup.status === 'loading' ? 'Finding…' : 'Find address'}
+                        </button>
+                      </div>
+                      <div aria-live="polite">
+                        {addressLookup.status === 'error' && (
+                          <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-sale)', margin: '0 0 12px 0' }}>
+                            {addressLookup.message}
+                          </p>
+                        )}
+                        {addressLookup.status === 'found' && (
+                          <div style={{ marginBottom: 12 }}>
+                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-70)', margin: '0 0 8px 0' }}>
+                              Found <strong style={{ color: 'var(--black)' }}>{addressLookup.place.postcode}</strong>
+                              {addressLookup.place.town ? <> — {addressLookup.place.town}</> : null}
+                              . Add your house number and street below.
+                            </p>
+                            {hasCoordinates(addressLookup.place) && (
+                              <Suspense fallback={<div style={{ height: 170, borderRadius: 'var(--radius-lg)', background: 'var(--grey-5)', border: '1px solid var(--grey-20)' }} />}>
+                                <AddressMap
+                                  latitude={addressLookup.place.latitude}
+                                  longitude={addressLookup.place.longitude}
+                                  label={addressLookup.place.postcode}
+                                />
+                              </Suspense>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--grey-50)', margin: 0 }}>
+                        Checks your postcode and fills in the town and county. Your house number and street are yours to add.
+                      </p>
+                    </div>
+                  )}
                   <div className="account-field-row">
                     {[
                       { label: 'Address line 1', key: 'line1' as const, col: '1 / -1' },
