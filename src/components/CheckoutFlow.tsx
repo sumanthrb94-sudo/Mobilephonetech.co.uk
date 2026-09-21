@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
@@ -141,6 +141,35 @@ export default function CheckoutFlow() {
     // Runs on mount and if the cart fills while here; later steps are
     // untouched because the guard only fires on 'cart'.
   }, [currentStep, items.length, setCurrentStep]);
+
+  // Record that a checkout started, the instant there is an email to send a
+  // recovery reminder to — a signed-in shopper's own address, or a guest's
+  // once they continue past the gate. Fire-and-forget and once per address:
+  // /api/cron-abandoned-cart reads this collection daily, and had nothing to
+  // read from until this called the endpoint it was written for.
+  const cartEventSentFor = useRef<string | null>(null);
+  useEffect(() => {
+    const email = user?.email;
+    if (!email || currentStep === 'cart' || currentStep === 'confirmation' || items.length === 0) return;
+    if (cartEventSentFor.current === email) return;
+    cartEventSentFor.current = email;
+    fetch('/api/cart-events', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        name: user?.fullName ?? null,
+        status: 'started',
+        total: cartTotal,
+        items: items.map((i: any) => ({
+          brand: i.brand, model: i.model, quantity: i.quantity, price: i.price,
+          imageUrl: i.imageUrl ?? null, selectedStorage: i.selectedStorage ?? null,
+          selectedColor: i.selectedColor ?? null, selectedCondition: i.selectedCondition ?? null,
+        })),
+      }),
+    }).catch(() => { /* best-effort — a missed reminder is not a checkout error */ });
+  }, [user?.email, user?.fullName, currentStep, items, cartTotal]);
+
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -292,6 +321,16 @@ export default function CheckoutFlow() {
     });
     setConfirmationEmailSent(Boolean(serverOrder.contactEmail));
     setConfirmationSentTo([serverOrder.contactEmail, serverOrder.copyEmail].filter(Boolean) as string[]);
+    // Closes the abandoned-cart record so the reminder job leaves this
+    // shopper alone — they already bought it.
+    const paidEmail = serverOrder.contactEmail ?? user?.email;
+    if (paidEmail) {
+      fetch('/api/cart-events', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: paidEmail, status: 'completed' }),
+      }).catch(() => {});
+    }
     clearCart();
     setCurrentStep('confirmation');
   };
