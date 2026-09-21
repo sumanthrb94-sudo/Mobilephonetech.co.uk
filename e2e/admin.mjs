@@ -73,14 +73,17 @@ async function signInAs(page, identifier) {
   // domcontentloaded rather than networkidle throughout: Firestore holds a
   // long-lived WebChannel connection open, so the network never goes idle and
   // every navigation would sit until the timeout.
-  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+  //
+  // /account itself is the sign-in entry point on every width: its
+  // signed-out gate screen offers the same "Sign in or create an account"
+  // control regardless of viewport. This used to open the auth modal
+  // through the desktop "More" menu's account row instead — which stopped
+  // working the day that row was made desktop-only (mobile's one entry
+  // point is the bottom tab bar's Account link, not the More menu), and
+  // every mobile run here failed at this exact click from then on.
+  await page.goto(`${BASE}/account`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2000);
   await dismissCookies(page);
-
-  // The auth modal lives behind the "More" menu (desktop) / burger (mobile);
-  // /account itself redirects away when signed out.
-  const more = page.locator('[aria-label="More options"], [aria-label="Open menu"]').first();
-  if (await more.count()) { await more.click(); await page.waitForTimeout(900); }
 
   const signIn = page.getByRole('button', { name: /sign in|log in|account/i }).first();
   await signIn.click();
