@@ -2,7 +2,10 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product, ProductVariant } from '../types';
 import { useCatalogue } from '../context/CatalogueContext';
-import { variantChoices, isChoosable, currentValue, type VariantOption } from '../lib/productSiblings';
+import {
+  variantChoices, isChoosable, currentValue, currentValues, isAmbiguous, alternatives,
+  type VariantOption,
+} from '../lib/productSiblings';
 
 /**
  * Colour, storage and condition — every option a real listing.
@@ -101,6 +104,17 @@ const pillStyle = (selected: boolean): React.CSSProperties => ({
   transition: 'border-color 0.15s, background 0.15s, color 0.15s',
 });
 
+/* The "depends what is on the shelf" line under an ambiguous attribute. */
+const noteStyle: React.CSSProperties = {
+  display: 'block',
+  marginTop: '-2px',
+  marginBottom: '2px',
+  fontFamily: 'var(--font-body)',
+  fontSize: '11.5px',
+  lineHeight: 1.45,
+  color: 'var(--grey-50)',
+};
+
 const priceHintStyle = (selected: boolean): React.CSSProperties => ({
   fontSize: '11.5px',
   fontWeight: 500,
@@ -160,6 +174,8 @@ export default function VariantSelector({
       <Attribute
         label="Colour"
         options={choices.colour}
+        ambiguousNote="This listing covers these colours — which one you receive depends on availability. Ask us before ordering if the colour matters."
+
         renderOption={(option) => (
           <button
             key={option.value}
@@ -189,12 +205,16 @@ export default function VariantSelector({
       <Attribute
         label="Storage"
         options={choices.storage}
+        ambiguousNote="This listing covers these sizes — subject to availability."
+
         renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
       />
 
       <Attribute
         label="Condition"
         options={choices.condition}
+        ambiguousNote="This listing covers these grades — subject to availability."
+
         renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
       />
     </div>
@@ -204,23 +224,42 @@ export default function VariantSelector({
 /**
  * One attribute row.
  *
- * A single option is shown as text rather than as a lone pressed button: a
- * choice of one is not a choice, and a row containing exactly one selected
- * pill reads as though the others failed to load.
+ * Three shapes, decided by what the data actually supports:
+ *
+ *   - the listing has one value and no alternatives → plain text, because a
+ *     choice of one is not a choice and a lone pressed button reads as
+ *     though the others failed to load;
+ *   - the listing has one value and siblings offer others → buttons, with
+ *     each alternative's own price on it;
+ *   - the listing declares several values of its own → those are listed as
+ *     text with a note, because they are all the same product at the same
+ *     price and buttons would be a row where everything is selected and
+ *     nothing does anything. Any genuine alternatives still appear as
+ *     buttons beneath.
  */
-function Attribute({ label, options, renderOption }: {
+function Attribute({ label, options, renderOption, ambiguousNote }: {
   label: string;
   options: VariantOption[];
   renderOption: (option: VariantOption) => React.ReactNode;
+  ambiguousNote?: string;
 }) {
   if (options.length === 0) return null;
 
-  const selected = currentValue(options);
-  const choosable = isChoosable(options);
+  const ambiguous = isAmbiguous(options);
+  const mine = currentValues(options);
+  const others = alternatives(options);
+
+  // What the label says about this listing. Several values are joined
+  // rather than one of them being picked arbitrarily to stand for the rest.
+  const selected = ambiguous ? mine.join(', ') : currentValue(options);
 
   // Nothing to say and nothing to choose — the attribute does not apply to
   // this listing at all, so the row would be an empty heading.
-  if (!selected && !choosable) return null;
+  if (!selected && others.length === 0) return null;
+
+  // When the listing is ambiguous about itself, only the alternatives are
+  // buttons. Otherwise every option is, so the selected one shows as such.
+  const buttons = ambiguous ? others : (isChoosable(options) ? options : []);
 
   return (
     <div>
@@ -228,7 +267,10 @@ function Attribute({ label, options, renderOption }: {
         {label}
         {selected && <span style={selectedValueStyle}>{selected}</span>}
       </label>
-      {choosable && <div style={rowStyle}>{options.map(renderOption)}</div>}
+      {ambiguous && ambiguousNote && (
+        <span style={noteStyle}>{ambiguousNote}</span>
+      )}
+      {buttons.length > 0 && <div style={rowStyle}>{buttons.map(renderOption)}</div>}
     </div>
   );
 }

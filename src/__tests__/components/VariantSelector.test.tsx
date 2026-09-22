@@ -175,3 +175,71 @@ describe('VariantSelector — an attribute only a sibling has', () => {
     expect(screen.getByText('Colour').closest('label')?.textContent).toContain('Black');
   });
 });
+
+/**
+ * A listing that declares several colours of its own.
+ *
+ * Those are not a choice: they are the same product at the same price with
+ * the same stock, so rendering them as swatches produced a row where all
+ * four were ringed as selected and none of them did anything. Clicking Red
+ * changed nothing and the customer got whichever handset was on the shelf.
+ *
+ * The honest presentation is the list as text, plus a note saying so.
+ */
+describe('VariantSelector — a listing covering several colours', () => {
+  const multi = product({
+    id: 'apple-iphone-8', storage: '64 GB', price: 55,
+    colorOptions: ['Gold', 'Black', 'Red', 'White'],
+  });
+
+  beforeEach(() => { catalogue = [multi]; });
+
+  it('lists the colours as text rather than as buttons', () => {
+    renderFor(multi);
+
+    expect(screen.getByText('Colour').closest('label')?.textContent)
+      .toBe('ColourGold, Black, Red, White');
+    for (const c of ['Gold', 'Black', 'Red', 'White']) {
+      expect(screen.queryByRole('button', { name: new RegExp(`^${c}`) })).toBeNull();
+    }
+  });
+
+  it('says the colour depends on availability', () => {
+    renderFor(multi);
+    expect(screen.getByText(/depends on availability/i)).toBeTruthy();
+  });
+
+  it('never renders several swatches all marked selected', () => {
+    renderFor(multi);
+    const pressed = screen.queryAllByRole('button', { pressed: true });
+    expect(pressed).toHaveLength(0);
+  });
+
+  /**
+   * A genuine alternative is still a button, even beside an ambiguous list:
+   * the sibling is a different product at a different price.
+   */
+  it('still offers a sibling colour as a real choice', async () => {
+    const sibling = product({
+      id: 'iphone-8-blue', storage: '64 GB', price: 65, colorOptions: ['Blue'],
+    });
+    catalogue = [multi, sibling];
+    renderFor(multi);
+
+    await userEvent.click(screen.getByRole('button', { name: /Blue, £65/ }));
+    expect(navigate).toHaveBeenCalledWith('/product/iphone-8-blue');
+  });
+
+  it('applies the same treatment to a listing covering several sizes', () => {
+    const sizes = product({
+      id: 'multi-size', storage: '64 GB',
+      storageOptions: ['64 GB', '128 GB'], colorOptions: ['Gold'],
+    });
+    catalogue = [sizes];
+    renderFor(sizes);
+
+    expect(screen.getByText('Storage').closest('label')?.textContent)
+      .toBe('Storage64 GB, 128 GB');
+    expect(screen.getByText(/sizes — subject to availability/i)).toBeTruthy();
+  });
+});
