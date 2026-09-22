@@ -116,7 +116,14 @@ async function auditLayout(page, view, label) {
     const doc = document.documentElement;
     return {
       overflow: doc.scrollWidth - doc.clientWidth,
-      borderless: [...document.querySelectorAll('input:not([type=hidden])')].filter(vis)
+      // Typed-into fields only. A text box with no border is invisible to
+      // type into, which is the defect this catches — but a checkbox or a
+      // radio is a native control drawn by the browser, and has no border
+      // by design. Including them failed the bulk-select boxes on the
+      // orders screen for having exactly the appearance they should.
+      borderless: [...document.querySelectorAll('input:not([type=hidden])')]
+        .filter(el => !['checkbox', 'radio', 'range', 'color', 'file'].includes(el.type))
+        .filter(vis)
         .filter(el => parseFloat(getComputedStyle(el).borderTopWidth) === 0)
         .map(el => el.id || el.placeholder || 'input'),
       // An icon on its own line is the signature of a button with no
