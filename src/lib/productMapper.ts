@@ -66,7 +66,57 @@ export function docToProduct(id: string, d: Record<string, unknown>): Product {
     conditionOptions: (d.conditionOptions as ProductGrade[]) ?? undefined,
     variants: (d.variants as ProductVariant[]) ?? undefined,
     reviews: (d.reviews as Product['reviews']) ?? undefined,
+    // Provenance. `archivedAt` decides whether the storefront shows this at
+    // all; the rest is display only. Timestamps are normalised because a
+    // document written by the browser SDK carries a Firestore Timestamp while
+    // one written by a script or read back from an export carries a string,
+    // and a page that has to know which is which will get it wrong.
+    archivedAt: isoOrUndefined(d.archivedAt),
+    archivedBy: (d.archivedBy as string) ?? undefined,
+    updatedBy: (d.updatedBy as string) ?? undefined,
+    updatedAt: isoOrUndefined(d.updatedAt),
   };
+}
+
+/**
+ * A Firestore timestamp, an ISO string or nothing, as an ISO string or nothing.
+ *
+ * serverTimestamp() is a sentinel until the write lands, so a document echoed
+ * back locally carries an object with no date in it at all. Returning
+ * undefined for that is honest — the field has no value yet — where coercing
+ * it would print 1970.
+ */
+function isoOrUndefined(value: unknown): string | undefined {
+  if (!value) return undefined;
+  if (typeof value === 'string') return value;
+  const asDate = (value as { toDate?: () => Date }).toDate;
+  if (typeof asDate === 'function') {
+    try { return asDate.call(value).toISOString(); } catch { return undefined; }
+  }
+  if (value instanceof Date) return value.toISOString();
+  return undefined;
+}
+
+/**
+ * Whether this product should be shown to a shopper.
+ *
+ * Archived products stay in the database for ever — orders, returns and
+ * invoices reference them — but they are not for sale, so every storefront
+ * read filters them out. Admin reads deliberately do not: the console is
+ * where you go to find one and put it back.
+ *
+ * Expressed as a predicate rather than a Firestore `where` clause because
+ * Firestore cannot query for the *absence* of a field. A live product simply
+ * has no `archivedAt`, and `where('archivedAt', '==', null)` matches none of
+ * them — which would empty the shop rather than filter it.
+ */
+export function isLive(p: Pick<Product, 'archivedAt'>): boolean {
+  return !p.archivedAt;
+}
+
+/** The subset of a list a shopper may see. */
+export function liveOnly(products: Product[]): Product[] {
+  return products.filter(isLive);
 }
 
 /**

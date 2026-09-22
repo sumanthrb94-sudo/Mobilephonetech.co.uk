@@ -1,18 +1,45 @@
 import { useAuth } from '../context/AuthContext';
+import { can, type Capability, type StaffRole } from '../lib/adminRoles';
 
 /**
- * Whether the signed-in user is an admin.
+ * What the signed-in person is allowed to do in the back office.
  *
- * Read from the `admin` custom claim on the Firebase ID token, which
- * AuthContext resolves on sign-in. The claim can only be set with the Admin
- * SDK (see scripts/create-users.mjs), so a user cannot grant it to themselves
- * the way an editable database field would allow.
+ * The role is read from the custom claims on the Firebase ID token, which
+ * AuthContext resolves on sign-in. Claims can only be set with the Admin SDK
+ * (scripts/create-users.mjs, or POST /api/bootstrap-admin), so a user cannot
+ * grant themselves a role the way an editable database field would allow.
  *
  * This drives what the UI *shows*. It is not what makes the app secure — the
- * Firestore and Storage rules check the same claim server-side, so a user who
- * fakes this flag in devtools still cannot write anything.
+ * Firestore and Storage rules check the same claims server-side, so a user
+ * who fakes a role in devtools still cannot write anything.
  */
-export function useAdmin(): { isAdmin: boolean; isLoading: boolean } {
+export interface AdminAccess {
+  /** True for a manager. Kept for the many call sites that ask only this. */
+  isAdmin: boolean;
+  /** The role itself, when the distinction matters. */
+  role: StaffRole;
+  /** True for anyone who works here — staff or manager. */
+  isStaff: boolean;
+  /**
+   * Whether this person may do a particular thing.
+   *
+   * Prefer this over comparing the role. `can('products:archive')` says what
+   * the button is for; `role === 'admin'` says only who, and stops being
+   * true the day a third role appears.
+   */
+  can: (capability: Capability) => boolean;
+  isLoading: boolean;
+}
+
+export function useAdmin(): AdminAccess {
   const { user, isLoading } = useAuth();
-  return { isAdmin: Boolean(user?.isAdmin), isLoading };
+  const role: StaffRole = user?.staffRole ?? (user?.isAdmin ? 'admin' : 'none');
+
+  return {
+    isAdmin: role === 'admin',
+    role,
+    isStaff: role !== 'none',
+    can: (capability: Capability) => can(role, capability),
+    isLoading,
+  };
 }

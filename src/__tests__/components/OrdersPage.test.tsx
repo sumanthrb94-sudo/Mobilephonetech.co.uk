@@ -167,6 +167,41 @@ describe('OrdersPage', () => {
   });
 
   /**
+   * An empty queue and a queue that could not be read drew the same line, and
+   * they mean opposite things: one says there is nothing to pack, the other
+   * says nobody here knows what there is to pack. A screen that cannot tell
+   * them apart gets checked, looks calm, and is wrong.
+   */
+  it('does not let a failed read look like an empty queue', async () => {
+    listOrders.mockResolvedValue([]);
+    const empty = render(<OrdersPage />);
+    expect(await screen.findByText('Nothing waiting to be packed.')).toBeTruthy();
+    expect(screen.queryByText('Could not load')).toBeNull();
+    empty.unmount();
+
+    listOrders.mockRejectedValue(new Error('Missing or insufficient permissions.'));
+    render(<OrdersPage />);
+    expect(await screen.findByText('Could not load')).toBeTruthy();
+    expect(screen.queryByText('Nothing waiting to be packed.')).toBeNull();
+  });
+
+  /**
+   * A refunded order with no amount recorded against it used to print the
+   * order total instead, which states that the whole lot went back. It may
+   * have been a partial refund — nothing on this screen checked, so the
+   * screen does not say.
+   */
+  it('says Awaiting for a refund with no amount recorded, not the order total', async () => {
+    listOrders.mockResolvedValue([{ ...done, refundedAmount: null }]);
+    render(<OrdersPage />);
+    await userEvent.click(await screen.findByRole('tab', { name: /Refunded/ }));
+    await userEvent.click(await screen.findByRole('button', { name: /ORD-1002/ }));
+
+    expect(await screen.findByText('Awaiting')).toBeTruthy();
+    expect(screen.queryByText(/Refunded £199\.00/)).toBeNull();
+  });
+
+  /**
    * Bulk move — dispatched -> out for delivery, or out for delivery ->
    * delivered. Deliberately not offered for the very first move: that one
    * needs a distinct tracking number typed per parcel, which bulk selection

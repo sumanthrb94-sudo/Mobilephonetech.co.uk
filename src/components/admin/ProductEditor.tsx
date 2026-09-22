@@ -4,8 +4,10 @@ import { ArrowLeft, Save, Loader2, AlertTriangle, ExternalLink } from 'lucide-re
 import {
   emptyDraft, productToDraft, validateDraft, slugify, describeError,
   getProduct, createProduct, updateProduct, GRADES,
-  type ProductDraft, type ValidationErrors,
+  listCatalogueVocabulary, snapToCatalogue,
+  type ProductDraft, type ValidationErrors, type CatalogueVocabulary,
 } from '../../lib/adminApi';
+import { useAdmin } from '../../hooks/useAdmin';
 import ImageManager from './ImageManager';
 
 const CATEGORIES = ['Phones', 'Tablets', 'Accessories', 'Speakers', 'Hearables', 'Playables'];
@@ -17,10 +19,20 @@ const CATEGORIES = ['Phones', 'Tablets', 'Accessories', 'Speakers', 'Hearables',
  * loads the existing row. The slug is editable only while creating — it is the
  * primary key and the public URL, so changing it later would break every
  * inbound link and orphan the uploaded images filed under it.
+ *
+ * Brand and model are suggestion-backed rather than free text, following
+ * InventoryManager: staff pick from the catalogue, only a manager may add an
+ * entry to it, and what is typed snaps to the catalogue's own spelling. Two
+ * free-text boxes are how "iPhone 8" and "iphone  8" became two products, and
+ * why src/lib/productSiblings.ts has to normalise spacing and case before it
+ * can offer a shopper the other storage sizes of the phone in front of them.
+ * Every future feature that groups by model would have to remember the same
+ * trick; one rule at the keyboard is cheaper than many at the reader.
  */
 export default function ProductEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { can } = useAdmin();
   const isNew = !id;
 
   const [draft, setDraft] = useState<ProductDraft>(emptyDraft);
@@ -30,6 +42,14 @@ export default function ProductEditor() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  // Null until the catalogue has been read, and left null if the read fails.
+  // See isNewToCatalogue: nothing known means no opinion, not "nothing valid".
+  const [vocabulary, setVocabulary] = useState<CatalogueVocabulary | null>(null);
+  // productToDraft drops the audit stamp, because the stamp is written by the
+  // data layer on every save and is not the admin's to edit. It is kept here
+  // so the footnote can show the record as it was loaded.
+  const [savedBy, setSavedBy] = useState<string | undefined>(undefined);
+  const [savedAt, setSavedAt] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (isNew) return;
@@ -39,7 +59,11 @@ export default function ProductEditor() {
       .then(p => {
         if (cancelled) return;
         if (!p) setNotFound(true);
-        else setDraft(productToDraft(p));
+        else {
+          setDraft(productToDraft(p));
+          setSavedBy(p.updatedBy);
+          setSavedAt(p.updatedAt);
+        }
         setLoading(false);
       })
       .catch(err => {
@@ -49,6 +73,17 @@ export default function ProductEditor() {
       });
     return () => { cancelled = true; };
   }, [id, isNew]);
+
+  useEffect(() => {
+    let cancelled = false;
+    listCatalogueVocabulary()
+      .then(v => { if (!cancelled) setVocabulary(v); })
+      // Swallowed on purpose. The suggestions are a convenience and the gate
+      // below stays silent without them, so a catalogue that will not load
+      // costs the admin a dropdown rather than the ability to save at all.
+      .catch(() => { /* no vocabulary, no opinion */ });
+    return () => { cancelled = true; };
+  }, []);
 
   // Derive the slug from brand + model until the admin edits it by hand.
   useEffect(() => {
@@ -66,11 +101,54 @@ export default function ProductEditor() {
     return Math.round((1 - draft.price / draft.originalPrice) * 100);
   }, [draft.price, draft.originalPrice]);
 
+  // Null for a new product, and for a record written before the stamp
+  // existed — see auditNote.
+  const audit = isNew ? null : auditNote(savedBy, savedAt);
+
+  const mayExtend = can('catalogue:extend');
+  const knownBrands = vocabulary?.brands ?? [];
+  // Models are offered per brand, because "Galaxy S23" under Apple is noise
+  // rather than a suggestion.
+  const knownModels = vocabulary?.modelsByBrand[draft.brand.trim().toLowerCase()] ?? [];
+
+  const brandIsNew = isNewToCatalogue(draft.brand, knownBrands);
+  const modelIsNew = isNewToCatalogue(draft.model, knownModels);
+
+  /**
+   * Replace what was typed with the catalogue's spelling of it.
+   *
+   * On blur rather than on every keystroke: correcting someone mid-word is
+   * what makes an autocomplete infuriating, and "iPhone 1" has to survive
+   * being typed on the way to "iPhone 16" even though it is a prefix of an
+   * entry that already exists.
+   */
+  const snapOnBlur = (key: 'brand' | 'model', known: readonly string[]) =>
+    set(key, snapToCatalogue(draft[key], known));
+
+  /**
+   * Refuse a brand or model the catalogue has never carried, unless the
+   * person may extend it.
+   *
+   * A value nothing in the catalogue matches is a new catalogue entry, and
+   * whether that is allowed is a question about who is typing, which is why
+   * snapToCatalogue normalises without ever rejecting. A manager gets the
+   * note under the field instead; staff get this, naming what they typed,
+   * because "invalid brand" leaves someone staring at a word that looks
+   * perfectly correct to them.
+   */
+  const catalogueGate = (): ValidationErrors => {
+    if (mayExtend) return {};
+    const out: ValidationErrors = {};
+    if (brandIsNew) out.brand = refuseNewEntry('brand', draft.brand);
+    if (modelIsNew) out.model = refuseNewEntry('model', draft.model);
+    return out;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaveError(null);
 
-    const found = validateDraft(draft);
+    const found = { ...validateDraft(draft), ...catalogueGate() };
     setErrors(found);
     if (Object.keys(found).length) {
       // Move focus to the first problem so keyboard and screen-reader users
@@ -130,13 +208,36 @@ export default function ProductEditor() {
 
         <Section title="Identity">
           <Row>
-            <Field label="Brand" error={errors.brand} id="brand" required>
-              <input id="field-brand" style={inputStyle} value={draft.brand}
-                onChange={e => set('brand', e.target.value)} autoComplete="off" />
+            <Field
+              label="Brand"
+              error={errors.brand}
+              id="brand"
+              required
+              hint={mayExtend && brandIsNew ? 'New brand — will be added to the catalogue.' : undefined}
+            >
+              {/* A native datalist rather than a custom listbox: one element,
+                  keyboard-accessible without any ARIA of our own to get wrong,
+                  and it still lets a manager type something that is not on it. */}
+              <input id="field-brand" style={inputStyle} value={draft.brand} list="catalogue-brands"
+                onChange={e => set('brand', e.target.value)}
+                onBlur={() => snapOnBlur('brand', knownBrands)} autoComplete="off" />
+              <datalist id="catalogue-brands">
+                {knownBrands.map(b => <option key={b} value={b} />)}
+              </datalist>
             </Field>
-            <Field label="Model" error={errors.model} id="model" required>
-              <input id="field-model" style={inputStyle} value={draft.model}
-                onChange={e => set('model', e.target.value)} autoComplete="off" />
+            <Field
+              label="Model"
+              error={errors.model}
+              id="model"
+              required
+              hint={mayExtend && modelIsNew ? 'New model — will be added to the catalogue.' : undefined}
+            >
+              <input id="field-model" style={inputStyle} value={draft.model} list="catalogue-models"
+                onChange={e => set('model', e.target.value)}
+                onBlur={() => snapOnBlur('model', knownModels)} autoComplete="off" />
+              <datalist id="catalogue-models">
+                {knownModels.map(m => <option key={m} value={m} />)}
+              </datalist>
             </Field>
           </Row>
 
@@ -270,6 +371,10 @@ export default function ProductEditor() {
             Cancel
           </Link>
         </div>
+
+        {audit && (
+          <p className="ops-audit" style={{ marginTop: 'var(--spacing-16)' }}>{audit}</p>
+        )}
       </form>
     </Shell>
   );
@@ -283,6 +388,55 @@ function galleryOf(draft: ProductDraft): string[] {
 
 function splitList(value: string): string[] {
   return value.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/**
+ * Whether this value would add an entry the catalogue has never carried.
+ *
+ * Asked through snapToCatalogue rather than with a second comparison of its
+ * own, so there is exactly one idea of when two spellings are the same
+ * thing: it returns the catalogue's entry when it recognises what was typed,
+ * and the typed text otherwise, so membership is a plain string check.
+ *
+ * An empty list of known values answers false, every time. That covers the
+ * moment before the catalogue has loaded, a shop whose catalogue is genuinely
+ * empty, and a read that failed — and in all three "we do not know" is the
+ * honest answer. Refusing every save because a read failed would present an
+ * unreachable Firestore as though the admin lacked permission, which is the
+ * kind of wrong diagnosis that costs an afternoon.
+ *
+ * An empty value is nobody's new entry either; that is validateDraft's
+ * "Required." to report, and two messages under one field say less than one.
+ */
+function isNewToCatalogue(value: string, known: readonly string[]): boolean {
+  const typed = value.trim();
+  if (!typed || !known.length) return false;
+  return !known.includes(snapToCatalogue(typed, known));
+}
+
+/** Why the save stopped, and the two ways out of it. */
+function refuseNewEntry(what: 'brand' | 'model', typed: string): string {
+  return `The catalogue has no ${what} “${typed.trim()}”. Pick one of the suggestions, or ask a manager to add it.`;
+}
+
+/**
+ * Who last saved this record, and when.
+ *
+ * Null unless there is something real to print. A product created before the
+ * stamp existed carries neither field; a document echoed back from a write
+ * that has not landed carries serverTimestamp()'s sentinel, which
+ * productMapper's isoOrUndefined deliberately turns into nothing rather than
+ * into 1970; and adminApi writes the literal string "unknown" when it cannot
+ * name the signed-in user. "Last saved by unknown on 1 Jan 1970" is worse
+ * than a blank space, because it reads as a fact about the record.
+ */
+function auditNote(by?: string, at?: string): string | null {
+  const who = by?.trim();
+  if (!who || who === 'unknown') return null;
+
+  const when = at ? new Date(at) : null;
+  if (!when || Number.isNaN(when.getTime())) return `Last saved by ${who}`;
+  return `Last saved by ${who} · ${when.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 }
 
 // ── Layout helpers ─────────────────────────────────────────────

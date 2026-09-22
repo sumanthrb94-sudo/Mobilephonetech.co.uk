@@ -28,7 +28,7 @@ import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, COL } from '../lib/firebase';
-import { docToProduct } from '../lib/productMapper';
+import { docToProduct, isLive } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
 import { submitReview, listReviews } from '../lib/reviews';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -244,7 +244,12 @@ export default function ProductDetail() {
       try {
         const snap = await getDoc(doc(db, COL.products, id));
         if (snap.exists()) {
-          setPhone(docToProduct(snap.id, snap.data()));
+          const found = docToProduct(snap.id, snap.data());
+          // Archived means withdrawn from sale, so a direct link to one must
+          // not render a page offering to sell it. Falling through leaves
+          // `phone` null, which this page already renders as not found.
+          if (isLive(found)) setPhone(found);
+          else setPhone(null);
           return;
         }
       } catch {

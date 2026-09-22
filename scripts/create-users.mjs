@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Provision the staff admin and a demo customer in Firebase Auth.
+ * Provision a manager, a staff account and a demo customer in Firebase Auth.
  *
  * The admin flag is a **custom claim** on the ID token, not a database field.
  * Only the Admin SDK can set one, so a user cannot grant it to themselves —
@@ -20,8 +20,10 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@lehart.co.uk';
+const STAFF_EMAIL = process.env.STAFF_EMAIL || 'staff@lehart.co.uk';
 const CUSTOMER_EMAIL = process.env.CUSTOMER_EMAIL || 'customer@lehart.co.uk';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const STAFF_PASSWORD = process.env.STAFF_PASSWORD || ADMIN_PASSWORD;
 const CUSTOMER_PASSWORD = process.env.CUSTOMER_PASSWORD || ADMIN_PASSWORD;
 
 function fail(msg) {
@@ -54,7 +56,15 @@ initializeApp({
 const auth = getAuth();
 const db = getFirestore();
 
-async function upsertUser({ email, password, fullName, admin }) {
+/**
+ * Create or reset an account and set exactly one back-office role on it.
+ *
+ * `role` is 'admin', 'staff' or 'customer' — see src/lib/adminRoles.ts for
+ * what each may do. setCustomUserClaims replaces the whole claims object, so
+ * promoting someone is the same call as demoting them: send the set you want
+ * them to end up with, never a patch.
+ */
+async function upsertUser({ email, password, fullName, role }) {
   let user;
   try {
     user = await auth.getUserByEmail(email);
@@ -72,17 +82,22 @@ async function upsertUser({ email, password, fullName, admin }) {
     console.log(`  · ${email} created`);
   }
 
-  // setCustomUserClaims replaces the whole claims object, so send the full set
-  // every time rather than only the flag that changed.
-  await auth.setCustomUserClaims(user.uid, admin ? { admin: true } : {});
-  console.log(`    claims = ${admin ? '{ admin: true }' : '{}'}`);
+  // The two roles are separate claims and never both set: a manager is
+  // already staff everywhere it matters (firestore.rules writes isStaff() as
+  // an OR over the two), so carrying both would be a second thing to keep in
+  // step for no gain.
+  const claims = role === 'admin' ? { admin: true }
+    : role === 'staff' ? { staff: true }
+    : {};
+  await auth.setCustomUserClaims(user.uid, claims);
+  console.log(`    claims = ${JSON.stringify(claims)}`);
 
   // Mirror into the profile document so the console can show who is staff.
   // Display only — the rules never read this, they read the claim.
   await db.collection('users').doc(user.uid).set({
     fullName,
     email,
-    role: admin ? 'admin' : 'customer',
+    role,
     updatedAt: FieldValue.serverTimestamp(),
     createdAt: FieldValue.serverTimestamp(),
   }, { merge: true });
@@ -94,10 +109,13 @@ try {
   console.log(`\nProvisioning users on ${creds.project_id}\n`);
 
   const adminUid = await upsertUser({
-    email: ADMIN_EMAIL, password: ADMIN_PASSWORD, fullName: 'Store Admin', admin: true,
+    email: ADMIN_EMAIL, password: ADMIN_PASSWORD, fullName: 'Store Admin', role: 'admin',
+  });
+  const staffUid = await upsertUser({
+    email: STAFF_EMAIL, password: STAFF_PASSWORD, fullName: 'Shop Floor', role: 'staff',
   });
   await upsertUser({
-    email: CUSTOMER_EMAIL, password: CUSTOMER_PASSWORD, fullName: 'Demo Customer', admin: false,
+    email: CUSTOMER_EMAIL, password: CUSTOMER_PASSWORD, fullName: 'Demo Customer', role: 'customer',
   });
 
   // Read the claim back rather than trusting the write — a silent failure
@@ -106,9 +124,20 @@ try {
   if (check.customClaims?.admin !== true) {
     fail('The admin claim did not persist. Check the service account has the Firebase Authentication Admin role.');
   }
+  const staffCheck = await auth.getUser(staffUid);
+  if (staffCheck.customClaims?.staff !== true) {
+    fail('The staff claim did not persist. Check the service account has the Firebase Authentication Admin role.');
+  }
+  // A staff account that also carried the admin claim would silently be a
+  // manager, which is the one mistake this split cannot afford to make
+  // quietly — so assert the absence, not only the presence.
+  if (staffCheck.customClaims?.admin === true) {
+    fail('The staff account carries admin=true. It would have manager access.');
+  }
 
   console.log('\nVerified:');
-  console.log(`  admin     ${ADMIN_EMAIL}      claim admin=true`);
+  console.log(`  manager   ${ADMIN_EMAIL}      claim admin=true`);
+  console.log(`  staff     ${STAFF_EMAIL}      claim staff=true`);
   console.log(`  customer  ${CUSTOMER_EMAIL}   no claim`);
   console.log(`\n  ✓ Done. Sign in at /admin/inventory as "${ADMIN_EMAIL.split('@')[0]}".`);
   console.log('    A claim only reaches the browser on a fresh ID token, so if the');

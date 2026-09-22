@@ -1,9 +1,50 @@
 # Back store (admin console)
 
-Inventory management for LeHart: add, edit and delete products, adjust stock,
-and manage product imagery.
+Running LeHart: products and stock, orders, returns, customer support, and
+what the shop front says.
 
-**URL:** `/admin/inventory`
+**URL:** `/admin`
+
+---
+
+## Who can do what
+
+There are two back-office roles. The split follows the way the
+InventoryManager console is organised — its Stock Intake, Inventory and
+Returns screens are the working floor, and its Admin tab is marked *managers
+only* — so that anyone moving between the two tools finds the same division.
+
+| | Staff | Manager |
+| --- | :---: | :---: |
+| Dashboard | ● | ● |
+| Products and stock: create, edit, set stock | ● | ● |
+| Orders: move through statuses | ● | ● |
+| Returns: decide a return | ● | ● |
+| Support: reply to a customer | ● | ● |
+| Export the catalogue or order book | ● | ● |
+| Archive a product (take it off sale) | | ● |
+| Add a brand or model the catalogue has never carried | | ● |
+| Banners, Home layout, Series — what the shop front says | | ● |
+| Analytics: takings, margin, traffic | | ● |
+| Buy prices (what stock cost us) | | ● |
+
+The reasoning: everything in the top block is the daily work and is safely
+reversible. Everything in the bottom block is either hard to undo, visible to
+every visitor, or commercially sensitive. Before the split there was one
+door — the smallest job, "mark this order dispatched", arrived bundled with
+the authority to blank the home page.
+
+Staff do not see the sections they cannot use. The nav is filtered by role,
+and the manager-only sections sit behind a divider so the shape of what you
+are allowed to do is legible rather than something you discover by being
+refused. Someone who has the URL anyway — a bookmark from before their role
+changed — gets a refusal naming the role that would have worked.
+
+Your own role is shown next to the word "Admin" in the console's header.
+
+The policy lives in one file, `src/lib/adminRoles.ts`, with the matching
+server-side rules in `firestore.rules`. The two are meant to be read side by
+side.
 
 ---
 
@@ -56,14 +97,48 @@ node scripts/create-users.mjs
 The service-account key comes from Firebase console → Project settings →
 Service accounts → Generate new private key.
 
-This creates (or resets) two confirmed accounts:
+This creates (or resets) three confirmed accounts:
 
 | Account  | Email                   | Claim          |
 | -------- | ----------------------- | -------------- |
-| Admin    | `admin@lehart.co.uk`    | `admin: true`  |
+| Manager  | `admin@lehart.co.uk`    | `admin: true`  |
+| Staff    | `staff@lehart.co.uk`    | `staff: true`  |
 | Customer | `customer@lehart.co.uk` | none           |
 
-Override the addresses with `ADMIN_EMAIL` / `CUSTOMER_EMAIL` if you prefer.
+Override the addresses with `ADMIN_EMAIL` / `STAFF_EMAIL` / `CUSTOMER_EMAIL`,
+and the passwords with `ADMIN_PASSWORD` / `STAFF_PASSWORD` /
+`CUSTOMER_PASSWORD`. A password left unset falls back to `ADMIN_PASSWORD`.
+
+The two roles are separate claims and never both set on one account. A
+manager is already staff everywhere it matters — the rules read "is this
+person staff?" as an OR over the two — so carrying both would be a second
+thing to keep in step for no gain. The script asserts that the staff account
+did **not** come back carrying `admin: true`, because a staff account that is
+silently a manager is the one mistake this split cannot afford to make
+quietly.
+
+### Adding someone later
+
+`scripts/create-users.mjs` needs a service-account key and a terminal. When
+that is not practical, `POST /api/bootstrap-admin` does the same job from the
+deployment's own environment:
+
+```
+BOOTSTRAP_SECRET  a secret of at least 16 characters
+ADMIN_EMAILS      comma-separated — granted the manager role
+STAFF_EMAILS      comma-separated — granted the staff role
+```
+
+The addresses come from the environment, never from the request, so even if
+the secret leaks nobody can promote an address of their choosing without also
+having write access to the deployment's environment — at which point they own
+the deployment anyway. An address in both lists is made a manager. **Delete
+`BOOTSTRAP_SECRET` once you are done**; with it unset the route returns 404 to
+everything, identically to a wrong secret, so probing cannot tell the two
+apart.
+
+The person must have signed in once before they can be promoted — Firebase
+creates the account on first sign-in.
 
 The script reads the claim back afterwards and exits non-zero if it did not
 stick — a silent permissions failure would otherwise look like success.
@@ -103,8 +178,15 @@ not own.
 ## What the console does
 
 **Inventory list** — search by model, brand or slug; filter by brand and by
-stock state (all / in / low / out); sort by newest, lowest stock, highest
-price or model; paginated at 25.
+stock state (all / in / low / out); switch between live and archived products;
+sort by newest, lowest stock, highest price or model; paginated at 25.
+
+One read carries a thousand products. Past that, the search box and the stock
+filters would be narrowing an arbitrary subset while presenting themselves as
+narrowing the catalogue — a product that exists could not be found, and
+nothing would say why. So the read deliberately fetches one document over the
+cap in order to notice, and the list says when the figures describe a subset
+rather than showing a count that is quietly wrong.
 
 **Inline stock editing** — the stock pill in each row is editable in place.
 Adjusting stock is the most frequent job, so it does not require opening the
@@ -128,10 +210,59 @@ Products seeded with bundled `/assets/…` artwork show a **Bundled** badge —
 those files ship with the app rather than living in storage, so removing one
 only unlinks it.
 
-**Delete** — behind a confirmation dialog that points to setting stock to 0 as
-the reversible alternative. Stored images are removed first, then the document:
-losing an image is recoverable, but a deleted document leaves no record of
-which files belonged to it.
+**Archive** (managers only) — takes a product off sale and sets its stock to
+zero. It disappears from the shop front, from search, from the catalogue feed
+and from the storefront's direct-link route, and it can no longer be ordered —
+the order route re-checks it inside the stock transaction, so a product
+archived mid-checkout cannot slip through.
+
+Nothing deletes a product, and that is enforced in the rules
+(`allow delete: if false`), not merely in the button. A product is referenced
+by every order that ever contained it, so deleting one rewrites history: an
+old invoice loses the thing it was for, and a return raised against it has
+nothing to check. This is InventoryManager's rule — *a sale is never deleted,
+only voided* — applied to the catalogue.
+
+Archived products are found under the **Archived** tab on the inventory list,
+and restoring one is a click. Stock deliberately stays at zero on restore:
+bringing back a count from before the product was withdrawn would be inventing
+stock, so whoever restores it enters the real figure.
+
+**The catalogue gate** — Brand and Model are backed by the spellings the
+catalogue already uses. What you type is corrected to the existing spelling
+when you leave the field, so `iphone  8` becomes `iPhone 8`; model suggestions
+are filtered to the brand you picked. A value the catalogue has never carried
+is a new catalogue entry: a manager may create one and is told they are doing
+so, and staff are refused with a message naming what they typed.
+
+This matters more than it looks. `iPhone 8` and `iphone  8` are two different
+products to every piece of code that groups by model — which is why the
+product page has to normalise spacing and case before it can offer a shopper
+the other storage sizes of the phone they are looking at. Fixing it at the
+keyboard is one rule instead of one per feature. It is the same rule
+InventoryManager applies when it snaps model names to the admin catalogue's
+spelling on write.
+
+**Provenance** — every write from the console stamps who made it and when, and
+the editor shows the last one. It records who the console believed was signed
+in; it is not proof, because the same browser writes both the change and the
+name on it. It answers "who do we think did this" for a team that trusts each
+other, not "who can we prove did this" in a dispute.
+
+**Export** — the inventory list and the order book download as CSV. The export
+carries the whole matching set, not the page you are looking at, and includes
+archived products so it is the whole record.
+
+Two rules borrowed from InventoryManager's reporting, both load-bearing:
+**new columns go on the end, always** — downstream spreadsheet formulas use
+hard column letters, so inserting or moving one silently breaks every formula
+pointing at it — and **an export is always a valid import**. There is a test
+pinning the exact header order; that test existing is the contract.
+
+A field that would be read as a formula (`=`, `+`, `-`, `@`, tab, CR) is
+prefixed with an apostrophe, which spreadsheets consume on display. Without
+it, a description someone typed as `=HYPERLINK(...)` arrives in the client's
+spreadsheet as a live link they did not write.
 
 ---
 
@@ -144,9 +275,9 @@ npx vite preview --port 4173 &
 npm run e2e:admin
 ```
 
-74 checks across desktop and mobile: sign-in with the bare `admin` username,
+180 checks across desktop and mobile: sign-in with the bare `admin` username,
 dashboard load, stock editing, filtering, search, create with validation, edit,
-image upload, delete with confirmation, the signed-in-customer refusal,
+image upload, archiving with confirmation, the signed-in-customer refusal,
 overflow, tap-target size, `noindex`, and uncaught errors.
 
 It runs against the **Firebase emulator suite**, so `firestore.rules` and
@@ -161,6 +292,70 @@ Both matter. A deny-only check would still pass if the rules denied everybody,
 including the admin — a broken shop that looked secure.
 
 Requires Java (the Firestore emulator runs on the JVM).
+
+### At the size the shop will actually reach
+
+```bash
+node e2e/volume.mjs        # 1,200 products, 40 orders, returns at every stage
+node e2e/admin-roles.mjs   # opens every screen as each role, in a real browser
+```
+
+The console had only ever been opened against a two-product fixture.
+`volume.mjs` seeds a catalogue with a deliberate shape — a long tail of models
+stocked once or twice, so the sold-out and low-stock panels have real content —
+and checks its own counts against arithmetic done outside the application.
+Importing the console's own counters to check the console's own counters would
+only prove it agrees with itself.
+
+It asserts the shape *first*: a run where nothing ran out would pass every
+later check while proving nothing, which is exactly the defect
+InventoryManager's month-long simulation found in its own first attempt.
+
+`admin-roles.mjs` signs in as a real manager and a real staff account, in
+separate browser contexts so a stale token cannot leak between them, and opens
+every screen. It proves what a mocked unit test cannot: that the capability a
+real signed-in account carries is the one the components branch on, surviving
+Firebase Auth, the ID token, the AuthContext refresh and the router guard. It
+also types the manager-only URLs in as staff, because a bookmark from before a
+role changed must be refused rather than merely unlinked.
+
+Every "this role cannot" check is paired with a control proving the thing
+exists for the role that can. The first version of the archive-button check
+searched the page text, and the button is icon-only — its label is an
+`aria-label` that never appears in `textContent`, so the assertion could not
+have failed whether the button was rendered or not.
+
+Currently 24 of 24.
+
+### The adversarial audit
+
+```bash
+npm run emulators &
+node e2e/api-server.mjs &    # with FIRESTORE_EMULATOR_HOST set
+npm run audit:security
+```
+
+Not a checklist. Every entry is an attack executed against the real rules with
+a real ID token, sending requests the console would never construct. Each is
+labelled either EXPLOIT (must be denied) or CONTROL (must be allowed) — the
+controls are what stop a suite where every request happens to be malformed
+from reporting a clean bill of health while testing nothing.
+
+The role split is covered here, signing in as a real staff account carrying a
+real staff claim and attempting every manager-only write: rewriting the home
+page running order, writing a banner or a series panel, archiving a product,
+smuggling `archivedAt` in on a create, reading buy prices, reading traffic.
+Alongside them, controls proving staff can still do their own job, and that a
+manager can do the things staff cannot — a split nobody attacks from the
+outside is a claim rather than a boundary.
+
+Currently 44 of 44.
+
+**Known gap:** the order-pricing attacks aim at `/api/orders`, which was
+retired when PayPal became the only payment method and now refuses every
+request. The suite detects the retirement and says so rather than scoring it —
+a suite that cries wolf gets ignored. The PayPal capture route is where money
+is decided now, and it has no equivalent suite yet.
 
 ## The catalogue comes from the stock list
 
@@ -279,6 +474,22 @@ Three things must stay in step, and a change to any one is wrong on its own:
    with it the same day.
 
 ## Deploying rules and indexes
+
+> **The rules in this repository are ahead of the ones in production.**
+>
+> Until `scripts/deploy-rules.mjs` is run, none of the following is in force
+> and some of it will fail visibly:
+>
+> - the staff / manager split — a staff account will be refused everything,
+>   because production still only knows the `admin` claim
+> - `siteLayout` and `seriesPanels` — saving on **Home layout** or **Series**
+>   fails with a permission error
+> - `allow delete: if false` on products — a delete is still possible
+>   server-side
+> - staff access to orders, returns and support
+>
+> Deploy before creating any staff account. A role you cannot exercise reads
+> as a broken console.
 
 The Firebase CLI cannot do either with this project's credentials:
 

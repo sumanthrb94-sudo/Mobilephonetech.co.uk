@@ -306,8 +306,17 @@ function AppContent() {
                 </AnimatedPage>
               } />
 
-              {/* Admin console. AdminRoute wraps the layout rather than each
-                  child so the access check runs once for the whole section. */}
+              {/* Admin console. The outer AdminRoute wraps the layout rather
+                  than each child, so the "may you see this at all" check runs
+                  once for the whole section.
+
+                  The manager-only pages are wrapped again, individually. They
+                  are the ones that decide what every visitor sees on the shop
+                  front, or that show what stock cost us — see
+                  src/lib/adminRoles.ts. Nesting the guard rather than hiding
+                  the nav link matters: a staff member who has the URL, or a
+                  bookmark from before their role changed, gets the same
+                  refusal as one who clicked. */}
               <Route path="/admin" element={
                 <AdminRoute>
                   <AdminLayout />
@@ -316,12 +325,20 @@ function AppContent() {
                 <Route index element={<AdminDashboard />} />
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="inventory" element={<InventoryPage />} />
-                <Route path="banners" element={<BannersPage />} />
-                <Route path="home" element={<HomeLayoutPage />} />
-                <Route path="series" element={<SeriesPage />} />
+                <Route path="banners" element={
+                  <AdminRoute capability="storefront:write"><BannersPage /></AdminRoute>
+                } />
+                <Route path="home" element={
+                  <AdminRoute capability="storefront:write"><HomeLayoutPage /></AdminRoute>
+                } />
+                <Route path="series" element={
+                  <AdminRoute capability="storefront:write"><SeriesPage /></AdminRoute>
+                } />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
-                <Route path="analytics" element={<AnalyticsPage />} />
+                <Route path="analytics" element={
+                  <AdminRoute capability="insights:read"><AnalyticsPage /></AdminRoute>
+                } />
                 <Route path="returns" element={<ReturnsPage />} />
                 <Route path="support" element={<SupportInbox />} />
               </Route>

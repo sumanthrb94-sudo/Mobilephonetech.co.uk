@@ -332,32 +332,58 @@ async function run(view, contextOpts) {
   rec(view, 'Image upload reaches storage', galleryAfter > 0, `${galleryAfter} image(s) in the gallery`);
   await shot(page, `${view}-image-uploaded`);
 
-  // ── 9. Delete requires confirmation ──
+  // ── 9. Archiving requires confirmation, and keeps the record ──
+  //
+  // This used to test deletion. Products are no longer deletable by anyone —
+  // firestore.rules refuses it outright — because a product is referenced by
+  // every order that ever contained it, so removing one rewrites history: an
+  // old invoice loses the thing it was for, and a return raised against it
+  // has nothing to check.
+  //
+  // The assertion is therefore inverted. The old one passed when the document
+  // was gone; this one fails if it is, because surviving is the point.
   await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
   await settled(page, '.admin-row');
   const before = await countProducts();
-  const delBtn = page.getByRole('button', { name: /Delete Samsung Galaxy S23/i }).first();
-  if (await delBtn.count()) {
-    await delBtn.click();
+  const archiveBtn = page.getByRole('button', { name: /Archive Samsung Galaxy S23/i }).first();
+  if (await archiveBtn.count()) {
+    await archiveBtn.click();
     await page.waitForTimeout(400);
-    rec(view, 'Delete opens a confirmation dialog', /cannot be undone/i.test(await txt()));
-    await shot(page, `${view}-delete-confirm`);
+    const dialog = await txt();
+    rec(view, 'Archiving opens a confirmation dialog', /archive/i.test(dialog));
+    // The copy has to say it is reversible. The old dialog said "cannot be
+    // undone", which was true of a delete and is a lie about an archive —
+    // and a warning people learn is overstated is a warning they stop
+    // reading.
+    rec(view, 'The dialog says archiving is reversible',
+      /reversible|restore|undo/i.test(dialog) && !/cannot be undone/i.test(dialog));
+    await shot(page, `${view}-archive-confirm`);
 
-    await page.getByRole('button', { name: /Keep it/i }).first().click();
+    await page.getByRole('button', { name: /Keep it|Cancel/i }).first().click();
     await page.waitForTimeout(400);
-    rec(view, 'Cancelling the dialog does not delete', (await countProducts()) === before);
+    rec(view, 'Cancelling the dialog archives nothing',
+      (await getProduct('samsung-galaxy-s23'))?.archivedAt == null);
 
-    await delBtn.click();
+    await archiveBtn.click();
     await page.waitForTimeout(300);
-    await page.getByRole('button', { name: /Delete permanently/i }).first().click();
-    await page.waitForTimeout(1200);
-    rec(view, 'Confirmed delete removes the product from Firestore',
-      (await getProduct('samsung-galaxy-s23')) === null, `${await countProducts()} left`);
-    await shot(page, `${view}-deleted`);
+    await page.getByRole('button', { name: /^Archive( it)?$/i }).first().click();
+    await page.waitForTimeout(1500);
+
+    const archived = await getProduct('samsung-galaxy-s23');
+    rec(view, 'Confirmed archive stamps the product rather than deleting it',
+      archived != null && archived.archivedAt != null,
+      archived == null ? 'the document was removed — history is now broken' : `archivedAt=${archived.archivedAt}`);
+    // Nothing left the database. A count that fell would mean the archive
+    // path is still deleting somewhere.
+    rec(view, 'Nothing was removed from Firestore', (await countProducts()) === before,
+      `${await countProducts()} of ${before}`);
+    await shot(page, `${view}-archived`);
   } else {
-    rec(view, 'Delete opens a confirmation dialog', false, 'delete button not found');
-    rec(view, 'Cancelling the dialog does not delete', false, 'delete button not found');
-    rec(view, 'Confirmed delete removes the product', false, 'delete button not found');
+    rec(view, 'Archiving opens a confirmation dialog', false, 'archive button not found');
+    rec(view, 'The dialog says archiving is reversible', false, 'archive button not found');
+    rec(view, 'Cancelling the dialog archives nothing', false, 'archive button not found');
+    rec(view, 'Confirmed archive stamps the product rather than deleting it', false, 'archive button not found');
+    rec(view, 'Nothing was removed from Firestore', false, 'archive button not found');
   }
 
   // ── 10. Non-admin is refused even with a valid session ──
@@ -367,7 +393,10 @@ async function run(view, contextOpts) {
   await page2.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
   await page2.waitForTimeout(900);
   const customerBody = (await page2.locator('body').innerText()).replace(/\s+/g, ' ');
-  rec(view, 'Signed-in customer is refused', /Admin access only/i.test(customerBody), customerBody.slice(0, 90));
+  // "Staff access only" rather than the old "Admin access only": the console
+  // now has two back-office roles, and a customer has neither. The refusal is
+  // about not working here at all, which is why it does not name a role.
+  rec(view, 'Signed-in customer is refused', /Staff access only/i.test(customerBody), customerBody.slice(0, 90));
   rec(view, 'Customer sees no inventory data', !/Add product/i.test(customerBody));
 
   // The UI gate is presentation. These two are the part that matters: the

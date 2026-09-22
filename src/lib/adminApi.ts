@@ -1,11 +1,11 @@
 import {
-  collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp,
-  setDoc, updateDoc, where, limit as fsLimit,
+  collection, deleteDoc, deleteField, doc, getDoc, getDocs, query,
+  serverTimestamp, setDoc, updateDoc, where, limit as fsLimit,
 } from 'firebase/firestore';
 import {
   deleteObject, getDownloadURL, listAll, ref, uploadBytes,
 } from 'firebase/storage';
-import { db, storage, COL, withAdminRetry } from './firebase';
+import { auth, db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
 import { capImages } from './productImages';
@@ -231,12 +231,47 @@ export interface InventoryQuery {
   sort?: 'newest' | 'stock_asc' | 'price_desc' | 'model_asc';
   page?: number;
   pageSize?: number;
+  /**
+   * Which products to list.
+   *
+   * 'live' — on sale. The default, because that is what the day's work is.
+   * 'archived' — withdrawn. Where you go to find one and put it back.
+   * 'all' — both, for the export, which should carry the whole record.
+   */
+  archived?: 'live' | 'archived' | 'all';
 }
 
 export const LOW_STOCK_THRESHOLD = 5;
 
-export async function listInventory(q: InventoryQuery = {}): Promise<{ products: Product[]; total: number }> {
-  const { search, brand, stockFilter = 'all', sort = 'newest', page = 1, pageSize = 25 } = q;
+export interface InventoryPage {
+  products: Product[];
+  /** How many matched, within what was read. */
+  total: number;
+  /**
+   * True when the catalogue is larger than one read can carry, so the figures
+   * above describe a subset.
+   *
+   * The console must say so where it shows them. A count that is quietly
+   * wrong is the failure InventoryManager's month-long simulation found in
+   * its own reorder panel: a figure on screen, nothing behind it, and no
+   * indication that anything was missing.
+   */
+  truncated: boolean;
+}
+
+/**
+ * How many documents one inventory read will pull back.
+ *
+ * Exported so the console can say when it has hit the ceiling rather than
+ * quietly showing part of the catalogue as though it were all of it.
+ */
+export const INVENTORY_READ_CAP = 1000;
+
+export async function listInventory(q: InventoryQuery = {}): Promise<InventoryPage> {
+  const {
+    search, brand, stockFilter = 'all', sort = 'newest',
+    page = 1, pageSize = 25, archived = 'live',
+  } = q;
 
   // One indexed query (brand, when given) then narrowing in memory.
   //
@@ -244,10 +279,27 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
   // so expressing search + stock band + sort as a query would need a composite
   // index per combination. The catalogue is a few hundred documents, so it is
   // cheaper — in latency and in index maintenance — to read once and filter here.
+  //
+  // It stops being cheaper somewhere past a thousand, and more importantly it
+  // stops being *correct*: at the cap, the search box and the stock filters
+  // are narrowing an arbitrary subset while presenting themselves as
+  // narrowing the catalogue, so a product that exists cannot be found and
+  // nothing says why. One document over the cap is fetched deliberately so
+  // that case can be detected and reported instead of guessed at — see
+  // `truncated` below.
   const constraints = brand ? [where('brand', '==', brand)] : [];
-  const snap = await getDocs(query(collection(db, COL.products), ...constraints, fsLimit(1000)));
+  const snap = await getDocs(query(
+    collection(db, COL.products), ...constraints, fsLimit(INVENTORY_READ_CAP + 1),
+  ));
+  const truncated = snap.size > INVENTORY_READ_CAP;
 
   let rows = snap.docs.map(d => docToProduct(d.id, d.data()));
+
+  // Archived first, before anything else narrows the list: every count below
+  // — the stock bands, the total the pager reads — should describe the set
+  // the person is actually looking at.
+  if (archived === 'live') rows = rows.filter(p => !p.archivedAt);
+  else if (archived === 'archived') rows = rows.filter(p => Boolean(p.archivedAt));
 
   if (search?.trim()) {
     const term = search.trim().toLowerCase();
@@ -269,7 +321,11 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
   }
 
   const total = rows.length;
-  return { products: rows.slice((page - 1) * pageSize, page * pageSize), total };
+  return {
+    products: rows.slice((page - 1) * pageSize, page * pageSize),
+    total,
+    truncated,
+  };
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────
@@ -306,6 +362,18 @@ export interface DashboardStats {
   /** True when the orders read failed — so the panel can say "unavailable"
    *  rather than draw a confident zero. */
   ordersUnavailable: boolean;
+  /**
+   * True when the catalogue is larger than one read can carry.
+   *
+   * Every figure above then describes the first INVENTORY_READ_CAP products
+   * rather than the shop. Found by opening this page against twelve hundred
+   * products: it reported "1000 listed SKUs" with total conviction, and the
+   * out-of-stock and low-stock counts under it were drawn from the same
+   * truncated set. A dashboard that is confidently wrong is worse than one
+   * that admits it cannot see everything, which is the whole of
+   * InventoryManager's "Awaiting rather than zero" rule applied to a count.
+   */
+  catalogueTruncated: boolean;
 }
 
 /**
@@ -316,8 +384,21 @@ export interface DashboardStats {
  * hundred products that is more moving parts than it is worth.
  */
 export async function loadDashboardStats(): Promise<DashboardStats> {
-  const snap = await getDocs(query(collection(db, COL.products), fsLimit(1000)));
-  const products = snap.docs.map(d => docToProduct(d.id, d.data()));
+  // One over the cap, so the truncation can be detected rather than guessed
+  // at — see InventoryPage's listInventory for the same trick.
+  const snap = await getDocs(query(
+    collection(db, COL.products), fsLimit(INVENTORY_READ_CAP + 1),
+  ));
+  const catalogueTruncated = snap.size > INVENTORY_READ_CAP;
+
+  // Archived products are withdrawn from sale. Counting them as stock made
+  // "units in stock" and "stock value" describe inventory nobody can buy —
+  // archiving zeroes stock, so the units were right by accident, but the SKU
+  // count and the per-brand breakdown were not.
+  const products = snap.docs
+    .map(d => docToProduct(d.id, d.data()))
+    .filter(p => !p.archivedAt)
+    .slice(0, INVENTORY_READ_CAP);
 
   const brands = new Map<string, BrandStock>();
   let unitsInStock = 0;
@@ -388,12 +469,83 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     orderRevenue,
     recentOrders,
     ordersUnavailable,
+    catalogueTruncated,
   };
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
   const snap = await getDoc(doc(db, COL.products, id));
   return snap.exists() ? docToProduct(snap.id, snap.data()) : null;
+}
+
+/**
+ * The brands and models the catalogue already carries.
+ *
+ * The catalogue gate, following InventoryManager: there, staff pick a model
+ * from the admin catalogue and only a manager sees the "Add …" pill, so
+ * model names snap to one spelling on write. Here the editor offers these as
+ * suggestions and normalises what is typed to whichever entry it matches.
+ *
+ * WHY IT MATTERS MORE THAN IT LOOKS
+ *
+ * "iPhone 8" and "iphone  8" are two products to every piece of code that
+ * groups by model — which is why src/lib/productSiblings.ts has to normalise
+ * spacing and case before it can offer a shopper the other sizes of the
+ * phone they are looking at. Every feature that groups has to remember to do
+ * the same. Fixing it at the keyboard is one rule instead of many.
+ *
+ * Models are returned per brand, because "Galaxy S23" is a Samsung and
+ * offering it while Apple is selected is noise.
+ */
+export interface CatalogueVocabulary {
+  brands: string[];
+  /** Brand (lower-cased) to the models listed under it, alphabetically. */
+  modelsByBrand: Record<string, string[]>;
+}
+
+export async function listCatalogueVocabulary(): Promise<CatalogueVocabulary> {
+  // Archived products are included deliberately. A model withdrawn from sale
+  // is still the shop's spelling of that model, and excluding it would mean
+  // re-listing a phone reintroduces the divergence this exists to prevent.
+  const snap = await getDocs(query(collection(db, COL.products), fsLimit(1000)));
+
+  const brands = new Set<string>();
+  const models = new Map<string, Set<string>>();
+
+  for (const d of snap.docs) {
+    const row = d.data() as { brand?: string; model?: string };
+    const brand = row.brand?.trim();
+    if (!brand) continue;
+    brands.add(brand);
+
+    const model = row.model?.trim();
+    if (!model) continue;
+    const key = brand.toLowerCase();
+    if (!models.has(key)) models.set(key, new Set());
+    models.get(key)!.add(model);
+  }
+
+  return {
+    brands: [...brands].sort((a, b) => a.localeCompare(b)),
+    modelsByBrand: Object.fromEntries(
+      [...models.entries()].map(([k, v]) => [k, [...v].sort((a, b) => a.localeCompare(b))]),
+    ),
+  };
+}
+
+/**
+ * The catalogue's own spelling of what was typed, if it has one.
+ *
+ * Case and inner spacing are ignored when matching, so "iphone  8" finds
+ * "iPhone 8" and is corrected to it. Anything the catalogue has never seen
+ * comes back unchanged — this normalises, it does not reject. Refusing a new
+ * model is the editor's decision to make, and it depends on who is typing.
+ */
+export function snapToCatalogue(typed: string, known: readonly string[]): string {
+  const norm = (v: string) => v.toLowerCase().replace(/\s+/g, ' ').trim();
+  const target = norm(typed);
+  if (!target) return typed.trim();
+  return known.find(k => norm(k) === target) ?? typed.trim();
 }
 
 export async function listBrands(): Promise<string[]> {
@@ -408,6 +560,36 @@ export async function listBrands(): Promise<string[]> {
 
 // ── Writes ─────────────────────────────────────────────────────
 
+/**
+ * Who is making this change, for the audit stamp on every admin write.
+ *
+ * Read from the signed-in Firebase user rather than passed in, because a
+ * parameter is a parameter somebody eventually forgets, and an audit trail
+ * with gaps in it is worse than none: it invites you to conclude that the
+ * unstamped rows were nobody.
+ *
+ * This records who the console believed was signed in. It is not proof —
+ * the same browser writes both the change and the name on it — so it answers
+ * "who do we think did this" for a team that trusts each other, not "who can
+ * we prove did this" in a dispute. Proving it would need the write to go
+ * through a server route that reads the uid from a verified token.
+ */
+function currentActor(): string {
+  const user = auth.currentUser;
+  return user?.email ?? user?.uid ?? 'unknown';
+}
+
+/**
+ * The provenance fields every admin write carries.
+ *
+ * Deliberately not annotated `Record<string, unknown>`: updateDoc wants field
+ * values, and widening these to `unknown` makes every spread of them fail to
+ * typecheck at the call site rather than here.
+ */
+function auditFields() {
+  return { updatedAt: serverTimestamp(), updatedBy: currentActor() };
+}
+
 export async function createProduct(draft: ProductDraft): Promise<Product> {
   const ref = doc(db, COL.products, draft.id);
 
@@ -417,24 +599,79 @@ export async function createProduct(draft: ProductDraft): Promise<Product> {
   const existing = await getDoc(ref);
   if (existing.exists()) throw new AlreadyExistsError('A product with that slug already exists.');
 
-  const body = { ...draftToRow(draft), createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+  const body = {
+    ...draftToRow(draft),
+    createdAt: serverTimestamp(),
+    createdBy: currentActor(),
+    ...auditFields(),
+  };
   await withAdminRetry(() => setDoc(ref, body));
   return { ...docToProduct(draft.id, body as Record<string, unknown>) };
 }
 
 export async function updateProduct(draft: ProductDraft): Promise<Product> {
   const ref = doc(db, COL.products, draft.id);
-  const body = { ...draftToRow(draft), updatedAt: serverTimestamp() };
+  const body = { ...draftToRow(draft), ...auditFields() };
   await withAdminRetry(() => updateDoc(ref, body));
   return { ...docToProduct(draft.id, body as Record<string, unknown>) };
 }
 
 export async function setStock(id: string, stock: number): Promise<void> {
   if (!Number.isInteger(stock) || stock < 0) throw new Error('Stock must be a whole number of 0 or more.');
-  await withAdminRetry(() => updateDoc(doc(db, COL.products, id), { stock, updatedAt: serverTimestamp() }));
+  await withAdminRetry(() => updateDoc(doc(db, COL.products, id), { stock, ...auditFields() }));
 }
 
-export async function deleteProduct(id: string): Promise<void> {
+/**
+ * Take a product off sale, keeping the record.
+ *
+ * This replaces the delete button, which removed the document and every image
+ * with it. A product is referenced by every order that ever contained it, so
+ * deleting one rewrote history: an old invoice lost the thing it was for, and
+ * a return raised against it had nothing to check. InventoryManager's rule —
+ * a sale is never deleted, only voided — is the right one here too, and
+ * firestore.rules now refuses a product delete outright so this is not merely
+ * the polite path but the only one.
+ *
+ * Stock is zeroed at the same time. An archived product with stock still on
+ * it reads, to every count and every reorder list, as inventory the shop has;
+ * it does not, because nobody can buy it.
+ */
+export async function archiveProduct(id: string): Promise<void> {
+  const at = new Date().toISOString();
+  await withAdminRetry(() => updateDoc(doc(db, COL.products, id), {
+    archivedAt: at,
+    archivedBy: currentActor(),
+    stock: 0,
+    ...auditFields(),
+  }));
+}
+
+/**
+ * Put an archived product back on sale.
+ *
+ * Stock deliberately stays at zero. Archiving zeroed it, and restoring a
+ * count from before the product was withdrawn would be inventing stock —
+ * whoever restores it should say how many they actually have.
+ */
+export async function restoreProduct(id: string): Promise<void> {
+  await withAdminRetry(() => updateDoc(doc(db, COL.products, id), {
+    // deleteField() rather than null: an absent field is what "live" has
+    // always looked like, and a null would make every `archivedAt != null`
+    // reader agree while every `'archivedAt' in doc` reader disagreed.
+    archivedAt: deleteField(),
+    archivedBy: deleteField(),
+    ...auditFields(),
+  }));
+}
+
+/**
+ * Remove a product and its images for good.
+ *
+ * Not reachable from the console, and refused by firestore.rules for every
+ * caller — it exists for scripts running under the Admin SDK, which bypasses
+ * rules, to clear test data. Archiving is what the console does.
+ */
+export async function purgeProduct(id: string): Promise<void> {
   // Stored images are removed first: losing an image is recoverable, but a
   // deleted document leaves no record of which files belonged to it.
   await deleteAllImagesFor(id).catch(() => { /* orphaned files are not fatal */ });

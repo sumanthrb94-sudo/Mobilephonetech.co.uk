@@ -5,7 +5,7 @@ import {
 import { Product, FilterState } from '../types';
 import { MOCK_PHONES } from '../data';
 import { db, COL } from '../lib/firebase';
-import { docToProduct } from '../lib/productMapper';
+import { docToProduct, isLive, liveOnly } from '../lib/productMapper';
 
 /**
  * Legacy name kept so the ~15 existing call sites and their tests keep working.
@@ -81,7 +81,10 @@ export function useProducts(opts: UseProductsOptions = {}) {
       const snap = await getDocs(query(collection(db, COL.products), fsLimit(FETCH_CAP)));
       if (snap.empty) throw new Error('empty');
 
-      const all = snap.docs.map(d => docToProduct(d.id, d.data()));
+      // Archived products are filtered here rather than in the query:
+      // Firestore cannot ask for the absence of a field, and a live product
+      // simply has no `archivedAt`.
+      const all = liveOnly(snap.docs.map(d => docToProduct(d.id, d.data())));
       const filtered = applyFilters(all, filters ? JSON.parse(filtersKey) : undefined, search, sort);
 
       setTotal(filtered.length);
@@ -120,12 +123,19 @@ export function useProduct(id: string | undefined) {
     getDoc(doc(db, COL.products, id))
       .then(snap => {
         if (cancelled) return;
-        if (snap.exists()) {
-          setProduct(docToProduct(snap.id, snap.data()));
-        } else {
-          const found = MOCK_PHONES.find(p => p.id === id) ?? null;
+        // An archived product is treated exactly like a missing one: it is
+        // not for sale, so a direct link to it — a bookmark, an old search
+        // result, a shared URL — must not open a page offering to sell it.
+        const found = snap.exists() ? docToProduct(snap.id, snap.data()) : null;
+        if (found && isLive(found)) {
           setProduct(found);
-          if (!found) setError('Product not found');
+        } else if (found) {
+          setProduct(null);
+          setError('Product not found');
+        } else {
+          const fallback = MOCK_PHONES.find(p => p.id === id) ?? null;
+          setProduct(fallback);
+          if (!fallback) setError('Product not found');
         }
         setIsLoading(false);
       })
@@ -152,7 +162,7 @@ export async function searchProducts(term: string, max = 20): Promise<Product[]>
     where('searchTerms', 'array-contains', q),
     fsLimit(max),
   ));
-  return snap.docs.map(d => docToProduct(d.id, d.data()));
+  return liveOnly(snap.docs.map(d => docToProduct(d.id, d.data())));
 }
 
 /**
@@ -196,10 +206,10 @@ async function fetchCatalogueDirect(max: number): Promise<Product[]> {
   // A sort is a presentation detail; it must never be able to empty the shop.
   const snap = await getDocs(query(collection(db, COL.products), fsLimit(max)));
 
-  return snap.docs
+  return liveOnly(snap.docs
     .map(d => ({ id: d.id, data: d.data() }))
     // Newest first, on whichever timestamp the writer actually set.
     .sort((a, b) => String(b.data.createdAt ?? b.data.updatedAt ?? '')
       .localeCompare(String(a.data.createdAt ?? a.data.updatedAt ?? '')))
-    .map(r => docToProduct(r.id, r.data));
+    .map(r => docToProduct(r.id, r.data)));
 }

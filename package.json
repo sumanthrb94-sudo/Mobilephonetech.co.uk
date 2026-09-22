@@ -22,6 +22,8 @@
     "test:coverage": "vitest run --coverage",
     "e2e:interactions": "node e2e/interactions.mjs",
     "e2e:admin": "node e2e/admin.mjs",
+    "e2e:volume": "node e2e/volume.mjs",
+    "e2e:roles": "node e2e/admin-roles.mjs",
     "e2e:focus": "node e2e/focus.mjs",
     "seed": "node scripts/seed-firestore.mjs",
     "create-users": "node scripts/create-users.mjs",

@@ -57,7 +57,10 @@ export default async function handler(req: any, res: any) {
     ).get();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+    let rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }))
+      // Withdrawn from sale — see api/_routes/catalogue.ts for why this is a
+      // filter rather than a query clause.
+      .filter(r => !r.archivedAt);
 
     const csv = (v?: string) => (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 

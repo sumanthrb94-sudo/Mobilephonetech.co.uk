@@ -3,13 +3,18 @@ import { Link } from 'react-router-dom';
 import { ShieldAlert, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useAdmin } from '../../hooks/useAdmin';
+import { refusalFor, type Capability } from '../../lib/adminRoles';
 
 /**
- * Gate for every /admin route.
+ * Gate for every /admin route, and for the manager-only pages within it.
  *
  * Presentation only — it hides the console from people who should not see it.
- * The database is the real boundary: RLS rejects writes from non-admins even
- * if someone renders these components by hand.
+ * The database is the real boundary: firestore.rules rejects writes from
+ * accounts without the claim even if someone renders these components by hand.
+ *
+ * Pass `capability` to guard a single page. /admin/home and /admin/series
+ * decide what every visitor sees on the shop front, so they are manager-only
+ * while the rest of the console is open to staff — see src/lib/adminRoles.ts.
  *
  * WHY THIS FORCES A TOKEN REFRESH ON MOUNT
  *
@@ -25,9 +30,13 @@ import { useAdmin } from '../../hooks/useAdmin';
  * for everyone else — one extra token fetch, already the cheapest call
  * Firebase Auth makes.
  */
-export default function AdminRoute({ children }: { children: React.ReactNode }) {
+export default function AdminRoute({ children, capability = 'console' }: {
+  children: React.ReactNode;
+  /** What this route requires. Defaults to simply being able to see the console. */
+  capability?: Capability;
+}) {
   const { isAuthenticated, isLoading: authLoading, refreshClaims } = useAuth();
-  const { isAdmin, isLoading: adminLoading } = useAdmin();
+  const { can, isStaff, isLoading: adminLoading } = useAdmin();
   const [refreshing, setRefreshing] = useState(isAuthenticated);
   const refreshedFor = useRef<boolean | null>(null);
 
@@ -52,8 +61,43 @@ export default function AdminRoute({ children }: { children: React.ReactNode }) 
     );
   }
 
-  if (!isAuthenticated) return <Gate icon={<LogIn size={26} />} title="Sign in required" body="The admin console is only available to signed-in staff accounts." cta={{ to: '/account', label: 'Go to sign in' }} />;
-  if (!isAdmin) return <Gate icon={<ShieldAlert size={26} />} title="Admin access only" body="Your account does not have the admin role. If it was just granted, sign out and back in — the change only reaches your browser on a fresh sign-in." cta={{ to: '/', label: 'Back to the store' }} />;
+  if (!isAuthenticated) {
+    return (
+      <Gate
+        icon={<LogIn size={26} />}
+        title="Sign in required"
+        body="The admin console is only available to signed-in staff accounts."
+        cta={{ to: '/account', label: 'Go to sign in' }}
+      />
+    );
+  }
+
+  // Not staff at all: the console does not exist as far as this account is
+  // concerned, and the message is about getting access rather than about
+  // which page they landed on.
+  if (!isStaff) {
+    return (
+      <Gate
+        icon={<ShieldAlert size={26} />}
+        title="Staff access only"
+        body="Your account does not have a back-office role. If one was just granted, sign out and back in — a role only reaches your browser on a fresh sign-in."
+        cta={{ to: '/', label: 'Back to the store' }}
+      />
+    );
+  }
+
+  // Staff, but this particular page is above their level. They belong in the
+  // console, so the way out is back into it rather than out to the shop.
+  if (!can(capability)) {
+    return (
+      <Gate
+        icon={<ShieldAlert size={26} />}
+        title="Managers only"
+        body={refusalFor(capability)}
+        cta={{ to: '/admin', label: 'Back to the console' }}
+      />
+    );
+  }
 
   return <>{children}</>;
 }

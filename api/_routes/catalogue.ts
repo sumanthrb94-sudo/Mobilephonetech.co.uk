@@ -39,6 +39,11 @@ export default async function handler(req: any, res: any) {
     // query itself would silently drop any document missing that field.
     const products = snap.docs
       .map(d => ({ id: d.id, data: d.data() as Record<string, unknown> }))
+      // Archived products are withdrawn from sale. Filtered here rather than
+      // in the query because Firestore cannot ask for the absence of a field
+      // — a live product simply has no `archivedAt`, and an equality test
+      // against null matches none of them.
+      .filter(r => !r.data.archivedAt)
       .sort((a, b) => String(b.data.createdAt ?? b.data.updatedAt ?? '')
         .localeCompare(String(a.data.createdAt ?? a.data.updatedAt ?? '')))
       .map(r => docToProduct(r.id, r.data));

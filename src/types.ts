@@ -112,6 +112,40 @@ export interface Product {
   colorOptions?: string[];
   storageOptions?: string[];
   conditionOptions?: ProductGrade[];
+
+  /**
+   * When this product was taken off sale, as an ISO timestamp — absent while
+   * it is live.
+   *
+   * Products are never deleted. One is referenced by every order that ever
+   * contained it, so removing it rewrites history: an old invoice loses the
+   * thing it was for, and a return raised against it has nothing to check.
+   * Archiving hides it from the storefront and leaves the record intact, and
+   * unlike a delete it can be undone. See src/lib/adminApi.ts.
+   */
+  archivedAt?: string;
+  /** Who archived it, for the same reason anything else is stamped. */
+  archivedBy?: string;
+  /** Who last saved this product, and when. Display only — see AuditStamp. */
+  updatedBy?: string;
+  updatedAt?: string;
+}
+
+/**
+ * Who last touched a record, and when.
+ *
+ * Every admin write carries one. Without it, "who put £45 on the iPhone 11"
+ * has no answer, which is survivable while one person runs the shop and is
+ * not once it is handed to a team. This is a record, not a permission: the
+ * rules do not read it, and it is written by the same client that made the
+ * change, so it says who the console believed was signed in rather than
+ * proving it. A tamper-proof log would have to be written server-side.
+ */
+export interface AuditStamp {
+  /** Email if we have one, else the uid — whatever names a person best. */
+  by: string;
+  /** ISO timestamp. */
+  at: string;
 }
 
 export type Phone = Product; 

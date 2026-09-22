@@ -6,10 +6,23 @@ rules_version = '2';
 // These are the authorization boundary. The React guard on /admin only hides
 // the console; everything below is what actually stops a non-admin writing.
 //
-// Admin is the `admin` custom claim on the ID token, set with the Admin SDK
-// (scripts/create-users.mjs). A claim cannot be written by the client, which
-// is why it is used rather than a role field on the user document — a field
-// the user can edit is not an authorization mechanism.
+// There are two staff roles, carried as custom claims on the ID token and set
+// with the Admin SDK (scripts/create-users.mjs). A claim cannot be written by
+// the client, which is why claims are used rather than a role field on the
+// user document — a field the user can edit is not an authorization mechanism.
+//
+//   staff  — the daily work: products, stock, orders, returns, support.
+//   admin  — all of that, plus what the shop front says, archiving a product,
+//            and the commercially sensitive collections (buy prices, traffic,
+//            payment incidents).
+//
+// Every existing account carries `{ admin: true }` and keeps working
+// unchanged; `staff` is the new, strictly smaller claim.
+//
+// This table is the server-side half of src/lib/adminRoles.ts. The two are
+// meant to be read side by side — a capability granted there without a rule
+// here is a button that fails, and a rule here without a capability there is
+// authority nobody can see.
 //
 // Deploy:  firebase deploy --only firestore:rules
 // ═══════════════════════════════════════════════════════════════
@@ -21,8 +34,19 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // A manager. The claim is compared to the boolean true, not tested for
+    // truthiness: rules treat a non-empty string as true, so a claim that
+    // came back from somewhere careless as "false" must not promote anyone.
     function isAdmin() {
       return signedIn() && request.auth.token.admin == true;
+    }
+
+    // Anyone who works here. A manager is staff too — writing it as an OR
+    // rather than granting both claims means promoting someone to manager
+    // never depends on remembering to leave the smaller claim in place.
+    function isStaff() {
+      return signedIn()
+             && (request.auth.token.admin == true || request.auth.token.staff == true);
     }
 
     function isSelf(uid) {
@@ -30,17 +54,38 @@ service cloud.firestore {
     }
 
     // ── Products ────────────────────────────────────────────
-    // Public catalogue: anyone may read, only an admin may write.
+    // Public catalogue: anyone may read, staff may write.
+    //
+    // NOTHING DELETES A PRODUCT
+    //
+    // Deleting one used to be a button in the console, and it took the
+    // document and every image with it. But a product is referenced by every
+    // order that ever contained it, so deleting it rewrites history: an old
+    // invoice loses the thing it was for, and a return raised against it has
+    // nothing to check. InventoryManager's rule — a sale is never deleted,
+    // only voided — is the right one here too.
+    //
+    // Taking a product off sale is now an update setting `archivedAt`, which
+    // the storefront filters out and the console can undo. `archivedAt` is
+    // the only field a non-manager may not touch, because it is the one write
+    // a customer would notice and a member of staff cannot reverse alone.
     match /products/{productId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create: if isStaff()
+                    && !request.resource.data.keys().hasAny(['archivedAt']);
+      allow update: if isAdmin()
+                    || (isStaff()
+                        && !request.resource.data.diff(resource.data)
+                             .affectedKeys().hasAny(['archivedAt']));
+      allow delete: if false;
     }
 
     // ── Home-page banners ───────────────────────────────────
     // Public to read, because they are the first thing on the shop front.
-    // Writable only by staff: a banner is a headline and a link shown to
-    // every visitor, so whoever can write here controls what the home page
-    // says and where its main call to action points.
+    // Manager-only to write: a banner is a headline and a link shown to every
+    // visitor, so whoever can write here controls what the home page says and
+    // where its main call to action points. That is not a decision that
+    // belongs with whoever happens to be packing parcels today.
     match /banners/{bannerId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
@@ -49,7 +94,7 @@ service cloud.firestore {
     // ── Home-page running order ─────────────────────────────
     // Which blocks the home page shows and in what order — see
     // src/lib/homeLayout.ts. Public to read, because every visitor's home
-    // page is rendered from it, and staff-only to write for the same reason
+    // page is rendered from it, and manager-only to write for the same reason
     // the banners are: this decides what the shop front is.
     //
     // The document holds only section ids and a hidden list. It cannot name
@@ -64,8 +109,8 @@ service cloud.firestore {
 
     // ── Home-page series panels ─────────────────────────────
     // The editorial blocks below the carousel — see src/lib/seriesPanels.ts.
-    // Public to read and staff-only to write, like the banners: a panel is a
-    // headline, a picture and a link shown to every visitor.
+    // Public to read and manager-only to write, like the banners: a panel is
+    // a headline, a picture and a link shown to every visitor.
     //
     // The product rule stored here is plain words, never an expression, so a
     // document written by hand cannot make a visitor's browser evaluate
@@ -105,7 +150,7 @@ service cloud.firestore {
     // never edited afterwards from the client: order status belongs to the
     // back office, and a shopper must not be able to mark their own order paid.
     match /orders/{orderId} {
-      allow read: if isAdmin()
+      allow read: if isStaff()
                   || (signedIn() && resource.data.userId == request.auth.uid);
 
       // No client creates. Prices used to come from the browser, so a crafted
@@ -114,7 +159,10 @@ service cloud.firestore {
       // /api/orders instead, which looks every price up in the catalogue.
       // The Admin SDK bypasses these rules, so the route still works.
       allow create: if false;
-      allow update: if isAdmin();
+      // Moving an order through its statuses is the daily work, so staff do
+      // it. Nothing here is irreversible from the customer's side: a wrong
+      // status is corrected by setting the right one.
+      allow update: if isStaff();
       allow delete: if false;
     }
 
@@ -182,7 +230,7 @@ service cloud.firestore {
     // Letting a shopper move their own return to "resolved" would let them
     // mark themselves refunded, so status transitions are admin-only.
     match /returns/{rmaId} {
-      allow read: if isAdmin()
+      allow read: if isStaff()
                   || (signedIn() && resource.data.userId == request.auth.uid);
 
       // Ownership of the referenced order is checked against the order itself,
@@ -204,7 +252,7 @@ service cloud.firestore {
 
       // The customer's only permitted edit is cancelling a request staff have
       // not yet acted on.
-      allow update: if isAdmin()
+      allow update: if isStaff()
                     || (signedIn()
                         && resource.data.userId == request.auth.uid
                         && resource.data.status == 'requested'
@@ -219,20 +267,23 @@ service cloud.firestore {
     // a support thread is evidence of what was promised, and neither side
     // gets to rewrite it after the fact.
     match /conversations/{convId} {
-      allow read: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      allow read: if isStaff() || (signedIn() && convId == request.auth.uid);
       allow create: if signedIn()
                     && convId == request.auth.uid
                     && request.resource.data.userId == request.auth.uid;
-      allow update: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      allow update: if isStaff() || (signedIn() && convId == request.auth.uid);
+      // Deleting a thread destroys evidence of what was promised, so it stays
+      // with whoever answers for the shop rather than with whoever is on the
+      // desk today.
       allow delete: if isAdmin();
 
       match /messages/{messageId} {
-        allow read: if isAdmin() || (signedIn() && convId == request.auth.uid);
+        allow read: if isStaff() || (signedIn() && convId == request.auth.uid);
 
         // The sender field is the thing worth guarding: without this check a
         // customer could post a message labelled as staff and manufacture a
         // promise the shop never made.
-        allow create: if (isAdmin() && request.resource.data.sender == 'admin')
+        allow create: if (isStaff() && request.resource.data.sender == 'admin')
                       || (signedIn()
                           && convId == request.auth.uid
                           && request.resource.data.sender == 'customer');
@@ -243,7 +294,8 @@ service cloud.firestore {
 
     // Per-unit stock: what each handset cost, who supplied it, when it
     // arrived. Buy prices are commercially sensitive in a way the catalogue is
-    // not, so this is staff-read-only. Writes come from the Admin SDK — the
+    // not, so this is manager-read-only — what a handset cost us is not
+    // something everyone who can mark an order dispatched needs to see. Writes come from the Admin SDK — the
     // import script and the order route — which bypasses rules entirely, so
     // nothing here needs a client write path.
     match /stockUnits/{imei} {

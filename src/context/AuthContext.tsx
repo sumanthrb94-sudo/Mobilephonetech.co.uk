@@ -23,6 +23,7 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, COL } from '../lib/firebase';
 import { toE164, formatPhoneForDisplay, DEFAULT_COUNTRY } from '../utils/phoneNumber';
+import { roleFromClaims, type StaffRole } from '../lib/adminRoles';
 
 export interface User {
   id: string;
@@ -42,6 +43,15 @@ export interface User {
   isGuest?: boolean;
   /** From the `admin` custom claim on the ID token, not a database field. */
   isAdmin?: boolean;
+  /**
+   * Which back-office role the token carries — see src/lib/adminRoles.ts.
+   *
+   * `isAdmin` is kept beside it rather than derived at every call site,
+   * because a great deal of existing code asks only that one question and
+   * rewriting all of it to ask a new one is churn for its own sake. The two
+   * are resolved together from the same claims, so they cannot disagree.
+   */
+  staffRole?: StaffRole;
   /**
    * Sign-in providers on the account, e.g. ['google.com'] or ['password'].
    * A Google-only account has no password, so offering to change one is
@@ -152,13 +162,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 async function toUser(fbUser: FirebaseUser): Promise<User> {
   // getIdTokenResult reads the cached token; claims set server-side land here
   // only after a refresh, which is what refreshClaims() forces.
-  let isAdmin = false;
+  //
+  // A failed read means no role, never a guessed one: if we cannot tell what
+  // someone is allowed to do, the answer is nothing, and the console's own
+  // gate will say so rather than showing buttons whose writes the rules will
+  // reject for reasons invisible from the browser.
+  let staffRole: StaffRole = 'none';
   try {
     const token = await fbUser.getIdTokenResult();
-    isAdmin = token.claims.admin === true;
+    staffRole = roleFromClaims(token.claims as Record<string, unknown>);
   } catch {
-    isAdmin = false;
+    staffRole = 'none';
   }
+  const isAdmin = staffRole === 'admin';
 
   return {
     id: fbUser.uid,
@@ -171,6 +187,7 @@ async function toUser(fbUser: FirebaseUser): Promise<User> {
       ?? (fbUser.email ? fbUser.email.split('@')[0] : null)
       ?? (fbUser.phoneNumber ? formatPhoneForDisplay(fbUser.phoneNumber) : 'User'),
     isAdmin,
+    staffRole,
     // Optional chain: providerData is always present on a real Firebase user,
     // but a missing one must not take sign-in down over a display detail.
     providers: fbUser.providerData?.map(p => p.providerId) ?? [],

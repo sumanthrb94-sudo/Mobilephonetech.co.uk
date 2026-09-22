@@ -47,6 +47,21 @@ function chipClass(status: string): string {
   return 'ord-chip ord-chip-refunded';
 }
 
+/**
+ * An amount, or Awaiting where there is no amount to show.
+ *
+ * `gbp()` turns anything missing into £0.00, which is fine for a total that is
+ * genuinely zero and wrong for one that was never recorded: a refund with no
+ * figure against it is not a refund of nothing. The fragment matters — the
+ * pounds stay a plain text node next to the words around them, so "Refunded
+ * £199.00" is still one readable line rather than two boxes.
+ */
+function Amount({ value }: { value: number | null | undefined }) {
+  return Number.isFinite(value)
+    ? <>{gbp(value as number)}</>
+    : <span className="ops-awaiting">Awaiting</span>;
+}
+
 const shortDate = (iso: string) =>
   iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
 
@@ -177,6 +192,9 @@ export default function OrdersPage() {
         <div>
           <p className="ops-eyebrow">Operations</p>
           <h1 className="ops-title">Orders</h1>
+          <p className="ops-question">
+            What has to be packed today, and what is already out with a courier?
+          </p>
         </div>
         <button type="button" className="btn btn-secondary btn-md" onClick={() => void load()} disabled={loading}>
           {loading ? <Loader2 size={15} className="admin-spin" /> : <Package size={15} />}
@@ -214,6 +232,16 @@ export default function OrdersPage() {
             );
           })}
         </div>
+
+        {/* The two counts that look wrong together. "On its way" holds delivered
+            orders as well as moving ones, which is deliberate — an order does
+            not stop existing when it lands, and before that it dropped out of
+            every tab except All. Said here so it reads as arithmetic rather
+            than as a bug someone should go and fix. */}
+        <p className="ops-footnote">
+          Counts cover the most recent 500 orders. On its way includes orders already
+          delivered, so it will be larger than the number of parcels actually moving.
+        </p>
 
         {/* Bulk move — appears once there is something to move together.
             Nothing to select on "To pack": that first move needs a real,
@@ -269,13 +297,26 @@ export default function OrdersPage() {
           <p className="ord-empty"><Loader2 size={18} className="admin-spin" /> Loading orders…</p>
         )}
 
+        {/* An empty queue and a failed read drew the same line before this, and
+            they mean opposite things: one says there is nothing to pack, the
+            other says nobody here knows what there is to pack. */}
         {!loading && visible.length === 0 && (
-          <div className="ord-empty">
-            <Inbox size={22} />
-            <p style={{ margin: 0 }}>
-              {filter === 'open' ? 'Nothing waiting to be packed.' : 'No orders here.'}
-            </p>
-          </div>
+          error && rows.length === 0 ? (
+            <div className="ord-empty" role="status">
+              <AlertTriangle size={22} style={{ color: 'var(--color-sale)' }} />
+              <span className="ops-chip">Could not load</span>
+              <p style={{ margin: 0 }}>
+                The order book could not be read. This is not an empty queue — refresh to try again.
+              </p>
+            </div>
+          ) : (
+            <div className="ord-empty">
+              <Inbox size={22} />
+              <p style={{ margin: 0 }}>
+                {filter === 'open' ? 'Nothing waiting to be packed.' : 'No orders here.'}
+              </p>
+            </div>
+          )
         )}
 
         {visible.map(order => {
@@ -318,7 +359,7 @@ export default function OrdersPage() {
                   </span>
                 </span>
 
-                <span className="ord-money">{gbp(order.total)}</span>
+                <span className="ord-money"><Amount value={order.total} /></span>
                 <span className={chipClass(order.status)}>{orderStatusLabel(order.status)}</span>
                 <ChevronDown size={17} className={open ? 'ord-caret ord-caret-open' : 'ord-caret'} />
               </button>
@@ -374,8 +415,12 @@ export default function OrdersPage() {
                     {refunded && (
                       <span className="ord-fact">
                         <Undo2 size={15} />
+                        {/* No falling back to the order total. A refund with
+                            no amount recorded may well have been a partial one,
+                            and printing the full total states that the whole
+                            lot went back — which nobody has checked. */}
                         <span>
-                          Refunded {gbp(Number(order.refundedAmount ?? order.total))}
+                          Refunded <Amount value={order.refundedAmount} />
                           {order.refundedAt ? ` on ${shortDate(order.refundedAt)}` : ''}
                         </span>
                       </span>
@@ -463,7 +508,7 @@ export default function OrdersPage() {
                       {confirmRefund === order.id && (
                         <div className="ord-confirm" role="group" aria-label="Confirm refund">
                           <span>
-                            Refund <strong>{gbp(order.total)}</strong> to {order.customer} and put the stock back?
+                            Refund <strong><Amount value={order.total} /></strong> to {order.customer} and put the stock back?
                           </span>
                           <button
                             type="button"

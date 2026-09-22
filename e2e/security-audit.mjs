@@ -15,8 +15,8 @@
 //             and the transport works, so a denial is a real denial.
 import {
   seed, waitForEmulators, seedDoc,
-  attemptCreateAs, attemptUpdateAs, attemptReadAs,
-  ADMIN_EMAIL, CUSTOMER_EMAIL,
+  attemptCreateAs, attemptUpdateAs, attemptReadAs, attemptDeleteAs,
+  ADMIN_EMAIL, STAFF_EMAIL, CUSTOMER_EMAIL,
 } from './emulator-seed.mjs';
 
 const findings = [];
@@ -212,11 +212,38 @@ async function postOrder(payload) {
   }
 }
 
-const apiReachable = (await postOrder({ items: [] })).status !== 0;
+const probe = await postOrder({ items: [] });
+const apiReachable = probe.status !== 0;
+
+// /api/orders was retired when PayPal became the only payment method
+// (081d1ea): it no longer takes an order, and answers every request with a
+// 503 saying so. Every attack below aims at it, so running them against the
+// retired route reports two failures that mean nothing — a "vulnerability"
+// that is a disabled endpoint refusing a request, and a control that cannot
+// pass because placing an order through here is no longer possible.
+//
+// This is the failure mode InventoryManager's month-long simulation found in
+// its own reorder panel: a check that passes, or fails, without ever reading
+// the thing it claims to be about. A suite that cries wolf gets ignored, and
+// a suite that is ignored is worse than no suite. So the retirement is
+// detected and said out loud rather than scored.
+//
+// When checkout moves back behind this route, delete this branch: the
+// attacks below are still the right attacks.
+const ordersRetired = apiReachable
+  && probe.status === 503
+  && /disabled/i.test(String(probe.body?.error ?? ''));
+
 if (!apiReachable) {
   console.log('\n─── API ATTACKS: SKIPPED (no api server on ' + API + ') ───');
   results.push({ kind: 'CONTROL', name: 'API server reachable', ok: false, outcome: 'UNREACHABLE' });
   console.log('FAIL [CONTROL] API server reachable -> UNREACHABLE');
+} else if (ordersRetired) {
+  console.log('\n─── API ATTACKS: order pricing ───');
+  console.log('SKIP /api/orders is retired — checkout goes through PayPal.');
+  console.log('     Nothing below can be proven here; the PayPal capture route');
+  console.log('     is what now needs this treatment.');
+  check('CONTROL', 'API server reachable', 'ALLOWED');
 } else {
   console.log('\n─── API ATTACKS: order pricing ───');
 
@@ -267,6 +294,101 @@ if (!apiReachable) {
   check('CONTROL', 'A legitimate order still succeeds',
     (await postOrder({ items: [{ productId: 'apple-iphone-17', quantity: 1 }] })).status === 201
       ? 'ALLOWED' : 'DENIED');
+}
+
+// ── The back-office role boundary ─────────────────────────────
+//
+// The console used to have one door: `admin === true` and you could do
+// everything behind it — change a price, delete a product and every image of
+// it, rewrite the home page. That is fine while the only person with the
+// claim owns the shop, and stops being fine the moment it is handed to
+// someone who employs people, because the smallest job ("mark this order
+// dispatched") arrives bundled with the authority to blank the shop front.
+//
+// There are now two roles (src/lib/adminRoles.ts, and the isStaff()/isAdmin()
+// split in firestore.rules). Everything below signs in as a real staff
+// account with a real staff claim and tries the manager-only writes. A split
+// nobody attacks from the outside is a claim, not a boundary.
+{
+  await seedDoc('products', 'role-probe', {
+    brand: 'Apple', model: 'iPhone 8', price: 55, stock: 3,
+    grade: 'Good', category: 'Phones', searchTerms: ['apple', 'iphone'],
+  });
+
+  // Controls first. If staff cannot do their own job, every denial below
+  // proves only that the account is broken.
+  check('CONTROL', 'Staff can edit a product price',
+    await attemptUpdateAs(STAFF_EMAIL, 'products/role-probe', { price: 60 }));
+  check('CONTROL', 'Staff can set stock',
+    await attemptUpdateAs(STAFF_EMAIL, 'products/role-probe', { stock: 2 }));
+  check('CONTROL', 'Staff can create a product',
+    await attemptCreateAs(STAFF_EMAIL, 'products', {
+      brand: 'Apple', model: 'iPhone SE', price: 99, stock: 1,
+      grade: 'Good', category: 'Phones',
+    }, 'role-probe-new'));
+  check('CONTROL', 'Manager can still do everything staff can',
+    await attemptUpdateAs(ADMIN_EMAIL, 'products/role-probe', { price: 61 }));
+
+  // The shop front. Whoever can write these decides what every visitor sees
+  // and where the main call to action points.
+  check('EXPLOIT', 'Staff can rewrite the home page running order',
+    await attemptCreateAs(STAFF_EMAIL, 'siteLayout', { order: [], hidden: ['hero'] }, 'home'));
+  check('EXPLOIT', 'Staff can write a home-page banner',
+    await attemptCreateAs(STAFF_EMAIL, 'banners', {
+      headline: 'Injected', href: 'https://example.invalid', active: true,
+    }, 'attack-banner'));
+  check('EXPLOIT', 'Staff can write a series panel',
+    await attemptCreateAs(STAFF_EMAIL, 'seriesPanels', {
+      headline: 'Injected', active: true, include: [], exclude: [],
+    }, 'attack-panel'));
+
+  // Archiving is the one product write staff may not make: it is the change
+  // a customer notices and that a member of staff cannot reverse alone.
+  check('EXPLOIT', 'Staff can archive a product',
+    await attemptUpdateAs(STAFF_EMAIL, 'products/role-probe', {
+      archivedAt: '2026-09-22T10:00:00.000Z',
+    }));
+  check('EXPLOIT', 'Staff can smuggle archivedAt in on create',
+    await attemptCreateAs(STAFF_EMAIL, 'products', {
+      brand: 'Apple', model: 'Smuggled', price: 1, stock: 0,
+      grade: 'Good', category: 'Phones', archivedAt: '2026-09-22T10:00:00.000Z',
+    }, 'role-probe-smuggled'));
+  check('CONTROL', 'A manager can archive a product',
+    await attemptUpdateAs(ADMIN_EMAIL, 'products/role-probe', {
+      archivedAt: '2026-09-22T10:00:00.000Z',
+    }));
+
+  // Commercially sensitive. What a handset cost us is not something everyone
+  // who can mark an order dispatched needs to see.
+  await seedDoc('stockUnits', '350000000000001', {
+    imei: '350000000000001', buyPrice: 210, supplier: 'Trade supplier',
+  });
+  await seedDoc('analyticsDaily', '2026-09-22', { views: 400, uniques: 210 });
+  check('EXPLOIT', 'Staff can read buy prices',
+    await attemptReadAs(STAFF_EMAIL, 'stockUnits/350000000000001'));
+  check('EXPLOIT', 'Staff can read traffic figures',
+    await attemptReadAs(STAFF_EMAIL, 'analyticsDaily/2026-09-22'));
+  check('CONTROL', 'A manager can read buy prices',
+    await attemptReadAs(ADMIN_EMAIL, 'stockUnits/350000000000001'));
+
+  // A customer with no back-office claim at all is still refused everything,
+  // including the writes staff are now allowed to make.
+  check('EXPLOIT', 'A customer can edit a product now that staff can',
+    await attemptUpdateAs(CUSTOMER_EMAIL, 'products/role-probe', { price: 1 }));
+  check('EXPLOIT', 'A customer can read buy prices',
+    await attemptReadAs(CUSTOMER_EMAIL, 'stockUnits/350000000000001'));
+
+  // Nothing deletes a product. A product is referenced by every order that
+  // ever contained it, so deleting one rewrites history: an old invoice loses
+  // the thing it was for, and a return raised against it has nothing to
+  // check. This is the rule the console's Archive button exists to serve, and
+  // the rules enforce it rather than trusting the button.
+  check('EXPLOIT', 'Staff can delete a product',
+    await attemptDeleteAs(STAFF_EMAIL, 'products/role-probe'));
+  check('EXPLOIT', 'A manager can delete a product',
+    await attemptDeleteAs(ADMIN_EMAIL, 'products/role-probe'));
+  check('EXPLOIT', 'A customer can delete a product',
+    await attemptDeleteAs(CUSTOMER_EMAIL, 'products/role-probe'));
 }
 
 // ── Report ────────────────────────────────────────────────────

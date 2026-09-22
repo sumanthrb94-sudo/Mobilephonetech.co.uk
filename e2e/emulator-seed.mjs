@@ -15,6 +15,14 @@ const FIRESTORE = `http://${HOST}:8080`;
 
 export const ADMIN_EMAIL = 'admin@lehart.co.uk';
 export const CUSTOMER_EMAIL = 'customer@lehart.co.uk';
+/**
+ * The lesser back-office role — see src/lib/adminRoles.ts.
+ *
+ * Seeded alongside the manager because a role split that is never exercised
+ * from the outside is a claim rather than a boundary: the only way to know
+ * staff cannot rewrite the shop front is to sign in as one and try.
+ */
+export const STAFF_EMAIL = 'staff@lehart.co.uk';
 // Test-only credential for the local emulator, deliberately NOT the real
 // admin password: the emulator is throwaway, but this file is committed, and a
 // production password in git is a production password leaked.
@@ -141,9 +149,15 @@ export async function seed() {
   await reset();
 
   const adminUid = await createUser(ADMIN_EMAIL, PASSWORD, 'Store Admin', { admin: true });
+  // Only the staff claim, never both: firestore.rules reads isStaff() as an
+  // OR over the two, so an account carrying admin as well would silently be a
+  // manager and every staff-cannot-do-this assertion below would pass by
+  // testing a manager.
+  const staffUid = await createUser(STAFF_EMAIL, PASSWORD, 'Shop Floor', { staff: true });
   const customerUid = await createUser(CUSTOMER_EMAIL, PASSWORD, 'Demo Customer', null);
 
   await writeDoc('users', adminUid, { fullName: 'Store Admin', email: ADMIN_EMAIL, role: 'admin' });
+  await writeDoc('users', staffUid, { fullName: 'Shop Floor', email: STAFF_EMAIL, role: 'staff' });
   await writeDoc('users', customerUid, { fullName: 'Demo Customer', email: CUSTOMER_EMAIL, role: 'customer' });
 
   for (const p of SEED_PRODUCTS) {
@@ -155,7 +169,7 @@ export async function seed() {
     });
   }
 
-  return { adminUid, customerUid };
+  return { adminUid, staffUid, customerUid };
 }
 
 /**
@@ -201,10 +215,38 @@ export async function getProduct(id) {
   return out;
 }
 
+/**
+ * How many products the database actually holds.
+ *
+ * Follows the page token, which the first version did not. Firestore's REST
+ * list endpoint returns a page — thirty documents by default — and a
+ * `nextPageToken`, so counting the first response returned 30 for a
+ * two-product fixture's worth of truth and 30 for a catalogue of twelve
+ * hundred. It read correctly for every test that used it, because every test
+ * that used it had fewer than thirty products.
+ *
+ * That is the shape of bug this helper is now used to hunt: a count that is
+ * quietly wrong, on screen, with nothing saying anything is missing.
+ */
 export async function countProducts() {
-  const res = await fetch(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products`, { headers: authHeaders });
-  const body = await res.json();
-  return (body.documents ?? []).length;
+  let count = 0;
+  let pageToken;
+
+  do {
+    const url = new URL(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products`);
+    url.searchParams.set('pageSize', '300');
+    // Only the ids are needed, and asking for no fields keeps a twelve
+    // hundred document count from dragging every document body over the wire.
+    url.searchParams.set('mask.fieldPaths', '__name__');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+
+    const res = await fetch(url, { headers: authHeaders });
+    const body = await res.json();
+    count += (body.documents ?? []).length;
+    pageToken = body.nextPageToken;
+  } while (pageToken);
+
+  return count;
 }
 
 /**
@@ -333,4 +375,20 @@ export async function attemptReadAs(email, path) {
 /** Write a document with privileged access, for setting up an attack target. */
 export async function seedDoc(collection, id, data) {
   return writeDoc(collection, id, data);
+}
+
+/**
+ * DELETE a document as a given user.
+ *
+ * Added for the role audit: "a product can no longer be deleted by anybody"
+ * is a rule nothing could previously check, because there was no way to try.
+ * An assertion you have no means to falsify is not an assertion.
+ */
+export async function attemptDeleteAs(email, path) {
+  const idToken = await signInForToken(email);
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${path}`,
+    { method: 'DELETE', headers: { Authorization: `Bearer ${idToken}` } },
+  );
+  return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
 }

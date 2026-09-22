@@ -37,7 +37,12 @@ export default async function handler(req: any, res: any) {
       .limit(limit)
       .get();
 
-    const data = snap.docs.map(d => {
+    // Archived products are withdrawn from sale, so they must not appear in
+    // autocomplete. Not expressible as a query clause — Firestore cannot test
+    // for a missing field — and the stock filter above does not cover it,
+    // because archiving zeroes stock but a live product can be out of stock
+    // for ordinary reasons.
+    const data = snap.docs.filter(d => !d.data().archivedAt).map(d => {
       const v = d.data();
       return {
         id: d.id,

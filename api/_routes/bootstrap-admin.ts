@@ -13,10 +13,18 @@ import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
  * attacking:
  *
  * 1. BOOTSTRAP_SECRET must be set and must match, compared in constant time.
- * 2. The emails it will promote come from ADMIN_EMAILS, not from the request.
- *    So even if the secret leaks, an attacker cannot promote an address of
- *    their choosing — they would also need write access to the Vercel
- *    environment, at which point they own the deployment anyway.
+ * 2. The emails it will promote come from ADMIN_EMAILS and STAFF_EMAILS, not
+ *    from the request. So even if the secret leaks, an attacker cannot
+ *    promote an address of their choosing — they would also need write access
+ *    to the Vercel environment, at which point they own the deployment anyway.
+ *
+ * Two roles are granted here, matching src/lib/adminRoles.ts:
+ *
+ *   ADMIN_EMAILS — managers. Everything, including what the shop front says.
+ *   STAFF_EMAILS — the daily work: products, orders, returns, support.
+ *
+ * An address in both lists is made a manager, because the alternative is to
+ * silently demote whoever put it there.
  *
  * Delete BOOTSTRAP_SECRET once you are done; with it unset the route refuses
  * every request.
@@ -64,15 +72,26 @@ export default async function handler(req: any, res: any) {
     return res.status(404).json({ error: 'Not found' });
   }
 
-  const emails = (process.env.ADMIN_EMAILS ?? '')
+  const parse = (raw: string | undefined) => (raw ?? '')
     .split(',')
     .map(e => e.trim().toLowerCase())
     .filter(Boolean);
 
-  if (!emails.length) {
+  const adminEmails = parse(process.env.ADMIN_EMAILS);
+  // An address in both lists is a manager. Letting the smaller role win would
+  // quietly demote whoever added it to ADMIN_EMAILS, and a demotion nobody
+  // asked for is worse than a duplicate entry.
+  const staffEmails = parse(process.env.STAFF_EMAILS).filter(e => !adminEmails.includes(e));
+
+  const grants: Array<{ email: string; role: 'admin' | 'staff' }> = [
+    ...adminEmails.map(email => ({ email, role: 'admin' as const })),
+    ...staffEmails.map(email => ({ email, role: 'staff' as const })),
+  ];
+
+  if (!grants.length) {
     return res.status(400).json({
-      error: 'ADMIN_EMAILS is not set.',
-      hint: 'Set it to a comma-separated list of addresses to promote.',
+      error: 'Neither ADMIN_EMAILS nor STAFF_EMAILS is set.',
+      hint: 'Set one to a comma-separated list of addresses. ADMIN_EMAILS grants the manager role, STAFF_EMAILS the staff role.',
     });
   }
 
@@ -87,35 +106,43 @@ export default async function handler(req: any, res: any) {
 
   const results: Array<Record<string, unknown>> = [];
 
-  for (const email of emails) {
+  for (const { email, role } of grants) {
     try {
       const user = await auth.getUserByEmail(email);
 
       // setCustomUserClaims replaces the whole claims object, so send the full
-      // set rather than only the flag being changed.
-      await auth.setCustomUserClaims(user.uid, { admin: true });
+      // set rather than only the flag being changed. The two roles are never
+      // both set: firestore.rules reads isStaff() as an OR over them, so a
+      // manager already has everything staff has.
+      const claims = role === 'admin' ? { admin: true } : { staff: true };
+      await auth.setCustomUserClaims(user.uid, claims);
 
       // Mirror into the profile for display. The rules never read this — they
       // read the claim — but the console shows it.
       await db.collection('users').doc(user.uid).set({
         fullName: user.displayName ?? email.split('@')[0],
         email,
-        role: 'admin',
+        role,
         updatedAt: new Date().toISOString(),
       }, { merge: true });
 
       // Read the claim back rather than trusting the write: a silent failure
       // would otherwise be indistinguishable from success.
       const after = await auth.getUser(user.uid);
+      const landed = role === 'admin'
+        ? after.customClaims?.admin === true
+        : after.customClaims?.staff === true;
       results.push({
         email,
-        status: after.customClaims?.admin === true ? 'promoted' : 'FAILED',
+        role,
+        status: landed ? 'promoted' : 'FAILED',
         uid: user.uid,
       });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? '';
       results.push({
         email,
+        role,
         status: code === 'auth/user-not-found' ? 'no account yet' : 'error',
         detail: code === 'auth/user-not-found'
           ? 'Sign in once with this address first — Firebase creates the account on first sign-in — then call this again.'

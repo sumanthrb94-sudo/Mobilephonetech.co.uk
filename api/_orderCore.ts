@@ -158,6 +158,12 @@ export async function priceAndValidate(
     if (!snap.exists) return fail(400, 'That product is no longer available');
 
     const product = snap.data() as Record<string, any>;
+
+    // Withdrawn from sale. Archiving zeroes stock, so the check below would
+    // usually catch this too — but "out of stock" tells a shopper to come
+    // back, and this one is not coming back. Saying so here also means an
+    // archived product with a stale non-zero count cannot be bought.
+    if (product.archivedAt) return fail(400, 'That product is no longer available');
     const variantId = clean(line.variantId, 200);
     const variant = variantId && Array.isArray(product.variants)
       ? product.variants.find((v: any) => v?.id === variantId) ?? null
@@ -275,6 +281,9 @@ export async function commitOrder(db: any, order: PricedOrder): Promise<void> {
       if (!entry?.exists) throw new StockConflict('That product is no longer available');
 
       const product = entry.data;
+      // Re-checked inside the transaction, not only at pricing time: a
+      // product archived between the two would otherwise still decrement.
+      if (product.archivedAt) throw new StockConflict('That product is no longer available');
       const variant = item.variantId && Array.isArray(product.variants)
         ? product.variants.find((v: any) => v?.id === item.variantId) ?? null
         : null;
