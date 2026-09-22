@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Upload, Trash2, Star, ArrowLeft, ArrowRight, Loader2, AlertTriangle, Link as LinkIcon, Sparkles } from 'lucide-react';
 import {
   uploadImage, deleteImage, validateImageFile, describeError,
-  ACCEPTED_IMAGE_TYPES, pathFromPublicUrl,
+  ACCEPTED_IMAGE_TYPES, pathFromPublicUrl, isUsableImageUrl,
 } from '../../lib/adminApi';
 import { optimizeImage } from '../../lib/imageOptimize';
 
@@ -43,19 +43,7 @@ export default function ImageManager({
     const raw = urlValue.trim();
     if (!raw) return;
 
-    // Accept a site-relative path (/assets/…) or an absolute http(s) URL, and
-    // nothing else: a data: or javascript: value would end up in an <img src>.
-    const isRelative = raw.startsWith('/');
-    let ok = isRelative;
-    if (!isRelative) {
-      try {
-        const parsed = new URL(raw);
-        ok = parsed.protocol === 'http:' || parsed.protocol === 'https:';
-      } catch {
-        ok = false;
-      }
-    }
-    if (!ok) {
+    if (!isUsableImageUrl(raw)) {
       setErrors([`${raw.slice(0, 60)} — enter a full http(s) address or a path beginning with "/".`]);
       return;
     }

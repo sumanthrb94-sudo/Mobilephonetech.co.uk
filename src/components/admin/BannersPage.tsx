@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image as ImageIcon, Loader2, AlertTriangle, Check, Plus, Trash2, Upload,
-  Eye, EyeOff, ArrowUp, ArrowDown, RotateCw, Smartphone, Monitor,
+  Eye, EyeOff, ArrowUp, ArrowDown, RotateCw, Smartphone, Monitor, Link as LinkIcon,
 } from 'lucide-react';
 import {
   listBanners, saveBanner, deleteBanner, bannerId, bannerProblems,
   BANNER_SPEC, EMPTY_BANNER, type Banner,
 } from '../../lib/banners';
-import { uploadImage, describeError, BANNER_BUCKET } from '../../lib/adminApi';
+import { uploadImage, describeError, BANNER_BUCKET, isUsableImageUrl } from '../../lib/adminApi';
 import HeroCarousel, { type Slide } from '../HeroCarousel';
 
 /**
@@ -283,6 +283,7 @@ function BannerEditor({
               inputRef={deskRef}
               onPick={f => void pick('image', f)}
               onClear={() => onChange({ image: '' })}
+              onUrl={url => onChange({ image: url })}
             />
             <Uploader
               label="Phone image"
@@ -292,6 +293,7 @@ function BannerEditor({
               inputRef={mobRef}
               onPick={f => void pick('imageMobile', f)}
               onClear={() => onChange({ imageMobile: '' })}
+              onUrl={url => onChange({ imageMobile: url })}
             />
           </div>
         </div>
@@ -404,7 +406,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 function Uploader({
-  label, spec, value, busy, inputRef, onPick, onClear,
+  label, spec, value, busy, inputRef, onPick, onClear, onUrl,
 }: {
   label: string;
   spec: { w: number; h: number; ratio: string; note: string };
@@ -413,7 +415,23 @@ function Uploader({
   inputRef: React.RefObject<HTMLInputElement | null>;
   onPick: (f: File | undefined) => void;
   onClear: () => void;
+  onUrl: (url: string) => void;
 }) {
+  const [draft, setDraft] = useState('');
+  const [urlError, setUrlError] = useState<string | null>(null);
+
+  const addUrl = () => {
+    const raw = draft.trim();
+    if (!raw) return;
+    if (!isUsableImageUrl(raw)) {
+      setUrlError('Enter a full http(s) address, or a path beginning with "/".');
+      return;
+    }
+    setUrlError(null);
+    setDraft('');
+    onUrl(raw);
+  };
+
   return (
     <div className="bn-field">
       <span className="bn-field__label">{label}</span>
@@ -436,6 +454,36 @@ function Uploader({
           <button type="button" className="admin-ghost" onClick={onClear}>Remove</button>
         )}
       </div>
+
+      {/* An image that already lives somewhere reachable does not need
+          re-uploading, and this keeps banners editable when the uploader
+          itself is unavailable. The preview below is the real check on
+          whether the address works: a host the site's security policy
+          refuses, or a typo, shows up there as an empty frame. */}
+      <div className="bn-upload__url">
+        <input
+          className="input"
+          value={draft}
+          onChange={e => { setDraft(e.target.value); setUrlError(null); }}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
+          placeholder="…or paste an image URL"
+          aria-label={`${label}: add by URL`}
+        />
+        <button
+          type="button"
+          className="admin-ghost"
+          disabled={!draft.trim()}
+          onClick={addUrl}
+        >
+          <LinkIcon size={14} /> Use
+        </button>
+      </div>
+      {urlError && (
+        <span className="bn-field__hint bn-field__hint--error">
+          <AlertTriangle size={12} /> {urlError}
+        </span>
+      )}
+
       <span className="bn-field__hint">
         {spec.w}×{spec.h} ({spec.ratio}). {spec.note}
       </span>
