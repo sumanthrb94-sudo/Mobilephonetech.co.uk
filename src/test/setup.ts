@@ -129,19 +129,25 @@ Object.defineProperty(window, 'matchMedia', {
 // ── scrollTo stub ─────────────────────────────────────────────
 Object.defineProperty(window, 'scrollTo', { value: vi.fn(), writable: true });
 
-// ── IntersectionObserver stub ─────────────────────────────────
-global.IntersectionObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-})) as unknown as typeof IntersectionObserver;
+// ── IntersectionObserver / ResizeObserver stubs ───────────────
+//
+// Classes rather than vi.fn().mockImplementation(() => ({...})). Both are
+// called with `new` by the code under test, and an arrow-function mock
+// implementation is not constructible in this version of vitest — it throws
+// "is not a constructor" the moment a component using motion's viewport
+// features mounts, which is a confusing way to find out.
+class ObserverStub {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn(() => []);
+  root = null;
+  rootMargin = '';
+  thresholds = [];
+}
 
-// ── ResizeObserver stub ───────────────────────────────────────
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-})) as unknown as typeof ResizeObserver;
+global.IntersectionObserver = ObserverStub as unknown as typeof IntersectionObserver;
+global.ResizeObserver = ObserverStub as unknown as typeof ResizeObserver;
 
 // ── Reset storage between tests ───────────────────────────────
 beforeEach(() => {

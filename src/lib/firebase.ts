@@ -122,6 +122,7 @@ export const COL = {
   returns: 'returns',
   banners: 'banners',
   siteLayout: 'siteLayout',
+  seriesPanels: 'seriesPanels',
   conversations: 'conversations',
   // Per-user subcollections under users/{uid}
   cart: 'cart',

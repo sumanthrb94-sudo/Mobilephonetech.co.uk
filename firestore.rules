@@ -62,6 +62,20 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ── Home-page series panels ─────────────────────────────
+    // The editorial blocks below the carousel — see src/lib/seriesPanels.ts.
+    // Public to read and staff-only to write, like the banners: a panel is a
+    // headline, a picture and a link shown to every visitor.
+    //
+    // The product rule stored here is plain words, never an expression, so a
+    // document written by hand cannot make a visitor's browser evaluate
+    // anything. The worst a bad rule can do is match no products, and a panel
+    // with no products does not render at all.
+    match /seriesPanels/{panelId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── Users ───────────────────────────────────────────────
     // A user reads and writes only their own document. `role` is explicitly
     // immutable from the client: it is display-only, but letting someone set
