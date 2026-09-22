@@ -112,10 +112,12 @@ function optionsFor(
       stock: p.stock ?? 0,
       current: p.id === product.id,
     }))
-    .sort((a, b) => {
-      const sizes = storageBytes(a.value) - storageBytes(b.value);
-      return sizes !== 0 ? sizes : a.value.localeCompare(b.value);
-    });
+    // Sizes sort by capacity, so 1 TB lands above 256 GB rather than below
+    // it alphabetically. Everything else keeps the order it was declared in:
+    // "Gold, Black, Red, White" is how the seller lists their colours, and
+    // alphabetising it is a small act of mangling what they typed. Array
+    // sort is stable, so returning 0 preserves that order.
+    .sort((a, b) => storageBytes(a.value) - storageBytes(b.value));
 }
 
 /**
@@ -155,6 +157,18 @@ export function isChoosable(options: VariantOption[]): boolean {
 }
 
 /**
+ * The values describing the viewed listing itself.
+ *
+ * Usually one. More than one means the listing declares a set — the editor's
+ * "Colour options" field is a comma-separated list, so a single row can say
+ * it is available in Gold, Black, Red and White while holding two handsets
+ * at one price.
+ */
+export function currentValues(options: VariantOption[]): string[] {
+  return options.filter(o => o.current).map(o => o.value);
+}
+
+/**
  * The value to print beside the attribute's name.
  *
  * Null when no option describes the viewed product, because labelling this
@@ -163,4 +177,22 @@ export function isChoosable(options: VariantOption[]): boolean {
  */
 export function currentValue(options: VariantOption[]): string | null {
   return options.find(o => o.current)?.value ?? null;
+}
+
+/**
+ * Whether the listing describes itself with more than one value.
+ *
+ * This is not a choice a shopper can make. All of those values are the same
+ * product at the same price with the same stock, so rendering them as
+ * buttons produces a row where every button is selected and none of them
+ * does anything — which is exactly what the page used to do. The honest
+ * presentation is a list plus a note that it depends what is on the shelf.
+ */
+export function isAmbiguous(options: VariantOption[]): boolean {
+  return currentValues(options).length > 1;
+}
+
+/** The options that lead to a different listing — the real choices. */
+export function alternatives(options: VariantOption[]): VariantOption[] {
+  return options.filter(o => !o.current);
 }
