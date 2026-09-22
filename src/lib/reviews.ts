@@ -1,5 +1,6 @@
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { auth, storage } from './firebase';
+import { uploadViaCloudinary } from './cloudinary';
 import type { Review } from '../types';
 
 /**
@@ -28,6 +29,13 @@ export async function uploadReviewPhoto(userId: string, file: File): Promise<str
   if (file.size > MAX_REVIEW_PHOTO_BYTES) {
     throw new Error('Each photo must be under 5MB.');
   }
+
+  // Cloudinary when configured, Firebase Storage otherwise. The signing
+  // route puts the file in a folder named after the caller's own uid, the
+  // same scoping storage.rules enforces below.
+  const hosted = await uploadViaCloudinary('review', file);
+  if (hosted) return hosted;
+
   const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : 'jpg';
   const path = `review-photos/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const objectRef = ref(storage, path);

@@ -6,6 +6,7 @@ import {
   deleteObject, getDownloadURL, listAll, ref, uploadBytes,
 } from 'firebase/storage';
 import { db, storage, COL, withAdminRetry } from './firebase';
+import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
 import type { Product, ProductGrade } from '../types';
 
@@ -463,6 +464,16 @@ export async function uploadImage(
 ): Promise<string> {
   const invalid = validateImageFile(file);
   if (invalid) throw new Error(invalid);
+
+  // Cloudinary when the deployment has it configured, Firebase Storage
+  // otherwise — see src/lib/cloudinary.ts. Both return a URL, and everything
+  // downstream only ever stores and renders that string.
+  const hosted = await uploadViaCloudinary(
+    bucket === BANNER_BUCKET ? 'banner' : 'product',
+    file,
+    productId,
+  );
+  if (hosted) return hosted;
 
   const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const path = imagePath(productId, file.name, unique);
