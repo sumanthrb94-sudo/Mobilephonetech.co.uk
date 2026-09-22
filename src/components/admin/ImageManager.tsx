@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Upload, Trash2, Star, ArrowLeft, ArrowRight, Loader2, AlertTriangle, Link as LinkIcon, Sparkles } from 'lucide-react';
 import {
   uploadImage, deleteImage, validateImageFile, describeError,
-  ACCEPTED_IMAGE_TYPES, pathFromPublicUrl, isUsableImageUrl,
+  ACCEPTED_IMAGE_TYPES, pathFromPublicUrl, isUsableImageUrl, MAX_PRODUCT_IMAGES,
 } from '../../lib/adminApi';
 import { optimizeImage } from '../../lib/imageOptimize';
 
@@ -32,6 +32,14 @@ export default function ImageManager({
   const [lastSavings, setLastSavings] = useState<{ before: number; after: number } | null>(null);
 
   /**
+   * Room left before the six-frame gallery is full. Every path that adds an
+   * image checks this, and the controls go quiet at zero — an upload that is
+   * accepted and then silently dropped on save is worse than one refused.
+   */
+  const slotsLeft = Math.max(0, MAX_PRODUCT_IMAGES - images.length);
+  const full = slotsLeft === 0;
+
+  /**
    * Link an image that is already hosted somewhere else.
    *
    * Cloud Storage requires Firebase's paid plan just to enable, so uploading
@@ -42,6 +50,11 @@ export default function ImageManager({
   const addUrl = () => {
     const raw = urlValue.trim();
     if (!raw) return;
+
+    if (full) {
+      setErrors([`This product already has ${MAX_PRODUCT_IMAGES} images. Remove one to add another.`]);
+      return;
+    }
 
     if (!isUsableImageUrl(raw)) {
       setErrors([`${raw.slice(0, 60)} — enter a full http(s) address or a path beginning with "/".`]);
@@ -59,13 +72,25 @@ export default function ImageManager({
 
   const handleFiles = async (fileList: FileList | null) => {
     if (!fileList?.length) return;
+    if (full) {
+      setErrors([`This product already has ${MAX_PRODUCT_IMAGES} images. Remove one to add another.`]);
+      return;
+    }
+
     const files = [...fileList];
+
+    // Only as many as there is room for, and say so rather than uploading
+    // files that would be discarded when the product is saved.
+    const overflow = files.length > slotsLeft ? files.slice(slotsLeft) : [];
+    const withinLimit = files.slice(0, slotsLeft);
 
     // Reject the bad ones up front and tell the user which, rather than
     // failing silently partway through the batch.
-    const rejected = files.map(validateImageFile).filter(Boolean) as string[];
-    const accepted = files.filter(f => !validateImageFile(f));
-    setErrors(rejected);
+    const rejected = withinLimit.map(validateImageFile).filter(Boolean) as string[];
+    const accepted = withinLimit.filter(f => !validateImageFile(f));
+    setErrors(overflow.length
+      ? [...rejected, `Only ${slotsLeft} more image${slotsLeft === 1 ? '' : 's'} fit — ${overflow.map(f => f.name).join(', ')} ${overflow.length === 1 ? 'was' : 'were'} not uploaded.`]
+      : rejected);
 
     if (!accepted.length) return;
 
@@ -96,7 +121,7 @@ export default function ImageManager({
 
     // Keep whatever did upload — losing three good uploads because the fourth
     // failed would be worse than a partial success the admin can see.
-    if (uploaded.length) onChange([...images, ...uploaded]);
+    if (uploaded.length) onChange([...images, ...uploaded].slice(0, MAX_PRODUCT_IMAGES));
     if (failures.length) setErrors(prev => [...prev, ...failures]);
     if (beforeBytes > 0) setLastSavings({ before: beforeBytes, after: afterBytes });
 
@@ -133,7 +158,7 @@ export default function ImageManager({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '10px' }}>
         <label style={labelStyle}>Images</label>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>
-          {images.length} image{images.length === 1 ? '' : 's'} · first is the primary
+          {images.length} of {MAX_PRODUCT_IMAGES}{images.length > 0 && ' · first is the primary'}
         </span>
       </div>
 
@@ -157,13 +182,15 @@ export default function ImageManager({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        disabled={!canUpload || busy}
+        disabled={!canUpload || busy || full}
         className="btn btn-secondary btn-md"
-        style={{ width: '100%', justifyContent: 'center', opacity: canUpload && !busy ? 1 : 0.55 }}
+        style={{ width: '100%', justifyContent: 'center', opacity: canUpload && !busy && !full ? 1 : 0.55 }}
       >
         {busy
           ? <><Loader2 size={16} className="admin-spin" /> Uploading {pendingCount} more…</>
-          : <><Upload size={16} /> Upload images</>}
+          : full
+            ? <><Upload size={16} /> {MAX_PRODUCT_IMAGES} of {MAX_PRODUCT_IMAGES} — remove one to add another</>
+            : <><Upload size={16} /> Upload images</>}
       </button>
 
       {/* Confirms the optimisation pass actually did something. A well
@@ -185,7 +212,7 @@ export default function ImageManager({
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
           placeholder="…or paste an image URL"
           aria-label="Add an image by URL"
-          disabled={disabled}
+          disabled={disabled || full}
           style={{
             flex: 1, minWidth: 0, height: 40, padding: '0 12px',
             border: '1.5px solid var(--grey-20)', borderRadius: 'var(--radius-md)',
@@ -196,7 +223,7 @@ export default function ImageManager({
         <button
           type="button"
           onClick={addUrl}
-          disabled={disabled || !urlValue.trim()}
+          disabled={disabled || full || !urlValue.trim()}
           className="btn btn-secondary btn-md"
           style={{ flexShrink: 0 }}
         >
