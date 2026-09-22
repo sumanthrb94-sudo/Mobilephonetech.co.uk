@@ -59,6 +59,7 @@ const OrdersPage = lazyRoute(() => import('./components/admin/OrdersPage'));
 const InventoryPage = lazyRoute(() => import('./components/admin/InventoryPage'));
 const BannersPage = lazyRoute(() => import('./components/admin/BannersPage'));
 const HomeLayoutPage = lazyRoute(() => import('./components/admin/HomeLayoutPage'));
+const SeriesPage = lazyRoute(() => import('./components/admin/SeriesPage'));
 const ReturnsPage = lazyRoute(() => import('./components/admin/ReturnsPage'));
 const AnalyticsPage = lazyRoute(() => import('./components/admin/AnalyticsPage'));
 const SupportInbox = lazyRoute(() => import('./components/admin/SupportInbox'));
@@ -317,6 +318,7 @@ function AppContent() {
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route path="banners" element={<BannersPage />} />
                 <Route path="home" element={<HomeLayoutPage />} />
+                <Route path="series" element={<SeriesPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
                 <Route path="analytics" element={<AnalyticsPage />} />

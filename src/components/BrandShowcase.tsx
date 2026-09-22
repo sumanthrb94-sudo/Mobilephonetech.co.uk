@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
@@ -6,113 +6,47 @@ import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import {
+  BUILT_IN_PANELS, listLivePanels, panelProducts, type SeriesPanel,
+} from '../lib/seriesPanels';
 import type { Product } from '../types';
 
 /**
- * BrandShowcase — the homepage body below the Hero carousel. Renders
- * each series (iPhone 17, Galaxy S, Galaxy Fold & Flip, Pixel) as its
- * own full-bleed hero-style panel: alternating light/dark stone surface
- * with a gold accent, flagship product hero on one side, and the
- * eyebrow/headline/subline/CTA on the other.
- * Below each panel sits a horizontal-scroll rail of that series'
- * products so the panel is both editorial and shoppable.
+ * BrandShowcase — the editorial body below the Hero carousel. Each series
+ * (iPhone 17, Galaxy S, Fold & Flip, Pixel, or whatever staff have since
+ * added) gets a full-bleed panel: alternating light/dark stone surface with
+ * a gold accent, the flagship product on one side and the copy on the other,
+ * above a scrollable rail of that series' products.
+ *
+ * The panels are staff-editable from /admin/series — see
+ * src/lib/seriesPanels.ts, which owns their shape, the rule deciding which
+ * products belong to each, and the built-in set this falls back to. A single
+ * panel renders through SeriesPanelView below, which the admin preview uses
+ * directly so that what staff approve is what visitors get.
  */
-
-interface SeriesPanel {
-  id: string;
-  eyebrow: string;
-  headline: string;
-  subline: string;
-  ctaLabel: string;
-  ctaHref: string;
-  /**
-   * Panels alternate light/dark rather than each carrying its own pastel.
-   * The old per-brand candy backgrounds (pink, sky, amber, mint) read as
-   * "playful" — the opposite of the premium, trust-led positioning — and
-   * none of them belonged to the stone + gold token set.
-   */
-  tone: 'light' | 'dark';
-  heroImage?: string;
-  match: (p: Product) => boolean;
-  sortHint?: (a: Product, b: Product) => number;
-}
-
-const year = (p: Product) => {
-  const n = parseInt((p.model.match(/(\d{2,4})/) || ['0'])[0], 10);
-  return isNaN(n) ? 0 : n;
-};
-const proRank = (m: string) => /Pro\s*Max/i.test(m) ? 3 : /Pro|Ultra/i.test(m) ? 2 : 1;
-
-const PANELS: SeriesPanel[] = [
-  {
-    id: 'iphone-17',
-    eyebrow: 'iPhone 17 Series · LeHart Certified',
-    headline: 'Luxury refurbished.\nUnboxing experience intact.',
-    subline: 'Battery health verified. Face ID tested. Every sensor checked. 12-month warranty, 30-day returns — no asterisk.',
-    ctaLabel: 'Shop iPhone 17',
-    ctaHref: `/products?brand=Apple&model=${encodeURIComponent('iPhone 17')}`,
-    tone: 'dark',
-    heroImage: '/assets/iphone-17-pro-max-trio.jpg',
-    match: (p) => p.brand === 'Apple' && /iPhone\s*17/i.test(p.model),
-    sortHint: (a, b) => proRank(b.model) - proRank(a.model),
-  },
-  {
-    id: 'galaxy-s',
-    eyebrow: 'Samsung Galaxy S · Unlocked',
-    headline: 'The Android benchmark.\nCertified, not compromised.',
-    subline: 'Galaxy S23, S22 Ultra, S21 — tested to the same standard as our iPhones. Full camera. Full display. Full experience.',
-    ctaLabel: 'Shop Galaxy S',
-    ctaHref: `/products?brand=Samsung&model=${encodeURIComponent('Samsung Galaxy S')}`,
-    tone: 'light',
-    match: (p) => p.brand === 'Samsung' && /Galaxy\s*S\d/i.test(p.model) && !/Tab/i.test(p.model),
-    sortHint: (a, b) => year(b) - year(a),
-  },
-  {
-    id: 'galaxy-fold',
-    eyebrow: 'Galaxy Z · Fold & Flip',
-    headline: 'Two screens.\nOne refurbished price.',
-    subline: 'Hinge tested to 200,000 folds. Both displays verified. Z Fold and Z Flip — the future at a fraction of launch cost.',
-    ctaLabel: 'Shop foldables',
-    ctaHref: `/products?brand=Samsung&model=${encodeURIComponent('Samsung Galaxy Z')}`,
-    tone: 'dark',
-    match: (p) => p.brand === 'Samsung' && /(Fold|Flip)/i.test(p.model),
-    sortHint: (a, b) => year(b) - year(a),
-  },
-  {
-    id: 'pixel',
-    eyebrow: 'Google Pixel · Pure Android',
-    headline: 'AI photography.\nRefurbished precision.',
-    subline: 'Seven years of guaranteed Android updates. Magic Eraser, Photo Unblur, Night Sight — the camera phone that earned its reputation.',
-    ctaLabel: 'Shop Pixel',
-    ctaHref: `/products?brand=Google&model=${encodeURIComponent('Google Pixel')}`,
-    tone: 'light',
-    match: (p) => p.brand === 'Google' && /Pixel\s*\d/i.test(p.model) && !/Watch|Buds/i.test(p.model),
-    sortHint: (a, b) => year(b) - year(a),
-  },
-];
-
-function getSeriesProducts(catalogue: Product[], panel: SeriesPanel): Product[] {
-  const matching = catalogue.filter(panel.match);
-  const seen = new Set<string>();
-  const deduped: Product[] = [];
-  for (const p of matching) {
-    const key = p.model.trim().toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    deduped.push(p);
-  }
-  if (panel.sortHint) deduped.sort(panel.sortHint);
-  return deduped.slice(0, 10);
-}
 
 export default function BrandShowcase() {
   const { products: catalogue } = useCatalogue();
+
+  // The built-ins, not an empty list: the panels are most of the home page,
+  // so the first paint is the real thing and the stored set only ever
+  // replaces it. listLivePanels resolves to these on any failure too.
+  const [panels, setPanels] = useState<SeriesPanel[]>(BUILT_IN_PANELS);
+
+  useEffect(() => {
+    let cancelled = false;
+    listLivePanels().then(next => { if (!cancelled) setPanels(next); });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div id="products">
-      {PANELS.map((panel) => {
-        const products = getSeriesProducts(catalogue, panel);
+      {panels.map((panel) => {
+        const products = panelProducts(catalogue, panel);
+        // A panel whose rule matches nothing is simply not rendered, which is
+        // what makes a mistyped rule harmless rather than a broken page.
         if (products.length === 0) return null;
-        return <Panel key={panel.id} panel={panel} products={products} />;
+        return <SeriesPanelView key={panel.id} panel={panel} products={products} />;
       })}
     </div>
   );
@@ -142,7 +76,14 @@ function toneStyles(tone: SeriesPanel['tone']) {
   };
 }
 
-function Panel({ panel, products }: { panel: SeriesPanel; products: Product[] }) {
+/**
+ * One series panel.
+ *
+ * Exported because the admin preview renders this exact component rather
+ * than a copy of it — the same reason HeroCarousel was pulled out of Hero.
+ * A preview that is a separate implementation is a preview that can lie.
+ */
+export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; products: Product[] }) {
   const { isDesktop } = useBreakpoint();
   const hero = products[0];
   const t = toneStyles(panel.tone);
