@@ -148,3 +148,71 @@ describe('BannersPage', () => {
     expect(screen.getByText(/A headline is required/)).toBeTruthy();
   });
 });
+
+/**
+ * Adding banner artwork by URL.
+ *
+ * The uploader is not always available — a deployment without working image
+ * hosting, or an image that already lives somewhere reachable — and a banner
+ * that cannot get a picture cannot be saved at all, because bannerProblems
+ * refuses one without artwork. So this path is what keeps the shop front
+ * editable independently of whoever is storing the files.
+ */
+describe('banner artwork by URL', () => {
+  it('sets the desktop image from a pasted address', async () => {
+    listBanners.mockResolvedValue([{ ...live, image: '', imageMobile: '' }]);
+    renderPage();
+
+    const field = await screen.findByLabelText(/Desktop image: add by URL/i);
+    await userEvent.type(field, 'https://cdn.example.test/banner-wide.jpg');
+    await userEvent.click(within(field.closest('.bn-upload__url')!).getByRole('button', { name: /Use/i }));
+
+    await waitFor(() => expect(
+      (screen.getByLabelText(/Desktop image: add by URL/i) as HTMLInputElement).value,
+    ).toBe(''));
+
+    await userEvent.click(screen.getByRole('button', { name: /Save & put live/i }));
+    await waitFor(() => expect(saveBanner).toHaveBeenCalledWith(
+      expect.objectContaining({ image: 'https://cdn.example.test/banner-wide.jpg' }),
+    ));
+  });
+
+  it('keeps the phone and desktop fields separate', async () => {
+    listBanners.mockResolvedValue([{ ...live, image: '', imageMobile: '' }]);
+    renderPage();
+
+    const phone = await screen.findByLabelText(/Phone image: add by URL/i);
+    await userEvent.type(phone, '/assets/banner-tall.jpg');
+    await userEvent.click(within(phone.closest('.bn-upload__url')!).getByRole('button', { name: /Use/i }));
+
+    await userEvent.click(screen.getByRole('button', { name: /Save & put live/i }));
+    await waitFor(() => expect(saveBanner).toHaveBeenCalledWith(
+      expect.objectContaining({ imageMobile: '/assets/banner-tall.jpg', image: '' }),
+    ));
+  });
+
+  /**
+   * This value lands in an <img src> on the home page, so the field has to
+   * refuse the schemes that turn an image slot into script execution.
+   */
+  it('refuses an address that is not a plain http(s) or site path', async () => {
+    listBanners.mockResolvedValue([{ ...live, image: '', imageMobile: '' }]);
+    renderPage();
+
+    const field = await screen.findByLabelText(/Desktop image: add by URL/i);
+    const use = within(field.closest('.bn-upload__url')!).getByRole('button', { name: /Use/i });
+
+    for (const bad of ['javascript:alert(1)', 'data:image/svg+xml,<svg onload=alert(1)>', '//evil.test/x.jpg']) {
+      await userEvent.clear(field);
+      await userEvent.type(field, bad);
+      await userEvent.click(use);
+
+      expect(screen.getByText(/full http\(s\) address/i)).toBeTruthy();
+      // Rejected values stay in the box to be corrected, never on the banner.
+      expect((field as HTMLInputElement).value).toBe(bad);
+    }
+
+    await userEvent.click(screen.getByRole('button', { name: /Save & put live/i }));
+    expect(saveBanner).not.toHaveBeenCalled();
+  });
+});

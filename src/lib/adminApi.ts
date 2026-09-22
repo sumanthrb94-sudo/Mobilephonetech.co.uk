@@ -518,3 +518,29 @@ async function deleteAllImagesFor(productId: string): Promise<void> {
   const listing = await listAll(folder);
   await withAdminRetry(() => Promise.all(listing.items.map(item => deleteObject(item))));
 }
+
+/**
+ * Whether an address staff typed is one we are willing to put in an <img src>.
+ *
+ * Only a site-relative path or an absolute http(s) URL. A `data:` or
+ * `javascript:` value reaching an image source is the thing this exists to
+ * stop, and a protocol-relative `//host/x.jpg` is rejected too: it reads as a
+ * path but silently resolves to a third-party host, so staff would not know
+ * from looking at it where the picture actually comes from.
+ *
+ * It does not promise the image will load. The site's CSP limits which hosts
+ * may serve images, and the address might simply be wrong — both of which the
+ * preview beside the field shows immediately, which is why this only has to
+ * rule out the values that are dangerous rather than merely broken.
+ */
+export function isUsableImageUrl(raw: string): boolean {
+  const value = raw.trim();
+  if (value.startsWith('//')) return false;
+  if (value.startsWith('/')) return true;
+  try {
+    const { protocol } = new URL(value);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
+}

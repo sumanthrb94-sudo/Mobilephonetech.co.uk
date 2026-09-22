@@ -2993,6 +2993,26 @@ textarea,
   color: var(--grey-40, #9ca3af);
 }
 
+/* The "or paste a URL" row under each banner uploader. The field takes the
+   space so long addresses stay readable, and the button keeps its width. */
+.bn-upload__url {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.bn-upload__url .input { flex: 1; min-width: 0; }
+
+.bn-upload__url .admin-ghost { flex-shrink: 0; }
+
+.bn-field__hint--error {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--color-sale);
+}
+
 /* The preview embeds the real HeroCarousel component — see BannersPage's
    bannerToSlide and HeroCarousel.tsx. Approving something here approves
    exactly what ships, because it is not a copy, it is the same component. */
