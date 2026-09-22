@@ -1,21 +1,33 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { Product, ProductVariant, ProductGrade } from '../types';
+import React, { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Product, ProductVariant } from '../types';
+import { useCatalogue } from '../context/CatalogueContext';
+import { variantChoices, isChoosable, currentValue, type VariantOption } from '../lib/productSiblings';
+
+/**
+ * Colour, storage and condition — every option a real listing.
+ *
+ * This used to invent them. With no variant data on a product it derived a
+ * storage ladder from whatever size was in stock (a 64GB became 64/128/256),
+ * offered a hardcoded colour list per brand, and offered all four condition
+ * grades. Choosing one produced a variant carrying the *base product's*
+ * price and stock, so a shopper could order a 256GB at the price of a 64GB
+ * that was the only thing for sale. The server re-prices every order from
+ * the real product, so the takings were never wrong — the customer had
+ * simply bought something that did not exist.
+ *
+ * This shop lists one product per physical configuration, which is right for
+ * refurbished stock: each handset has its own price, grade and battery
+ * health. So the other sizes are other products, and picking one navigates
+ * to it. See src/lib/productSiblings.ts, which owns the grouping and is
+ * where the guarantee lives that nothing offered here is fabricated.
+ */
 
 interface VariantSelectorProps {
   product: Product;
   onVariantSelect: (variant: ProductVariant) => void;
   selectedVariant: ProductVariant | null;
 }
-
-const DEFAULT_GRADES: ProductGrade[] = ['Pristine', 'Excellent', 'Good', 'Fair'];
-
-const BRAND_COLOUR_DEFAULTS: Record<string, string[]> = {
-  Apple:    ['Natural Titanium', 'Blue Titanium', 'White Titanium', 'Black Titanium'],
-  Samsung:  ['Phantom Black', 'Phantom White', 'Lavender', 'Cream'],
-  Google:   ['Obsidian', 'Snow', 'Hazel', 'Bay'],
-  OnePlus:  ['Flowy Emerald', 'Silky Black', 'Dune Gold'],
-  Motorola: ['Viva Magenta', 'Interstellar Black', 'Neptune Green'],
-};
 
 const colorSwatches: Record<string, string> = {
   'Natural Titanium': '#C0C0C0',
@@ -45,34 +57,6 @@ const colorSwatches: Record<string, string> = {
   'Neptune Green':    '#3F6E57',
 };
 
-function deriveStorageLadder(single?: string): string[] {
-  if (!single) return [];
-  const m = single.match(/(\d+)\s*(GB|TB)/i);
-  if (!m) return [];
-  const val = parseInt(m[1], 10);
-  const unit = m[2].toUpperCase();
-  if (unit === 'TB') return ['512 GB', '1 TB', '2 TB'];
-  if (val <= 64)  return ['64 GB', '128 GB', '256 GB'];
-  if (val <= 128) return ['128 GB', '256 GB', '512 GB'];
-  if (val <= 256) return ['128 GB', '256 GB', '512 GB', '1 TB'];
-  if (val <= 512) return ['256 GB', '512 GB', '1 TB'];
-  return ['512 GB', '1 TB', '2 TB'];
-}
-
-function defaultLadderForCategory(category?: string, model?: string): string[] {
-  const c = (category || '').toLowerCase();
-  const m = (model || '').toLowerCase();
-  if (c === 'phones' || c === 'apple' || c === 'samsung' || c === 'google')
-    return ['128 GB', '256 GB', '512 GB', '1 TB'];
-  if (c === 'tablets' || c === 'ipads & tabs' || m.includes('ipad') || m.includes('tab'))
-    return ['64 GB', '128 GB', '256 GB', '512 GB'];
-  if (c === 'computing' || m.includes('macbook') || m.includes('laptop'))
-    return ['256 GB', '512 GB', '1 TB', '2 TB'];
-  if (c === 'playables' || c === 'gaming' || m.includes('ps5') || m.includes('xbox'))
-    return ['500 GB', '1 TB', '2 TB'];
-  return [];
-}
-
 const rowStyle: React.CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap' as const,
@@ -99,69 +83,73 @@ const selectedValueStyle: React.CSSProperties = {
   letterSpacing: 0,
 };
 
+const pillStyle = (selected: boolean): React.CSSProperties => ({
+  height: '34px',
+  padding: '0 14px',
+  borderRadius: '999px',
+  border: `1.5px solid ${selected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+  background: selected ? 'var(--brand-cyan)' : 'var(--grey-0)',
+  color: selected ? '#fff' : 'var(--black)',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
+  fontSize: '13px',
+  fontWeight: 600,
+  whiteSpace: 'nowrap' as const,
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  transition: 'border-color 0.15s, background 0.15s, color 0.15s',
+});
+
+const priceHintStyle = (selected: boolean): React.CSSProperties => ({
+  fontSize: '11.5px',
+  fontWeight: 500,
+  opacity: selected ? 0.85 : 0.65,
+});
+
 export default function VariantSelector({
   product,
   onVariantSelect,
   selectedVariant,
 }: VariantSelectorProps) {
-  const hasRealVariants = (product.variants ?? []).length > 0;
+  const navigate = useNavigate();
+  const { products: catalogue } = useCatalogue();
 
-  const colourOptions = useMemo<string[]>(() => {
-    if (hasRealVariants) {
-      return Array.from(new Set((product.variants ?? []).map((v) => v.color).filter(Boolean) as string[]));
-    }
-    if (product.colorOptions && product.colorOptions.length > 0) return product.colorOptions;
-    return BRAND_COLOUR_DEFAULTS[product.brand] ?? ['Black', 'White', 'Blue'];
-  }, [product, hasRealVariants]);
+  const choices = useMemo(
+    () => variantChoices(catalogue, product),
+    [catalogue, product],
+  );
 
-  const storageOptions = useMemo<string[]>(() => {
-    if (hasRealVariants) {
-      return Array.from(new Set((product.variants ?? []).map((v) => v.storage).filter(Boolean) as string[]));
-    }
-    if (product.storageOptions && product.storageOptions.length > 0) return product.storageOptions;
-    const fromTopLevel = deriveStorageLadder(product.storage);
-    if (fromTopLevel.length > 0) return fromTopLevel;
-    const fromSpecs = deriveStorageLadder(product.specs?.storage);
-    if (fromSpecs.length > 0) return fromSpecs;
-    return defaultLadderForCategory(product.category, product.model);
-  }, [product, hasRealVariants]);
+  /**
+   * The variant handed to the page is this product, not a composition of
+   * whatever is selected. There is nothing to compose: the selection either
+   * describes this listing or belongs to a different one, and choosing that
+   * navigates rather than changing a price in place.
+   */
+  const own = useMemo<ProductVariant>(() => ({
+    id: product.id,
+    color: choices.colour.find(o => o.current)?.value,
+    storage: choices.storage.find(o => o.current)?.value ?? product.storage,
+    condition: product.grade,
+    price: product.price,
+    originalPrice: product.originalPrice,
+    stock: product.stock,
+    batteryHealth: product.batteryHealth,
+    imageUrl: product.imageUrl,
+  }), [product, choices]);
 
-  const conditionOptions = useMemo<ProductGrade[]>(() => {
-    if (hasRealVariants) {
-      return Array.from(new Set((product.variants ?? []).map((v) => v.condition).filter(Boolean) as ProductGrade[]));
-    }
-    if (product.conditionOptions && product.conditionOptions.length > 0) return product.conditionOptions;
-    return DEFAULT_GRADES;
-  }, [product, hasRealVariants]);
-
-  const [selColour, setSelColour]       = useState<string | undefined>(selectedVariant?.color ?? colourOptions[0]);
-  const [selStorage, setSelStorage]     = useState<string | undefined>(selectedVariant?.storage ?? product.storage ?? storageOptions[0]);
-  const [selCondition, setSelCondition] = useState<ProductGrade>((selectedVariant?.condition as ProductGrade | undefined) ?? product.grade ?? conditionOptions[0]);
-
-  useEffect(() => {
-    if (hasRealVariants) {
-      const match = (product.variants ?? []).find(
-        (v) => v.color === selColour && v.storage === selStorage && v.condition === selCondition,
-      );
-      if (match) { onVariantSelect(match); return; }
-    }
-    onVariantSelect({
-      id: `${product.id}-${selColour}-${selStorage}-${selCondition}`.replace(/\s+/g, '-').toLowerCase(),
-      color: selColour,
-      storage: selStorage,
-      condition: selCondition,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      stock: product.stock,
-      batteryHealth: product.batteryHealth,
-      imageUrl: product.imageUrl,
-    });
+  React.useEffect(() => {
+    if (selectedVariant?.id !== own.id) onVariantSelect(own);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selColour, selStorage, selCondition]);
+  }, [own.id]);
 
-  if (colourOptions.length === 0 && storageOptions.length === 0 && conditionOptions.length === 0) {
-    return null;
-  }
+  const pick = (option: VariantOption) => {
+    if (option.current) return;
+    navigate(`/product/${option.productId}`);
+  };
+
+  const anything = choices.colour.length || choices.storage.length || choices.condition.length;
+  if (!anything) return null;
 
   return (
     // 20px of gap, 20px of margin and 20px of padding, inside a buy column
@@ -169,123 +157,100 @@ export default function VariantSelector({
     // blank band between Colour, Storage and Condition.
     <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '4px', paddingTop: '14px', borderTop: '1px solid var(--grey-10)' }}>
 
-      {/* Colour — circle swatches */}
-      {colourOptions.length > 0 && (
-        <div>
-          <label style={labelStyle}>
-            Colour
-            {selColour && <span style={selectedValueStyle}>{selColour}</span>}
-          </label>
-          <div style={rowStyle}>
-            {colourOptions.map((color) => {
-              const isSelected = selColour === color;
-              const bg = colorSwatches[color] ?? color.toLowerCase();
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  title={color}
-                  aria-pressed={isSelected}
-                  onClick={() => setSelColour(color)}
-                  style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    border: isSelected ? '2.5px solid var(--brand-cyan)' : '2px solid var(--grey-20)',
-                    background: bg,
-                    cursor: 'pointer',
-                    padding: 0,
-                    outline: isSelected ? '2px solid var(--brand-cyan)' : 'none',
-                    outlineOffset: '2px',
-                    flexShrink: 0,
-                    boxShadow: isSelected ? '0 0 0 1px var(--brand-cyan)' : 'none',
-                    transition: 'border-color 0.15s, box-shadow 0.15s',
-                  }}
-                />
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <Attribute
+        label="Colour"
+        options={choices.colour}
+        renderOption={(option) => (
+          <button
+            key={option.value}
+            type="button"
+            title={option.current ? option.value : `${option.value} — £${option.price}`}
+            aria-label={option.current ? option.value : `${option.value}, £${option.price}`}
+            aria-pressed={option.current}
+            onClick={() => pick(option)}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              border: option.current ? '2.5px solid var(--brand-cyan)' : '2px solid var(--grey-20)',
+              background: colorSwatches[option.value] ?? option.value.toLowerCase(),
+              cursor: option.current ? 'default' : 'pointer',
+              padding: 0,
+              outline: option.current ? '2px solid var(--brand-cyan)' : 'none',
+              outlineOffset: '2px',
+              flexShrink: 0,
+              boxShadow: option.current ? '0 0 0 1px var(--brand-cyan)' : 'none',
+              transition: 'border-color 0.15s, box-shadow 0.15s',
+            }}
+          />
+        )}
+      />
 
-      {/* Storage — compact pills */}
-      {storageOptions.length > 0 && (
-        <div>
-          <label style={labelStyle}>
-            Storage
-            {selStorage && <span style={selectedValueStyle}>{selStorage}</span>}
-          </label>
-          <div style={rowStyle}>
-            {storageOptions.map((storage) => {
-              const isSelected = selStorage === storage;
-              return (
-                <button
-                  key={storage}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => setSelStorage(storage)}
-                  style={{
-                    height: '34px',
-                    padding: '0 14px',
-                    borderRadius: '999px',
-                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
-                    background: isSelected ? 'var(--brand-cyan)' : 'var(--grey-0)',
-                    color: isSelected ? '#fff' : 'var(--black)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap' as const,
-                    transition: 'border-color 0.15s, background 0.15s, color 0.15s',
-                  }}
-                >
-                  {storage}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+      <Attribute
+        label="Storage"
+        options={choices.storage}
+        renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
+      />
 
-      {/* Condition — compact pills */}
-      {conditionOptions.length > 0 && (
-        <div>
-          <label style={labelStyle}>
-            Condition
-            {selCondition && <span style={selectedValueStyle}>{selCondition}</span>}
-          </label>
-          <div style={rowStyle}>
-            {conditionOptions.map((condition) => {
-              const isSelected = selCondition === condition;
-              return (
-                <button
-                  key={condition}
-                  type="button"
-                  aria-pressed={isSelected}
-                  onClick={() => setSelCondition(condition)}
-                  style={{
-                    height: '34px',
-                    padding: '0 14px',
-                    borderRadius: '999px',
-                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
-                    background: isSelected ? 'var(--brand-cyan)' : 'var(--grey-0)',
-                    color: isSelected ? '#fff' : 'var(--black)',
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap' as const,
-                    transition: 'border-color 0.15s, background 0.15s, color 0.15s',
-                  }}
-                >
-                  {condition}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
+      <Attribute
+        label="Condition"
+        options={choices.condition}
+        renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
+      />
     </div>
+  );
+}
+
+/**
+ * One attribute row.
+ *
+ * A single option is shown as text rather than as a lone pressed button: a
+ * choice of one is not a choice, and a row containing exactly one selected
+ * pill reads as though the others failed to load.
+ */
+function Attribute({ label, options, renderOption }: {
+  label: string;
+  options: VariantOption[];
+  renderOption: (option: VariantOption) => React.ReactNode;
+}) {
+  if (options.length === 0) return null;
+
+  const selected = currentValue(options);
+  const choosable = isChoosable(options);
+
+  // Nothing to say and nothing to choose — the attribute does not apply to
+  // this listing at all, so the row would be an empty heading.
+  if (!selected && !choosable) return null;
+
+  return (
+    <div>
+      <label style={labelStyle}>
+        {label}
+        {selected && <span style={selectedValueStyle}>{selected}</span>}
+      </label>
+      {choosable && <div style={rowStyle}>{options.map(renderOption)}</div>}
+    </div>
+  );
+}
+
+/**
+ * A storage or condition pill.
+ *
+ * Options that lead elsewhere carry their own price, because that is the
+ * thing the shopper is actually choosing between — and showing it is what
+ * stops the page implying every size costs the same.
+ */
+function Pill({ option, onPick }: { option: VariantOption; onPick: (o: VariantOption) => void }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={option.current}
+      aria-label={option.current ? option.value : `${option.value}, £${option.price}`}
+      onClick={() => onPick(option)}
+      style={pillStyle(option.current)}
+    >
+      {option.value}
+      {!option.current && <span style={priceHintStyle(false)}>£{option.price}</span>}
+    </button>
   );
 }
