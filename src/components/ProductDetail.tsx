@@ -13,6 +13,7 @@ import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
+import { galleryFrames } from '../lib/productImages';
 import TechnicalSpecs from './TechnicalSpecs';
 import { enrichSpecs } from '../utils/deviceSpecs';
 import { ProductVariant, ProductGrade } from '../types';
@@ -326,11 +327,19 @@ export default function ProductDetail() {
     );
   }
 
-  const galleryImages = phone.galleryImages || [phone.imageUrl];
-  const activeGallery = galleryImages.length >= 6 ? galleryImages : [
-    ...galleryImages,
-    ...Array.from({ length: Math.max(0, 6 - galleryImages.length) }, (_, i) => galleryImages[i % galleryImages.length])
-  ];
+  /**
+   * Exactly six frames, always.
+   *
+   * The gallery is a six-cell grid, so the count is not a preference: fewer
+   * leaves holes in it, and a seventh wraps the thumbnail row onto a line
+   * that was never designed. Short of six it repeats what the product has —
+   * two good angles shown three times each reads better than four empty
+   * frames — and beyond six it takes the first six. The editor enforces the
+   * same limit, so this only catches rows that predate it.
+   */
+  const activeGallery = galleryFrames(
+    phone.galleryImages?.length ? phone.galleryImages : [phone.imageUrl],
+  );
 
   const handleAddToCart = () => {
     if (selectedVariant) {

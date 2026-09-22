@@ -89,3 +89,58 @@ describe('ImageManager — linking an image by URL', () => {
     expect(screen.getByTitle(/only unlinks it/i)).toBeInTheDocument();
   });
 });
+
+/**
+ * The six-image limit.
+ *
+ * The product gallery is a six-frame grid, so a seventh image has nowhere to
+ * go. The save path caps it too, which means an editor that accepted a
+ * seventh would be accepting something it then silently discarded — the
+ * worst of the available behaviours. So the controls stop at six and say so.
+ */
+describe('ImageManager — the six-image limit', () => {
+  const six = Array.from({ length: 6 }, (_, i) => `https://cdn.example.com/${i}.jpg`);
+
+  it('counts images against the limit', () => {
+    setup(['https://cdn.example.com/a.jpg']);
+    expect(screen.getByText(/1 of 6/)).toBeTruthy();
+  });
+
+  it('stops offering uploads once six are on the product', () => {
+    setup(six);
+    const upload = screen.getByRole('button', { name: /remove one to add another/i });
+    expect(upload.hasAttribute('disabled')).toBe(true);
+  });
+
+  it('refuses a seventh image by URL, and says why', async () => {
+    const user = userEvent.setup();
+    const { onChange } = setup(six);
+
+    const field = screen.getByLabelText(/add an image by url/i);
+    // The field is closed off at the limit, so there is no way to submit —
+    // which is the point: the refusal is visible before anything is typed.
+    expect((field as HTMLInputElement).disabled).toBe(true);
+    expect(onChange).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: /^add$/i })).catch(() => {});
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('still accepts a sixth image', async () => {
+    const user = userEvent.setup();
+    const { onChange } = setup(six.slice(0, 5));
+
+    await user.type(screen.getByLabelText(/add an image by url/i), 'https://cdn.example.com/last.jpg');
+    await user.click(screen.getByRole('button', { name: /^add$/i }));
+
+    expect(onChange).toHaveBeenCalledWith([...six.slice(0, 5), 'https://cdn.example.com/last.jpg']);
+  });
+
+  it('frees a slot again when an image is removed', async () => {
+    const user = userEvent.setup();
+    const { onChange } = setup(six);
+
+    await user.click(screen.getByRole('button', { name: /Delete image 1/i }));
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith(six.slice(1)));
+  });
+});

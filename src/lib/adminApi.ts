@@ -8,12 +8,22 @@ import {
 import { db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
+import { capImages } from './productImages';
 import type { Product, ProductGrade } from '../types';
 
 /** Storage folder for product imagery. */
 export const IMAGE_BUCKET = 'product-images';
 export const BANNER_BUCKET = 'banner-images';
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/**
+ * The six-image limit and the helper that applies it live in
+ * src/lib/productImages.ts, so the editor's cap and the product page's
+ * frame count are one number rather than two that can drift apart.
+ * Re-exported here because the editor reaches for it alongside the other
+ * upload constants.
+ */
+export { MAX_PRODUCT_IMAGES, capImages } from './productImages';
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 export const GRADES: ProductGrade[] = ['New', 'Pristine', 'Excellent', 'Good', 'Fair'];
@@ -71,7 +81,10 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     warrantyMonths: draft.warrantyMonths,
     returnDays: draft.returnDays,
     imageUrl: draft.imageUrl || null,
-    galleryImages: draft.galleryImages?.length ? draft.galleryImages : null,
+    // Capped here rather than only in the editor, so a product cannot carry
+    // a seventh image into the gallery through an import, a script, or a
+    // document edited by hand in the Firebase console.
+    galleryImages: draft.galleryImages?.length ? capImages(draft.galleryImages) : null,
     isCertified: draft.isCertified,
     stock: draft.stock,
     description: draft.description || null,
