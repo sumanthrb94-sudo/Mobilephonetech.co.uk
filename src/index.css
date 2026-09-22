@@ -3703,3 +3703,118 @@ html.is-checkout .pdp-stickybuy {
 html.is-paying .checkout-header {
   display: none;
 }
+
+/* ── Admin: home page layout ──────────────────────────────────────────────
+   A running order, so the list reads as a sequence: position, what the
+   block is, and the controls that move it. Rows stay full-width and stack
+   their controls under the text on a phone rather than squeezing. */
+
+.hl-intro {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--grey-60);
+  max-width: 62ch;
+  margin: 0;
+}
+
+.hl-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hl-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--grey-10);
+}
+
+.hl-row:last-child { border-bottom: 0; }
+
+/* Switched-off sections stay legible — they are still orderable, and staff
+   need to read them to decide what to turn back on. Dimming the text would
+   make the list harder to use for the exact task it exists for. */
+.hl-row--off { background: var(--grey-5); }
+
+.hl-row__pos {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--grey-10);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--grey-60);
+}
+
+.hl-row--off .hl-row__pos { opacity: 0.6; }
+
+.hl-row__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+
+.hl-row__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.hl-row__blurb {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--grey-50);
+}
+
+.hl-row__lock,
+.hl-row__off {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hl-row__lock { background: var(--grey-10); color: var(--grey-60); }
+.hl-row__off { background: var(--color-sale-subtle, #fdecec); color: var(--color-sale); }
+
+.hl-row__acts {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .hl-row {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  /* Controls drop to their own line and align with the text, not the
+     position badge, so the column reads straight down. */
+  .hl-row__acts {
+    width: 100%;
+    padding-left: 40px;
+  }
+}

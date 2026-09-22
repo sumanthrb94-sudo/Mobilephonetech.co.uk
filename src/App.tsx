@@ -4,23 +4,10 @@ import { lazyRoute } from './lib/lazyRoute';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
-import Hero from './components/Hero';
-import TrustBanner from './components/TrustBanner';
-import BrandShowcase from './components/BrandShowcase';
-import QualityPromise from './components/QualityPromise';
-import EcoImpactBlock from './components/EcoImpactBlock';
-import HomeFaq from './components/HomeFaq';
-import HomeBlog from './components/HomeBlog';
-import NewsletterSignup from './components/NewsletterSignup';
-import TrustSection from './components/TrustSection';
-import TestimonialsSection from './components/TestimonialsSection';
-import PressLogosStrip from './components/PressLogosStrip';
 import ComparisonTool from './components/ComparisonTool';
 import CartDrawer from './components/CartDrawer';
 import AddedToCartModal from './components/AddedToCartModal';
 import CartPage from './components/CartPage';
-import TradeInProgram from './components/TradeInProgram';
-import WarrantyAndReturns from './components/WarrantyAndReturns';
 import CookieBanner from './components/layout/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import MobileBottomNav from './components/layout/MobileBottomNav';
@@ -43,6 +30,7 @@ import Toast from './components/Toast';
 import { PageLoading } from './components/ui/Loading';
 import { useSeo } from './hooks/useSeo';
 import { homeSeo } from './utils/seo';
+import HomeSections from './components/HomeSections';
 
 // Lazy load pages for performance
 const ProductDetail = lazyRoute(() => import('./components/ProductDetail'));
@@ -70,6 +58,7 @@ const AdminDashboard = lazyRoute(() => import('./components/admin/DashboardPage'
 const OrdersPage = lazyRoute(() => import('./components/admin/OrdersPage'));
 const InventoryPage = lazyRoute(() => import('./components/admin/InventoryPage'));
 const BannersPage = lazyRoute(() => import('./components/admin/BannersPage'));
+const HomeLayoutPage = lazyRoute(() => import('./components/admin/HomeLayoutPage'));
 const ReturnsPage = lazyRoute(() => import('./components/admin/ReturnsPage'));
 const AnalyticsPage = lazyRoute(() => import('./components/admin/AnalyticsPage'));
 const SupportInbox = lazyRoute(() => import('./components/admin/SupportInbox'));
@@ -77,66 +66,14 @@ const ProductEditor = lazyRoute(() => import('./components/admin/ProductEditor')
 
 
 /**
- * Homepage — BM spec section order:
- * 1. Trust banner (green strip, scrolls with page)
- * 2. Hero carousel
- * 3. Category grid
- * 4. Featured products
- * 5. Value proposition / Trust section
- * 6. Trade-in programme
- * 7. Warranty & Returns (existing)
- * (Footer is rendered in AppContent below main)
+ * Homepage.
+ *
+ * Which blocks appear and in what order is staff-editable from /admin/home —
+ * the running order and the components it renders live in HomeSections.
  */
 function HomePage() {
   useSeo(homeSeo());
-  return (
-    <>
-      {/* Section 2: Trust Banner — scrollable green strip */}
-      <TrustBanner />
-
-      {/* Section 3: Hero Carousel */}
-      <Hero />
-
-      {/* Brand-showcase hero panels (iPhone 17, Galaxy S, Fold, Pixel).
-          CategoryGrid removed — the top category nav + its dropdowns already
-          expose every department, so the grid was duplicate navigation. */}
-      <BrandShowcase />
-
-      {/* Section 7: Sustainability / eco narrative — refurb differentiator */}
-      <EcoImpactBlock />
-
-      {/* Section 8: Value Proposition / Trust */}
-      <TrustSection />
-
-      {/* Press coverage strip */}
-      <PressLogosStrip />
-
-      {/* Customer testimonials */}
-      <TestimonialsSection />
-
-      {/* Section 9: Trade-In Programme */}
-      <TradeInProgram />
-
-      {/* Warranty & Returns */}
-      <WarrantyAndReturns />
-
-      {/* FAQ accordion — reduces refurb skepticism right above the footer */}
-      <HomeFaq />
-
-      {/* Workshop blog — 10 storytelling posts about refurbished tech.
-          Sits between the trust questions (FAQ) and the trust badges
-          (QualityPromise) so readers who want depth can dive in. */}
-      <HomeBlog />
-
-      {/* LeHart-signature Inspected / Tested / Cleaned strip — moved down from
-          just-below-hero to footer-adjacent so product content takes the
-          above-the-fold real estate instead. */}
-      <QualityPromise />
-
-      {/* Newsletter lead-capture */}
-      <NewsletterSignup />
-    </>
-  );
+  return <HomeSections />;
 }
 
 /**
@@ -379,6 +316,7 @@ function AppContent() {
                 <Route path="orders" element={<OrdersPage />} />
                 <Route path="inventory" element={<InventoryPage />} />
                 <Route path="banners" element={<BannersPage />} />
+                <Route path="home" element={<HomeLayoutPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
                 <Route path="analytics" element={<AnalyticsPage />} />

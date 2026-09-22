@@ -46,6 +46,22 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ── Home-page running order ─────────────────────────────
+    // Which blocks the home page shows and in what order — see
+    // src/lib/homeLayout.ts. Public to read, because every visitor's home
+    // page is rendered from it, and staff-only to write for the same reason
+    // the banners are: this decides what the shop front is.
+    //
+    // The document holds only section ids and a hidden list. It cannot name
+    // a section that does not exist in the code, and the resolver treats it
+    // as preferences over the shipped list rather than as the list itself,
+    // so the worst a bad write can do is reorder or hide — never blank the
+    // page, and never suppress the carousel, which is locked on.
+    match /siteLayout/{documentId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── Users ───────────────────────────────────────────────
     // A user reads and writes only their own document. `role` is explicitly
     // immutable from the client: it is display-only, but letting someone set
