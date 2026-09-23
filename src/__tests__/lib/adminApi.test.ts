@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   slugify, validateDraft, draftToRow, emptyDraft, productToDraft,
   validateImageFile, imagePath, pathFromPublicUrl, describeError,
-  MAX_IMAGE_BYTES, IMAGE_BUCKET, snapToCatalogue,
+  MAX_IMAGE_BYTES, IMAGE_BUCKET,
   type ProductDraft,
 } from '../../lib/adminApi';
 import { isLive, liveOnly } from '../../lib/productMapper';
@@ -221,45 +221,6 @@ describe('describeError', () => {
 
   it('falls back to the raw message', () => {
     expect(describeError({ message: 'network unreachable' })).toBe('network unreachable');
-  });
-});
-
-describe('snapToCatalogue', () => {
-  /**
-   * The catalogue gate, following InventoryManager: staff pick a model from
-   * the admin catalogue, and model names snap to the catalogue's spelling on
-   * write.
-   *
-   * Why it matters more than it looks: "iPhone 8" and "iphone  8" are two
-   * different products to every piece of code that groups by model, which is
-   * why src/lib/productSiblings.ts has to normalise case and spacing at read
-   * time before it can offer a shopper the other storage sizes of the phone
-   * they are looking at. Every future feature that groups has to remember the
-   * same trick. Fixing it at the keyboard is one rule instead of many.
-   */
-  const known = ['Apple', 'Samsung', 'Google'];
-
-  it('corrects the spelling to the one the catalogue already uses', () => {
-    expect(snapToCatalogue('apple', known)).toBe('Apple');
-    expect(snapToCatalogue('SAMSUNG', known)).toBe('Samsung');
-  });
-
-  it('ignores inner spacing, which is how the duplicates got in', () => {
-    expect(snapToCatalogue('iphone  8', ['iPhone 8'])).toBe('iPhone 8');
-    expect(snapToCatalogue('  Galaxy   S23 ', ['Galaxy S23'])).toBe('Galaxy S23');
-  });
-
-  /**
-   * This normalises, it does not reject. Whether a new model may be created
-   * at all depends on who is typing, and that is the editor's decision.
-   */
-  it('leaves an unknown value alone, trimmed', () => {
-    expect(snapToCatalogue('  Nothing Phone 2 ', known)).toBe('Nothing Phone 2');
-  });
-
-  it('has no opinion when the catalogue is empty', () => {
-    expect(snapToCatalogue('Apple', [])).toBe('Apple');
-    expect(snapToCatalogue('', known)).toBe('');
   });
 });
 

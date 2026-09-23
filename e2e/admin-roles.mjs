@@ -19,7 +19,9 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { resolveChromium } from './chromium-path.mjs';
-import { ADMIN_EMAIL, STAFF_EMAIL, PASSWORD } from './emulator-seed.mjs';
+import {
+  ADMIN_EMAIL, STAFF_EMAIL, PASSWORD, listCollection, getProduct, catalogueIdFor,
+} from './emulator-seed.mjs';
 
 const BASE = process.env.E2E_BASE || 'http://127.0.0.1:4173';
 const OUT = 'e2e-screenshots/admin-roles';
@@ -176,36 +178,6 @@ try {
         'the guard must not depend on the nav hiding the link');
     }
 
-    // ── The catalogue gate ──
-    //
-    // Staff may create a product; they may not invent a brand the shop has
-    // never carried. Worth doing in a browser rather than only in a unit
-    // test, because the gate depends on a real read of the real catalogue:
-    // a failed or empty vocabulary must block nothing, and the only way to
-    // know the read succeeded is to sign in and type into the real form.
-    await open(page, '/admin/inventory/new', null);
-
-    await page.locator('#field-brand').fill('Nokia');
-    await page.locator('#field-model').fill('3310');
-    // Snapping happens on blur, and so does the gate's own check.
-    await page.locator('#field-model').blur();
-    await page.waitForTimeout(400);
-    await page.getByRole('button', { name: /save|create|add product/i }).first().click();
-    await page.waitForTimeout(1200);
-
-    const refused = await page.textContent('body') ?? '';
-    rec('Staff cannot invent a brand the shop has never carried',
-      /catalogue has no brand|ask a manager/i.test(refused),
-      'the message must say what to do, not merely refuse');
-    await page.screenshot({ path: `${OUT}/staff-catalogue-gate.png`, fullPage: true });
-
-    // The other half: an existing spelling is corrected rather than refused.
-    await page.locator('#field-brand').fill('apple');
-    await page.locator('#field-brand').blur();
-    await page.waitForTimeout(500);
-    rec('CONTROL a known brand is snapped to the catalogue spelling',
-      (await page.locator('#field-brand').inputValue()) === 'Apple');
-
     // Controls. If staff cannot do their own job, every refusal above proves
     // only that the account is broken.
     for (const [path, shot] of [['/admin/orders', 'staff-orders'], ['/admin/returns', 'staff-returns']]) {
@@ -214,6 +186,122 @@ try {
     }
 
     rec('No uncaught errors as staff', errors.length === 0, errors.slice(0, 2).join(' | '));
+    await ctx.close();
+  }
+
+  // ── The catalogue, end to end, across both roles ─────────────
+  //
+  // The owner's rule: an employee lists only a model already in the
+  // database, and a model that is not becomes a task for a manager. The
+  // unit tests prove each screen behaves; only this proves the rule works as
+  // a sequence — that a request a member of staff sends is the request a
+  // manager sees, that approving it puts the model in front of the staff
+  // member, and that the listing they then make is linked to it.
+  //
+  // Each step checks the database, not only the screen. What the page says
+  // happened and what happened are different claims.
+  const NEW_MODEL = 'iPhone 17e';
+  const NEW_ID = catalogueIdFor('Apple', NEW_MODEL);
+
+  // 1. Staff: no way to type a model, and a request for the missing one.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await ctx.newPage();
+    await signInAs(page, STAFF_EMAIL);
+    await open(page, '/admin/inventory/new', null);
+    await page.waitForTimeout(1500);
+
+    rec('Staff have no text box for brand or model',
+      (await page.locator('input#field-brand, input#field-model').count()) === 0
+      && (await page.locator('select#field-brand').count()) === 1);
+    rec('Staff are not offered "+ Add a model…"',
+      (await page.locator('select#field-model option', { hasText: /add a model/i }).count()) === 0);
+    rec(`${NEW_MODEL} is not in the picker yet`,
+      !(await page.locator('select#field-model').innerText().catch(() => '')).includes(NEW_MODEL));
+
+    await page.getByRole('button', { name: /model not listed/i }).click();
+    await page.waitForTimeout(400);
+    await page.locator('#field-requestBrand').selectOption({ label: 'Apple' });
+    // The guard first: a size in the name must stop the request being sent.
+    await page.locator('#field-requestModel').fill(`${NEW_MODEL} 128GB`);
+    await page.waitForTimeout(300);
+    rec('A requested model with the storage in its name cannot be sent',
+      await page.getByRole('button', { name: /send to a manager/i }).isDisabled());
+    await page.locator('#field-requestModel').fill(NEW_MODEL);
+    await page.locator('#field-requestNote').fill('Two in from the supplier this morning');
+    await page.getByRole('button', { name: /send to a manager/i }).click();
+    await page.waitForTimeout(2000);
+    rec('Staff are told the request is with a manager',
+      /with a manager/i.test(await page.textContent('body') ?? ''));
+    await page.screenshot({ path: `${OUT}/flow-1-staff-requested.png`, fullPage: true });
+
+    const requests = await listCollection('modelRequests');
+    const mine = requests.find(r => r.model === NEW_MODEL);
+    rec('The request is in the database, open, in the staff member\'s name',
+      mine?.status === 'open' && mine?.requestedBy === STAFF_EMAIL,
+      mine ? `${mine.status} by ${mine.requestedBy}` : 'no request written');
+    await ctx.close();
+  }
+
+  // 2. Manager: sees the waiting count, approves, and the model exists.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await ctx.newPage();
+    await signInAs(page, ADMIN_EMAIL);
+    await open(page, '/admin', null);
+    rec('The manager\'s nav shows a request waiting',
+      (await page.locator('.ops-nav-count').first().textContent().catch(() => '')) === '1');
+
+    await open(page, '/admin/catalogue', null);
+    await page.getByRole('button', { name: new RegExp(`^Approve request for Apple ${NEW_MODEL}$`, 'i') }).click();
+    await page.waitForTimeout(400);
+    await page.screenshot({ path: `${OUT}/flow-2-manager-approving.png`, fullPage: true });
+    await page.getByRole('form', { name: new RegExp(`^Approve Apple ${NEW_MODEL}$`, 'i') })
+      .getByRole('button', { name: /approve/i }).click();
+    await page.waitForTimeout(2500);
+
+    const entry = (await listCollection('catalogueModels')).find(m => m.id === NEW_ID);
+    rec('Approving adds the model to the catalogue', entry?.model === NEW_MODEL,
+      entry ? `${entry.brand} ${entry.model}` : 'no entry written');
+    const closed = (await listCollection('modelRequests')).find(r => r.model === NEW_MODEL);
+    rec('Approving closes the request against that entry',
+      closed?.status === 'approved' && closed?.catalogueModelId === NEW_ID);
+
+    // The count must fall once the queue is empty — it used to be read once
+    // per visit and stayed at 1 after the manager had cleared it.
+    await open(page, '/admin', null);
+    rec('The waiting count clears once the manager has acted',
+      (await page.locator('.ops-nav-count').count()) === 0);
+    await page.screenshot({ path: `${OUT}/flow-3-manager-cleared.png`, fullPage: true });
+    await ctx.close();
+  }
+
+  // 3. Staff: the model is now in the picker, and a listing for it saves
+  //    linked to the entry.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+    const page = await ctx.newPage();
+    await signInAs(page, STAFF_EMAIL);
+    await open(page, '/admin/inventory/new', null);
+    await page.waitForTimeout(1500);
+
+    await page.locator('select#field-brand').selectOption({ label: 'Apple' });
+    await page.waitForTimeout(300);
+    rec(`${NEW_MODEL} is now in the staff picker`,
+      (await page.locator('select#field-model option', { hasText: NEW_MODEL }).count()) === 1);
+    await page.locator('select#field-model').selectOption({ label: NEW_MODEL });
+    await page.locator('#field-price').fill('399');
+    await page.locator('#field-originalPrice').fill('599');
+    await page.locator('#field-stock').fill('2');
+    await page.getByRole('button', { name: /^create product$/i }).click();
+    await page.waitForTimeout(3000);
+    await page.screenshot({ path: `${OUT}/flow-4-staff-listed.png`, fullPage: true });
+
+    const slug = `apple-${NEW_MODEL.toLowerCase().replace(/\s+/g, '-')}`;
+    const listing = await getProduct(slug);
+    rec('The staff listing is saved and linked to the catalogue entry',
+      listing?.catalogueModelId === NEW_ID && listing?.model === NEW_MODEL,
+      listing ? `catalogueModelId=${listing.catalogueModelId}` : `no product at ${slug}`);
     await ctx.close();
   }
 } finally {

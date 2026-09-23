@@ -3,14 +3,37 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
 import {
   emptyDraft, productToDraft, validateDraft, slugify, describeError,
-  getProduct, createProduct, updateProduct, GRADES,
-  listCatalogueVocabulary, snapToCatalogue,
-  type ProductDraft, type ValidationErrors, type CatalogueVocabulary,
+  getProduct, createProduct, updateProduct, currentActor, GRADES,
+  type ProductDraft, type ValidationErrors,
 } from '../../lib/adminApi';
+import {
+  listCatalogueModels, listModelRequests, brandsOf, modelsFor, findCatalogueModel,
+  addCatalogueModel, requestModel, modelNameProblem, CatalogueError,
+  type CatalogueModel, type ModelRequest,
+} from '../../lib/catalogue';
 import { useAdmin } from '../../hooks/useAdmin';
 import ImageManager from './ImageManager';
 
 const CATEGORIES = ['Phones', 'Tablets', 'Accessories', 'Speakers', 'Hearables', 'Playables'];
+
+// Option values that are instructions rather than catalogue entries. Entry
+// ids are slugs joined by a double underscore and never start with one, so
+// these cannot collide with a real model.
+const NEW_BRAND = '__new-brand__';
+const ADD_MODEL = '__add-model__';
+const OTHER_BRAND = '__other-brand__';
+
+type CatalogueState =
+  | { status: 'loading' }
+  | { status: 'failed'; message: string }
+  | { status: 'ready'; models: CatalogueModel[] };
+
+/** A listing's brand, model and catalogue link as they were when it was opened. */
+interface LoadedIdentity {
+  brand: string;
+  model: string;
+  catalogueModelId?: string;
+}
 
 /**
  * Create / edit a product.
@@ -20,14 +43,18 @@ const CATEGORIES = ['Phones', 'Tablets', 'Accessories', 'Speakers', 'Hearables',
  * primary key and the public URL, so changing it later would break every
  * inbound link and orphan the uploaded images filed under it.
  *
- * Brand and model are suggestion-backed rather than free text, following
- * InventoryManager: staff pick from the catalogue, only a manager may add an
- * entry to it, and what is typed snaps to the catalogue's own spelling. Two
- * free-text boxes are how "iPhone 8" and "iphone  8" became two products, and
- * why src/lib/productSiblings.ts has to normalise spacing and case before it
- * can offer a shopper the other storage sizes of the phone in front of them.
- * Every future feature that groups by model would have to remember the same
- * trick; one rule at the keyboard is cheaper than many at the reader.
+ * Brand and model are chosen from the catalogue (src/lib/catalogue.ts), never
+ * typed. The owner's rule is that staff may only select a model the shop
+ * already has, and that a missing one becomes a request for a manager rather
+ * than a new model. A free-text box that said no at Save was not that rule:
+ * it let someone type "iPhone 8 128GB", which the product page treats as a
+ * different phone from "iPhone 8" and so offers no other sizes of, and it
+ * told them only at the very end. Two selects cannot be typed wrong.
+ *
+ * Choosing a model writes the entry's own brand, model and id into the draft
+ * together. The database refuses a staff listing whose brand and model are
+ * not spelt exactly as the entry it names, so anything assembled any other
+ * way would be a permission error at Save.
  */
 export default function ProductEditor() {
   const { id } = useParams();
@@ -42,14 +69,31 @@ export default function ProductEditor() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [slugTouched, setSlugTouched] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  // Null until the catalogue has been read, and left null if the read fails.
-  // See isNewToCatalogue: nothing known means no opinion, not "nothing valid".
-  const [vocabulary, setVocabulary] = useState<CatalogueVocabulary | null>(null);
   // productToDraft drops the audit stamp, because the stamp is written by the
   // data layer on every save and is not the admin's to edit. It is kept here
   // so the footnote can show the record as it was loaded.
   const [savedBy, setSavedBy] = useState<string | undefined>(undefined);
   const [savedAt, setSavedAt] = useState<string | undefined>(undefined);
+  // Kept apart from the draft so the editor can tell an identity nobody has
+  // touched from one somebody changed. The database only checks the catalogue
+  // when brand, model or the link change, and this is how the editor makes
+  // the same distinction.
+  const [loaded, setLoaded] = useState<LoadedIdentity | null>(null);
+
+  const [catalogue, setCatalogue] = useState<CatalogueState>({ status: 'loading' });
+  // Bumped by Retry and "Check again" to read the catalogue afresh.
+  const [catalogueRead, setCatalogueRead] = useState(0);
+  const [requests, setRequests] = useState<ModelRequest[]>([]);
+  // A manager's brand or model that is not in the catalogue yet: null when
+  // they are choosing from the list, the text typed so far when adding.
+  const [newBrand, setNewBrand] = useState<string | null>(null);
+  const [newModel, setNewModel] = useState<string | null>(null);
+  // A manager choosing a catalogue model for a listing whose own is not in it.
+  const [relinking, setRelinking] = useState(false);
+
+  const mayExtend = can('catalogue:extend');
+  // Managers never queue a request for themselves: they can simply add it.
+  const mayRequest = !mayExtend && can('catalogue:request');
 
   useEffect(() => {
     if (isNew) return;
@@ -61,6 +105,7 @@ export default function ProductEditor() {
         if (!p) setNotFound(true);
         else {
           setDraft(productToDraft(p));
+          setLoaded({ brand: p.brand, model: p.model, catalogueModelId: p.catalogueModelId });
           setSavedBy(p.updatedBy);
           setSavedAt(p.updatedAt);
         }
@@ -76,14 +121,47 @@ export default function ProductEditor() {
 
   useEffect(() => {
     let cancelled = false;
-    listCatalogueVocabulary()
-      .then(v => { if (!cancelled) setVocabulary(v); })
-      // Swallowed on purpose. The suggestions are a convenience and the gate
-      // below stays silent without them, so a catalogue that will not load
-      // costs the admin a dropdown rather than the ability to save at all.
-      .catch(() => { /* no vocabulary, no opinion */ });
+    setCatalogue({ status: 'loading' });
+    listCatalogueModels()
+      .then(models => { if (!cancelled) setCatalogue({ status: 'ready', models }); })
+      .catch(err => { if (!cancelled) setCatalogue({ status: 'failed', message: describeError(err) }); });
     return () => { cancelled = true; };
-  }, []);
+  }, [catalogueRead]);
+
+  useEffect(() => {
+    if (!mayRequest) return;
+    let cancelled = false;
+    listModelRequests()
+      .then(r => { if (!cancelled) setRequests(r); })
+      // Swallowed on purpose. The list only answers "what happened to my
+      // request?", and without it the worst that follows is a second request
+      // for a model someone already asked for, which the manager sees sitting
+      // beside the first. Neither listing nor asking should stop over it.
+      .catch(() => { /* no history shown */ });
+    return () => { cancelled = true; };
+  }, [mayRequest, catalogueRead]);
+
+  // A listing saved before the catalogue existed, whose model the catalogue
+  // does carry, is linked to that entry as soon as both have loaded. Without
+  // the link it stays outside the rule, and its own spelling — "iphone  8"
+  // rather than "iPhone 8" — keeps it apart from its other sizes. A listing
+  // already linked is brought to its entry's spelling the same way. A retired
+  // match is left alone: linking to it would be refused by the database.
+  useEffect(() => {
+    if (catalogue.status !== 'ready' || !loaded) return;
+    const match = loaded.catalogueModelId
+      ? catalogue.models.find(m => m.id === loaded.catalogueModelId)
+      : findCatalogueModel(catalogue.models, loaded.brand, loaded.model);
+    if (!match || match.retiredAt) return;
+    setDraft(d => {
+      const untouchedNow = d.brand === loaded.brand && d.model === loaded.model
+        && d.catalogueModelId === loaded.catalogueModelId;
+      const matches = d.brand === match.brand && d.model === match.model && d.catalogueModelId === match.id;
+      return untouchedNow && !matches
+        ? { ...d, brand: match.brand, model: match.model, catalogueModelId: match.id }
+        : d;
+    });
+  }, [catalogue, loaded]);
 
   // Derive the slug from brand + model until the admin edits it by hand.
   useEffect(() => {
@@ -105,42 +183,123 @@ export default function ProductEditor() {
   // existed — see auditNote.
   const audit = isNew ? null : auditNote(savedBy, savedAt);
 
-  const mayExtend = can('catalogue:extend');
-  const knownBrands = vocabulary?.brands ?? [];
-  // Models are offered per brand, because "Galaxy S23" under Apple is noise
-  // rather than a suggestion.
-  const knownModels = vocabulary?.modelsByBrand[draft.brand.trim().toLowerCase()] ?? [];
+  const models = catalogue.status === 'ready' ? catalogue.models : [];
+  const brands = brandsOf(models);
+  const entryById = (entryId?: string) => (entryId ? models.find(m => m.id === entryId) : undefined);
 
-  const brandIsNew = isNewToCatalogue(draft.brand, knownBrands);
-  const modelIsNew = isNewToCatalogue(draft.model, knownModels);
+  // The entry the listing was for when it was opened: by its link, or for a
+  // listing older than the catalogue, by the brand and model it carries.
+  const loadedEntry = loaded
+    ? (loaded.catalogueModelId
+      ? entryById(loaded.catalogueModelId)
+      : findCatalogueModel(models, loaded.brand, loaded.model))
+    : undefined;
+  const untouched = !!loaded
+    && draft.brand === loaded.brand
+    && draft.model === loaded.model
+    && draft.catalogueModelId === loaded.catalogueModelId;
+  // What the selects show. An untouched listing shows its own entry even
+  // when the draft has no link to it, which is how a retired entry on an old
+  // listing is displayed without being written.
+  const current = entryById(draft.catalogueModelId) ?? (untouched ? loadedEntry : undefined);
+
+  // An existing listing whose model the catalogue does not carry. Its brand
+  // and model are shown but not offered for change, and left exactly as they
+  // are in the draft, so a price or stock edit saves without the catalogue
+  // being consulted at all.
+  const unlisted = !isNew && catalogue.status === 'ready' && !loadedEntry && !relinking;
+
+  const brandValue = newBrand !== null ? NEW_BRAND : current?.brand ?? draft.brand;
+  // A retired entry is not pickable, so the helpers leave it out; the listing
+  // that already uses it still has to be able to show it.
+  const brandOptions = current && !brands.includes(current.brand)
+    ? [...brands, current.brand].sort((a, b) => a.localeCompare(b))
+    : brands;
+  const modelOptions = newBrand !== null ? [] : modelsFor(models, brandValue);
+  if (current?.retiredAt && current.brand === brandValue && !modelOptions.some(m => m.id === current.id)) {
+    modelOptions.push(current);
+  }
+  const modelValue = newModel !== null ? ADD_MODEL : current?.id ?? '';
+
+  const linkingOnSave = !!loaded && !loaded.catalogueModelId && !!current && !current.retiredAt
+    && draft.catalogueModelId === current.id;
+
+  /** Brand, model and the catalogue link change together or not at all. */
+  const setIdentity = (brand: string, model: string, catalogueModelId?: string) =>
+    setDraft(d => ({ ...d, brand, model, catalogueModelId }));
+
+  const chooseBrand = (value: string) => {
+    if (value === NEW_BRAND) {
+      // A brand with no models yet has only one model option: a new one.
+      setNewBrand('');
+      setNewModel('');
+      setIdentity('', '');
+      return;
+    }
+    setNewBrand(null);
+    setNewModel(null);
+    setIdentity(value, '');
+  };
+
+  const chooseModel = (value: string) => {
+    if (value === ADD_MODEL) {
+      setNewModel('');
+      setIdentity(brandValue, '');
+      return;
+    }
+    setNewModel(null);
+    const entry = entryById(value);
+    if (entry) setIdentity(entry.brand, entry.model, entry.id);
+  };
+
+  const typeNewBrand = (value: string) => {
+    setNewBrand(value);
+    setDraft(d => ({ ...d, brand: value, catalogueModelId: undefined }));
+  };
+
+  const typeNewModel = (value: string) => {
+    setNewModel(value);
+    setDraft(d => ({ ...d, model: value, catalogueModelId: undefined }));
+  };
+
+  const startRelinking = () => {
+    if (!loaded) return;
+    setRelinking(true);
+    setIdentity(brands.find(b => sameName(b, loaded.brand)) ?? '', '');
+  };
+
+  const keepAsItWas = () => {
+    if (!loaded) return;
+    setRelinking(false);
+    setNewBrand(null);
+    setNewModel(null);
+    setIdentity(loaded.brand, loaded.model, loaded.catalogueModelId);
+  };
 
   /**
-   * Replace what was typed with the catalogue's spelling of it.
+   * What stops a save on brand and model, in the same shape as validateDraft
+   * so it lands under the field like every other problem.
    *
-   * On blur rather than on every keystroke: correcting someone mid-word is
-   * what makes an autocomplete infuriating, and "iPhone 1" has to survive
-   * being typed on the way to "iPhone 16" even though it is a prefix of an
-   * entry that already exists.
+   * A catalogue model is required whenever the identity is new or has been
+   * changed. An existing listing nobody has touched needs nothing, because
+   * the database does not check what did not change, and refusing here would
+   * stop a stock edit on a listing whose model the catalogue simply lacks.
    */
-  const snapOnBlur = (key: 'brand' | 'model', known: readonly string[]) =>
-    set(key, snapToCatalogue(draft[key], known));
-
-  /**
-   * Refuse a brand or model the catalogue has never carried, unless the
-   * person may extend it.
-   *
-   * A value nothing in the catalogue matches is a new catalogue entry, and
-   * whether that is allowed is a question about who is typing, which is why
-   * snapToCatalogue normalises without ever rejecting. A manager gets the
-   * note under the field instead; staff get this, naming what they typed,
-   * because "invalid brand" leaves someone staring at a word that looks
-   * perfectly correct to them.
-   */
-  const catalogueGate = (): ValidationErrors => {
-    if (mayExtend) return {};
+  const identityErrors = (): ValidationErrors => {
     const out: ValidationErrors = {};
-    if (brandIsNew) out.brand = refuseNewEntry('brand', draft.brand);
-    if (modelIsNew) out.model = refuseNewEntry('model', draft.model);
+    if (newBrand !== null && !newBrand.trim()) out.newBrand = 'Name the brand.';
+    else if (!draft.brand.trim()) out.brand = 'Choose a brand.';
+
+    if (newModel !== null) {
+      const problem = modelNameProblem(newModel);
+      if (problem) out.newModel = problem;
+      return out;
+    }
+
+    const changed = !loaded || draft.brand !== loaded.brand || draft.model !== loaded.model;
+    if (!draft.catalogueModelId && (changed || !draft.model.trim())) {
+      out.model = 'Choose a model from the catalogue.';
+    }
     return out;
   };
 
@@ -148,7 +307,16 @@ export default function ProductEditor() {
     e.preventDefault();
     setSaveError(null);
 
-    const found = { ...validateDraft(draft), ...catalogueGate() };
+    const identity = identityErrors();
+    const rest = validateDraft(draft);
+    // Brand and model are judged above, against the catalogue. validateDraft's
+    // "Required." would be a second message under the same field saying less.
+    delete rest.brand;
+    delete rest.model;
+    // The slug of a new listing is made from its model, so a missing model
+    // reported again as a missing slug is one problem counted twice.
+    if (isNew && !slugTouched && Object.keys(identity).length) delete rest.id;
+    const found = { ...identity, ...rest };
     setErrors(found);
     if (Object.keys(found).length) {
       // Move focus to the first problem so keyboard and screen-reader users
@@ -159,11 +327,33 @@ export default function ProductEditor() {
 
     setSaving(true);
     try {
-      if (isNew) await createProduct(draft);
-      else await updateProduct(draft);
-      navigate('/admin/inventory', { state: { flash: `${draft.brand} ${draft.model} saved.` } });
+      let toSave = draft;
+      if (newModel !== null) {
+        // The catalogue entry first, so the listing is saved against the
+        // entry as the catalogue spells it. If the listing then fails, the
+        // model is still there and already selected, and Save again does not
+        // add it twice.
+        const brand = brands.find(b => sameName(b, draft.brand)) ?? draft.brand.trim();
+        const entry = await addCatalogueModel(brand, newModel, models);
+        setCatalogue(c => (c.status === 'ready'
+          ? { ...c, models: [...c.models.filter(m => m.id !== entry.id), entry] }
+          : c));
+        setNewBrand(null);
+        setNewModel(null);
+        toSave = {
+          ...draft,
+          brand: entry.brand,
+          model: entry.model,
+          catalogueModelId: entry.id,
+          id: isNew && !slugTouched ? slugify(entry.brand, entry.model) : draft.id,
+        };
+        setDraft(toSave);
+      }
+      if (isNew) await createProduct(toSave);
+      else await updateProduct(toSave);
+      navigate('/admin/inventory', { state: { flash: `${toSave.brand} ${toSave.model} saved.` } });
     } catch (err) {
-      setSaveError(describeError(err));
+      setSaveError(err instanceof CatalogueError ? err.message : describeError(err));
       setSaving(false);
     }
   };
@@ -182,6 +372,156 @@ export default function ProductEditor() {
   if (loading) {
     return <Shell title="Loading…"><p style={bodyStyle} aria-live="polite">Fetching the product…</p></Shell>;
   }
+
+  const me = currentActor();
+  const myRequests = requests
+    .filter(r => r.requestedBy === me && r.status !== 'approved')
+    .slice(0, 5);
+  const openRequests = requests.filter(r => r.status === 'open');
+
+  const retry = () => setCatalogueRead(n => n + 1);
+
+  const identityRow = () => {
+    if (catalogue.status === 'failed') {
+      return (
+        <>
+          {isNew
+            ? <DisabledSelects label="Unavailable" errors={errors} />
+            : <Row><Fixed label="Brand" value={draft.brand} /><Fixed label="Model" value={draft.model} /></Row>}
+          <div role="alert" style={{ ...alertStyle, marginBottom: 0, flexWrap: 'wrap' }}>
+            <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+            <span style={{ flex: '1 1 220px' }}>
+              Could not load the catalogue: {catalogue.message}{' '}
+              {isNew
+                ? 'A new listing needs a model from it, so try again.'
+                : 'Brand and model cannot be changed until it loads, but everything else on this listing still saves.'}
+            </span>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={retry}>Retry</button>
+          </div>
+        </>
+      );
+    }
+
+    if (catalogue.status === 'loading') return <DisabledSelects label="Loading…" errors={errors} />;
+
+    if (unlisted) {
+      return (
+        <>
+          <Row><Fixed label="Brand" value={draft.brand} /><Fixed label="Model" value={draft.model} /></Row>
+          <p style={noteStyle}>
+            “{draft.brand} {draft.model}” is not in the catalogue yet, so it is shown here but cannot be
+            changed. Everything else on this listing saves as normal.{' '}
+            {mayExtend
+              ? 'Add or import the model on the Catalogue page, or choose the catalogue model this listing should be.'
+              : 'A manager needs to add or import this model; you can ask for it below.'}
+          </p>
+          {mayExtend && (
+            <div>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={startRelinking}>
+                Choose a catalogue model
+              </button>
+            </div>
+          )}
+        </>
+      );
+    }
+
+    const empty = brandOptions.length === 0;
+
+    return (
+      <>
+        <Row>
+          <Field label="Brand" error={errors.brand} id="brand" required>
+            {/* Native selects rather than a custom listbox: one element each,
+                keyboard-accessible without any ARIA of our own to get wrong. */}
+            <select
+              id="field-brand"
+              style={{ ...inputStyle, ...(empty && !mayExtend ? disabledInputStyle : {}) }}
+              value={brandValue}
+              disabled={empty && !mayExtend}
+              onChange={e => chooseBrand(e.target.value)}
+            >
+              <option value="" disabled>{empty ? 'No models yet' : 'Choose a brand'}</option>
+              {brandOptions.map(b => <option key={b} value={b}>{b}</option>)}
+              {mayExtend && <option value={NEW_BRAND}>+ New brand…</option>}
+            </select>
+            {newBrand !== null && (
+              <div style={{ marginTop: 10 }}>
+                <Field
+                  label="New brand name"
+                  id="newBrand"
+                  error={errors.newBrand}
+                  hint="Adds this brand to the catalogue for everyone, not just this listing."
+                >
+                  <input id="field-newBrand" style={inputStyle} value={newBrand} autoComplete="off"
+                    onChange={e => typeNewBrand(e.target.value)} />
+                </Field>
+              </div>
+            )}
+          </Field>
+          <Field
+            label="Model"
+            error={errors.model}
+            id="model"
+            required
+            hint={current?.retiredAt
+              ? 'Retired from the catalogue. This listing keeps it; new listings cannot choose it.'
+              : linkingOnSave && current
+                ? <>
+                    Saved before the catalogue existed. Will be linked to the catalogue entry <em>{current.model}</em> when
+                    you save{loaded && loaded.model !== current.model && <>, spelt the catalogue’s way rather than “{loaded.model}”</>}.
+                  </>
+                : undefined}
+          >
+            <select
+              id="field-model"
+              style={{ ...inputStyle, ...(!brandValue ? disabledInputStyle : {}) }}
+              value={modelValue}
+              disabled={!brandValue}
+              onChange={e => chooseModel(e.target.value)}
+            >
+              {newBrand === null && <option value="" disabled>{brandValue ? 'Choose a model' : 'Choose a brand first'}</option>}
+              {modelOptions.map(m => (
+                <option key={m.id} value={m.id}>{m.model}{m.retiredAt ? ' (retired)' : ''}</option>
+              ))}
+              {mayExtend && <option value={ADD_MODEL}>+ Add a model…</option>}
+            </select>
+            {newModel !== null && (
+              <div style={{ marginTop: 10 }}>
+                <Field
+                  label="New model name"
+                  id="newModel"
+                  error={errors.newModel ?? (newModel.trim() ? modelNameProblem(newModel) ?? undefined : undefined)}
+                  hint="Adds this model to the catalogue for everyone, not just this listing. The model only — storage and colour go on the listing."
+                >
+                  <input id="field-newModel" style={inputStyle} value={newModel} autoComplete="off"
+                    onChange={e => typeNewModel(e.target.value)} />
+                </Field>
+              </div>
+            )}
+          </Field>
+        </Row>
+
+        {empty && (
+          <p style={noteStyle}>
+            {mayExtend
+              ? <>The catalogue has no models yet. <Link to="/admin/catalogue">Set it up on the Catalogue page</Link> — Import
+                  from listings adds every model the shop already sells — or add one here with “+ New brand…”.</>
+              : 'The catalogue has no models yet — a manager needs to set it up (Catalogue → Import from listings).'}
+          </p>
+        )}
+
+        {relinking && loaded && (
+          <div>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={keepAsItWas}
+              style={{ whiteSpace: 'normal', textAlign: 'left', maxWidth: '100%' }}>
+              Keep it as “{loaded.brand} {loaded.model}”
+            </button>
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <Shell
@@ -207,39 +547,19 @@ export default function ProductEditor() {
         )}
 
         <Section title="Identity">
-          <Row>
-            <Field
-              label="Brand"
-              error={errors.brand}
-              id="brand"
-              required
-              hint={mayExtend && brandIsNew ? 'New brand — will be added to the catalogue.' : undefined}
-            >
-              {/* A native datalist rather than a custom listbox: one element,
-                  keyboard-accessible without any ARIA of our own to get wrong,
-                  and it still lets a manager type something that is not on it. */}
-              <input id="field-brand" style={inputStyle} value={draft.brand} list="catalogue-brands"
-                onChange={e => set('brand', e.target.value)}
-                onBlur={() => snapOnBlur('brand', knownBrands)} autoComplete="off" />
-              <datalist id="catalogue-brands">
-                {knownBrands.map(b => <option key={b} value={b} />)}
-              </datalist>
-            </Field>
-            <Field
-              label="Model"
-              error={errors.model}
-              id="model"
-              required
-              hint={mayExtend && modelIsNew ? 'New model — will be added to the catalogue.' : undefined}
-            >
-              <input id="field-model" style={inputStyle} value={draft.model} list="catalogue-models"
-                onChange={e => set('model', e.target.value)}
-                onBlur={() => snapOnBlur('model', knownModels)} autoComplete="off" />
-              <datalist id="catalogue-models">
-                {knownModels.map(m => <option key={m} value={m} />)}
-              </datalist>
-            </Field>
-          </Row>
+          {identityRow()}
+
+          {mayRequest && catalogue.status === 'ready' && (
+            <RequestModel
+              brands={brands}
+              catalogue={models}
+              open={openRequests}
+              mine={myRequests}
+              prefill={unlisted ? { brand: draft.brand, model: draft.model } : { brand: brandValue, model: '' }}
+              onSent={r => setRequests(rs => (rs.some(x => x.id === r.id) ? rs : [r, ...rs]))}
+              onCheckAgain={retry}
+            />
+          )}
 
           <Field
             label="URL slug"
@@ -380,6 +700,178 @@ export default function ProductEditor() {
   );
 }
 
+/**
+ * How a member of staff gets a model the catalogue lacks.
+ *
+ * They cannot type one into the listing, so without this the only way
+ * forward would be to find a manager in person and hope it was remembered.
+ * The request is the task: it waits in front of a manager until it is
+ * approved, which adds the model to the list above, or declined with a
+ * reason, which is shown here, on the screen where the model was needed.
+ *
+ * Not a <form> of its own, because it sits inside the product form and
+ * forms cannot nest; Enter in its fields is caught so it sends the request
+ * rather than trying to save the listing.
+ */
+function RequestModel({
+  brands, catalogue, open, mine, prefill, onSent, onCheckAgain,
+}: {
+  brands: string[];
+  catalogue: CatalogueModel[];
+  open: ModelRequest[];
+  mine: ModelRequest[];
+  prefill: { brand: string; model: string };
+  onSent: (request: ModelRequest) => void;
+  onCheckAgain: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [brandChoice, setBrandChoice] = useState('');
+  const [otherBrand, setOtherBrand] = useState('');
+  const [model, setModel] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sent, setSent] = useState<ModelRequest | null>(null);
+
+  const brand = brandChoice === OTHER_BRAND ? otherBrand : brandChoice;
+  const problem = model.trim() ? modelNameProblem(model) : null;
+  const ready = !!brand.trim() && !!model.trim() && !problem && !busy;
+
+  const expand = () => {
+    const known = brands.find(b => sameName(b, prefill.brand));
+    setBrandChoice(known ?? (prefill.brand.trim() ? OTHER_BRAND : ''));
+    setOtherBrand(known ? '' : prefill.brand);
+    setModel(prefill.model);
+    setNote('');
+    setError(null);
+    setSent(null);
+    setExpanded(true);
+  };
+
+  const send = async () => {
+    if (!ready) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const request = await requestModel({ brand, model, note }, { catalogue, open });
+      setSent(request);
+      setExpanded(false);
+      onSent(request);
+    } catch (err) {
+      setError(err instanceof CatalogueError ? err.message : describeError(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sendOnEnter = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    void send();
+  };
+
+  return (
+    <div style={{ minWidth: 0 }}>
+      {!expanded && !sent && (
+        <button type="button" style={quietLinkStyle} onClick={expand}>
+          Model not listed? Ask a manager to add it.
+        </button>
+      )}
+
+      {sent && (
+        <div role="status" style={requestBoxStyle}>
+          <p style={{ ...noteStyle, margin: 0, color: 'var(--grey-70)' }}>
+            {sent.requestedBy === currentActor()
+              ? <>Sent. Your request for <strong>{sent.brand} {sent.model}</strong> is with a manager. Once they
+                  approve it, it will appear in the Model list above and you can finish this listing.</>
+              : <><strong>{sent.brand} {sent.model}</strong> has already been asked for and is with a manager. It
+                  will appear in the Model list above once they approve it.</>}
+          </p>
+          <div style={buttonRowStyle}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onCheckAgain}>Check again</button>
+            <button type="button" style={quietLinkStyle} onClick={expand}>Ask for another model</button>
+          </div>
+        </div>
+      )}
+
+      {expanded && (
+        <div style={requestBoxStyle}>
+          <p style={{ ...noteStyle, margin: '0 0 12px', color: 'var(--grey-70)' }}>
+            A manager will see this and either add the model to the catalogue or tell you why not.
+          </p>
+          {error && <p role="alert" style={{ ...fieldErrorStyle, margin: '0 0 12px' }}>{error}</p>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Row>
+              <Field label="Brand you need" id="requestBrand">
+                <select id="field-requestBrand" style={inputStyle} value={brandChoice}
+                  onChange={e => setBrandChoice(e.target.value)}>
+                  <option value="" disabled>Choose a brand</option>
+                  {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                  <option value={OTHER_BRAND}>A brand not listed…</option>
+                </select>
+                {brandChoice === OTHER_BRAND && (
+                  <div style={{ marginTop: 10 }}>
+                    <Field label="Brand name" id="requestBrandName">
+                      <input id="field-requestBrandName" style={inputStyle} value={otherBrand} autoComplete="off"
+                        onChange={e => setOtherBrand(e.target.value)} onKeyDown={sendOnEnter} />
+                    </Field>
+                  </div>
+                )}
+              </Field>
+              <Field
+                label="Model you need"
+                id="requestModel"
+                error={problem ?? undefined}
+                hint="The model only, as the maker names it — storage and colour go on the listing."
+              >
+                <input id="field-requestModel" style={inputStyle} value={model} autoComplete="off"
+                  onChange={e => setModel(e.target.value)} onKeyDown={sendOnEnter} />
+              </Field>
+            </Row>
+            <Field label="What are you trying to list? (optional)" id="requestNote">
+              <textarea id="field-requestNote" style={{ ...inputStyle, minHeight: 64, paddingTop: 10, resize: 'vertical' }}
+                value={note} maxLength={500} onChange={e => setNote(e.target.value)} />
+            </Field>
+          </div>
+          <div style={buttonRowStyle}>
+            <button type="button" className="btn btn-primary btn-sm" disabled={!ready} onClick={() => void send()}>
+              {busy ? 'Sending…' : 'Send to a manager'}
+            </button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setExpanded(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {mine.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <p style={{ ...fieldLabelStyle, margin: '0 0 6px' }}>Your requests</p>
+          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {mine.map(r => (
+              <li key={r.id} style={{ ...noteStyle, margin: 0, overflowWrap: 'anywhere' }}>
+                <strong style={{ color: 'var(--black)' }}>{r.brand} {r.model}</strong>
+                {r.status === 'open'
+                  ? ' — waiting for a manager. It will appear in the Model list once approved.'
+                  : <> — declined{r.decidedBy ? ` by ${r.decidedBy}` : ''}: {r.reason ?? 'no reason was given, so ask a manager.'}</>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The same name, ignoring case and spacing.
+ *
+ * A manager typing "apple" as a new brand would otherwise give the catalogue
+ * an "apple" beside its "Apple", and the Brand list two entries for one maker.
+ */
+function sameName(a: string, b: string): boolean {
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
+  return norm(a) === norm(b);
+}
+
 /** The gallery is the single source of truth; imageUrl mirrors its first entry. */
 function galleryOf(draft: ProductDraft): string[] {
   if (draft.galleryImages?.length) return draft.galleryImages;
@@ -388,35 +880,6 @@ function galleryOf(draft: ProductDraft): string[] {
 
 function splitList(value: string): string[] {
   return value.split(',').map(s => s.trim()).filter(Boolean);
-}
-
-/**
- * Whether this value would add an entry the catalogue has never carried.
- *
- * Asked through snapToCatalogue rather than with a second comparison of its
- * own, so there is exactly one idea of when two spellings are the same
- * thing: it returns the catalogue's entry when it recognises what was typed,
- * and the typed text otherwise, so membership is a plain string check.
- *
- * An empty list of known values answers false, every time. That covers the
- * moment before the catalogue has loaded, a shop whose catalogue is genuinely
- * empty, and a read that failed — and in all three "we do not know" is the
- * honest answer. Refusing every save because a read failed would present an
- * unreachable Firestore as though the admin lacked permission, which is the
- * kind of wrong diagnosis that costs an afternoon.
- *
- * An empty value is nobody's new entry either; that is validateDraft's
- * "Required." to report, and two messages under one field say less than one.
- */
-function isNewToCatalogue(value: string, known: readonly string[]): boolean {
-  const typed = value.trim();
-  if (!typed || !known.length) return false;
-  return !known.includes(snapToCatalogue(typed, known));
-}
-
-/** Why the save stopped, and the two ways out of it. */
-function refuseNewEntry(what: 'brand' | 'model', typed: string): string {
-  return `The catalogue has no ${what} “${typed.trim()}”. Pick one of the suggestions, or ask a manager to add it.`;
 }
 
 /**
@@ -475,7 +938,7 @@ function Field({
   label, id, children, error, hint, required,
 }: {
   label: string; id: string; children: React.ReactNode;
-  error?: string; hint?: string; required?: boolean;
+  error?: string; hint?: React.ReactNode; required?: boolean;
 }) {
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
@@ -490,6 +953,40 @@ function Field({
   );
 }
 
+/**
+ * A brand or model shown but not offered for change.
+ *
+ * Plain text rather than a read-only input, so there is no box that looks as
+ * though it could be typed in, and nothing a screen reader announces as an
+ * edit field for a value the person cannot edit.
+ */
+function Fixed({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p style={{ ...fieldLabelStyle, margin: '0 0 6px' }}>{label}</p>
+      <p style={fixedValueStyle}>{value || '—'}</p>
+    </div>
+  );
+}
+
+/** Brand and model while there is nothing to choose from yet. */
+function DisabledSelects({ label, errors }: { label: string; errors: ValidationErrors }) {
+  return (
+    <Row>
+      <Field label="Brand" id="brand" required error={errors.brand}>
+        <select id="field-brand" style={{ ...inputStyle, ...disabledInputStyle }} disabled value="">
+          <option value="">{label}</option>
+        </select>
+      </Field>
+      <Field label="Model" id="model" required error={errors.model}>
+        <select id="field-model" style={{ ...inputStyle, ...disabledInputStyle }} disabled value="">
+          <option value="">{label}</option>
+        </select>
+      </Field>
+    </Row>
+  );
+}
+
 const inputStyle: React.CSSProperties = {
   width: '100%', height: 42, padding: '0 12px',
   border: '1.5px solid var(--grey-20)', borderRadius: 'var(--radius-md)',
@@ -499,6 +996,12 @@ const inputStyle: React.CSSProperties = {
 
 const disabledInputStyle: React.CSSProperties = {
   background: 'var(--grey-5)', color: 'var(--grey-50)', cursor: 'not-allowed',
+};
+
+const fixedValueStyle: React.CSSProperties = {
+  ...inputStyle, ...disabledInputStyle, cursor: 'default', margin: 0,
+  display: 'flex', alignItems: 'center', color: 'var(--grey-70)',
+  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
 };
 
 const fieldLabelStyle: React.CSSProperties = {
@@ -512,6 +1015,25 @@ const fieldHintStyle: React.CSSProperties = {
 
 const fieldErrorStyle: React.CSSProperties = {
   margin: '6px 0 0', fontFamily: 'var(--font-body)', fontSize: '12px', color: '#b91c1c', fontWeight: 600, lineHeight: 1.45,
+};
+
+const noteStyle: React.CSSProperties = {
+  margin: 0, fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)', lineHeight: 1.5,
+};
+
+const quietLinkStyle: React.CSSProperties = {
+  background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left',
+  fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--grey-60)',
+  textDecoration: 'underline', textUnderlineOffset: 3,
+};
+
+const requestBoxStyle: React.CSSProperties = {
+  border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)',
+  padding: 14, background: 'var(--grey-5)', minWidth: 0,
+};
+
+const buttonRowStyle: React.CSSProperties = {
+  display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginTop: 12,
 };
 
 const sectionStyle: React.CSSProperties = {
