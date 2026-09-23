@@ -26,6 +26,7 @@ import type { Product } from '../../types';
 const getProduct = vi.fn();
 const createProduct = vi.fn();
 const updateProduct = vi.fn();
+const splitProductByColour = vi.fn();
 const listCatalogueModels = vi.fn();
 const listModelRequests = vi.fn();
 const addCatalogueModel = vi.fn();
@@ -40,6 +41,7 @@ vi.mock('../../lib/adminApi', async (importOriginal) => {
     getProduct: (...a: unknown[]) => getProduct(...a),
     createProduct: (...a: unknown[]) => createProduct(...a),
     updateProduct: (...a: unknown[]) => updateProduct(...a),
+    splitProductByColour: (...a: unknown[]) => splitProductByColour(...a),
     currentActor: () => ME,
   };
 });
@@ -134,6 +136,7 @@ beforeEach(() => {
   getProduct.mockResolvedValue(product());
   createProduct.mockResolvedValue(undefined);
   updateProduct.mockResolvedValue(undefined);
+  splitProductByColour.mockResolvedValue([]);
 });
 
 describe('ProductEditor brand and model, for staff', () => {
@@ -427,6 +430,142 @@ describe('ProductEditor audit footnote', () => {
     await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
 
     expect(await screen.findByText(/Last saved by admin@lehart\.co\.uk · 22 Sept? 2026/)).toBeInTheDocument();
+  });
+});
+
+/**
+ * A listing whose "Colour options" names more than one colour renders that
+ * as text on the product page, not as clickable swatches — clicking one
+ * would not get a shopper a different handset, since every colour is the
+ * same document with the same stock. Splitting is how it becomes real:
+ * one listing per colour, each carrying its own count. What matters here is
+ * that nothing is ever written with a guessed stock figure, and that the
+ * feature does not exist for anyone who is not a manager.
+ */
+describe('ProductEditor — split by colour', () => {
+  const multiColour = () => product({ colorOptions: ['Blue', 'Silver'], stock: 3 });
+
+  it('offers no split at all to staff, however many colours the listing names', async () => {
+    role = 'staff';
+    getProduct.mockResolvedValue(multiColour());
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+
+    expect(screen.queryByRole('button', { name: /split into one listing per colour/i })).not.toBeInTheDocument();
+  });
+
+  it('offers no split on a new, unsaved product, even as a manager', async () => {
+    role = 'admin';
+    renderEditor('/admin/inventory/new');
+    await catalogueLoaded();
+
+    expect(screen.queryByRole('button', { name: /split into one listing per colour/i })).not.toBeInTheDocument();
+  });
+
+  /**
+   * A single colour, or none, is not ambiguous — there is nothing here for
+   * the feature to offer, and showing it anyway would invite a split of one.
+   */
+  it('offers no split to a manager when the listing names one colour or none', async () => {
+    role = 'admin';
+    getProduct.mockResolvedValue(product({ colorOptions: ['Blue'] }));
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+    expect(screen.queryByRole('button', { name: /split into one listing per colour/i })).not.toBeInTheDocument();
+
+    getProduct.mockResolvedValue(product({ colorOptions: [] }));
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+    expect(screen.queryByRole('button', { name: /split into one listing per colour/i })).not.toBeInTheDocument();
+  });
+
+  it('offers the split to a manager on an existing multi-colour listing, with a proposed slug per colour', async () => {
+    role = 'admin';
+    getProduct.mockResolvedValue(multiColour());
+    const user = userEvent.setup();
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+
+    await user.click(screen.getByRole('button', { name: /split into one listing per colour/i }));
+
+    expect(screen.getByLabelText(/Blue — URL slug/i)).toHaveValue('apple-iphone-8-64gb-blue');
+    expect(screen.getByLabelText(/Silver — URL slug/i)).toHaveValue('apple-iphone-8-64gb-silver');
+    // Stock starts blank rather than an even split of the 3 on the listing —
+    // an invented number is exactly what this feature exists to refuse.
+    expect(screen.getByLabelText(/Blue — stock/i)).toHaveValue(null);
+  });
+
+  it('keeps Split disabled until every colour has a real stock count', async () => {
+    role = 'admin';
+    getProduct.mockResolvedValue(multiColour());
+    const user = userEvent.setup();
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+    await user.click(screen.getByRole('button', { name: /split into one listing per colour/i }));
+
+    const splitButton = screen.getByRole('button', { name: /^split into 2 listings$/i });
+    expect(splitButton).toBeDisabled();
+
+    await user.type(screen.getByLabelText(/Blue — stock/i), '2');
+    expect(splitButton).toBeDisabled();
+
+    await user.type(screen.getByLabelText(/Silver — stock/i), '1');
+    expect(splitButton).toBeEnabled();
+    expect(splitProductByColour).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The database write itself, not just the screen: each new listing gets
+   * its own colour and its own real stock, and the original's id is what
+   * the split is run against.
+   */
+  it('sends one row per colour with its own stock, and navigates away once it lands', async () => {
+    role = 'admin';
+    getProduct.mockResolvedValue(multiColour());
+    splitProductByColour.mockResolvedValue([
+      { id: 'apple-iphone-8-64gb-blue', colorOptions: ['Blue'], stock: 2 },
+      { id: 'apple-iphone-8-64gb-silver', colorOptions: ['Silver'], stock: 1 },
+    ]);
+    const user = userEvent.setup();
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+    await user.click(screen.getByRole('button', { name: /split into one listing per colour/i }));
+    await user.type(screen.getByLabelText(/Blue — stock/i), '2');
+    await user.type(screen.getByLabelText(/Silver — stock/i), '1');
+
+    await user.click(screen.getByRole('button', { name: /^split into 2 listings$/i }));
+
+    expect(splitProductByColour).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'apple-iphone-8' }),
+      [
+        { colour: 'Blue', id: 'apple-iphone-8-64gb-blue', stock: 2 },
+        { colour: 'Silver', id: 'apple-iphone-8-64gb-silver', stock: 1 },
+      ],
+    );
+    expect(await screen.findByText('Inventory list')).toBeInTheDocument();
+  });
+
+  /**
+   * A slug collision, or any other reason the write itself refuses, has to
+   * be shown on the form rather than silently doing nothing — and must not
+   * navigate away, since nothing was actually split.
+   */
+  it('shows a failed split inline and stays on the page', async () => {
+    role = 'admin';
+    getProduct.mockResolvedValue(multiColour());
+    const { SplitError } = await import('../../lib/adminApi');
+    splitProductByColour.mockRejectedValue(new SplitError('"apple-iphone-8-64gb-blue" is already used by another listing — change its URL slug.'));
+    const user = userEvent.setup();
+    renderEditor('/admin/inventory/apple-iphone-8');
+    await screen.findByRole('heading', { name: 'Edit Apple iPhone 8' });
+    await user.click(screen.getByRole('button', { name: /split into one listing per colour/i }));
+    await user.type(screen.getByLabelText(/Blue — stock/i), '2');
+    await user.type(screen.getByLabelText(/Silver — stock/i), '1');
+
+    await user.click(screen.getByRole('button', { name: /^split into 2 listings$/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/already used by another listing/i);
+    expect(screen.queryByText('Inventory list')).not.toBeInTheDocument();
   });
 });
 

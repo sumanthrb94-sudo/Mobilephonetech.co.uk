@@ -1,6 +1,6 @@
 import {
   collection, deleteDoc, deleteField, doc, getDoc, getDocs, query,
-  serverTimestamp, setDoc, updateDoc, where, limit as fsLimit,
+  serverTimestamp, setDoc, updateDoc, where, writeBatch, limit as fsLimit,
 } from 'firebase/firestore';
 import {
   deleteObject, getDownloadURL, listAll, ref, uploadBytes,
@@ -605,6 +605,100 @@ export async function restoreProduct(id: string): Promise<void> {
     archivedBy: deleteField(),
     ...auditFields(),
   }));
+}
+
+/** One row a listing becomes when it is split by colour. */
+export interface ColourSplitInput {
+  colour: string;
+  id: string;
+  stock: number;
+}
+
+/**
+ * Marks a split that failed for a reason the person can act on — a slug
+ * already taken, an empty split — as distinct from an ordinary write
+ * failure. See the `err instanceof SplitError` check in ProductEditor.
+ */
+export class SplitError extends Error {}
+
+/**
+ * Split one listing that names several colours in its own "Colour options"
+ * into one listing per colour, each with its own real stock, and archive the
+ * original.
+ *
+ * This is the storage pattern applied to colour: a 64GB and a 128GB have
+ * always been separate rows, because they are separate handsets with their
+ * own stock. A listing that instead names "Blue, Silver" in one row is the
+ * same phone claiming to be both at once, which is why the product page
+ * shows it as text rather than as swatches — clicking "Silver" on that row
+ * would not get anyone a silver handset, because both colours are the same
+ * document with the same stock. Splitting is what turns the claim into
+ * fact: each new row is a real listing with its own count, entered by
+ * someone who knows it, never guessed at by dividing the total evenly (see
+ * src/lib/productColourSplit.ts, which plans the split and refuses one with
+ * a blank or invented stock count before this is ever called).
+ *
+ * ONE BATCH
+ *
+ * Every new listing lands and the original is archived together, so a
+ * dropped connection, or a slug someone else claimed a second ago, leaves
+ * the shop exactly as it was — never some colours listed for sale and the
+ * old ambiguous row still live over stock that no longer belongs to it.
+ */
+export async function splitProductByColour(
+  base: ProductDraft, rows: ColourSplitInput[],
+): Promise<Product[]> {
+  const originalId = base.id;
+  if (rows.length < 2) throw new SplitError('Split into at least two colours.');
+  if (rows.some(r => r.id === originalId)) {
+    throw new SplitError('A new listing cannot reuse this one’s own slug — it is being archived in the same move.');
+  }
+  const seen = new Set<string>();
+  for (const row of rows) {
+    if (seen.has(row.id)) throw new SplitError(`Two colours share the slug "${row.id}" — give each its own.`);
+    seen.add(row.id);
+  }
+
+  // Checked before the batch is built, because a batch cannot read: writing
+  // straight into a slug already used by an unrelated product would replace
+  // it rather than refuse — the same silent-overwrite createProduct's own
+  // existence check exists to stop.
+  const taken = await Promise.all(rows.map(async row => (
+    (await getDoc(doc(db, COL.products, row.id))).exists() ? row.id : null
+  )));
+  const collision = taken.find(Boolean);
+  if (collision) throw new SplitError(`"${collision}" is already used by another listing — change its URL slug.`);
+
+  const stamp = auditFields();
+  const batch = writeBatch(db);
+  const created: Array<{ id: string; body: Record<string, unknown> }> = [];
+
+  for (const row of rows) {
+    const draft: ProductDraft = { ...base, id: row.id, colorOptions: [row.colour], stock: row.stock };
+    const body = {
+      ...draftToRow(draft),
+      createdAt: serverTimestamp(),
+      createdBy: currentActor(),
+      ...stamp,
+      // Which listing this came from — so a Blue iPhone that appears with
+      // no history of its own is not a mystery to whoever reads the
+      // document later.
+      splitFrom: originalId,
+    };
+    batch.set(doc(db, COL.products, row.id), body);
+    created.push({ id: row.id, body });
+  }
+
+  batch.update(doc(db, COL.products, originalId), {
+    archivedAt: new Date().toISOString(),
+    archivedBy: currentActor(),
+    stock: 0,
+    splitInto: rows.map(r => r.id),
+    ...stamp,
+  });
+
+  await withAdminRetry(() => batch.commit());
+  return created.map(({ id, body }) => docToProduct(id, body));
 }
 
 /**

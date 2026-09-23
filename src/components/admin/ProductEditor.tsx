@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Loader2, AlertTriangle, ExternalLink } from 'lucide-re
 import {
   emptyDraft, productToDraft, validateDraft, slugify, describeError,
   getProduct, createProduct, updateProduct, currentActor, GRADES,
+  splitProductByColour, SplitError,
   type ProductDraft, type ValidationErrors,
 } from '../../lib/adminApi';
 import {
@@ -11,6 +12,10 @@ import {
   addCatalogueModel, requestModel, modelNameProblem, CatalogueError,
   type CatalogueModel, type ModelRequest,
 } from '../../lib/catalogue';
+import {
+  initialSplitRows, splitProblems, parsedSplitRows, totalSplitStock,
+  type ColourSplitRow,
+} from '../../lib/productColourSplit';
 import { useAdmin } from '../../hooks/useAdmin';
 import ImageManager from './ImageManager';
 
@@ -94,6 +99,9 @@ export default function ProductEditor() {
   const mayExtend = can('catalogue:extend');
   // Managers never queue a request for themselves: they can simply add it.
   const mayRequest = !mayExtend && can('catalogue:request');
+  // Splitting archives the listing it runs on — the same authority as the
+  // Archive button on the inventory list, so it needs the same capability.
+  const maySplit = can('products:archive');
 
   useEffect(() => {
     if (isNew) return;
@@ -357,6 +365,11 @@ export default function ProductEditor() {
       setSaving(false);
     }
   };
+
+  // The split leaves this listing archived, so there is nothing left on this
+  // page to keep editing — the same destination and the same flash pattern
+  // as an ordinary save.
+  const handleSplit = (message: string) => navigate('/admin/inventory', { state: { flash: message } });
 
   if (notFound) {
     return (
@@ -672,6 +685,10 @@ export default function ProductEditor() {
                 onChange={e => set('storageOptions', splitList(e.target.value))} />
             </Field>
           </Row>
+
+          {!isNew && maySplit && (
+            <SplitByColour draft={draft} onDone={handleSplit} />
+          )}
         </Section>
 
         <Section title="Imagery">
@@ -855,6 +872,117 @@ function RequestModel({
               </li>
             ))}
           </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Turn one listing that names several colours into one listing per colour.
+ *
+ * The storage pattern applied to colour: a 64GB and a 128GB have always
+ * been separate rows, each with its own stock. A listing that instead names
+ * "Blue, Silver" in one Colour options field is the same row claiming to be
+ * both, which is why the product page shows it as text rather than as
+ * clickable swatches — a customer clicking "Silver" on that row would not
+ * get a silver handset, because both colours are the same document with the
+ * same stock. This is how that gets fixed: each colour becomes its own real
+ * listing, and the ones already built for storage variants pick the change
+ * up automatically — nothing about VariantSelector or productSiblings needs
+ * to know a split happened.
+ *
+ * Manager only, because it archives the listing it runs on — the same
+ * authority as the Archive button on the inventory list. Shown only when
+ * there is something to split: one colour or none is not ambiguous, and
+ * this offers nothing for it.
+ *
+ * Acts on the draft as it stands on screen, not on what was last saved — a
+ * price correction made moments before splitting carries into every new
+ * listing rather than being lost to it.
+ */
+function SplitByColour({ draft, onDone }: { draft: ProductDraft; onDone: (message: string) => void }) {
+  const colours = draft.colorOptions ?? [];
+  const [open, setOpen] = useState(false);
+  const [rows, setRows] = useState<ColourSplitRow[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (colours.length < 2) return null;
+
+  const start = () => {
+    setRows(initialSplitRows(draft, colours));
+    setError(null);
+    setOpen(true);
+  };
+
+  const setRow = (i: number, patch: Partial<ColourSplitRow>) =>
+    setRows(rs => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+
+  const problems = splitProblems(rows, draft.id);
+  const problemAt = (i: number) => problems.find(p => p.index === i)?.message;
+  const total = totalSplitStock(rows);
+
+  const submit = async () => {
+    if (problems.length) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await splitProductByColour(draft, parsedSplitRows(rows));
+      const summary = created.map(p => `${p.colorOptions?.[0] ?? '?'} (${p.stock})`).join(', ');
+      onDone(`Split "${draft.brand} ${draft.model}" into ${created.length} listings: ${summary}.`);
+    } catch (err) {
+      setError(err instanceof SplitError ? err.message : describeError(err));
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      {!open ? (
+        <button type="button" style={quietLinkStyle} onClick={start}>
+          Split into one listing per colour
+        </button>
+      ) : (
+        <div style={requestBoxStyle}>
+          <p style={{ ...noteStyle, margin: '0 0 12px', color: 'var(--grey-70)' }}>
+            Makes {colours.length} new listings, one per colour, each with its own stock and its own page — and
+            archives this one. Enter what you actually have of each; they do not have to add up to the{' '}
+            {draft.stock} on this listing now, since nobody has ever counted it by colour.
+          </p>
+          {error && <p role="alert" style={{ ...fieldErrorStyle, margin: '0 0 12px' }}>{error}</p>}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {rows.map((row, i) => (
+              <Row key={row.colour}>
+                <Field label={`${row.colour} — stock`} id={`splitStock${i}`} error={problemAt(i)} required>
+                  <input
+                    id={`field-splitStock${i}`} style={inputStyle} type="number" min="0" step="1"
+                    placeholder="Real count" value={row.stock} autoComplete="off"
+                    onChange={e => setRow(i, { stock: e.target.value })}
+                  />
+                </Field>
+                <Field label={`${row.colour} — URL slug`} id={`splitSlug${i}`}>
+                  <input
+                    id={`field-splitSlug${i}`} style={inputStyle} value={row.id} autoComplete="off"
+                    onChange={e => setRow(i, { id: e.target.value })}
+                  />
+                </Field>
+              </Row>
+            ))}
+          </div>
+          <p style={{ ...noteStyle, margin: '10px 0 0', fontSize: 12 }}>
+            Total entered: {total}
+          </p>
+          <div style={buttonRowStyle}>
+            <button
+              type="button" className="btn btn-primary btn-sm"
+              disabled={busy || problems.length > 0}
+              onClick={() => void submit()}
+            >
+              {busy ? 'Splitting…' : `Split into ${colours.length} listings`}
+            </button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setOpen(false)}>Cancel</button>
+          </div>
         </div>
       )}
     </div>

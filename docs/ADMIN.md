@@ -273,6 +273,25 @@ corrected the next time someone saves those listings), and any listing whose
 model name has storage or a colour in it, which it refuses to import and lists
 for you to fix by hand. It is safe to run twice.
 
+**Making colour selectable** — a listing whose Colour options names more than
+one colour ("Blue, Silver") shows those colours as text on the product page,
+not as clickable swatches. That is deliberate: one listing is one document
+with one stock count, so a customer clicking "Silver" on it would not get a
+silver handset — both colours are the same row. Storage has never worked that
+way: a 64GB and a 128GB are separate listings, each with its own stock, and
+clicking between them is a real navigation between two real things for sale.
+
+**Split into one listing per colour** (on the product editor, manager only)
+applies the same rule to colour. It makes one new listing per colour and
+archives the one you split, in a single write — either all of it lands or
+none of it does. Stock for each colour starts blank on purpose: dividing the
+current total evenly is a number nobody counted, and this system does not
+print numbers nobody counted. You type what you actually have of each.
+
+Once split, the colours are real siblings the same way storage sizes are, and
+the product page renders them as clickable swatches carrying their own price,
+automatically — nothing else needs to change for that to happen.
+
 **Provenance** — every write from the console stamps who made it and when, and
 the editor shows the last one. It records who the console believed was signed
 in; it is not proof, because the same browser writes both the change and the
