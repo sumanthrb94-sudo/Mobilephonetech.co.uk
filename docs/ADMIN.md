@@ -228,20 +228,50 @@ and restoring one is a click. Stock deliberately stays at zero on restore:
 bringing back a count from before the product was withdrawn would be inventing
 stock, so whoever restores it enters the real figure.
 
-**The catalogue gate** — Brand and Model are backed by the spellings the
-catalogue already uses. What you type is corrected to the existing spelling
-when you leave the field, so `iphone  8` becomes `iPhone 8`; model suggestions
-are filtered to the brand you picked. A value the catalogue has never carried
-is a new catalogue entry: a manager may create one and is told they are doing
-so, and staff are refused with a message naming what they typed.
+**The model catalogue** — staff do not type a brand or a model. They pick
+both from **Catalogue**, a list of models a manager maintains. InventoryManager
+works the same way: employees pick from the admin catalogue, and only a
+manager sees the *Add…* option.
 
-This matters more than it looks. `iPhone 8` and `iphone  8` are two different
-products to every piece of code that groups by model — which is why the
-product page has to normalise spacing and case before it can offer a shopper
-the other storage sizes of the phone they are looking at. Fixing it at the
-keyboard is one rule instead of one per feature. It is the same rule
-InventoryManager applies when it snaps model names to the admin catalogue's
-spelling on write.
+When the phone someone needs to list is not in it, they ask for it from the
+product editor — *"Model not listed? Ask a manager to add it"* — with a note
+saying what they are trying to list. That request is the task. It waits on the
+**Catalogue** page, and the Catalogue link in the nav carries a red count of
+how many are waiting. A manager approves it, correcting the spelling on the way
+through if need be, which adds the model for everyone; or declines it with a
+reason, which the requester sees in the editor. Three people asking for the
+same phone on the same morning make one request, not three.
+
+A manager adding a model, or approving one, is refused if the model name
+carries a storage size or a colour — `iPhone 8 128GB`, `Pixel 8 Obsidian` —
+with a message saying which field it belongs in. Names that only look like it
+(`Galaxy A54 5G`, `Redmi Note 13`) are accepted.
+
+Models are never deleted, because listings point at them. A wrong or
+discontinued one is **retired**: new listings cannot choose it, existing ones
+keep it.
+
+**Why it matters more than it looks.** The product page groups a listing with
+the other sizes and colours of the same phone by brand and model. `iPhone 8`
+and `iPhone 8 128GB` are two different phones to that code, so a listing with
+the storage typed into its model is an orphan — its page offers no other sizes,
+and nothing says why. A model that can only be picked cannot be typed wrong.
+
+**It is enforced by the database, not the form.** Every listing records which
+catalogue entry it is for, and the rules refuse a staff listing whose brand and
+model are not a live entry spelt exactly as the entry spells it. Pointing at a
+real entry while typing a different model name is refused too; that is the
+orphan case, and it is the one that matters. An ordinary price or stock edit on
+a listing written before the catalogue existed is not affected — the check only
+runs when brand or model actually change.
+
+**Before staff can list anything, import the catalogue.** It starts empty, and
+the shop does not. **Catalogue → Import from existing listings** shows what it
+will add before it writes anything: every model your listings already use, any
+model spelt more than one way (the commonest spelling wins; the others are
+corrected the next time someone saves those listings), and any listing whose
+model name has storage or a colour in it, which it refuses to import and lists
+for you to fix by hand. It is safe to run twice.
 
 **Provenance** — every write from the console stamps who made it and when, and
 the editor shows the last one. It records who the console believed was signed
@@ -497,6 +527,15 @@ Three things must stay in step, and a change to any one is wrong on its own:
 >
 > Deploy before creating any staff account. A role you cannot exercise reads
 > as a broken console.
+>
+> **Then, in this order:**
+>
+> 1. Sign in as a manager and open **Catalogue → Import from existing
+>    listings**. Until the catalogue has models in it, staff cannot create a
+>    single listing — the picker is empty and the rules refuse the write.
+> 2. Fix any listings the import refused (a storage size or colour in the
+>    model name) and import again.
+> 3. Only then create staff accounts.
 
 The Firebase CLI cannot do either with this project's credentials:
 

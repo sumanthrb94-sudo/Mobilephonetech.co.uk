@@ -58,6 +58,16 @@ export interface ProductDraft {
   conditionDescription?: string;
   colorOptions?: string[];
   storageOptions?: string[];
+  /**
+   * The catalogue entry this listing is for — see src/lib/catalogue.ts.
+   *
+   * Brand and model are copied from that entry rather than typed, and the
+   * rules refuse a staff listing whose brand and model do not match a live
+   * entry exactly. Absent on listings written before the catalogue existed,
+   * and left absent rather than nulled: a null would count as a change to
+   * the field and send an ordinary stock edit through the catalogue check.
+   */
+  catalogueModelId?: string;
 }
 
 /**
@@ -91,6 +101,8 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     conditionDescription: draft.conditionDescription || null,
     colorOptions: draft.colorOptions?.length ? draft.colorOptions : null,
     storageOptions: draft.storageOptions?.length ? draft.storageOptions : null,
+    // Undefined, and so stripped, when the listing predates the catalogue.
+    catalogueModelId: draft.catalogueModelId,
     searchTerms: buildSearchTerms(draft.brand, draft.model, draft.category),
   });
 }
@@ -134,6 +146,7 @@ export function productToDraft(p: Product): ProductDraft {
     conditionDescription: p.conditionDescription,
     colorOptions: p.colorOptions,
     storageOptions: p.storageOptions,
+    catalogueModelId: p.catalogueModelId,
   };
 }
 
@@ -574,7 +587,7 @@ export async function listBrands(): Promise<string[]> {
  * we prove did this" in a dispute. Proving it would need the write to go
  * through a server route that reads the uid from a verified token.
  */
-function currentActor(): string {
+export function currentActor(): string {
   const user = auth.currentUser;
   return user?.email ?? user?.uid ?? 'unknown';
 }

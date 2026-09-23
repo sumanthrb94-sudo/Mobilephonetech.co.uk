@@ -162,14 +162,43 @@ export async function seed() {
 
   for (const p of SEED_PRODUCTS) {
     const { id, ...rest } = p;
+    const catalogueModelId = catalogueIdFor(p.brand, p.model);
+    // Catalogue entry first, then the listing that points at it — the order
+    // production has to happen in, since staff can only list a model the
+    // catalogue already carries.
+    await writeDoc('catalogueModels', catalogueModelId, { brand: p.brand, model: p.model });
     await writeDoc('products', id, {
       ...rest,
+      catalogueModelId,
       specs: {},
       searchTerms: searchTerms(p.brand, p.model, p.category),
     });
   }
 
   return { adminUid, staffUid, customerUid };
+}
+
+/**
+ * The catalogue document id for a brand and model — the same derivation as
+ * catalogueModelId() in src/lib/catalogue.ts, repeated here because the
+ * harness is plain Node and cannot import the app's TypeScript. If the two
+ * ever disagreed, every seeded listing would point at an entry the editor
+ * cannot find, and the staff suites would fail for a reason that looks like
+ * the catalogue being broken rather than the harness.
+ */
+export function catalogueIdFor(brand, model) {
+  const slug = s => s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+  return `${slug(brand)}__${slug(model)}`;
+}
+
+/** Add catalogue entries directly, as a manager's import would. */
+export async function seedCatalogue(entries) {
+  for (const { brand, model, retiredAt } of entries) {
+    await writeDoc('catalogueModels', catalogueIdFor(brand, model), {
+      brand, model, ...(retiredAt ? { retiredAt } : {}),
+    });
+  }
 }
 
 /**
@@ -391,4 +420,35 @@ export async function attemptDeleteAs(email, path) {
     { method: 'DELETE', headers: { Authorization: `Bearer ${idToken}` } },
   );
   return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
+}
+
+/**
+ * Every document in a collection, read with owner access, as plain objects.
+ *
+ * For asserting on what the database actually holds after a browser run —
+ * that a staff member's model request exists, that approving it made a
+ * catalogue entry. What the page says happened and what happened are
+ * different claims, and only the second is the one being tested. Follows the
+ * page token; countProducts() once did not, and counted thirty for a
+ * catalogue of twelve hundred.
+ */
+export async function listCollection(name) {
+  const out = [];
+  let pageToken;
+  do {
+    const url = new URL(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${name}`);
+    url.searchParams.set('pageSize', '300');
+    if (pageToken) url.searchParams.set('pageToken', pageToken);
+    const body = await (await fetch(url, { headers: authHeaders })).json();
+    for (const d of body.documents ?? []) {
+      const row = { id: d.name.split('/').pop() };
+      for (const [k, v] of Object.entries(d.fields ?? {})) {
+        row[k] = v.stringValue ?? (v.integerValue != null ? Number(v.integerValue)
+          : v.doubleValue ?? v.booleanValue ?? v.timestampValue ?? (v.nullValue !== undefined ? null : v));
+      }
+      out.push(row);
+    }
+    pageToken = body.nextPageToken;
+  } while (pageToken);
+  return out;
 }

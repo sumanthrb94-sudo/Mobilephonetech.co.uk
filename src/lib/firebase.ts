@@ -123,6 +123,10 @@ export const COL = {
   banners: 'banners',
   siteLayout: 'siteLayout',
   seriesPanels: 'seriesPanels',
+  // The managed list of models a listing may be for, and staff requests for
+  // ones it lacks — see src/lib/catalogue.ts.
+  catalogueModels: 'catalogueModels',
+  modelRequests: 'modelRequests',
   conversations: 'conversations',
   // Per-user subcollections under users/{uid}
   cart: 'cart',

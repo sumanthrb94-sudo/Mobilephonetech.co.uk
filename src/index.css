@@ -4107,3 +4107,22 @@ html.is-paying .checkout-header {
   padding-top: 10px;
   margin: 12px 0 0;
 }
+
+/* A queue waiting on the person looking at the nav — model requests on the
+   Catalogue link. A count rather than a dot, because "someone needs you" and
+   "five people need you" are different mornings. */
+.ops-nav-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  background: var(--sale-red, #c0392b);
+  color: #fff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
+}

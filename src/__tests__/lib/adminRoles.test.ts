@@ -68,6 +68,16 @@ describe('can', () => {
     expect(can('staff', 'catalogue:extend')).toBe(false);
   });
 
+  /**
+   * Staff cannot type a model — they pick from the catalogue — so asking a
+   * manager for a missing one is the only way they can get a new phone
+   * listed at all. Taking this away would leave them with no route forward.
+   */
+  it('lets staff ask for a model but not add one', () => {
+    expect(can('staff', 'catalogue:request')).toBe(true);
+    expect(can('staff', 'catalogue:extend')).toBe(false);
+  });
+
   it('gives an admin everything staff has', () => {
     for (const c of capabilitiesOf('staff')) expect(can('admin', c)).toBe(true);
   });

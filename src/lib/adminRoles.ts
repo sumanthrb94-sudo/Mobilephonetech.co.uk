@@ -63,7 +63,12 @@ export type Capability =
   /** Take the catalogue or the order book out of the building. */
   | 'export'
   /** Add a brand or model the catalogue has never carried. */
-  | 'catalogue:extend';
+  | 'catalogue:extend'
+  /**
+   * Ask a manager to add a model. How staff get a phone listed that the
+   * catalogue lacks, since they cannot type a model themselves.
+   */
+  | 'catalogue:request';
 
 /**
  * The policy, in one table.
@@ -83,6 +88,7 @@ const GRANTS: Record<StaffRole, readonly Capability[]> = {
     'returns:write',
     'support:write',
     'export',
+    'catalogue:request',
   ],
 
   admin: [
@@ -96,6 +102,7 @@ const GRANTS: Record<StaffRole, readonly Capability[]> = {
     'insights:read',
     'export',
     'catalogue:extend',
+    'catalogue:request',
   ],
 };
 

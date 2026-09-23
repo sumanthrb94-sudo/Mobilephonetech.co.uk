@@ -25,6 +25,7 @@
 // arithmetic done here, independently of the application.
 import {
   seed, waitForEmulators, seedExtraProducts, seedOrders, seedDoc, countProducts,
+  seedCatalogue, catalogueIdFor,
 } from './emulator-seed.mjs';
 
 const TARGET = Number(process.env.VOLUME_PRODUCTS || 1200);
@@ -86,6 +87,7 @@ function buildCatalogue(count) {
       returnDays: 30,
       isCertified: true,
       imageUrl: '',
+      catalogueModelId: catalogueIdFor(brand, model),
       // A realistic slice is archived: the console has to keep them out of
       // every live count while still finding them on the Archived tab.
       ...(rand() < 0.06 ? { archivedAt: '2026-08-01T09:00:00.000Z', stock: 0 } : {}),
@@ -97,6 +99,11 @@ function buildCatalogue(count) {
 await waitForEmulators();
 console.log(`Seeding ${TARGET} products…`);
 await seed();
+
+// The model catalogue these listings are drawn from. Seeded before the
+// listings because that is the order it has to happen in for real: staff can
+// only list a model the catalogue already carries.
+await seedCatalogue(BRANDS.flatMap(([brand, models]) => models.map(model => ({ brand, model }))));
 
 const rows = buildCatalogue(TARGET);
 const started = Date.now();

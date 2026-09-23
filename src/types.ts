@@ -129,6 +129,8 @@ export interface Product {
   /** Who last saved this product, and when. Display only — see AuditStamp. */
   updatedBy?: string;
   updatedAt?: string;
+  /** The catalogue entry this listing is for — see src/lib/catalogue.ts. */
+  catalogueModelId?: string;
 }
 
 /**

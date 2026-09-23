@@ -31,7 +31,7 @@ const check = (kind, name, outcome, detail = '') => {
 };
 
 await waitForEmulators();
-const { customerUid, adminUid } = await seed();
+const { customerUid, adminUid, staffUid } = await seed();
 
 // A second customer, to prove one shopper cannot reach another's data.
 const VICTIM_EMAIL = 'victim@lehart.co.uk';
@@ -321,10 +321,14 @@ if (!apiReachable) {
     await attemptUpdateAs(STAFF_EMAIL, 'products/role-probe', { price: 60 }));
   check('CONTROL', 'Staff can set stock',
     await attemptUpdateAs(STAFF_EMAIL, 'products/role-probe', { stock: 2 }));
-  check('CONTROL', 'Staff can create a product',
+  // Staff may only list a model the catalogue carries — see the catalogue
+  // section below. This control uses one, so a refusal here would mean the
+  // staff account itself is broken rather than the catalogue working.
+  await seedDoc('catalogueModels', 'apple__iphone-se', { brand: 'Apple', model: 'iPhone SE' });
+  check('CONTROL', 'Staff can create a product for a catalogued model',
     await attemptCreateAs(STAFF_EMAIL, 'products', {
-      brand: 'Apple', model: 'iPhone SE', price: 99, stock: 1,
-      grade: 'Good', category: 'Phones',
+      brand: 'Apple', model: 'iPhone SE', catalogueModelId: 'apple__iphone-se',
+      price: 99, stock: 1, grade: 'Good', category: 'Phones',
     }, 'role-probe-new'));
   check('CONTROL', 'Manager can still do everything staff can',
     await attemptUpdateAs(ADMIN_EMAIL, 'products/role-probe', { price: 61 }));
@@ -389,6 +393,94 @@ if (!apiReachable) {
     await attemptDeleteAs(ADMIN_EMAIL, 'products/role-probe'));
   check('EXPLOIT', 'A customer can delete a product',
     await attemptDeleteAs(CUSTOMER_EMAIL, 'products/role-probe'));
+}
+
+// ── The model catalogue ───────────────────────────────────────
+//
+// The owner's rule: staff pick a model that is already in the database and
+// never create one; a new model is a request a manager approves. The editor
+// offers only a picker, but a picker is presentation. What holds is the rule
+// that a staff listing's brand and model must be a live catalogue entry,
+// spelt exactly as the entry spells it.
+//
+// The spelling is the attack surface. "iPhone 8" and "iPhone 8 128GB" are two
+// different phones to the code that groups a listing with its other sizes, so
+// a listing that points at a real entry while carrying a different model name
+// is the orphan the catalogue exists to prevent — it has to be refused even
+// though the entry it names is real.
+{
+  await seedDoc('catalogueModels', 'apple__iphone-8', { brand: 'Apple', model: 'iPhone 8' });
+  await seedDoc('catalogueModels', 'apple__iphone-7', {
+    brand: 'Apple', model: 'iPhone 7', retiredAt: '2026-01-01T00:00:00.000Z',
+  });
+  const listing = (over) => ({
+    brand: 'Apple', model: 'iPhone 8', catalogueModelId: 'apple__iphone-8',
+    price: 55, stock: 1, grade: 'Good', category: 'Phones', ...over,
+  });
+
+  check('CONTROL', 'Staff list a catalogued model, spelt as the catalogue spells it',
+    await attemptCreateAs(STAFF_EMAIL, 'products', listing({}), 'cat-ok'));
+
+  check('EXPLOIT', 'Staff list a model with no catalogue entry at all',
+    await attemptCreateAs(STAFF_EMAIL, 'products', {
+      brand: 'Nokia', model: '3310', price: 20, stock: 1, grade: 'Good', category: 'Phones',
+    }, 'cat-none'));
+  check('EXPLOIT', 'Staff point at a real entry but type the storage into the model',
+    await attemptCreateAs(STAFF_EMAIL, 'products', listing({ model: 'iPhone 8 128GB' }), 'cat-orphan'),
+    'the orphan listing the catalogue exists to prevent');
+  check('EXPLOIT', 'Staff point at a real entry but re-spell the model',
+    await attemptCreateAs(STAFF_EMAIL, 'products', listing({ model: 'iphone 8' }), 'cat-respelt'));
+  check('EXPLOIT', 'Staff point at an entry that does not exist',
+    await attemptCreateAs(STAFF_EMAIL, 'products', listing({ catalogueModelId: 'apple__iphone-99' }), 'cat-ghost'));
+  check('EXPLOIT', 'Staff list a retired model',
+    await attemptCreateAs(STAFF_EMAIL, 'products',
+      listing({ model: 'iPhone 7', catalogueModelId: 'apple__iphone-7' }), 'cat-retired'));
+
+  // A listing written before the catalogue existed has no catalogueModelId.
+  // An ordinary price or stock edit on it must still go through: the rule
+  // only looks at the catalogue when brand or model actually change.
+  await seedDoc('products', 'cat-legacy', {
+    brand: 'Apple', model: 'iPhone 6s', price: 40, stock: 2, grade: 'Fair', category: 'Phones',
+  });
+  check('CONTROL', 'Staff edit the price of a pre-catalogue listing',
+    await attemptUpdateAs(STAFF_EMAIL, 'products/cat-legacy', { price: 45 }));
+  check('EXPLOIT', 'Staff rename a listing to a model the catalogue lacks',
+    await attemptUpdateAs(STAFF_EMAIL, 'products/cat-legacy', { model: 'iPhone 6s 64GB' }));
+
+  // The catalogue itself: only a manager adds to it, nobody deletes from it.
+  check('EXPLOIT', 'Staff add a model to the catalogue',
+    await attemptCreateAs(STAFF_EMAIL, 'catalogueModels', { brand: 'Nokia', model: '3310' }, 'nokia__3310'));
+  check('EXPLOIT', 'Staff retire a catalogue model',
+    await attemptUpdateAs(STAFF_EMAIL, 'catalogueModels/apple__iphone-8', { retiredAt: '2026-09-23T00:00:00.000Z' }));
+  check('CONTROL', 'A manager adds a model to the catalogue',
+    await attemptCreateAs(ADMIN_EMAIL, 'catalogueModels', { brand: 'Google', model: 'Pixel 9' }, 'google__pixel-9'));
+  check('EXPLOIT', 'A manager deletes a catalogue model listings point at',
+    await attemptDeleteAs(ADMIN_EMAIL, 'catalogueModels/apple__iphone-8'),
+    'retire it instead — listings reference it');
+  check('EXPLOIT', 'A customer reads the catalogue',
+    await attemptReadAs(CUSTOMER_EMAIL, 'catalogueModels/apple__iphone-8'));
+
+  // Requests: how staff get a missing model. Any staff may ask, as
+  // themselves, and only as an open request.
+  const req = (over) => ({
+    brand: 'Apple', model: 'iPhone 17e', note: 'Two in from the supplier today',
+    status: 'open', requestedBy: STAFF_EMAIL, requestedByUid: staffUid, ...over,
+  });
+  check('CONTROL', 'Staff ask a manager for a model',
+    await attemptCreateAs(STAFF_EMAIL, 'modelRequests', req({}), 'req-ok'));
+  check('EXPLOIT', 'Staff file a request that arrives already approved',
+    await attemptCreateAs(STAFF_EMAIL, 'modelRequests',
+      req({ status: 'approved', catalogueModelId: 'apple__iphone-17e' }), 'req-preapproved'),
+    'a model nobody approved');
+  check('EXPLOIT', 'Staff file a request in someone else\'s name',
+    await attemptCreateAs(STAFF_EMAIL, 'modelRequests', req({ requestedByUid: adminUid }), 'req-forged'));
+  check('EXPLOIT', 'Staff approve their own request',
+    await attemptUpdateAs(STAFF_EMAIL, 'modelRequests/req-ok', { status: 'approved' }));
+  check('CONTROL', 'A manager approves a request',
+    await attemptUpdateAs(ADMIN_EMAIL, 'modelRequests/req-ok', { status: 'approved' }));
+  check('EXPLOIT', 'A customer files a model request',
+    await attemptCreateAs(CUSTOMER_EMAIL, 'modelRequests',
+      req({ requestedBy: CUSTOMER_EMAIL, requestedByUid: customerUid }), 'req-customer'));
 }
 
 // ── Report ────────────────────────────────────────────────────

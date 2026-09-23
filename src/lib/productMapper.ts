@@ -75,6 +75,7 @@ export function docToProduct(id: string, d: Record<string, unknown>): Product {
     archivedBy: (d.archivedBy as string) ?? undefined,
     updatedBy: (d.updatedBy as string) ?? undefined,
     updatedAt: isoOrUndefined(d.updatedAt),
+    catalogueModelId: (d.catalogueModelId as string) ?? undefined,
   };
 }
 

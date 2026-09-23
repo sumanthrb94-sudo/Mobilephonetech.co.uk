@@ -53,6 +53,29 @@ service cloud.firestore {
       return signedIn() && request.auth.uid == uid;
     }
 
+    // A listing's brand and model are a live catalogue entry, spelt exactly
+    // as the catalogue spells it — see src/lib/catalogue.ts.
+    //
+    // Staff choose a model from the catalogue; they cannot type one. This is
+    // what makes that true rather than a courtesy of the form: a staff write
+    // that names a model the catalogue lacks, or spells a real one another
+    // way, or points at a retired entry, is refused here. The spelling check
+    // is the point — "iPhone 8" and "iPhone 8 128GB" are two different phones
+    // to the code that groups a listing with its other sizes and colours.
+    //
+    // Three reads of one document; Firestore counts a repeated get() of the
+    // same path once against the per-request limit.
+    function catalogueEntry(id) {
+      return get(/databases/$(database)/documents/catalogueModels/$(id)).data;
+    }
+    function inCatalogue(data) {
+      return data.catalogueModelId is string
+             && exists(/databases/$(database)/documents/catalogueModels/$(data.catalogueModelId))
+             && catalogueEntry(data.catalogueModelId).brand == data.brand
+             && catalogueEntry(data.catalogueModelId).model == data.model
+             && !catalogueEntry(data.catalogueModelId).keys().hasAny(['retiredAt']);
+    }
+
     // ── Products ────────────────────────────────────────────
     // Public catalogue: anyone may read, staff may write.
     //
@@ -69,14 +92,72 @@ service cloud.firestore {
     // the storefront filters out and the console can undo. `archivedAt` is
     // the only field a non-manager may not touch, because it is the one write
     // a customer would notice and a member of staff cannot reverse alone.
+    //
+    // A staff listing must also be for a model in the catalogue. On update
+    // that is only checked when brand, model or the catalogue link actually
+    // change, so an ordinary stock or price edit on a listing written before
+    // the catalogue existed is not refused for a field nobody touched.
+    //
+    // Managers are not bound by the catalogue here. Their editor still writes
+    // through it, but a manager is the person who maintains it, and a rule
+    // that stopped them correcting a listing until they had first fixed the
+    // catalogue would be a rule they learn to work around.
     match /products/{productId} {
       allow read: if true;
-      allow create: if isStaff()
-                    && !request.resource.data.keys().hasAny(['archivedAt']);
+      allow create: if isAdmin()
+                    || (isStaff()
+                        && !request.resource.data.keys().hasAny(['archivedAt'])
+                        && inCatalogue(request.resource.data));
       allow update: if isAdmin()
                     || (isStaff()
                         && !request.resource.data.diff(resource.data)
-                             .affectedKeys().hasAny(['archivedAt']));
+                             .affectedKeys().hasAny(['archivedAt'])
+                        && (!request.resource.data.diff(resource.data)
+                              .affectedKeys().hasAny(['brand', 'model', 'catalogueModelId'])
+                            || inCatalogue(request.resource.data)));
+      allow delete: if false;
+    }
+
+    // ── The model catalogue ─────────────────────────────────
+    // The list of models a listing may be for. Staff read it to fill the
+    // picker; only a manager adds to it. Never deleted, because listings
+    // point at its entries — a wrong or discontinued model is retired, which
+    // takes it out of the picker and leaves existing listings alone.
+    //
+    // Not public: the storefront reads brand and model off the listings
+    // themselves and has no use for the list.
+    match /catalogueModels/{modelId} {
+      allow read: if isStaff();
+      allow create, update: if isAdmin()
+                            && request.resource.data.brand is string
+                            && request.resource.data.brand.size() > 0
+                            && request.resource.data.brand.size() <= 60
+                            && request.resource.data.model is string
+                            && request.resource.data.model.size() > 0
+                            && request.resource.data.model.size() <= 80;
+      allow delete: if false;
+    }
+
+    // ── Requests for a model the catalogue lacks ────────────
+    // How a member of staff asks for a new model instead of typing one. Any
+    // staff may raise one, as themselves and only as an open request — a
+    // request that arrived already approved would be a model nobody approved.
+    // Deciding is a manager's job. Kept for good, approved or not: it is the
+    // record of who asked for what and what they were told.
+    match /modelRequests/{requestId} {
+      allow read: if isStaff();
+      allow create: if isStaff()
+                    && request.resource.data.status == 'open'
+                    && request.resource.data.requestedByUid == request.auth.uid
+                    && request.resource.data.brand is string
+                    && request.resource.data.brand.size() > 0
+                    && request.resource.data.brand.size() <= 60
+                    && request.resource.data.model is string
+                    && request.resource.data.model.size() > 0
+                    && request.resource.data.model.size() <= 80
+                    && !request.resource.data.keys()
+                          .hasAny(['decidedBy', 'decidedAt', 'catalogueModelId', 'reason']);
+      allow update: if isAdmin();
       allow delete: if false;
     }
 

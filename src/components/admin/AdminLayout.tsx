@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { Boxes, Store } from 'lucide-react';
 import { useSeo } from '../../hooks/useSeo';
 import { useAdmin } from '../../hooks/useAdmin';
 import { roleLabel, type Capability } from '../../lib/adminRoles';
+import { listModelRequests } from '../../lib/catalogue';
 
 /**
  * Chrome for the admin console: a narrow header strip that is visibly distinct
@@ -40,6 +42,7 @@ const SECTIONS: ReadonlyArray<{
   { to: '/admin/banners',   label: 'Banners',     needs: 'storefront:write', startsManagerGroup: true },
   { to: '/admin/home',      label: 'Home layout', needs: 'storefront:write' },
   { to: '/admin/series',    label: 'Series',      needs: 'storefront:write' },
+  { to: '/admin/catalogue', label: 'Catalogue',   needs: 'catalogue:extend' },
   { to: '/admin/analytics', label: 'Analytics',   needs: 'insights:read' },
 ];
 
@@ -50,6 +53,23 @@ export default function AdminLayout() {
 
   const { can, role } = useAdmin();
   const visible = SECTIONS.filter(s => can(s.needs));
+
+  // How many staff are waiting on a manager for a model. Shown on the
+  // Catalogue link because that is where the manager has to go to act, and a
+  // request nobody notices is a listing that never gets made — the member of
+  // staff cannot type the model themselves, so this queue is the only way
+  // forward for them. Read once per visit to the console, not polled.
+  const mayDecide = can('catalogue:extend');
+  const [openRequests, setOpenRequests] = useState(0);
+  useEffect(() => {
+    if (!mayDecide) return;
+    let live = true;
+    listModelRequests('open')
+      .then(r => { if (live) setOpenRequests(r.length); })
+      // A failed count is no count. The page itself says when it cannot load.
+      .catch(() => {});
+    return () => { live = false; };
+  }, [mayDecide]);
 
   // The divider belongs before the first manager-only section that is
   // actually shown — drawing it for a group with nothing in it leaves a rule
@@ -75,7 +95,14 @@ export default function AdminLayout() {
               <span key={s.to} style={{ display: 'contents' }}>
                 {s.to === firstManagerShown && <span className="ops-nav-divider" aria-hidden="true" />}
                 {/* `end` on the index link, or it stays active on every child route. */}
-                <NavLink to={s.to} end={s.end} style={navLinkStyle}>{s.label}</NavLink>
+                <NavLink to={s.to} end={s.end} style={navLinkStyle}>
+                  {s.label}
+                  {s.to === '/admin/catalogue' && openRequests > 0 && (
+                    <span className="ops-nav-count" aria-label={`${openRequests} waiting`}>
+                      {openRequests}
+                    </span>
+                  )}
+                </NavLink>
               </span>
             ))}
           </nav>
