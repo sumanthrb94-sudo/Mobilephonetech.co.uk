@@ -349,12 +349,15 @@ Firebase Auth, the ID token, the AuthContext refresh and the router guard. It
 also types the manager-only URLs in as staff, because a bookmark from before a
 role changed must be refused rather than merely unlinked.
 
-It also drives the catalogue gate through the real form: a staff member typing
-a brand the shop has never carried is refused with a message saying what to do
-about it, and an existing brand typed in the wrong case is corrected. Worth
-doing here rather than only in a unit test, because the gate depends on a real
-read of the real catalogue — a failed or empty vocabulary must block nothing,
-and a mock cannot tell you the read succeeded.
+It also runs the model catalogue as a sequence across both roles: a staff
+member finds no text box for brand or model, asks a manager for a phone the
+catalogue lacks, and is stopped from sending one with a storage size in its
+name; the manager sees the waiting count on the Catalogue link, approves it,
+and the count clears; the staff member then finds the model in the picker and
+lists it. The database is checked after each step — the request exists in the
+staff member's name, approving created the entry and closed the request, and
+the listing is linked to that entry — because what a page says happened and
+what happened are different claims.
 
 Every "this role cannot" check is paired with a control proving the thing
 exists for the role that can. The first version of the archive-button check
@@ -362,7 +365,7 @@ searched the page text, and the button is icon-only — its label is an
 `aria-label` that never appears in `textContent`, so the assertion could not
 have failed whether the button was rendered or not.
 
-Currently 26 of 26.
+Currently 36 of 36.
 
 ### The adversarial audit
 
