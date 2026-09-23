@@ -192,12 +192,25 @@ export function catalogueIdFor(brand, model) {
   return `${slug(brand)}__${slug(model)}`;
 }
 
-/** Add catalogue entries directly, as a manager's import would. */
+/**
+ * Add catalogue entries directly, as a manager's import would.
+ *
+ * Adding a model that is already there is a no-op, as it is in the app —
+ * addCatalogueModel returns the existing entry, and the import skips what is
+ * present. The first version created every entry unconditionally, so the
+ * volume seed died with a 409 on the Galaxy S23 that seed() had already
+ * added, and everything run after it that day ran against the two-product
+ * fixture instead of twelve hundred products without saying so.
+ */
 export async function seedCatalogue(entries) {
   for (const { brand, model, retiredAt } of entries) {
-    await writeDoc('catalogueModels', catalogueIdFor(brand, model), {
-      brand, model, ...(retiredAt ? { retiredAt } : {}),
-    });
+    try {
+      await writeDoc('catalogueModels', catalogueIdFor(brand, model), {
+        brand, model, ...(retiredAt ? { retiredAt } : {}),
+      });
+    } catch (err) {
+      if (!/ALREADY_EXISTS|-> 409/.test(String(err?.message))) throw err;
+    }
   }
 }
 
