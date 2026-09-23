@@ -206,6 +206,24 @@ The first image is the primary one shown on cards and as the product hero, so
 "make primary" is a move-to-front rather than a second field to keep in sync.
 A partly failed batch keeps whatever uploaded and reports the rest.
 
+Every image chosen from disk — here, on Banners, and on Series panel hero
+images — is resized and re-encoded to WebP in the browser before a single
+byte is uploaded (`src/lib/imageOptimize.ts`). A phone photo routinely
+arrives at several megabytes; nobody's screen shows a product card at more
+than a few hundred pixels wide, so shipping the original would be paying
+upload time and page-load weight for detail nobody sees. It downscales only
+— never enlarges a small source — and walks a few smaller sizes if a busy
+source photo does not compress well at the first one. If the browser cannot
+actually encode WebP, it re-encodes as JPEG instead rather than silently
+uploading a mislabelled file; either way, the format actually produced is
+what gets uploaded, never the one that was merely asked for. If anything
+about a file cannot be processed at all, the original upload proceeds
+exactly as it would without this — nothing here can block an upload.
+
+This is separate from `scripts/import-images.mjs` below, which is a one-off
+bulk pipeline for photographing the catalogue in one sitting, not something
+run through a browser.
+
 Products seeded with bundled `/assets/…` artwork show a **Bundled** badge —
 those files ship with the app rather than living in storage, so removing one
 only unlinks it.

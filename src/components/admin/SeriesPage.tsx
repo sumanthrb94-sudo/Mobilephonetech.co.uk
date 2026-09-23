@@ -8,6 +8,7 @@ import {
   parseWords, joinWords, EMPTY_PANEL, type SeriesPanel,
 } from '../../lib/seriesPanels';
 import { uploadImage, describeError, isUsableImageUrl, IMAGE_BUCKET } from '../../lib/adminApi';
+import { optimizeImage } from '../../lib/imageOptimize';
 import { useCatalogue } from '../../context/CatalogueContext';
 import { SeriesPanelView } from '../BrandShowcase';
 
@@ -247,7 +248,12 @@ function PanelEditor({
     if (!file) return;
     setUploading(true);
     try {
-      onChange({ heroImage: await uploadImage(p.id, file, IMAGE_BUCKET) });
+      // The same compression the product gallery gets — see
+      // imageOptimize.ts. A panel's hero image renders large, below the
+      // carousel on the home page, and was the one image type in the admin
+      // console that skipped this entirely.
+      const { file: toUpload } = await optimizeImage(file);
+      onChange({ heroImage: await uploadImage(p.id, toUpload, IMAGE_BUCKET) });
     } catch (err) {
       onError(err instanceof Error ? err.message : 'That upload did not work.');
     } finally {

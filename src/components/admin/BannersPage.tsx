@@ -8,6 +8,7 @@ import {
   BANNER_SPEC, EMPTY_BANNER, type Banner,
 } from '../../lib/banners';
 import { uploadImage, describeError, BANNER_BUCKET, isUsableImageUrl } from '../../lib/adminApi';
+import { optimizeImage } from '../../lib/imageOptimize';
 import HeroCarousel, { type Slide } from '../HeroCarousel';
 
 /**
@@ -207,7 +208,13 @@ function BannerEditor({
     if (!file) return;
     setUploading(which);
     try {
-      onChange({ [which]: await uploadImage(b.id, file, BANNER_BUCKET) });
+      // Every visitor's first paint of the shop is one of these two photos —
+      // above-the-fold, on every device, before anything else on the page
+      // has loaded. Skipping the same compression the product gallery
+      // already gets would make this the single heaviest image on the site
+      // rather than the one most worth keeping light. See imageOptimize.ts.
+      const { file: toUpload } = await optimizeImage(file);
+      onChange({ [which]: await uploadImage(b.id, toUpload, BANNER_BUCKET) });
     } catch (err) {
       onError(err instanceof Error ? err.message : 'That upload did not work.');
     } finally {
