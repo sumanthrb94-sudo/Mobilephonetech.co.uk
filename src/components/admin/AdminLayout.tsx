@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
 import { Boxes, Store } from 'lucide-react';
 import { useSeo } from '../../hooks/useSeo';
 import { useAdmin } from '../../hooks/useAdmin';
@@ -58,8 +58,15 @@ export default function AdminLayout() {
   // Catalogue link because that is where the manager has to go to act, and a
   // request nobody notices is a listing that never gets made — the member of
   // staff cannot type the model themselves, so this queue is the only way
-  // forward for them. Read once per visit to the console, not polled.
+  // forward for them.
+  //
+  // Re-read on every move between console pages rather than once per visit:
+  // the first version read it once, so a manager who approved every request
+  // on the Catalogue page came back to the Dashboard still being told five
+  // people were waiting. Not polled — a count that changes while nobody is
+  // navigating has nobody looking at it.
   const mayDecide = can('catalogue:extend');
+  const { pathname } = useLocation();
   const [openRequests, setOpenRequests] = useState(0);
   useEffect(() => {
     if (!mayDecide) return;
@@ -69,7 +76,7 @@ export default function AdminLayout() {
       // A failed count is no count. The page itself says when it cannot load.
       .catch(() => {});
     return () => { live = false; };
-  }, [mayDecide]);
+  }, [mayDecide, pathname]);
 
   // The divider belongs before the first manager-only section that is
   // actually shown — drawing it for a group with nothing in it leaves a rule
