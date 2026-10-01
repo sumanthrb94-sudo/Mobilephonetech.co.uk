@@ -1,4 +1,4 @@
-import { ShieldCheck, Battery, RefreshCw, Truck, Star, Users, BadgeCheck } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Truck, Star, Users, BadgeCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
 /**
@@ -15,13 +15,6 @@ const PILLARS = [
     accentBg: 'var(--color-brand-subtle)',
     title: '12-Month Warranty',
     body: 'Full technical cover on every certified device. Backed by our in-house engineering team, no third-party exceptions.',
-  },
-  {
-    icon: Battery,
-    accentColor: '#10b981',
-    accentBg: '#d1fae5',
-    title: '90%+ Battery Health',
-    body: 'We test and guarantee battery capacity on every device. Your phone lasts all day — we promise that in writing.',
   },
   {
     icon: RefreshCw,
@@ -159,7 +152,7 @@ export default function TrustSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.08, duration: 0.4 }}
-                className="flex gap-4"
+                className={`flex gap-4 ${i === 4 ? 'sm:col-span-2' : ''}`}
               >
                 <div
                   style={{
