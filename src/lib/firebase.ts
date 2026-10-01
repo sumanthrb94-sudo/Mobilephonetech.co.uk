@@ -117,7 +117,6 @@ export const COL = {
   users: 'users',
   orders: 'orders',
   reviews: 'reviews',
-  tradeInQuotes: 'tradeInQuotes',
   newsletter: 'newsletterSubscribers',
   returns: 'returns',
   banners: 'banners',

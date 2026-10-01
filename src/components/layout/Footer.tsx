@@ -39,7 +39,6 @@ const LINK_COLS = [
       { label: 'Track my order',        href: '/orders' },
       { label: 'Returns & warranty',    href: '/returns' },
       { label: 'Delivery',              href: '/delivery' },
-      { label: 'Trade-in programme',    href: '/#trade-in' },
     ],
   },
 ];

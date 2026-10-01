@@ -42,7 +42,6 @@ import PdpQualityInspector from './pdp/PdpQualityInspector';
 import PdpDeliveryUrgency from './pdp/PdpDeliveryUrgency';
 import PdpGradeVisualizer from './pdp/PdpGradeVisualizer';
 import PdpWhyRefurbishedBento from './pdp/PdpWhyRefurbishedBento';
-import PdpTradeInWidget from './pdp/PdpTradeInWidget';
 import PdpLabInspectionReel from './pdp/PdpLabInspectionReel';
 
 function TabPanel({
@@ -728,8 +727,6 @@ export default function ProductDetail() {
             {/* Variants — always render; VariantSelector derives sensible
                 options when the product has no explicit variants[] matrix. */}
             <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
-
-            <PdpTradeInWidget model={phone.model} />
 
             {/* Delivery */}
             <div style={{ marginTop: '-2px' }}>

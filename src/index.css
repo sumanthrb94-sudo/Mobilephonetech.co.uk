@@ -89,7 +89,7 @@
   /* ── Theme-invariant surfaces (stay dark in both modes) ── */
   --color-surface-inverse: #0a0a0a;
 
-  /* ── Feature gradients (navy, used for trade-in/premium cards) ── */
+  /* ── Feature gradients (navy, used for premium highlight cards) ── */
   --gradient-navy: linear-gradient(120deg, var(--grey-90) 0%, var(--black) 100%);
 
   /* Condition grades */

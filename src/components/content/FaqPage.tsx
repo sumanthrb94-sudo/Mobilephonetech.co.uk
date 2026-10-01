@@ -41,14 +41,6 @@ const SECTIONS: { title: string; items: QA[] }[] = [
       { q: 'Is my payment secure?',              a: 'Payment is completed on PayPal\u2019s own secure pages over TLS. Card details are never entered on this site and never reach our servers, so we have nothing to store.' },
     ],
   },
-  {
-    title: 'Trade-in',
-    items: [
-      { q: 'How does trade-in work?',            a: 'Tell us the model and condition, we give an instant quote, send a free prepaid envelope, you post the device, and we pay out within 24 hours of receipt.' },
-      { q: 'What if my device is worth less than the quote?', a: 'We\'ll email you a revised offer. Accept it and we pay within 24 hours; decline and we return the device free.' },
-      { q: 'My phone is broken — will you still take it?', a: 'Often yes. Cracked screens and non-working phones have recycling value. Get an instant quote for "For parts" condition.' },
-    ],
-  },
 ];
 
 export default function FaqPage() {

@@ -51,7 +51,6 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   reviews: () => import('./_routes/reviews.js'),
   search: () => import('./_routes/search.js'),
   track: () => import('./_routes/track.js'),
-  'trade-in': () => import('./_routes/trade-in.js'),
 };
 
 /**

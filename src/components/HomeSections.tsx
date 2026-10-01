@@ -10,7 +10,6 @@ import NewsletterSignup from './NewsletterSignup';
 import TrustSection from './TrustSection';
 import TestimonialsSection from './TestimonialsSection';
 import PressLogosStrip from './PressLogosStrip';
-import TradeInProgram from './TradeInProgram';
 import WarrantyAndReturns from './WarrantyAndReturns';
 import { defaultLayout, loadHomeLayout, visibleSections } from '../lib/homeLayout';
 
@@ -35,7 +34,6 @@ export const SECTION_VIEWS: Record<string, () => React.ReactElement> = {
   trustSection: () => <TrustSection />,
   pressLogos: () => <PressLogosStrip />,
   testimonials: () => <TestimonialsSection />,
-  tradeIn: () => <TradeInProgram />,
   warranty: () => <WarrantyAndReturns />,
   faq: () => <HomeFaq />,
   blog: () => <HomeBlog />,

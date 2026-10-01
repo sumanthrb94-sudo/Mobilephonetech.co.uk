@@ -113,7 +113,7 @@ export default function SupportChat() {
               <div className="support-body">
                 {messages.length === 0 && (
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: 13.5, color: 'var(--grey-50)', textAlign: 'center', margin: '20px 0' }}>
-                    Ask us anything — orders, returns, grading, trade-ins.
+                    Ask us anything — orders, returns, grading, warranty.
                   </p>
                 )}
                 {messages.map(m => (

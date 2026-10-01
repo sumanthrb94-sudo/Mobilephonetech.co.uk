@@ -52,7 +52,6 @@ export const SECTIONS: SectionSpec[] = [
   { id: 'trustSection', label: 'Why buy from us', blurb: 'The value and trust block.' },
   { id: 'pressLogos', label: 'Press logos', blurb: 'The strip of publications that have covered the shop.' },
   { id: 'testimonials', label: 'Customer reviews', blurb: 'Quotes from customers.' },
-  { id: 'tradeIn', label: 'Trade-in', blurb: 'The trade-in programme and its valuation prompt.' },
   { id: 'warranty', label: 'Warranty & returns', blurb: 'The warranty and returns explainer.' },
   { id: 'faq', label: 'FAQ', blurb: 'The accordion of common questions.' },
   { id: 'blog', label: 'Workshop journal', blurb: 'The refurbishment articles.' },
