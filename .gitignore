@@ -24,3 +24,6 @@ node_modules/.lehart-api/
 
 # Listmonk deployment secrets
 deploy/listmonk/.env
+
+# Graphify output
+graphify-out/

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { trackProductView } from '../lib/analytics';
 import {
   ShieldCheck, RotateCcw, Battery, CheckCircle2,
-  Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X
+  Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X, Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCatalogue } from '../context/CatalogueContext';
@@ -37,6 +37,13 @@ import { generateProductDescription } from '../utils/productDescription';
 
 import type { Product } from '../types';
 import CountUp from './ui/CountUp';
+import PdpFinanceCalculator from './pdp/PdpFinanceCalculator';
+import PdpQualityInspector from './pdp/PdpQualityInspector';
+import PdpDeliveryUrgency from './pdp/PdpDeliveryUrgency';
+import PdpGradeVisualizer from './pdp/PdpGradeVisualizer';
+import PdpWhyRefurbishedBento from './pdp/PdpWhyRefurbishedBento';
+import PdpTradeInWidget from './pdp/PdpTradeInWidget';
+import PdpLabInspectionReel from './pdp/PdpLabInspectionReel';
 
 function TabPanel({
   phone, reviews, setReviews,
@@ -202,6 +209,7 @@ export default function ProductDetail() {
   const [gradeExplainerOpen, setGradeExplainerOpen] = React.useState(false);
   const { track: trackRecent } = useRecentlyViewed();
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const [labReelOpen, setLabReelOpen] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
 
   // Load product: seed from the shared catalogue for an instant first paint,
@@ -470,6 +478,8 @@ export default function ProductDetail() {
               />
             </div>
           )}
+
+          <PdpFinanceCalculator price={displayPrice} />
         </div>
   );
 
@@ -569,6 +579,48 @@ export default function ProductDetail() {
                 </span>
               )}
 
+              {/* 5-6s Lab Inspection Video Reel Trigger */}
+              <button
+                type="button"
+                onClick={() => setLabReelOpen(true)}
+                aria-label="Watch 6-second Lab Inspection & Quality Certification Reel"
+                style={{
+                  position: 'absolute',
+                  bottom: '16px',
+                  left: '16px',
+                  zIndex: 3,
+                  background: 'rgba(12, 10, 9, 0.88)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(6, 182, 212, 0.45)',
+                  borderRadius: '999px',
+                  padding: '6px 12px 6px 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  cursor: 'pointer',
+                  color: 'white',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+                }}
+              >
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: 'var(--brand-cyan)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Play size={10} fill="white" color="white" style={{ marginLeft: '1px' }} />
+                </span>
+                <span>Watch 6s Lab Inspection</span>
+              </button>
+
               <button
                 type="button"
                 onClick={() => setLightboxOpen(true)}
@@ -654,8 +706,7 @@ export default function ProductDetail() {
             {/* Only shows when stock is genuinely low; renders nothing
                 otherwise, rather than inventing a reason to hurry. */}
             <UrgencyCue productId={phone.id} stock={displayStock} />
-
-            {/* Finance split-payment breakdown */}
+            <PdpDeliveryUrgency />
 
             {/* The two facts a refurb buyer checks before anything else.
                 They were two 64px cards stacked in a grid, which pushed Add to
@@ -667,9 +718,18 @@ export default function ProductDetail() {
               <span><RotateCcw size={16} aria-hidden="true" /> <strong>{phone.returnDays}-day</strong> returns</span>
             </div>
 
+            <PdpQualityInspector
+              brand={phone.brand}
+              model={phone.model}
+              batteryHealth={displayBatteryHealth}
+              onWatchLabVideo={() => setLabReelOpen(true)}
+            />
+
             {/* Variants — always render; VariantSelector derives sensible
                 options when the product has no explicit variants[] matrix. */}
             <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
+
+            <PdpTradeInWidget model={phone.model} />
 
             {/* Delivery */}
             <div style={{ marginTop: '-2px' }}>
@@ -808,6 +868,28 @@ export default function ProductDetail() {
           />
         )}
 
+        <PdpGradeVisualizer
+          currentGrade={selectedVariant?.grade ?? phone.grade}
+          onSelectGrade={(newGrade) => {
+            if (selectedVariant) {
+              setSelectedVariant({ ...selectedVariant, grade: newGrade });
+            } else if (phone) {
+              setSelectedVariant({
+                id: `${phone.id}-${newGrade.toLowerCase()}`,
+                color: phone.color || 'Default',
+                storage: phone.storage || '128 GB',
+                grade: newGrade,
+                price: phone.price,
+                originalPrice: phone.originalPrice,
+                stock: phone.stock,
+                batteryHealth: phone.batteryHealth,
+              });
+            }
+          }}
+        />
+
+        <PdpWhyRefurbishedBento brand={phone.brand} model={phone.model} />
+
         {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
         <TabPanel phone={phone} reviews={reviews} setReviews={setReviews} />
 
@@ -816,6 +898,14 @@ export default function ProductDetail() {
       </div>
 
       <GradeExplainer isOpen={gradeExplainerOpen} onClose={() => setGradeExplainerOpen(false)} />
+
+      <PdpLabInspectionReel
+        isOpen={labReelOpen}
+        onClose={() => setLabReelOpen(false)}
+        brand={phone.brand}
+        model={phone.model}
+        batteryHealth={displayBatteryHealth}
+      />
 
       <AnimatePresence>
         {lightboxOpen && (

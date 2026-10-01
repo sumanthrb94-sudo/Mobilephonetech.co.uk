@@ -93,6 +93,7 @@ export default async function handler(req: any, res: any) {
     const totalPages = Math.ceil(total / limit);
     const offset     = (page - 1) * limit;
 
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).json({
       products: rows.slice(offset, offset + limit),
       total,
