@@ -392,7 +392,79 @@ function unitHistoryRows(lines: SalesLineItem[]): Record<string, unknown>[] {
   return rows;
 }
 
-export function buildSalesReportWorkbook(lines: SalesLineItem[], returns: ReturnRequest[]): XLSX.WorkBook {
+export interface SalesReportOptions {
+  /**
+   * Finance exports contain supplier cost, tax and GP.  Operational staff get
+   * the same sales/return evidence without commercially sensitive columns.
+   */
+  includeProfit?: boolean;
+}
+
+function operationalSaleRow(s: SalesLineItem): Record<string, unknown> {
+  return {
+    'Date': dateStr(s.date),
+    'Order Number': s.channelOrderId ?? '',
+    'SKU': s.sku ?? '',
+    'IMEI': s.imei ?? '',
+    'Model': s.model,
+    'Colour': s.color ?? '',
+    'Storage': s.storage ?? '',
+    'Condition': s.condition ?? '',
+    'Quantity': s.quantity ?? 1,
+    'Sale Price': gbp(s.sellPrice),
+  };
+}
+
+function operationalReturnRow(r: ReturnRequest): Record<string, unknown> {
+  const item = r.items[0];
+  return {
+    'Return Date': dateStr(r.createdAt),
+    'Order Number': r.orderId ?? '',
+    'Unit IMEI': item?.imei ?? '',
+    'Model': item?.model ?? '',
+    'Storage': item?.storage ?? '',
+    'Colour': item?.color ?? '',
+    'Outcome': r.outcome,
+    'Reason': r.reason,
+    'Comments': r.staffNote ?? r.note ?? '',
+    'Stock In Date': dateStr(r.stockRestoredDate),
+  };
+}
+
+function buildOperationalSalesReportWorkbook(lines: SalesLineItem[], returns: ReturnRequest[]): XLSX.WorkBook {
+  const wb = XLSX.utils.book_new();
+  const byChannel = new Map<string, number>();
+  for (const line of lines) {
+    const channel = normaliseChannel(line.channel);
+    byChannel.set(channel, (byChannel.get(channel) ?? 0) + (line.quantity ?? 1));
+  }
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['Website Sales Report'],
+    ['Period: All Time'],
+    ['This operational export intentionally excludes supplier cost, tax, fees and gross-profit figures.'],
+    [],
+    ['Marketplace', 'Units sold'],
+    ...Array.from(byChannel, ([channel, units]) => [channel, units]),
+    ['TOTAL', lines.reduce((sum, line) => sum + (line.quantity ?? 1), 0)],
+  ]), 'Summary');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(lines.map(operationalSaleRow)), 'WEBSITE');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['Period', 'All Time'],
+    ['Total Returns', returns.length],
+    ['Refunds', returns.filter(r => (r.outcome ?? '').toLowerCase() === 'refund').length],
+    ['Replacements', returns.filter(r => (r.outcome ?? '').toLowerCase() === 'replacement').length],
+    ['Repairs', returns.filter(r => (r.outcome ?? '').toLowerCase() === 'repair').length],
+  ]), 'Returns Summary');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(returns.map(operationalReturnRow)), 'Returns Detail');
+  return wb;
+}
+
+export function buildSalesReportWorkbook(lines: SalesLineItem[], returns: ReturnRequest[], options: SalesReportOptions = {}): XLSX.WorkBook {
+  // Keep this low-level helper backwards-compatible for existing finance
+  // callers/tests. Every staff-facing caller must pass its capability
+  // explicitly (DashboardPage and ReportsPage do), rather than relying on it.
+  if (options.includeProfit === false) return buildOperationalSalesReportWorkbook(lines, returns);
   const wb = XLSX.utils.book_new();
 
   const phones = lines.filter(l => (l.category ?? '').toLowerCase() !== 'accessories');
@@ -518,8 +590,8 @@ export function buildSalesReportWorkbook(lines: SalesLineItem[], returns: Return
   return wb;
 }
 
-export function downloadSalesReport(lines: SalesLineItem[], returns: ReturnRequest[], customFilename?: string): void {
-  const wb = buildSalesReportWorkbook(lines, returns);
+export function downloadSalesReport(lines: SalesLineItem[], returns: ReturnRequest[], customFilename?: string, options?: SalesReportOptions): void {
+  const wb = buildSalesReportWorkbook(lines, returns, options);
   dl(wb, customFilename ?? `sales-report-${today()}.xlsx`);
 }
 

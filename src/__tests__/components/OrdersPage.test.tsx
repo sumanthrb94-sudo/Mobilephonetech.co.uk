@@ -50,6 +50,35 @@ describe('OrdersPage', () => {
     expect(screen.queryByText('ORD-1002')).toBeNull();
   });
 
+  it('turns the at-a-glance packing queue into the matching work list', async () => {
+    const inTransit = { ...paid, id: 'ORD-1003', status: 'dispatched', courier: 'Royal Mail', trackingNumber: 'RM3' };
+    listOrders.mockResolvedValue([paid, inTransit, done]);
+    render(<OrdersPage />);
+
+    expect(await screen.findByRole('button', { name: /To pack.*1.*Paid and ready/i })).toBeTruthy();
+    await userEvent.click(screen.getByRole('button', { name: /In transit.*1.*Dispatched/i }));
+
+    expect(await screen.findByText('ORD-1003')).toBeTruthy();
+    expect(screen.queryByText('ORD-1001')).toBeNull();
+  });
+
+  it('searches operational details and makes packing checks visible before dispatch', async () => {
+    listOrders.mockResolvedValue([{
+      ...paid,
+      items: [{ name: 'Samsung Galaxy S24', quantity: 1, price: 275, sku: 'S24-256-BLK', imei: '123456789012345', grade: 'Excellent' }],
+    }]);
+    render(<OrdersPage />);
+    await screen.findByText('ORD-1001');
+
+    await userEvent.type(screen.getByLabelText('Search orders'), '123456789012345');
+    expect(screen.getByText('ORD-1001')).toBeTruthy();
+
+    await userEvent.click(screen.getByRole('button', { name: /ORD-1001/ }));
+    expect(await screen.findByText(/Ready to pack/i)).toBeTruthy();
+    expect(screen.getByText(/SKU S24-256-BLK/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Mark dispatched' })).toBeDisabled();
+  });
+
   it('filters to refunded orders', async () => {
     render(<OrdersPage />);
     await screen.findByText('ORD-1001');

@@ -2465,6 +2465,130 @@ textarea,
   cursor: not-allowed;
 }
 
+/* Four operational queues stay above the list: a picker should see what is
+   waiting without opening a filter or reading a table. They are buttons,
+   rather than decorative counters, so one click turns the number into work. */
+.ord-queue {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 900px) {
+  .ord-queue { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.ord-queue__tile {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-lg);
+  background: var(--grey-0);
+  color: var(--color-text-default);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .12s ease, background .12s ease, transform .12s ease;
+}
+
+.ord-queue__tile:hover,
+.ord-queue__tile:focus-visible {
+  border-color: var(--grey-30);
+  background: var(--grey-5);
+}
+
+.ord-queue__tile:active { transform: translateY(1px); }
+
+.ord-queue__tile--active {
+  border-color: var(--black);
+  box-shadow: 0 0 0 1px var(--black);
+}
+
+.ord-queue__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--grey-10);
+  color: var(--grey-70);
+}
+
+.ord-queue__tile:first-child .ord-queue__icon { background: var(--color-warn-subtle); color: var(--color-warn); }
+.ord-queue__tile:nth-child(2) .ord-queue__icon,
+.ord-queue__tile:nth-child(3) .ord-queue__icon { background: var(--color-brand-subtle); color: var(--color-brand); }
+.ord-queue__tile:nth-child(4) .ord-queue__icon { background: var(--color-trust); color: var(--color-trust-text); }
+
+.ord-queue__body {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.ord-queue__label,
+.ord-queue__body small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ord-queue__label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+}
+
+.ord-queue__body strong {
+  font-family: var(--font-sans);
+  font-size: 23px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ord-queue__body small {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-text-subtle);
+}
+
+.ord-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 0 12px;
+  min-height: 44px;
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-md);
+  color: var(--grey-50);
+}
+
+.ord-search:focus-within {
+  border-color: var(--black);
+  box-shadow: 0 0 0 2px var(--grey-10);
+}
+
+.ord-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-text-default);
+  font: inherit;
+}
+
+.ord-search span {
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-subtle);
+}
+
 /* One order. The whole header is the hit target — a 44px-plus band beats
    hunting for a caret, especially on a phone in a stockroom. */
 .ord-card {
@@ -2627,7 +2751,34 @@ textarea,
   gap: 14px;
 }
 
+.ord-item strong,
+.ord-item small { display: block; }
+.ord-item strong { font-weight: 700; color: var(--color-text-default); }
+.ord-item small { margin-top: 3px; color: var(--color-text-subtle); font-size: 12px; }
 .ord-item span:last-child { font-variant-numeric: tabular-nums; }
+
+/* This is deliberately before the dispatch form: it makes the physical-unit
+   checks visible at the moment the picker has the device in hand. */
+.ord-pack-ready {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 13px;
+  border: 1px solid var(--color-brand-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-subtle);
+  color: var(--color-text-default);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ord-pack-ready svg { flex: none; color: var(--color-brand); margin-top: 1px; }
+
+.ord-dispatch-note {
+  margin: 0;
+  color: var(--color-text-subtle);
+  font-size: 13px;
+}
 
 .ord-facts {
   display: grid;
@@ -3054,6 +3205,10 @@ textarea,
   border-radius: var(--radius-lg);
   background: var(--grey-5);
 }
+
+.ops-kpis > a .ops-kpi { height: 100%; transition: box-shadow .18s ease, transform .18s ease; }
+.ops-kpis > a:hover .ops-kpi { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.ops-kpis > a:focus-visible { outline: 3px solid var(--brand-cyan); outline-offset: 3px; border-radius: var(--radius-md); }
 
 .bn-preview--desktop { grid-column: 1 / -1; }
 

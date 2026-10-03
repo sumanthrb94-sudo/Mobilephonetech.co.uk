@@ -23,6 +23,7 @@ import {
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db, COL } from '../lib/firebase';
 import { toE164, formatPhoneForDisplay, DEFAULT_COUNTRY } from '../utils/phoneNumber';
+import { adminPermissionsFromClaims } from '../lib/adminPermissions';
 
 export interface User {
   id: string;
@@ -42,6 +43,10 @@ export interface User {
   isGuest?: boolean;
   /** From the `admin` custom claim on the ID token, not a database field. */
   isAdmin?: boolean;
+  /** Owner is a Firebase custom claim, never a profile-document field. */
+  isOwner?: boolean;
+  /** True only for owner/finance custom claims; use to gate BP and GP UI. */
+  canViewProfit?: boolean;
   /**
    * Sign-in providers on the account, e.g. ['google.com'] or ['password'].
    * A Google-only account has no password, so offering to change one is
@@ -152,12 +157,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 async function toUser(fbUser: FirebaseUser): Promise<User> {
   // getIdTokenResult reads the cached token; claims set server-side land here
   // only after a refresh, which is what refreshClaims() forces.
-  let isAdmin = false;
+  let permissions = adminPermissionsFromClaims(null);
   try {
     const token = await fbUser.getIdTokenResult();
-    isAdmin = token.claims.admin === true;
+    permissions = adminPermissionsFromClaims(token.claims);
   } catch {
-    isAdmin = false;
+    permissions = adminPermissionsFromClaims(null);
   }
 
   return {
@@ -170,7 +175,9 @@ async function toUser(fbUser: FirebaseUser): Promise<User> {
     fullName: fbUser.displayName
       ?? (fbUser.email ? fbUser.email.split('@')[0] : null)
       ?? (fbUser.phoneNumber ? formatPhoneForDisplay(fbUser.phoneNumber) : 'User'),
-    isAdmin,
+    isAdmin: permissions.isAdmin,
+    isOwner: permissions.role === 'owner',
+    canViewProfit: permissions.canViewProfit,
     // Optional chain: providerData is always present on a real Firebase user,
     // but a missing one must not take sign-in down over a display detail.
     providers: fbUser.providerData?.map(p => p.providerId) ?? [],

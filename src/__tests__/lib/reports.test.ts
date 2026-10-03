@@ -84,6 +84,20 @@ describe('reports.ts', () => {
     expect(wb.SheetNames).toContain('Returns Detail');
   });
 
+  it('builds an operational report without cost or profit sheets when finance is excluded', () => {
+    const lines: SalesLineItem[] = [{
+      date: '2026-10-02', channel: 'WEBSITE', channelOrderId: 'ORD-1001',
+      model: 'Galaxy S22', buyPrice: 148, sellPrice: 199.99,
+    }];
+    const wb = buildSalesReportWorkbook(lines, [], { includeProfit: false });
+
+    expect(wb.SheetNames).toEqual(['Summary', 'WEBSITE', 'Returns Summary', 'Returns Detail']);
+    const website = wb.Sheets.WEBSITE;
+    expect(website.A1.v).toBe('Date');
+    expect(Object.values(website).some(cell => (cell as { v?: unknown }).v === 'BP')).toBe(false);
+    expect(Object.values(website).some(cell => (cell as { v?: unknown }).v === 'Product GP')).toBe(false);
+  });
+
   it('builds an inventory workbook with Office Stock and SHS Stock', () => {
     const sampleUnits: InventoryUnit[] = [
       {

@@ -8,6 +8,7 @@ import {
   loadDashboardStats, describeError, LOW_STOCK_THRESHOLD,
   type DashboardStats,
 } from '../../lib/adminApi';
+import { useAdminPermissions } from '../../hooks/useAdminPermissions';
 
 /**
  * Operations Hub — the admin landing page.
@@ -21,6 +22,7 @@ import {
  * the rest of this route put together, for one horizontal bar chart.
  */
 export default function DashboardPage() {
+  const { canViewProfit } = useAdminPermissions();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +55,11 @@ export default function DashboardPage() {
         .flatMap(order => order.items.map(item => ({
           date: order.createdAt, channel: 'WEBSITE', channelOrderId: order.id,
           sku: item.sku, imei: item.imei, model: item.name, storage: item.storage,
-          color: item.color, condition: item.grade, buyPrice: item.buyPrice,
+          color: item.color, condition: item.grade,
+          ...(canViewProfit ? { buyPrice: item.buyPrice } : {}),
           sellPrice: item.price, quantity: item.quantity,
         })));
-      downloadSalesReport(lines, await listReturns());
+      downloadSalesReport(lines, await listReturns(), undefined, { includeProfit: canViewProfit });
     } catch (err) {
       setError(describeError(err));
     } finally {
@@ -123,36 +126,36 @@ export default function DashboardPage() {
       <section aria-label="Inventory summary" className="ops-kpis">
         <Kpi
           icon={<Package size={16} />} tone="ink" label="Products"
-          value={loading ? null : String(stats?.skuCount ?? 0)} note="listed SKUs"
+          value={loading ? null : String(stats?.skuCount ?? 0)} note="listed SKUs" to="/admin/inventory"
         />
         <Kpi
           icon={<Boxes size={16} />} tone="ink" label="Units in stock"
-          value={loading ? null : String(stats?.unitsInStock ?? 0)} note="across all SKUs"
+          value={loading ? null : String(stats?.unitsInStock ?? 0)} note="across all SKUs" to="/admin/inventory"
         />
         <Kpi
           icon={<CircleDollarSign size={16} />} tone="gold" label="Stock value"
-          value={loading ? null : money(stats?.stockValue ?? 0)} note="at retail price"
+          value={loading ? null : money(stats?.stockValue ?? 0)} note="at retail price" to="/admin/inventory"
         />
         <Kpi
           icon={<AlertTriangle size={16} />} tone="warn" label="Needs attention"
           value={loading ? null : String((stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0))}
-          note={loading ? '' : `${stats?.outOfStock ?? 0} out · ${stats?.lowStock ?? 0} low`}
+          note={loading ? '' : `${stats?.outOfStock ?? 0} out · ${stats?.lowStock ?? 0} low`} to="/admin/inventory"
         />
         <Kpi
           icon={<ShoppingBag size={16} />} tone="ink" label="Orders"
           value={loading ? null : stats?.ordersUnavailable ? '—' : String(stats?.orderCount ?? 0)}
-          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${money(stats?.orderRevenue ?? 0)} total`}
+          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${money(stats?.orderRevenue ?? 0)} total`} to="/admin/orders"
         />
         <Kpi
           icon={<ShoppingBag size={16} />} tone="ink" label="Units sold"
           value={loading ? null : stats?.ordersUnavailable ? '—' : String(stats?.unitsSold ?? 0)}
-          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${stats?.unitsSoldToday ?? 0} today · ${stats?.unitsSoldLast7Days ?? 0} in 7 days`}
+          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${stats?.unitsSoldToday ?? 0} today · ${stats?.unitsSoldLast7Days ?? 0} in 7 days`} to="/admin/reports"
         />
-        <Kpi
+        {canViewProfit && <Kpi
           icon={<CircleDollarSign size={16} />} tone="gold" label="Website GP"
           value={loading ? null : stats?.ordersUnavailable ? '—' : money(stats?.websiteGrossProfit ?? 0)}
-          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : stats?.websiteGrossProfitMargin == null ? 'cost data starts with new orders' : `${(stats.websiteGrossProfitMargin * 100).toFixed(1)}% product margin${stats.ordersMissingCost ? ` · ${stats.ordersMissingCost} older order${stats.ordersMissingCost === 1 ? '' : 's'} pending cost` : ''}`}
-        />
+          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : stats?.websiteGrossProfitMargin == null ? 'cost data starts with new orders' : `${(stats.websiteGrossProfitMargin * 100).toFixed(1)}% product margin${stats.ordersMissingCost ? ` · ${stats.ordersMissingCost} older order${stats.ordersMissingCost === 1 ? '' : 's'} pending cost` : ''}`} to="/admin/reports"
+        />}
       </section>
 
       <div className="ops-split">
@@ -252,12 +255,12 @@ export default function DashboardPage() {
 // ── Pieces ─────────────────────────────────────────────────────
 
 function Kpi({
-  icon, label, value, note, tone,
+  icon, label, value, note, tone, to,
 }: {
   icon: React.ReactNode; label: string; value: string | null; note?: string;
-  tone: 'ink' | 'gold' | 'warn';
+  tone: 'ink' | 'gold' | 'warn'; to?: string;
 }) {
-  return (
+  const content = (
     <div className="ops-kpi">
       <span className={`ops-kpi-icon ops-kpi-${tone}`}>{icon}</span>
       <span className="ops-kpi-label">{label}</span>
@@ -267,6 +270,7 @@ function Kpi({
       {note ? <span className="ops-meta">{note}</span> : null}
     </div>
   );
+  return to ? <Link to={to} style={{ color: 'inherit', textDecoration: 'none' }} aria-label={`${label}: open details`}>{content}</Link> : content;
 }
 
 function Panel({

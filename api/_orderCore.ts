@@ -288,8 +288,33 @@ export async function commitOrder(db: any, order: PricedOrder): Promise<void> {
         const name = `${product.brand ?? ''} ${product.model ?? ''}`.trim() || 'That item';
         throw new StockConflict(`${name} is out of stock`);
       }
-      if (variant) variant.stock = available - wanted;
-      else product.stock = available - wanted;
+      if (variant) {
+        const units = Array.isArray(variant.inventoryUnits) ? variant.inventoryUnits : null;
+        if (units?.length) {
+          const chosen = units.filter((unit: any) => unit?.status === 'available').slice(0, wanted);
+          if (chosen.length < wanted) throw new StockConflict(`${product.brand ?? ''} ${product.model ?? ''}`.trim() + ' no longer has enough available units');
+          const chosenIds = new Set(chosen.map((unit: any) => String(unit.id)));
+          variant.inventoryUnits = units.map((unit: any) => chosenIds.has(String(unit.id)) ? {
+            ...unit,
+            status: 'sold',
+            unitHistory: [...(Array.isArray(unit.unitHistory) ? unit.unitHistory : []), {
+              at: now, type: 'SOLD', detail: `WEBSITE · ${order.id}`, amount: Number(item.price) || 0,
+            }],
+          } : unit);
+          // The transaction, rather than the browser, chooses the actual IMEI.
+          // The resulting order is therefore the immutable audit link between
+          // payment, the physical handset and its captured cost.
+          item.unitIds = chosen.map((unit: any) => String(unit.id));
+          item.imeis = chosen.map((unit: any) => String(unit.imei ?? '')).filter(Boolean);
+          item.imei = (item.imeis as string[]).join(', ') || null;
+          const totalCost = chosen.reduce((sum: number, unit: any) => sum + (Number(unit.buyPrice) || 0), 0);
+          item.buyPrice = totalCost / wanted;
+          variant.stock = variant.inventoryUnits.filter((unit: any) => unit?.status === 'available').length;
+        } else {
+          variant.stock = available - wanted;
+        }
+        product.stock = product.variants.reduce((sum: number, row: any) => sum + Math.max(0, Number(row?.stock) || 0), 0);
+      } else product.stock = available - wanted;
     }
 
     for (const entry of docs.values()) {
@@ -348,10 +373,20 @@ export async function restockOrder(db: any, orderId: string, patch: Record<strin
         ? product.variants.find((v: any) => v?.id === item.variantId) ?? null
         : null;
 
-      const current = Number((variant?.stock ?? product.stock) ?? 0);
       const back = Number(item.quantity) || 0;
-      if (variant) variant.stock = current + back;
-      else product.stock = current + back;
+      if (variant) {
+        const unitIds = Array.isArray(item.unitIds) ? new Set(item.unitIds.map(String)) : new Set<string>();
+        if (Array.isArray(variant.inventoryUnits) && unitIds.size) {
+          variant.inventoryUnits = variant.inventoryUnits.map((unit: any) => unitIds.has(String(unit.id)) ? {
+            ...unit, status: 'available',
+            unitHistory: [...(Array.isArray(unit.unitHistory) ? unit.unitHistory : []), { at: new Date().toISOString(), type: 'RETURNED', detail: `WEBSITE refund · ${orderId}` }],
+          } : unit);
+          variant.stock = variant.inventoryUnits.filter((unit: any) => unit?.status === 'available').length;
+        } else {
+          variant.stock = Number(variant.stock ?? 0) + back;
+        }
+        product.stock = product.variants.reduce((sum: number, row: any) => sum + Math.max(0, Number(row?.stock) || 0), 0);
+      } else product.stock = Number(product.stock ?? 0) + back;
     }
 
     const now = new Date().toISOString();

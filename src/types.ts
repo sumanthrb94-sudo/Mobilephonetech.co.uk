@@ -1,5 +1,29 @@
 export type ProductGrade = 'Pristine' | 'Excellent' | 'Good' | 'Fair' | 'New';
 
+/**
+ * A physical, traceable unit held against a sellable configuration.  A
+ * configuration is "iPhone 15 · 128GB · Black · Excellent"; these records
+ * are the individual handsets behind that one shop choice.  Keeping the two
+ * separate lets staff list five identical handsets without losing their
+ * IMEI, purchase cost or warehouse position.
+ */
+export interface InventoryUnit {
+  /** Stable internal id. The IMEI itself is used for phones, generated ids for non-IMEI goods. */
+  id: string;
+  /** Required for tracked phones; accessories can use the internal id only. */
+  imei?: string;
+  sku?: string;
+  supplier?: string;
+  buyPrice?: number;
+  batteryHealth?: number;
+  stockLocation?: 'OFFICE' | 'SHS' | 'FBA' | 'WAREHOUSE';
+  stockInDate?: string;
+  notes?: string;
+  /** Available units make up the public stock count; historical records stay visible. */
+  status: 'available' | 'reserved' | 'sold' | 'returned' | 'written_off';
+  unitHistory?: UnitEvent[];
+}
+
 export interface ProductVariant {
   id: string;
   color?: string;
@@ -32,6 +56,12 @@ export interface ProductVariant {
   notes?: string;
   /** Full IMEI-level event log for this unit. Mirrors the Unit Histories sheet. */
   unitHistory?: UnitEvent[];
+  /**
+   * Individual handsets in this configuration. When populated, `stock` is
+   * derived from units with an available status rather than manually entered.
+   * Legacy configurations without this array retain their existing quantity.
+   */
+  inventoryUnits?: InventoryUnit[];
 }
 
 export interface ProductSpecs {

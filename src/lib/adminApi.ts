@@ -9,7 +9,7 @@ import { db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
 import { capImages } from './productImages';
-import type { Product, ProductGrade, ProductVariant } from '../types';
+import type { InventoryUnit, Product, ProductGrade, ProductVariant } from '../types';
 
 /** Storage folder for product imagery. */
 export const IMAGE_BUCKET = 'product-images';
@@ -72,6 +72,7 @@ export interface ProductDraft {
 }
 
 function cleanVariant(v: ProductVariant): ProductVariant {
+  const inventoryUnits = v.inventoryUnits?.map(cleanInventoryUnit);
   return {
     id: v.id.trim(),
     color: v.color?.trim() || undefined,
@@ -88,10 +89,32 @@ function cleanVariant(v: ProductVariant): ProductVariant {
     stockInDate: v.stockInDate || undefined,
     notes: v.notes?.trim() || undefined,
     unitHistory: v.unitHistory,
-    stock: Number(v.stock),
+    // A tracked configuration cannot drift away from the actual devices in
+    // its unit ledger. Older rows without `inventoryUnits` keep quantity stock
+    // until a staff member starts tracking them individually.
+    stock: inventoryUnits?.length
+      ? inventoryUnits.filter(unit => unit.status === 'available').length
+      : Number(v.stock),
     batteryHealth: v.batteryHealth == null ? undefined : Number(v.batteryHealth),
     imageUrl: v.imageUrl?.trim() || undefined,
     galleryImages: v.galleryImages?.filter(Boolean),
+    inventoryUnits: inventoryUnits?.length ? inventoryUnits : undefined,
+  };
+}
+
+function cleanInventoryUnit(unit: InventoryUnit): InventoryUnit {
+  return {
+    id: unit.id.trim(),
+    imei: unit.imei?.trim() || undefined,
+    sku: unit.sku?.trim() || undefined,
+    supplier: unit.supplier?.trim() || undefined,
+    buyPrice: unit.buyPrice == null ? undefined : Number(unit.buyPrice),
+    batteryHealth: unit.batteryHealth == null ? undefined : Number(unit.batteryHealth),
+    stockLocation: unit.stockLocation || 'OFFICE',
+    stockInDate: unit.stockInDate || undefined,
+    notes: unit.notes?.trim() || undefined,
+    status: unit.status || 'available',
+    unitHistory: unit.unitHistory,
   };
 }
 
@@ -269,6 +292,7 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
 
   if (hasVariants) {
     const seen = new Set<string>();
+    const trackedImeis = new Set<string>();
     for (const [index, raw] of (draft.variants ?? []).entries()) {
       const v = cleanVariant(raw);
       const key = [v.color, v.storage, v.connectivity, v.condition].map(x => (x ?? '').toLowerCase()).join('|');
@@ -281,6 +305,22 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
       if (!v.condition || !GRADES.includes(v.condition)) errors[`variant-${index}-condition`] = 'Choose a condition.';
       if (v.batteryHealth != null && (!Number.isInteger(v.batteryHealth) || v.batteryHealth < 0 || v.batteryHealth > 100)) errors[`variant-${index}-batteryHealth`] = 'Battery health must be 0–100.';
       if (isApplePhone && (v.batteryHealth == null || v.batteryHealth < 85)) errors[`variant-${index}-batteryHealth`] = 'Apple phone variants require verified battery health of at least 85%.';
+      for (const [unitIndex, rawUnit] of (v.inventoryUnits ?? []).entries()) {
+        const unit = cleanInventoryUnit(rawUnit);
+        const prefix = `variant-${index}-unit-${unitIndex}`;
+        if (!unit.id) errors[`${prefix}-id`] = 'Each physical unit needs an internal reference.';
+        if (unit.imei) {
+          const normalizedImei = unit.imei.replace(/\s+/g, '');
+          if (!/^\d{15}$/.test(normalizedImei)) errors[`${prefix}-imei`] = 'IMEI must be 15 digits.';
+          if (trackedImeis.has(normalizedImei)) errors[`${prefix}-imei`] = 'This IMEI is already attached to this model.';
+          trackedImeis.add(normalizedImei);
+        } else if (draft.category === 'Phones') {
+          errors[`${prefix}-imei`] = 'Every tracked phone needs its IMEI.';
+        }
+        if (unit.buyPrice != null && (!Number.isFinite(unit.buyPrice) || unit.buyPrice < 0)) errors[`${prefix}-buyPrice`] = 'Buy price must be £0 or more.';
+        if (unit.batteryHealth != null && (!Number.isInteger(unit.batteryHealth) || unit.batteryHealth < 0 || unit.batteryHealth > 100)) errors[`${prefix}-batteryHealth`] = 'Battery health must be 0–100.';
+        if (isApplePhone && unit.batteryHealth != null && unit.batteryHealth < 85) errors[`${prefix}-batteryHealth`] = 'Apple units must have verified battery health of at least 85%.';
+      }
     }
   }
 

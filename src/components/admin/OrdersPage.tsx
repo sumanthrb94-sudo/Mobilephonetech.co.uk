@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Package, Loader2, AlertTriangle, Check, Truck, MapPin, Mail, Undo2, ChevronDown, Inbox,
-  PackageCheck,
+  PackageCheck, Search, CircleCheckBig,
 } from 'lucide-react';
 import {
   listOrders, advanceOrder, resendConfirmation, refundOrder,
@@ -10,7 +10,7 @@ import {
 } from '../../lib/orders';
 import { describeError } from '../../lib/adminApi';
 
-type Filter = 'open' | 'dispatched' | 'refunded' | 'all';
+type Filter = 'open' | 'dispatched' | 'out-for-delivery' | 'delivered' | 'refunded' | 'all';
 
 const STEP_LABEL: Record<string, string> = {
   paid: 'Paid',
@@ -21,7 +21,9 @@ const STEP_LABEL: Record<string, string> = {
 
 const FILTERS: { value: Filter; label: string }[] = [
   { value: 'open',       label: 'To pack' },
-  { value: 'dispatched', label: 'On its way' },
+  { value: 'dispatched', label: 'In transit' },
+  { value: 'out-for-delivery', label: 'Out today' },
+  { value: 'delivered',  label: 'Delivered' },
   { value: 'refunded',   label: 'Refunded' },
   { value: 'all',        label: 'All' },
 ];
@@ -29,14 +31,7 @@ const FILTERS: { value: Filter; label: string }[] = [
 function matches(order: AdminOrder, filter: Filter): boolean {
   if (filter === 'all') return true;
   if (filter === 'open') return OPEN_STATUSES.includes(order.status);
-  // Delivered belongs here too: an order does not stop existing when it
-  // lands, and before this it dropped out of every tab except All.
-  if (filter === 'dispatched') {
-    return order.status === 'dispatched'
-      || order.status === 'out-for-delivery'
-      || order.status === 'delivered';
-  }
-  return order.status === 'refunded';
+  return order.status === filter;
 }
 
 /** Status is the one thing staff scan for, so it is read by colour first. */
@@ -63,6 +58,7 @@ export default function OrdersPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   // Keyed by order id so switching between orders cannot carry one order's
   // tracking number onto another.
@@ -113,7 +109,25 @@ export default function OrdersPage() {
     }
   };
 
-  const visible = rows.filter(o => matches(o, filter));
+  const counts = useMemo(() => ({
+    open: rows.filter(o => matches(o, 'open')).length,
+    dispatched: rows.filter(o => matches(o, 'dispatched')).length,
+    outForDelivery: rows.filter(o => matches(o, 'out-for-delivery')).length,
+    delivered: rows.filter(o => matches(o, 'delivered')).length,
+    refunded: rows.filter(o => matches(o, 'refunded')).length,
+  }), [rows]);
+
+  const visible = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return rows.filter(order => {
+      if (!matches(order, filter)) return false;
+      if (!query) return true;
+      return [
+        order.id, order.customer, order.contactEmail, order.courier, order.trackingNumber,
+        ...order.items.flatMap(item => [item.name, item.sku, item.imei, item.color, item.storage, item.grade]),
+      ].some(value => String(value ?? '').toLowerCase().includes(query));
+    });
+  }, [rows, filter, search]);
   // Defaults to what is already saved on the order, not a blank box — an
   // order moving from dispatched to out for delivery already has a courier
   // and tracking number, and leaving the fields blank here would mail the
@@ -195,7 +209,25 @@ export default function OrdersPage() {
         </p>
       )}
 
+      <section className="ord-queue" aria-label="Order queues">
+        <QueueTile icon={<Package size={18} />} label="To pack" count={counts.open} note="Paid and ready" active={filter === 'open'} onClick={() => setFilter('open')} />
+        <QueueTile icon={<Truck size={18} />} label="In transit" count={counts.dispatched} note="Dispatched" active={filter === 'dispatched'} onClick={() => setFilter('dispatched')} />
+        <QueueTile icon={<MapPin size={18} />} label="Out today" count={counts.outForDelivery} note="Delivery update due" active={filter === 'out-for-delivery'} onClick={() => setFilter('out-for-delivery')} />
+        <QueueTile icon={<CircleCheckBig size={18} />} label="Delivered" count={counts.delivered} note="Completed" active={filter === 'delivered'} onClick={() => setFilter('delivered')} />
+      </section>
+
       <div className="admin-panel">
+        <div className="ord-search">
+          <Search size={17} aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            placeholder="Search order, customer, product, SKU, IMEI or tracking"
+            aria-label="Search orders"
+          />
+          {search && <span>{visible.length} match{visible.length === 1 ? '' : 'es'}</span>}
+        </div>
         <div className="admin-toolbar" role="tablist" aria-label="Filter orders">
           {FILTERS.map(f => {
             const count = rows.filter(o => matches(o, f.value)).length;
@@ -273,7 +305,7 @@ export default function OrdersPage() {
           <div className="ord-empty">
             <Inbox size={22} />
             <p style={{ margin: 0 }}>
-              {filter === 'open' ? 'Nothing waiting to be packed.' : 'No orders here.'}
+              {search ? 'No orders match that search.' : filter === 'open' ? 'Nothing waiting to be packed.' : 'No orders here.'}
             </p>
           </div>
         )}
@@ -284,6 +316,7 @@ export default function OrdersPage() {
           const refunded = order.status === 'refunded';
           const next = nextAction(order.status);
           const f = field(order);
+          const hasDispatchDetails = Boolean(f.courier.trim() && f.tracking.trim());
           const panelId = `order-${order.id}`;
           const selectable = bulkEligible(order.status);
 
@@ -329,11 +362,26 @@ export default function OrdersPage() {
                   <div className="ord-items">
                     {order.items.map((it, i) => (
                       <div key={i} className="ord-item">
-                        <span>{it.quantity} × {it.name}</span>
+                        <span>
+                          <strong>{it.quantity} × {it.name}</strong>
+                          {(it.sku || it.imei || it.color || it.storage || it.grade) && (
+                            <small>
+                              {[it.grade, it.storage, it.color, it.sku && `SKU ${it.sku}`, it.imei && `IMEI ${it.imei}`]
+                                .filter(Boolean).join(' · ')}
+                            </small>
+                          )}
+                        </span>
                         <span>{gbp(it.price * it.quantity)}</span>
                       </div>
                     ))}
                   </div>
+
+                  {OPEN_STATUSES.includes(order.status) && (
+                    <div className="ord-pack-ready">
+                      <Package size={17} aria-hidden="true" />
+                      <span><strong>Ready to pack.</strong> Check the model, grade and IMEI above against the unit, then confirm the delivery address before creating its courier label.</span>
+                    </div>
+                  )}
 
                   {/* Where this order actually is. The chip in the header
                       says the same thing in one word; this says what has
@@ -412,6 +460,10 @@ export default function OrdersPage() {
                       </div>
                       )}
 
+                      {next?.kind === 'dispatched' && !hasDispatchDetails && (
+                        <p className="ord-dispatch-note">Add the courier and tracking number from your courier portal to dispatch this order and notify the customer.</p>
+                      )}
+
                       <div className="ord-actions">
                         {/* One button, not four. An order stands at exactly one
                             stage and is waiting for exactly one thing; the
@@ -424,7 +476,7 @@ export default function OrdersPage() {
                           <button
                             type="button"
                             className="btn btn-secondary btn-md"
-                            disabled={busy}
+                            disabled={busy || (next.kind === 'dispatched' && !hasDispatchDetails)}
                             onClick={() => void run(order.id, next.done, () =>
                               advanceOrder(order.id, next, { courier: f.courier, trackingNumber: f.tracking }))}
                           >
@@ -488,5 +540,21 @@ export default function OrdersPage() {
         })}
       </div>
     </div>
+  );
+}
+
+function QueueTile({ icon, label, count, note, active, onClick }: {
+  icon: ReactNode;
+  label: string;
+  count: number;
+  note: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" className={active ? 'ord-queue__tile ord-queue__tile--active' : 'ord-queue__tile'} onClick={onClick}>
+      <span className="ord-queue__icon">{icon}</span>
+      <span className="ord-queue__body"><span className="ord-queue__label">{label}</span><strong>{count}</strong><small>{note}</small></span>
+    </button>
   );
 }
