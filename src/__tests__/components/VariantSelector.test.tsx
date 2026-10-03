@@ -249,10 +249,10 @@ describe('VariantSelector — multi-variant matrix (Amazon style)', () => {
     id: 'iphone-17-pro',
     model: 'iPhone 17 Pro',
     variants: [
-      { id: 'v1', storage: '256GB', color: 'Cosmic Orange', condition: 'Good', price: 604, stock: 8 },
-      { id: 'v2', storage: '256GB', color: 'Cosmic Orange', condition: 'Excellent', price: 769, stock: 8 },
-      { id: 'v3', storage: '512GB', color: 'Cosmic Orange', condition: 'Good', price: 714, stock: 13 },
-      { id: 'v4', storage: '512GB', color: 'Deep Blue', condition: 'Good', price: 714, stock: 0 },
+      { id: 'v1', storage: '256GB', color: 'Cosmic Orange', condition: 'Good',      price: 604, originalPrice: 604, stock: 8 },
+      { id: 'v2', storage: '256GB', color: 'Cosmic Orange', condition: 'Excellent', price: 769, originalPrice: 769, stock: 8 },
+      { id: 'v3', storage: '512GB', color: 'Cosmic Orange', condition: 'Good',      price: 714, originalPrice: 714, stock: 13 },
+      { id: 'v4', storage: '512GB', color: 'Deep Blue',     condition: 'Good',      price: 714, originalPrice: 714, stock: 0 },
     ],
   });
 

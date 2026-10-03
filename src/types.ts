@@ -13,6 +13,25 @@ export interface ProductVariant {
   batteryHealth?: number;
   imageUrl?: string;
   galleryImages?: string[];
+  // ── Inventory / warehouse fields (admin-only, not shown on storefront) ────
+  /** IMEI number. Undefined for non-IMEI accessories. */
+  imei?: string;
+  /** Internal or marketplace SKU code. */
+  sku?: string;
+  /** Supplier the unit was purchased from, e.g. MHL, ABC, IMAX. */
+  supplier?: string;
+  /** Cost price paid to supplier (£). Never exposed to the storefront. */
+  buyPrice?: number;
+  /** SIM tray type printed on the listing, e.g. "Physical SIM + eSIM". */
+  simType?: string;
+  /** Where the physical unit currently sits. */
+  stockLocation?: 'OFFICE' | 'SHS' | 'FBA' | 'WAREHOUSE';
+  /** ISO date the unit arrived in stock. */
+  stockInDate?: string;
+  /** Free-text internal note visible only to staff. */
+  notes?: string;
+  /** Full IMEI-level event log for this unit. Mirrors the Unit Histories sheet. */
+  unitHistory?: UnitEvent[];
 }
 
 export interface ProductSpecs {
@@ -179,6 +198,12 @@ export interface ReturnItem {
   quantity: number;
   price: number;
   imageUrl?: string | null;
+  /** IMEI of the returned unit (matches ProductVariant.imei). */
+  imei?: string;
+  storage?: string;
+  color?: string;
+  /** Supplier the unit originally came from — needed for supplier credit tracking. */
+  supplier?: string;
 }
 
 export interface ReturnEvent {
@@ -208,7 +233,49 @@ export interface ReturnRequest {
   staffNote?: string | null;
   createdAt: string;
   updatedAt: string;
+  // ── Return cost breakdown (maps to Returns Detail / Returns & Profit sheets) ─
+  /** Which marketplace / sales channel this return originated from. */
+  channel?: string;
+  /** Per-leg postage cost £ (e.g. 2.75 for a 2-leg return). */
+  carriageCost?: number;
+  /** Number of postage legs (outbound + return = 2 typical). */
+  shippingLegs?: number;
+  /** External repair invoice total £, if unit was repaired before resale. */
+  repairCost?: number;
+  /** Credit received from supplier for the faulty unit £. */
+  supplierCredit?: number;
+  /** Marketplace fees that were NOT refunded to us (e.g. eBay £0.40 admin). */
+  feesKept?: number;
+  /** ISO date the returned unit was physically restocked. */
+  stockRestoredDate?: string | null;
 }
+
+// ── Per-IMEI unit audit trail ──────────────────────────────────────────────
+//
+// Every significant event in a unit's life is recorded here as an element
+// of ProductVariant.unitHistory. It is the source of truth for the
+// "Unit Histories" sheet in the exported sales report.
+
+export type UnitEventType = 'STOCK_IN' | 'SOLD' | 'RETURNED' | 'REPAIRED' | 'WRITTEN_OFF';
+
+export interface UnitEvent {
+  /** ISO datetime of the event. */
+  at: string;
+  type: UnitEventType;
+  /** Human-readable detail, e.g. "AMAZON · 204-0679132-3237927" or supplier name. */
+  detail?: string;
+  /** £ value associated with the event (positive = revenue, negative = cost). */
+  amount?: number;
+  note?: string;
+}
+
+// ── Order channel ───────────────────────────────────────────────────────────
+//
+// Where the sale originated. Website orders default to WEBSITE.
+// External marketplace orders arrive via webhook and carry the channel
+// set by that marketplace.
+
+export type OrderChannel = 'AMAZON' | 'EBAY' | 'BM' | 'ONBUY' | 'TEMU' | 'WEBSITE';
 
 // ── Support conversations ──────────────────────────────────────
 //
