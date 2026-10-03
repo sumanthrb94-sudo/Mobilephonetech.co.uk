@@ -37,7 +37,9 @@ export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
         style={{
           display: 'grid',
           gridAutoFlow: 'column',
-          gridAutoColumns: 'minmax(220px, 1fr)',
+          // `1fr` made a single history item claim the entire desktop row.
+          // Keep each card at a browseable rail width regardless of count.
+          gridAutoColumns: 'minmax(220px, 300px)',
           gap: '16px',
           overflowX: 'auto',
           paddingBottom: '8px',
@@ -46,7 +48,7 @@ export default function RecentlyViewed({ excludeId }: { excludeId?: string }) {
       >
         {items.map((p) => (
           <div key={p.id} style={{ scrollSnapAlign: 'start' }}>
-            <ProductCard phone={p} />
+            <ProductCard phone={p} compact />
           </div>
         ))}
       </div>

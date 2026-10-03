@@ -735,29 +735,24 @@ export default function ProductDetail() {
             <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
 
             {chargerUpsell && (
-              <label
-                style={{
-                  display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '14px',
-                  border: `1.5px solid ${includeCharger ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
-                  borderRadius: 'var(--radius-lg)', background: includeCharger ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
-                  cursor: 'pointer',
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={includeCharger}
-                  onChange={(event) => setIncludeCharger(event.target.checked)}
-                  style={{ marginTop: '3px', accentColor: 'var(--brand-cyan)' }}
-                />
-                <span style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, fontSize: '14px', color: 'var(--black)' }}>
-                    {chargerUpsell.title} · £{chargerUpsell.product.price}
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', lineHeight: 1.45, color: 'var(--grey-60)' }}>
-                    {chargerUpsell.description}
-                  </span>
-                </span>
-              </label>
+              <fieldset style={{ border: 0, margin: 0, padding: '14px 0 2px', borderTop: '1px solid var(--grey-10)' }}>
+                <legend style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--black)', padding: 0 }}>
+                  Accessories <button type="button" style={{ marginLeft: '8px', padding: 0, background: 'none', border: 0, color: 'var(--brand-cyan-hover)', font: 'inherit', fontSize: '12px', fontWeight: 600, textDecoration: 'underline', cursor: 'pointer' }}>Help me choose</button>
+                </legend>
+                <div style={{ display: 'grid', gap: '10px', marginTop: '12px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '11px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
+                    <input type="radio" name="charger" checked={!includeCharger} onChange={() => setIncludeCharger(false)} style={{ width: '18px', height: '18px', accentColor: 'var(--brand-cyan)' }} />
+                    Charging cable only
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '11px', cursor: 'pointer', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)' }}>
+                    <input type="radio" name="charger" checked={includeCharger} onChange={() => setIncludeCharger(true)} style={{ width: '18px', height: '18px', marginTop: '1px', accentColor: 'var(--brand-cyan)' }} />
+                    <span>
+                      <strong style={{ fontFamily: 'var(--font-sans)' }}>{chargerUpsell.title} (+£{chargerUpsell.product.price})</strong>
+                      <span style={{ display: 'block', marginTop: '3px', color: 'var(--grey-60)', fontSize: '12px', lineHeight: 1.4 }}>{chargerUpsell.description}</span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
             )}
 
             {/* Delivery */}
