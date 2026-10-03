@@ -243,3 +243,46 @@ describe('VariantSelector — a listing covering several colours', () => {
     expect(screen.getByText(/sizes — subject to availability/i)).toBeTruthy();
   });
 });
+
+describe('VariantSelector — multi-variant matrix (Amazon style)', () => {
+  const matrixProduct = product({
+    id: 'iphone-17-pro',
+    model: 'iPhone 17 Pro',
+    variants: [
+      { id: 'v1', storage: '256GB', color: 'Cosmic Orange', condition: 'Good', price: 604, stock: 8 },
+      { id: 'v2', storage: '256GB', color: 'Cosmic Orange', condition: 'Excellent', price: 769, stock: 8 },
+      { id: 'v3', storage: '512GB', color: 'Cosmic Orange', condition: 'Good', price: 714, stock: 13 },
+      { id: 'v4', storage: '512GB', color: 'Deep Blue', condition: 'Good', price: 714, stock: 0 },
+    ],
+  });
+
+  it('renders Amazon-style Colour, Capacity, and Condition pickers instead of a flat 36-item list', () => {
+    renderFor(matrixProduct);
+    // Should show segmented attributes
+    expect(screen.getByText(/Colour:/i)).toBeTruthy();
+    expect(screen.getByText(/Capacity:/i)).toBeTruthy();
+    expect(screen.getByText(/Condition:/i)).toBeTruthy();
+    // Swatches and pills
+    expect(screen.getByRole('button', { name: /Cosmic Orange/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /256GB/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /512GB/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Good/i })).toBeTruthy();
+  });
+
+  it('auto-selects first in-stock variant and updates when clicking different storage', async () => {
+    const { onVariantSelect } = renderFor(matrixProduct);
+    expect(onVariantSelect).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'v1',
+      price: 604,
+      storage: '256GB',
+    }));
+
+    await userEvent.click(screen.getByRole('button', { name: /512GB/i }));
+    expect(onVariantSelect).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'v3',
+      storage: '512GB',
+      price: 714,
+    }));
+  });
+});
+

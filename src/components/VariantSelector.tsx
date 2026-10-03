@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product, ProductVariant } from '../types';
 import { useCatalogue } from '../context/CatalogueContext';
+import { colourHex } from '../utils/deviceColors';
 import {
   variantChoices, isChoosable, currentValue, currentValues, isAmbiguous, alternatives,
   type VariantOption,
@@ -231,45 +232,326 @@ export default function VariantSelector({
   );
 }
 
+function parseStorageSize(val?: string): number {
+  if (!val) return 0;
+  const match = val.match(/(\d+)\s*(GB|TB)/i);
+  if (!match) return 0;
+  const num = parseInt(match[1], 10);
+  return match[2].toUpperCase() === 'TB' ? num * 1024 : num;
+}
+
+const CONDITION_RANK: Record<string, number> = {
+  'Brand New': 1,
+  'New': 2,
+  'Like New': 3,
+  'Pristine': 4,
+  'Excellent': 5,
+  'Good': 6,
+  'Fair': 7,
+};
+
 function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onVariantSelect: (variant: ProductVariant) => void;
 }) {
+  // Extract unique attributes present in this variant set
+  const colors = useMemo(() => {
+    const set = new Set<string>();
+    variants.forEach(v => { if (v.color) set.add(v.color.trim()); });
+    return Array.from(set);
+  }, [variants]);
+
+  const storages = useMemo(() => {
+    const set = new Set<string>();
+    variants.forEach(v => { if (v.storage) set.add(v.storage.trim()); });
+    return Array.from(set).sort((a, b) => parseStorageSize(a) - parseStorageSize(b));
+  }, [variants]);
+
+  const conditions = useMemo(() => {
+    const set = new Set<string>();
+    variants.forEach(v => { if (v.condition) set.add(v.condition.trim()); });
+    return Array.from(set).sort((a, b) => (CONDITION_RANK[a] ?? 99) - (CONDITION_RANK[b] ?? 99));
+  }, [variants]);
+
+  // Active or defaulted variant
+  const activeVariant = useMemo(() => {
+    if (selectedVariant && variants.some(v => v.id === selectedVariant.id)) {
+      return selectedVariant;
+    }
+    // Prefer first in-stock variant, otherwise cheapest variant
+    const inStock = variants.find(v => v.stock > 0);
+    return inStock ?? variants[0];
+  }, [selectedVariant, variants]);
+
+  // Synchronise initial default with parent if not already set
+  React.useEffect(() => {
+    if (activeVariant && (!selectedVariant || selectedVariant.id !== activeVariant.id)) {
+      onVariantSelect(activeVariant);
+    }
+  }, [activeVariant, selectedVariant, onVariantSelect]);
+
+  const activeColor = activeVariant?.color?.trim() || colors[0];
+  const activeStorage = activeVariant?.storage?.trim() || storages[0];
+  const activeCondition = activeVariant?.condition?.trim() || conditions[0];
+
+  // Pick helper that selects the closest matching variant
+  const handleSelectColor = (newColor: string) => {
+    const exact = variants.find(v => v.color?.trim() === newColor && v.storage?.trim() === activeStorage && v.condition?.trim() === activeCondition);
+    if (exact) { onVariantSelect(exact); return; }
+    const sameStorage = variants.find(v => v.color?.trim() === newColor && v.storage?.trim() === activeStorage && v.stock > 0)
+      ?? variants.find(v => v.color?.trim() === newColor && v.storage?.trim() === activeStorage);
+    if (sameStorage) { onVariantSelect(sameStorage); return; }
+    const anyInColor = variants.find(v => v.color?.trim() === newColor && v.stock > 0)
+      ?? variants.find(v => v.color?.trim() === newColor);
+    if (anyInColor) onVariantSelect(anyInColor);
+  };
+
+  const handleSelectStorage = (newStorage: string) => {
+    const exact = variants.find(v => v.storage?.trim() === newStorage && v.color?.trim() === activeColor && v.condition?.trim() === activeCondition);
+    if (exact) { onVariantSelect(exact); return; }
+    const sameColor = variants.find(v => v.storage?.trim() === newStorage && v.color?.trim() === activeColor && v.stock > 0)
+      ?? variants.find(v => v.storage?.trim() === newStorage && v.color?.trim() === activeColor);
+    if (sameColor) { onVariantSelect(sameColor); return; }
+    const anyInStorage = variants.find(v => v.storage?.trim() === newStorage && v.stock > 0)
+      ?? variants.find(v => v.storage?.trim() === newStorage);
+    if (anyInStorage) onVariantSelect(anyInStorage);
+  };
+
+  const handleSelectCondition = (newCondition: string) => {
+    const exact = variants.find(v => v.condition?.trim() === newCondition && v.color?.trim() === activeColor && v.storage?.trim() === activeStorage);
+    if (exact) { onVariantSelect(exact); return; }
+    const sameStorage = variants.find(v => v.condition?.trim() === newCondition && v.storage?.trim() === activeStorage && v.stock > 0)
+      ?? variants.find(v => v.condition?.trim() === newCondition && v.storage?.trim() === activeStorage);
+    if (sameStorage) { onVariantSelect(sameStorage); return; }
+    const anyInCondition = variants.find(v => v.condition?.trim() === newCondition && v.stock > 0)
+      ?? variants.find(v => v.condition?.trim() === newCondition);
+    if (anyInCondition) onVariantSelect(anyInCondition);
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '14px', borderTop: '1px solid var(--grey-10)' }}>
-      <label style={labelStyle}>Choose your configuration</label>
-      <div style={{ display: 'grid', gap: '8px' }}>
-        {variants.map(variant => {
-          const selected = selectedVariant?.id === variant.id;
-          const available = variant.stock > 0;
-          const label = [variant.storage, variant.color, variant.connectivity, variant.condition].filter(Boolean).join(' · ') || 'Standard configuration';
-          return (
-            <button
-              key={variant.id}
-              type="button"
-              disabled={!available}
-              aria-pressed={selected}
-              onClick={() => onVariantSelect(variant)}
-              style={{
-                display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', textAlign: 'left',
-                padding: '11px 12px', borderRadius: 'var(--radius-md)',
-                border: `1.5px solid ${selected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
-                background: selected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
-                color: available ? 'var(--black)' : 'var(--grey-50)',
-                cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : .58,
-                fontFamily: 'var(--font-body)', fontSize: 13,
-              }}
-            >
-              <span><strong style={{ fontFamily: 'var(--font-sans)' }}>{label}</strong>{variant.batteryHealth != null && <span style={{ display: 'block', marginTop: 3, fontSize: 12 }}>Battery health {variant.batteryHealth}%</span>}</span>
-              <span style={{ textAlign: 'right', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)', fontWeight: 800 }}>£{variant.price}{available ? <small style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 500, color: 'var(--grey-50)' }}>{variant.stock} available</small> : <small style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 600 }}>Sold out</small>}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px', borderTop: '1px solid var(--grey-10)' }}>
+      {/* 1. Colour Row (Amazon Swatches) */}
+      {colors.length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={labelStyle}>
+              Colour: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{activeColor}</strong>
+            </span>
+            <span style={{ fontSize: '11.5px', color: 'var(--grey-50)', fontWeight: 500 }}>
+              {colors.length} finish{colors.length > 1 ? 'es' : ''}
+            </span>
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {colors.map(color => {
+              const isSelected = activeColor === color;
+              const hex = colourHex(color);
+              // Check if in stock in current storage or any storage
+              const inStock = variants.some(v => v.color?.trim() === color && v.stock > 0);
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => handleSelectColor(color)}
+                  title={`${color}${!inStock ? ' (Out of stock)' : ''}`}
+                  aria-label={`${color}${isSelected ? ' (Selected)' : ''}`}
+                  style={{
+                    position: 'relative',
+                    width: '38px',
+                    height: '38px',
+                    borderRadius: '50%',
+                    background: hex,
+                    border: isSelected ? '2.5px solid var(--brand-cyan)' : '2px solid rgba(0,0,0,0.12)',
+                    boxShadow: isSelected ? '0 0 0 2px var(--brand-cyan)' : '0 1px 4px rgba(0,0,0,0.1)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.15s, box-shadow 0.15s',
+                    transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                    outline: 'none',
+                    opacity: inStock ? 1 : 0.45,
+                  }}
+                >
+                  {!inStock && (
+                    <div style={{
+                      position: 'absolute', top: '50%', left: 0, right: 0,
+                      height: '1.5px', background: '#dc2626', transform: 'rotate(-45deg)'
+                    }} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 2. Storage Row (Segmented Pills with Prices) */}
+      {storages.length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={labelStyle}>
+              Capacity: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{activeStorage}</strong>
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(95px, 1fr))`, gap: '8px' }}>
+            {storages.map(storage => {
+              const isSelected = activeStorage === storage;
+              // Find matching variant price for this storage
+              const matching = variants.find(v => v.storage?.trim() === storage && v.color?.trim() === activeColor && v.condition?.trim() === activeCondition)
+                ?? variants.find(v => v.storage?.trim() === storage && v.color?.trim() === activeColor)
+                ?? variants.find(v => v.storage?.trim() === storage);
+              const inStock = variants.some(v => v.storage?.trim() === storage && v.stock > 0);
+              const price = matching?.price;
+
+              return (
+                <button
+                  key={storage}
+                  type="button"
+                  onClick={() => handleSelectStorage(storage)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                    background: isSelected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                    cursor: 'pointer',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    opacity: inStock ? 1 : 0.6,
+                  }}
+                >
+                  <span style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: isSelected ? 'var(--brand-cyan)' : 'var(--black)',
+                  }}>
+                    {storage}
+                  </span>
+                  {price != null && (
+                    <span style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: isSelected ? 'var(--brand-cyan)' : 'var(--grey-50)',
+                      marginTop: '2px',
+                    }}>
+                      £{price}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 3. Condition / Grade Row */}
+      {conditions.length > 0 && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={labelStyle}>
+              Condition: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{activeCondition}</strong>
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(95px, 1fr))`, gap: '8px' }}>
+            {conditions.map(condition => {
+              const isSelected = activeCondition === condition;
+              const matching = variants.find(v => v.condition?.trim() === condition && v.storage?.trim() === activeStorage && v.color?.trim() === activeColor)
+                ?? variants.find(v => v.condition?.trim() === condition && v.storage?.trim() === activeStorage)
+                ?? variants.find(v => v.condition?.trim() === condition);
+              const inStock = (matching?.stock ?? 0) > 0;
+              const price = matching?.price;
+
+              return (
+                <button
+                  key={condition}
+                  type="button"
+                  onClick={() => handleSelectCondition(condition)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                    background: isSelected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                    cursor: inStock ? 'pointer' : 'default',
+                    transition: 'border-color 0.15s, background 0.15s',
+                    opacity: inStock ? 1 : 0.5,
+                  }}
+                >
+                  <span style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: isSelected ? 'var(--brand-cyan)' : 'var(--black)',
+                  }}>
+                    {condition}
+                  </span>
+                  <span style={{
+                    fontFamily: 'var(--font-body)',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: inStock ? (isSelected ? 'var(--brand-cyan)' : 'var(--grey-50)') : '#dc2626',
+                    marginTop: '2px',
+                  }}>
+                    {inStock && price != null ? `£${price}` : 'Sold out'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 4. Active Selection Real-time Stock & Price Confirmation Box */}
+      {activeVariant && (
+        <div style={{
+          padding: '12px 14px',
+          borderRadius: '8px',
+          background: 'var(--grey-5, #f8fafc)',
+          border: '1px solid var(--grey-15, #e2e8f0)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+        }}>
+          <div>
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, color: 'var(--black)' }}>
+              {[activeVariant.storage, activeVariant.color, activeVariant.condition].filter(Boolean).join(' · ')}
+            </div>
+            <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {activeVariant.stock > 0 ? (
+                <span style={{ color: activeVariant.stock <= 3 ? '#d97706' : '#16a34a', fontWeight: 600 }}>
+                  {activeVariant.stock <= 3 ? `Only ${activeVariant.stock} left in stock` : `✓ In stock (${activeVariant.stock} available)`}
+                </span>
+              ) : (
+                <span style={{ color: '#dc2626', fontWeight: 600 }}>Currently out of stock</span>
+              )}
+              {activeVariant.batteryHealth != null && (
+                <span style={{ color: 'var(--grey-50)' }}>· {activeVariant.batteryHealth}% Battery</span>
+              )}
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'right' }}>
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 900, color: 'var(--black)' }}>
+              £{activeVariant.price}
+            </span>
+            {activeVariant.originalPrice && activeVariant.originalPrice > activeVariant.price && (
+              <span style={{ display: 'block', fontSize: '11px', color: 'var(--grey-40)', textDecoration: 'line-through' }}>
+                £{activeVariant.originalPrice}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 /**
  * One attribute row.
