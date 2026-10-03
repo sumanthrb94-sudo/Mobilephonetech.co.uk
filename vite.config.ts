@@ -44,6 +44,10 @@ export default defineConfig(() => {
                the dynamic import was for. Returning undefined leaves it in
                the lazy chunk its importer created. */
             if (id.includes('leaflet')) return undefined;
+            // SheetJS is only reached after a staff member explicitly exports
+            // a report. Do not put an Excel engine in every shopper's startup
+            // bundle merely because the report module is dynamically imported.
+            if (id.includes('/xlsx/')) return 'xlsx';
             if (id.includes('react-router'))  return 'router';
             if (id.includes('lucide-react'))  return 'lucide';
             if (

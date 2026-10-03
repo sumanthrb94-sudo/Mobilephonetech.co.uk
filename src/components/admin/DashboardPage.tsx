@@ -44,9 +44,19 @@ export default function DashboardPage() {
     setExporting('sales');
     try {
       const { downloadSalesReport } = await import('../../lib/reports');
-      const salesMod = await import('../../../data/sales.json');
-      const returnsMod = await import('../../../data/returns.json');
-      downloadSalesReport(salesMod.default as any, returnsMod.default as any);
+      const [{ listOrders }, { listReturns }] = await Promise.all([
+        import('../../lib/orders'), import('../../lib/returns'),
+      ]);
+      const orders = await listOrders();
+      const lines = orders
+        .filter(order => order.status !== 'refunded')
+        .flatMap(order => order.items.map(item => ({
+          date: order.createdAt, channel: 'WEBSITE', channelOrderId: order.id,
+          sku: item.sku, imei: item.imei, model: item.name, storage: item.storage,
+          color: item.color, condition: item.grade, buyPrice: item.buyPrice,
+          sellPrice: item.price, quantity: item.quantity,
+        })));
+      downloadSalesReport(lines, await listReturns());
     } catch (err) {
       setError(describeError(err));
     } finally {
@@ -132,6 +142,11 @@ export default function DashboardPage() {
           icon={<ShoppingBag size={16} />} tone="ink" label="Orders"
           value={loading ? null : stats?.ordersUnavailable ? '—' : String(stats?.orderCount ?? 0)}
           note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${money(stats?.orderRevenue ?? 0)} total`}
+        />
+        <Kpi
+          icon={<CircleDollarSign size={16} />} tone="gold" label="Website GP"
+          value={loading ? null : stats?.ordersUnavailable ? '—' : money(stats?.websiteGrossProfit ?? 0)}
+          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : stats?.websiteGrossProfitMargin == null ? 'cost data starts with new orders' : `${(stats.websiteGrossProfitMargin * 100).toFixed(1)}% product margin${stats.ordersMissingCost ? ` · ${stats.ordersMissingCost} older order${stats.ordersMissingCost === 1 ? '' : 's'} pending cost` : ''}`}
         />
       </section>
 

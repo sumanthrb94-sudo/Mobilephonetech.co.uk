@@ -183,6 +183,9 @@ export async function priceAndValidate(
       variantId: variant?.id ?? null,
       price: unitPrice,
       originalPrice: Number(variant?.originalPrice ?? product.originalPrice ?? unitPrice),
+      // A sale retains the cost it was priced against. Catalogue costs can
+      // change tomorrow; rewriting an old order's margin would be incorrect.
+      buyPrice: Number(variant?.buyPrice ?? product.buyPrice ?? 0),
       quantity,
       imageUrl: product.imageUrl ?? null,
       grade: product.grade ?? null,

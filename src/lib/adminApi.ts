@@ -48,6 +48,11 @@ export interface ProductDraft {
   storage?: string;
   price: number;
   originalPrice: number;
+  buyPrice?: number;
+  supplier?: string;
+  imei?: string;
+  sku?: string;
+  stockLocation?: 'OFFICE' | 'SHS' | 'FBA' | 'WAREHOUSE';
   grade: ProductGrade;
   batteryHealth?: number;
   warrantyMonths: number;
@@ -75,6 +80,14 @@ function cleanVariant(v: ProductVariant): ProductVariant {
     condition: v.condition,
     price: Number(v.price),
     originalPrice: Number(v.originalPrice),
+    buyPrice: v.buyPrice == null ? undefined : Number(v.buyPrice),
+    supplier: v.supplier?.trim() || undefined,
+    imei: v.imei?.trim() || undefined,
+    sku: v.sku?.trim() || undefined,
+    stockLocation: v.stockLocation || 'OFFICE',
+    stockInDate: v.stockInDate || undefined,
+    notes: v.notes?.trim() || undefined,
+    unitHistory: v.unitHistory,
     stock: Number(v.stock),
     batteryHealth: v.batteryHealth == null ? undefined : Number(v.batteryHealth),
     imageUrl: v.imageUrl?.trim() || undefined,
@@ -141,6 +154,11 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     storageOptions: summary?.storageOptions.length ? summary.storageOptions : draft.storageOptions?.length ? draft.storageOptions : null,
     conditionOptions: summary?.conditionOptions.length ? summary.conditionOptions : null,
     variants: summary?.variants.length ? summary.variants : null,
+    buyPrice: summary?.variants?.[0]?.buyPrice ?? draft.buyPrice ?? null,
+    supplier: summary?.variants?.[0]?.supplier ?? draft.supplier ?? null,
+    imei: draft.imei ?? null,
+    sku: draft.sku ?? null,
+    stockLocation: draft.stockLocation ?? 'OFFICE',
     searchTerms: buildSearchTerms(draft.brand, draft.model, draft.category),
   });
 }
@@ -187,6 +205,11 @@ export function productToDraft(p: Product): ProductDraft {
     colorOptions: p.colorOptions,
     storageOptions: p.storageOptions,
     variants: p.variants ?? [],
+    buyPrice: p.buyPrice ?? p.variants?.[0]?.buyPrice,
+    supplier: p.supplier ?? p.variants?.[0]?.supplier,
+    imei: p.imei ?? p.variants?.[0]?.imei,
+    sku: p.sku ?? p.variants?.[0]?.sku,
+    stockLocation: p.stockLocation ?? p.variants?.[0]?.stockLocation ?? 'OFFICE',
     // Preserve older catalogue documents exactly until staff choose to manage
     // their rows as the new model matrix.
     variantMode: false,
@@ -382,6 +405,10 @@ export interface DashboardStats {
   needsAttention: Product[];
   orderCount: number;
   orderRevenue: number;
+  /** Website product GP. Excludes postage, payment fees and later repairs. */
+  websiteGrossProfit: number;
+  websiteGrossProfitMargin: number | null;
+  ordersMissingCost: number;
   recentOrders: RecentOrder[];
   /** True when the orders read failed — so the panel can say "unavailable"
    *  rather than draw a confident zero. */
@@ -428,6 +455,9 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
 
   let orderCount = 0;
   let orderRevenue = 0;
+  let websiteGrossProfit = 0;
+  let costedRevenue = 0;
+  let ordersMissingCost = 0;
   let recentOrders: RecentOrder[] = [];
   let ordersUnavailable = false;
 
@@ -436,10 +466,22 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     const rows = orderSnap.docs.map(d => {
       const o = d.data() as Record<string, unknown>;
       const addr = (o.shippingAddress ?? {}) as { fullName?: string };
+      const status = String(o.status ?? 'pending');
+      const items = Array.isArray(o.items) ? o.items as Array<Record<string, unknown>> : [];
+      const hasCost = items.length > 0 && items.every(item => typeof item.buyPrice === 'number' && Number.isFinite(item.buyPrice));
+      const productRevenue = Math.max(0, Number(o.subtotal ?? 0) - Number(o.discount ?? 0));
+      if (status !== 'refunded') {
+        if (hasCost) {
+          costedRevenue += productRevenue;
+          websiteGrossProfit += productRevenue - items.reduce((sum, item) => sum + Number(item.buyPrice) * Math.max(1, Number(item.quantity) || 1), 0);
+        } else {
+          ordersMissingCost += 1;
+        }
+      }
       return {
         id: d.id,
         total: Number(o.total ?? 0),
-        status: String(o.status ?? 'pending'),
+        status,
         createdAt: String(o.createdAt ?? ''),
         customer: addr.fullName ?? 'Guest',
         itemCount: Array.isArray(o.items) ? o.items.length : 0,
@@ -466,6 +508,9 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     needsAttention,
     orderCount,
     orderRevenue,
+    websiteGrossProfit,
+    websiteGrossProfitMargin: costedRevenue ? websiteGrossProfit / costedRevenue : null,
+    ordersMissingCost,
     recentOrders,
     ordersUnavailable,
   };

@@ -133,6 +133,11 @@ export interface Product {
   colorOptions?: string[];
   storageOptions?: string[];
   conditionOptions?: ProductGrade[];
+  buyPrice?: number;
+  supplier?: string;
+  imei?: string;
+  sku?: string;
+  stockLocation?: 'OFFICE' | 'SHS' | 'FBA' | 'WAREHOUSE';
 }
 
 export type Phone = Product; 

@@ -1,15 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import Hero from './Hero';
 import BrandShowcase from './BrandShowcase';
-import QualityPromise from './QualityPromise';
-import EcoImpactBlock from './EcoImpactBlock';
-import HomeFaq from './HomeFaq';
-import HomeBlog from './HomeBlog';
-import NewsletterSignup from './NewsletterSignup';
-import TrustSection from './TrustSection';
-import TestimonialsSection from './TestimonialsSection';
-import WarrantyAndReturns from './WarrantyAndReturns';
 import { defaultLayout, loadHomeLayout, visibleSections } from '../lib/homeLayout';
+
+// The hero and category navigation are immediately useful. Everything below
+// that fold becomes a separate chunk so it cannot delay the first interaction
+// or compete with product imagery on a mobile connection.
+const QualityPromise = lazy(() => import('./QualityPromise'));
+const EcoImpactBlock = lazy(() => import('./EcoImpactBlock'));
+const HomeFaq = lazy(() => import('./HomeFaq'));
+const HomeBlog = lazy(() => import('./HomeBlog'));
+const NewsletterSignup = lazy(() => import('./NewsletterSignup'));
+const TrustSection = lazy(() => import('./TrustSection'));
+const TestimonialsSection = lazy(() => import('./TestimonialsSection'));
+const WarrantyAndReturns = lazy(() => import('./WarrantyAndReturns'));
 
 /**
  * The home page's blocks, rendered in the order staff chose.
@@ -37,6 +41,23 @@ export const SECTION_VIEWS: Record<string, () => React.ReactElement> = {
   newsletter: () => <NewsletterSignup />,
 };
 
+const ABOVE_THE_FOLD = new Set(['hero', 'brandShowcase']);
+
+function DeferredSection({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || !('IntersectionObserver' in window)) { setVisible(true); return; }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); observer.disconnect(); }
+    }, { rootMargin: '500px 0px' });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  return <div ref={ref}>{visible ? children : null}</div>;
+}
+
 export default function HomeSections() {
   // The shipped order, not an empty list: the first paint is the real home
   // page, and a stored layout only ever rearranges what is already on screen.
@@ -54,7 +75,11 @@ export default function HomeSections() {
     <>
       {visibleSections(layout).map(section => {
         const View = SECTION_VIEWS[section.id];
-        return View ? <React.Fragment key={section.id}>{View()}</React.Fragment> : null;
+        if (!View) return null;
+        const content = <Suspense fallback={null}>{View()}</Suspense>;
+        return ABOVE_THE_FOLD.has(section.id)
+          ? <React.Fragment key={section.id}>{content}</React.Fragment>
+          : <DeferredSection key={section.id}>{content}</DeferredSection>;
       })}
     </>
   );

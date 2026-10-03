@@ -30,10 +30,13 @@ import Toast from './components/Toast';
 import { PageLoading } from './components/ui/Loading';
 import { useSeo } from './hooks/useSeo';
 import { homeSeo } from './utils/seo';
-import HomeSections from './components/HomeSections';
 
 // Lazy load pages for performance
 const ProductDetail = lazyRoute(() => import('./components/ProductDetail'));
+// Home is a route too. Keeping its editorial blocks out of the application
+// shell means customers on checkout, account and admin routes never download
+// the home-page imagery, FAQ and editorial code.
+const HomeSections = lazyRoute(() => import('./components/HomeSections'));
 const ProductsPage = lazyRoute(() => import('./components/ProductsPage'));
 const CheckoutFlow = lazyRoute(() => import('./components/CheckoutFlow'));
 const WishlistPage = lazyRoute(() => import('./components/WishlistPage'));
@@ -74,7 +77,11 @@ const ProductEditor = lazyRoute(() => import('./components/admin/ProductEditor')
  */
 function HomePage() {
   useSeo(homeSeo());
-  return <HomeSections />;
+  return (
+    <Suspense fallback={<PageLoading label="Loading shop" />}>
+      <HomeSections />
+    </Suspense>
+  );
 }
 
 /**

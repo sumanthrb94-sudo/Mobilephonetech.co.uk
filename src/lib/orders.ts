@@ -20,7 +20,7 @@ export interface AdminOrder {
   contactEmail: string;
   customer: string;
   address: string[];
-  items: Array<{ name: string; quantity: number; price: number }>;
+  items: Array<{ productId?: string; name: string; quantity: number; price: number; buyPrice?: number; sku?: string; imei?: string; color?: string; storage?: string; grade?: string }>;
   paypalOrderId?: string;
   courier?: string | null;
   trackingNumber?: string | null;
@@ -128,9 +128,16 @@ export async function listOrders(): Promise<AdminOrder[]> {
           line(addr.city), line(addr.postalCode), line(addr.country),
         ].filter(Boolean),
         items: (Array.isArray(o.items) ? o.items : []).map((i: Record<string, any>) => ({
+          productId: String(i.productId ?? i.id ?? ''),
           name: [i.brand, i.model].filter(Boolean).join(' ') || String(i.name ?? i.productId ?? 'Item'),
           quantity: Number(i.quantity ?? 1),
           price: Number(i.price ?? 0),
+          buyPrice: typeof i.buyPrice === 'number' ? i.buyPrice : undefined,
+          sku: i.sku ? String(i.sku) : undefined,
+          imei: i.imei ? String(i.imei) : undefined,
+          color: i.selectedColor ? String(i.selectedColor) : undefined,
+          storage: i.selectedStorage ? String(i.selectedStorage) : undefined,
+          grade: i.selectedCondition ? String(i.selectedCondition) : undefined,
         })),
         paypalOrderId: o.paypalOrderId ? String(o.paypalOrderId) : undefined,
         courier: o.courier ?? null,

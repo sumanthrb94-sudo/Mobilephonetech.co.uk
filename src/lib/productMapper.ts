@@ -33,6 +33,11 @@ export interface ProductDoc {
   storageOptions?: string[] | null;
   conditionOptions?: ProductGrade[] | null;
   variants?: ProductVariant[] | null;
+  buyPrice?: number | null;
+  supplier?: string | null;
+  imei?: string | null;
+  sku?: string | null;
+  stockLocation?: string | null;
   createdAt?: unknown;
   updatedAt?: unknown;
   /** Lowercased "brand model" for prefix search — Firestore has no ILIKE. */
@@ -66,6 +71,11 @@ export function docToProduct(id: string, d: Record<string, unknown>): Product {
     conditionOptions: (d.conditionOptions as ProductGrade[]) ?? undefined,
     variants: (d.variants as ProductVariant[]) ?? undefined,
     reviews: (d.reviews as Product['reviews']) ?? undefined,
+    buyPrice: d.buyPrice != null ? Number(d.buyPrice) : undefined,
+    supplier: (d.supplier as string) ?? undefined,
+    imei: (d.imei as string) ?? undefined,
+    sku: (d.sku as string) ?? undefined,
+    stockLocation: (d.stockLocation as Product['stockLocation']) ?? undefined,
   };
 }
 

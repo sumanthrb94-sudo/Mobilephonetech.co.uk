@@ -189,9 +189,14 @@ export default function ProductEditor() {
           onChange={variants => setDraft(current => ({ ...current, variants, variantMode: true }))}
         />
 
-        {!hasVariantMatrix && <Section title="Pricing & stock">
+        {!hasVariantMatrix && <Section title="Pricing & inventory (Internal system)">
           <Row>
-            <Field label="Selling price (£)" error={errors.price} id="price" required>
+            <Field label="Buy price (BP £)" error={errors.buyPrice} id="buyPrice" hint="Supplier cost (admin only)">
+              <input id="field-buyPrice" style={inputStyle} type="number" min="0" step="0.01"
+                placeholder="140.00"
+                value={draft.buyPrice || ''} onChange={e => set('buyPrice', parseFloat(e.target.value) || 0)} />
+            </Field>
+            <Field label="Selling price (SP £)" error={errors.price} id="price" required>
               <input id="field-price" style={inputStyle} type="number" min="0" step="0.01"
                 value={draft.price || ''} onChange={e => set('price', parseFloat(e.target.value) || 0)} />
             </Field>
