@@ -402,9 +402,13 @@ export interface DashboardStats {
   outOfStock: number;
   lowStock: number;
   byBrand: BrandStock[];
-  needsAttention: Product[];
+  /** Out-of-stock first, then low stock; recent website demand breaks ties. */
+  needsAttention: Array<Product & { soldUnits: number }>;
   orderCount: number;
   orderRevenue: number;
+  unitsSold: number;
+  unitsSoldToday: number;
+  unitsSoldLast7Days: number;
   /** Website product GP. Excludes postage, payment fees and later repairs. */
   websiteGrossProfit: number;
   websiteGrossProfitMargin: number | null;
@@ -448,13 +452,17 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
   }
 
   // Out of stock first, then thinnest stock — the order you would work them in.
-  const needsAttention = products
+  let needsAttention: Array<Product & { soldUnits: number }> = products
     .filter(p => (p.stock ?? 0) <= LOW_STOCK_THRESHOLD)
+    .map(p => ({ ...p, soldUnits: 0 }))
     .sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0))
     .slice(0, 6);
 
   let orderCount = 0;
   let orderRevenue = 0;
+  let unitsSold = 0;
+  let unitsSoldToday = 0;
+  let unitsSoldLast7Days = 0;
   let websiteGrossProfit = 0;
   let costedRevenue = 0;
   let ordersMissingCost = 0;
@@ -463,6 +471,9 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
 
   try {
     const orderSnap = await getDocs(query(collection(db, COL.orders), fsLimit(500)));
+    const soldByProduct = new Map<string, number>();
+    const today = new Date().toISOString().slice(0, 10);
+    const sevenDaysAgo = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
     const rows = orderSnap.docs.map(d => {
       const o = d.data() as Record<string, unknown>;
       const addr = (o.shippingAddress ?? {}) as { fullName?: string };
@@ -471,6 +482,15 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
       const hasCost = items.length > 0 && items.every(item => typeof item.buyPrice === 'number' && Number.isFinite(item.buyPrice));
       const productRevenue = Math.max(0, Number(o.subtotal ?? 0) - Number(o.discount ?? 0));
       if (status !== 'refunded') {
+        const orderUnits = items.reduce((sum, item) => sum + Math.max(1, Number(item.quantity) || 1), 0);
+        unitsSold += orderUnits;
+        const orderDay = String(o.createdAt ?? '').slice(0, 10);
+        if (orderDay === today) unitsSoldToday += orderUnits;
+        if (orderDay >= sevenDaysAgo) unitsSoldLast7Days += orderUnits;
+        for (const item of items) {
+          const productId = String(item.productId ?? item.id ?? '');
+          if (productId) soldByProduct.set(productId, (soldByProduct.get(productId) ?? 0) + Math.max(1, Number(item.quantity) || 1));
+        }
         if (hasCost) {
           costedRevenue += productRevenue;
           websiteGrossProfit += productRevenue - items.reduce((sum, item) => sum + Number(item.buyPrice) * Math.max(1, Number(item.quantity) || 1), 0);
@@ -492,6 +512,13 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     recentOrders = rows
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, 5);
+    // Demand makes a restock queue useful: two models with one left are not
+    // equal if one has sold twelve times and the other has never sold.
+    needsAttention = products
+      .filter(p => (p.stock ?? 0) <= LOW_STOCK_THRESHOLD)
+      .map(p => ({ ...p, soldUnits: soldByProduct.get(p.id) ?? 0 }))
+      .sort((a, b) => (a.stock - b.stock) || (b.soldUnits - a.soldUnits))
+      .slice(0, 6);
   } catch {
     // An admin who cannot read orders is a rules problem worth surfacing,
     // but it must not take the whole dashboard down with it.
@@ -508,6 +535,9 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
     needsAttention,
     orderCount,
     orderRevenue,
+    unitsSold,
+    unitsSoldToday,
+    unitsSoldLast7Days,
     websiteGrossProfit,
     websiteGrossProfitMargin: costedRevenue ? websiteGrossProfit / costedRevenue : null,
     ordersMissingCost,

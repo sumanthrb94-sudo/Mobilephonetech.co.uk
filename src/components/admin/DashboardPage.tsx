@@ -144,6 +144,11 @@ export default function DashboardPage() {
           note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${money(stats?.orderRevenue ?? 0)} total`}
         />
         <Kpi
+          icon={<ShoppingBag size={16} />} tone="ink" label="Units sold"
+          value={loading ? null : stats?.ordersUnavailable ? '—' : String(stats?.unitsSold ?? 0)}
+          note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : `${stats?.unitsSoldToday ?? 0} today · ${stats?.unitsSoldLast7Days ?? 0} in 7 days`}
+        />
+        <Kpi
           icon={<CircleDollarSign size={16} />} tone="gold" label="Website GP"
           value={loading ? null : stats?.ordersUnavailable ? '—' : money(stats?.websiteGrossProfit ?? 0)}
           note={loading ? '' : stats?.ordersUnavailable ? 'unavailable' : stats?.websiteGrossProfitMargin == null ? 'cost data starts with new orders' : `${(stats.websiteGrossProfitMargin * 100).toFixed(1)}% product margin${stats.ordersMissingCost ? ` · ${stats.ordersMissingCost} older order${stats.ordersMissingCost === 1 ? '' : 's'} pending cost` : ''}`}
@@ -164,8 +169,8 @@ export default function DashboardPage() {
 
         {/* ── Work queue ── */}
         <Panel
-          title="Needs restocking"
-          hint={loading ? '' : `${LOW_STOCK_THRESHOLD} or fewer`}
+          title="Restock queue"
+          hint={loading ? '' : `sold out first · then ${LOW_STOCK_THRESHOLD} or fewer`}
           action={{ to: '/admin/inventory', label: 'Open inventory' }}
         >
           {loading ? (
@@ -179,6 +184,7 @@ export default function DashboardPage() {
                   <Link to={`/admin/inventory/${p.id}`} className="ops-list-name">
                     {p.brand} {p.model}
                   </Link>
+                  {p.soldUnits > 0 && <span className="ops-meta">{p.soldUnits} sold</span>}
                   <span className={`ops-pill ${p.stock === 0 ? 'ops-pill-out' : 'ops-pill-low'}`}>
                     {p.stock === 0 ? 'Out of stock' : `${p.stock} left`}
                   </span>

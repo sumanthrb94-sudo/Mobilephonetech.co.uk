@@ -30,6 +30,7 @@ export default function AdminLayout() {
             <NavLink to="/admin/home" style={navLinkStyle}>Home layout</NavLink>
             <NavLink to="/admin/series" style={navLinkStyle}>Series</NavLink>
             <NavLink to="/admin/analytics" style={navLinkStyle}>Analytics</NavLink>
+            <NavLink to="/admin/reports" style={navLinkStyle}>Reports</NavLink>
             <NavLink to="/admin/returns" style={navLinkStyle}>Returns</NavLink>
             <NavLink to="/admin/support" style={navLinkStyle}>Support</NavLink>
           </nav>
