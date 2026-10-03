@@ -1,11 +1,11 @@
-import { ShieldCheck, RefreshCw, Truck, Star, Users, BadgeCheck } from 'lucide-react';
+import { ShieldCheck, RefreshCw, Truck, Users, BadgeCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 
 /**
  * TrustSection — BM spec Section 5 "Value Proposition"
  * Your DNA: Blue brand, clean white bg, DM Sans + Playfair
  * "Tech better with us." centred headline
- * 3-col icon grid + inspection visual + Trustpilot badge
+ * Icon grid + inspection visual + business experience marker
  */
 
 const PILLARS = [
@@ -41,16 +41,16 @@ const PILLARS = [
     icon: Users,
     accentColor: '#0d9488',
     accentBg: '#ccfbf1',
-    title: 'Trusted by 1.2M Customers',
-    body: 'Over 1.2 million customers across the UK have chosen our certified refurbished devices. Rated 4.9/5 on Trustpilot.',
+    title: 'Six years of expertise',
+    body: 'More than 70,000 devices sold, with over 1,000 devices supplied every month.',
   },
 ];
 
 const STATS = [
-  { value: '1.2M+', label: 'Happy customers' },
-  { value: '4.9★',  label: 'Trustpilot average' },
+  { value: '6 yrs', label: 'Established' },
+  { value: '1,000+', label: 'Devices sold monthly' },
+  { value: '70K+', label: 'Devices sold' },
   { value: '90pt',  label: 'Inspection standard' },
-  { value: '30d',   label: 'Free returns window' },
 ];
 
 export default function TrustSection() {
@@ -196,7 +196,7 @@ export default function TrustSection() {
             ))}
           </div>
 
-          {/* Right: Inspection image + Trustpilot badge */}
+          {/* Right: Inspection image + business experience marker */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -258,7 +258,7 @@ export default function TrustSection() {
               </div>
             </div>
 
-            {/* Trustpilot badge — floating */}
+            {/* Business experience marker — floating */}
             <div
               style={{
                 position: 'absolute',
@@ -272,11 +272,7 @@ export default function TrustSection() {
                 zIndex: 10,
               }}
             >
-              <div className="flex items-center gap-1 mb-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} fill="var(--color-star)" style={{ color: 'var(--color-star)' }} />
-                ))}
-              </div>
+              <BadgeCheck size={20} style={{ color: 'var(--brand-cyan)', marginBottom: '8px' }} />
               <div
                 style={{
                   fontFamily: 'var(--font-sans)',
@@ -287,7 +283,7 @@ export default function TrustSection() {
                   lineHeight: 1,
                 }}
               >
-                4.9 / 5
+                6 years
               </div>
               <div
                 style={{
@@ -300,7 +296,7 @@ export default function TrustSection() {
                   textTransform: 'uppercase',
                 }}
               >
-                Trustpilot · 120K reviews
+                70,000+ devices sold
               </div>
             </div>
           </motion.div>

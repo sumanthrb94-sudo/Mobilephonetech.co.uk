@@ -35,21 +35,20 @@ describe('resolveLayout', () => {
 
   it('applies a stored order', () => {
     const stored: StoredLayout = {
-      order: ['hero', 'faq', 'trustBanner', 'brandShowcase'],
+      order: ['hero', 'faq', 'brandShowcase'],
       hidden: [],
       updatedAt: '',
     };
     const out = ids(resolveLayout(stored));
-    // The four it names keep the relative order it gave them.
+    // The named sections keep the relative order staff gave them.
     expect(out.indexOf('hero')).toBeLessThan(out.indexOf('faq'));
-    expect(out.indexOf('faq')).toBeLessThan(out.indexOf('trustBanner'));
-    expect(out.indexOf('trustBanner')).toBeLessThan(out.indexOf('brandShowcase'));
+    expect(out.indexOf('faq')).toBeLessThan(out.indexOf('brandShowcase'));
   });
 
   it('hides what the stored layout hides, and nothing else', () => {
-    const out = resolveLayout({ order: [], hidden: ['blog', 'pressLogos'], updatedAt: '' });
+    const out = resolveLayout({ order: [], hidden: ['blog'], updatedAt: '' });
     const hidden = out.filter(s => !s.visible).map(s => s.id);
-    expect(hidden.sort()).toEqual(['blog', 'pressLogos']);
+    expect(hidden.sort()).toEqual(['blog']);
   });
 
   /**
@@ -58,7 +57,7 @@ describe('resolveLayout', () => {
    * able to suppress it for ever.
    */
   it('still shows a section the stored layout has never heard of', () => {
-    const stale: StoredLayout = { order: ['trustBanner', 'hero'], hidden: [], updatedAt: '' };
+    const stale: StoredLayout = { order: ['a-section-removed', 'hero'], hidden: [], updatedAt: '' };
     const out = resolveLayout(stale);
 
     expect(ids(out).sort()).toEqual(SECTIONS.map(s => s.id).sort());

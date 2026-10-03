@@ -8,7 +8,6 @@ import type { Product } from '../types';
  * repricing on the same product IDs and means an out-of-stock charger simply
  * is not offered.
  */
-const APPLE_CHARGER_ID = 'vidvie-magnetic-wireless-charging-station-for-apple-series';
 const USB_C_CHARGER_ID = 'lehart-usb-c-fast-charger-brick-with-cable';
 
 export interface ChargerUpsell {
@@ -21,15 +20,14 @@ export function chargerUpsellFor(device: Product, catalogue: Product[]): Charger
   if (device.category !== 'Phones') return null;
 
   const apple = device.brand.trim().toLowerCase() === 'apple';
-  const chargerId = apple ? APPLE_CHARGER_ID : USB_C_CHARGER_ID;
-  const charger = catalogue.find(product => product.id === chargerId);
+  const charger = catalogue.find(product => product.id === USB_C_CHARGER_ID);
   if (!charger || charger.stock < 1) return null;
 
   return apple
     ? {
         product: charger,
-        title: 'Add an Apple magnetic charger',
-        description: 'Magnetic charging station for iPhone and Apple devices.',
+        title: 'Add a USB-C wall charger + cable',
+        description: 'Optional add-on — Apple does not include a power adapter in the box.',
       }
     : {
         product: charger,

@@ -4,6 +4,8 @@ export interface ProductVariant {
   id: string;
   color?: string;
   storage?: string;
+  /** Tablet / wearable radio option, e.g. "Wi-Fi" or "Cellular". */
+  connectivity?: string;
   condition?: ProductGrade;
   price: number;
   originalPrice: number;

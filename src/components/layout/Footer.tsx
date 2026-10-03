@@ -1,4 +1,4 @@
-import { Facebook, Twitter, Instagram, Youtube, RefreshCw, Star } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, RefreshCw, BadgeCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { COMPANY } from '../../config/company';
 
@@ -120,11 +120,11 @@ export default function Footer() {
                 maxWidth: '240px',
               }}
             >
-              The UK's trusted marketplace for certified refurbished phones &amp; tech.
-              Trusted by 1.2 million customers.
+              Certified refurbished phones and tech, established for six years.
+              Over 1,000 devices sold every month.
             </p>
 
-            {/* Trustpilot mini badge */}
+            {/* Business experience marker */}
             <div
               style={{
                 display: 'inline-flex',
@@ -137,13 +137,8 @@ export default function Footer() {
                 marginBottom: 'var(--spacing-24)',
               }}
             >
-              <div style={{ display: 'flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={12} fill="var(--color-star)" style={{ color: 'var(--color-star)' }} />
-                ))}
-              </div>
-              <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: '#111827' }}>4.9</span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: '#9ca3af' }}>Trustpilot</span>
+              <BadgeCheck size={16} style={{ color: 'var(--brand-cyan)' }} />
+              <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: '#111827' }}>6 years established</span>
             </div>
 
             {/* Social icons */}
@@ -243,7 +238,7 @@ export default function Footer() {
             gap: '14px',
           }}
         >
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '14px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <span
                 style={{
@@ -257,15 +252,9 @@ export default function Footer() {
               >
                 Payments
               </span>
-              {/* Only what checkout can actually charge. Visa, Mastercard and
-                  Amex stay because PayPal accepts all three from a guest with
-                  no PayPal account; Apple Pay, Google Pay, Klarna and Clearpay
-                  were badges for methods the shop cannot take. */}
+              {/* This is a checkout fact, not a payment certification claim. */}
               {[
                 { id: 'paypal',   label: 'PayPal',     fontWeight: 800, italic: true, letterSpacing: '-0.02em' },
-                { id: 'visa',     label: 'VISA',       fontWeight: 900, letterSpacing: '0.08em', italic: true },
-                { id: 'mc',       label: 'mastercard', fontWeight: 700, letterSpacing: '-0.02em' },
-                { id: 'amex',     label: 'AMEX',       fontWeight: 900, letterSpacing: '0.06em' },
               ].map((p) => (
                 <span
                   key={p.id}
@@ -291,47 +280,9 @@ export default function Footer() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: '#9ca3af',
-                }}
-              >
-                Certified
-              </span>
-              {[
-                'PCI DSS Compliant',
-                'GDPR Ready',
-                'B Corp Pending',
-                'Carbon-neutral delivery',
-              ].map((c) => (
-                <span
-                  key={c}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    height: '24px',
-                    padding: '0 9px',
-                    background: 'rgba(0,108,73,0.10)',
-                    border: '1px solid rgba(0,108,73,0.18)',
-                    borderRadius: 'var(--radius-full)',
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: 'var(--brand-cyan)',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {c}
-                </span>
-              ))}
-            </div>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: '#6b7280' }}>
+              Secure checkout processed by PayPal
+            </span>
           </div>
         </div>
       </div>

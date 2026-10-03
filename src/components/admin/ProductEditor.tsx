@@ -3,10 +3,11 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Save, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
 import {
   emptyDraft, productToDraft, validateDraft, slugify, describeError,
-  getProduct, createProduct, updateProduct, GRADES,
+  getProduct, createProduct, updateProduct, SELLABLE_GRADES,
   type ProductDraft, type ValidationErrors,
 } from '../../lib/adminApi';
 import ImageManager from './ImageManager';
+import VariantMatrixEditor from './VariantMatrixEditor';
 
 const CATEGORIES = ['Phones', 'Tablets', 'Accessories', 'Speakers', 'Hearables', 'Playables'];
 
@@ -65,6 +66,13 @@ export default function ProductEditor() {
     if (!draft.originalPrice || draft.originalPrice <= draft.price) return null;
     return Math.round((1 - draft.price / draft.originalPrice) * 100);
   }, [draft.price, draft.originalPrice]);
+  const isApplePhone = draft.category === 'Phones' && draft.brand.trim().toLowerCase() === 'apple';
+  const hasVariantMatrix = Boolean(draft.variantMode && draft.variants?.length);
+  // Keep legacy grades editable, while every new listing starts with one of
+  // the two launch grades selected by the business.
+  const gradeChoices = isNew || SELLABLE_GRADES.includes(draft.grade)
+    ? SELLABLE_GRADES
+    : [draft.grade, ...SELLABLE_GRADES];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,7 +115,7 @@ export default function ProductEditor() {
 
   return (
     <Shell
-      title={isNew ? 'Add a product' : `Edit ${draft.brand} ${draft.model}`}
+      title={isNew ? 'Create a model' : `Edit ${draft.brand} ${draft.model}`}
       action={!isNew && (
         <a
           href={`/product/${draft.id}`}
@@ -166,14 +174,22 @@ export default function ProductEditor() {
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </Field>
-            <Field label="Storage" id="storage" hint="e.g. 256GB. Leave blank if not applicable.">
+            {!hasVariantMatrix && <Field label="Storage" id="storage" hint="e.g. 256GB. Leave blank if not applicable.">
               <input id="field-storage" style={inputStyle} value={draft.storage ?? ''}
                 onChange={e => set('storage', e.target.value)} autoComplete="off" />
-            </Field>
+            </Field>}
           </Row>
         </Section>
 
-        <Section title="Pricing & stock">
+        <VariantMatrixEditor
+          variants={draft.variants ?? []}
+          gradeChoices={gradeChoices}
+          isApplePhone={isApplePhone}
+          errors={errors}
+          onChange={variants => setDraft(current => ({ ...current, variants, variantMode: true }))}
+        />
+
+        {!hasVariantMatrix && <Section title="Pricing & stock">
           <Row>
             <Field label="Selling price (£)" error={errors.price} id="price" required>
               <input id="field-price" style={inputStyle} type="number" min="0" step="0.01"
@@ -199,19 +215,21 @@ export default function ProductEditor() {
             <Field label="Condition grade" error={errors.grade} id="grade" required>
               <select id="field-grade" style={inputStyle} value={draft.grade}
                 onChange={e => set('grade', e.target.value as ProductDraft['grade'])}>
-                {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
+                {gradeChoices.map(g => <option key={g} value={g}>{g}</option>)}
               </select>
             </Field>
           </Row>
-        </Section>
+        </Section>}
 
         <Section title="Condition & cover">
           <Row>
-            <Field label="Battery health (%)" error={errors.batteryHealth} id="batteryHealth" hint="Blank for non-battery items.">
-              <input id="field-batteryHealth" style={inputStyle} type="number" min="0" max="100" step="1"
+            {!hasVariantMatrix &&
+            <Field label="Battery health (%)" error={errors.batteryHealth} id="batteryHealth" hint={isApplePhone ? 'Required for Apple phones: verified 85% or above.' : 'Optional. Record the measured health; Android does not carry the Apple 85% promise.'}>
+              <input id="field-batteryHealth" style={inputStyle} type="number" min={isApplePhone ? '85' : '0'} max="100" step="1"
                 value={draft.batteryHealth ?? ''}
                 onChange={e => set('batteryHealth', e.target.value === '' ? undefined : parseInt(e.target.value, 10))} />
             </Field>
+            }
             <Field label="Warranty (months)" error={errors.warrantyMonths} id="warrantyMonths" required>
               <input id="field-warrantyMonths" style={inputStyle} type="number" min="0" step="1"
                 value={draft.warrantyMonths} onChange={e => set('warrantyMonths', parseInt(e.target.value, 10) || 0)} />
@@ -239,7 +257,7 @@ export default function ProductEditor() {
             <textarea id="field-conditionDescription" style={{ ...inputStyle, minHeight: 72, paddingTop: 10, resize: 'vertical' }}
               value={draft.conditionDescription ?? ''} onChange={e => set('conditionDescription', e.target.value)} />
           </Field>
-          <Row>
+          {!hasVariantMatrix && <Row>
             <Field label="Colour options" id="colorOptions" hint="Comma separated, e.g. Midnight, Starlight.">
               <input id="field-colorOptions" style={inputStyle}
                 value={(draft.colorOptions ?? []).join(', ')}
@@ -250,7 +268,7 @@ export default function ProductEditor() {
                 value={(draft.storageOptions ?? []).join(', ')}
                 onChange={e => set('storageOptions', splitList(e.target.value))} />
             </Field>
-          </Row>
+          </Row>}
         </Section>
 
         <Section title="Imagery">
@@ -264,7 +282,7 @@ export default function ProductEditor() {
 
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: 'var(--spacing-32)' }}>
           <button type="submit" className="btn btn-buy btn-lg" disabled={saving_disabled}>
-            {saving ? <><Loader2 size={16} className="admin-spin" /> Saving…</> : <><Save size={16} /> {isNew ? 'Create product' : 'Save changes'}</>}
+            {saving ? <><Loader2 size={16} className="admin-spin" /> Saving…</> : <><Save size={16} /> {isNew ? 'Create model' : 'Save changes'}</>}
           </button>
           <Link to="/admin/inventory" className="btn btn-secondary btn-lg" style={{ textDecoration: 'none' }}>
             Cancel

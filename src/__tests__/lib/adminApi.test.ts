@@ -41,7 +41,7 @@ describe('slugify', () => {
 
 describe('validateDraft', () => {
   it('accepts a well-formed draft', () => {
-    expect(validateDraft(draft())).toEqual({});
+    expect(validateDraft(draft({ batteryHealth: 85 }))).toEqual({});
   });
 
   it.each([
@@ -62,8 +62,14 @@ describe('validateDraft', () => {
     expect(errors.originalPrice).toMatch(/below the selling price/i);
   });
 
-  it('allows an absent battery health for non-battery items', () => {
-    expect(validateDraft(draft({ batteryHealth: undefined }))).toEqual({});
+  it('requires Apple phones to have verified 85%+ battery health', () => {
+    expect(validateDraft(draft({ batteryHealth: undefined }))).toHaveProperty('batteryHealth');
+    expect(validateDraft(draft({ batteryHealth: 84 }))).toHaveProperty('batteryHealth');
+  });
+
+  it('allows an absent battery health for non-Apple products', () => {
+    expect(validateDraft(draft({ brand: 'Samsung', batteryHealth: undefined }))).toEqual({});
+    expect(validateDraft(draft({ category: 'Accessories', batteryHealth: undefined }))).toEqual({});
   });
 
   it('rejects a fractional battery health', () => {

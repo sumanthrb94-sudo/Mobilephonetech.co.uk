@@ -9,7 +9,6 @@ import type { Product } from '../../types';
 // console's behaviour (rendering, inline stock edits, delete confirmation),
 // not about Firestore itself.
 const listInventory = vi.fn();
-const listBrands = vi.fn();
 const setStock = vi.fn();
 const deleteProduct = vi.fn();
 
@@ -18,7 +17,6 @@ vi.mock('../../lib/adminApi', async (importOriginal) => {
   return {
     ...actual,
     listInventory: (...a: unknown[]) => listInventory(...a),
-    listBrands: (...a: unknown[]) => listBrands(...a),
     setStock: (...a: unknown[]) => setStock(...a),
     deleteProduct: (...a: unknown[]) => deleteProduct(...a),
   };
@@ -55,8 +53,7 @@ function renderPage() {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  listBrands.mockResolvedValue(['Apple', 'Samsung']);
-  listInventory.mockResolvedValue({ products: [product()], total: 1 });
+  listInventory.mockResolvedValue({ products: [product()], total: 1, brands: ['Apple', 'Samsung'] });
   setStock.mockResolvedValue(undefined);
   deleteProduct.mockResolvedValue(undefined);
 });
@@ -70,7 +67,7 @@ describe('InventoryPage', () => {
   });
 
   it('shows the empty state when nothing matches', async () => {
-    listInventory.mockResolvedValue({ products: [], total: 0 });
+    listInventory.mockResolvedValue({ products: [], total: 0, brands: [] });
     renderPage();
     expect(await screen.findByText(/No products match those filters/i)).toBeInTheDocument();
   });

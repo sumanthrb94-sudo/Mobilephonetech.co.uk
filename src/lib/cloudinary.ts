@@ -81,5 +81,15 @@ export async function uploadViaCloudinary(
 
   const body = await res.json() as { secure_url?: string };
   if (!body.secure_url) throw new Error('The image could not be uploaded.');
-  return body.secure_url;
+  return formatCloudinaryUrl(body.secure_url);
 }
+
+/**
+ * Injects automatic format negotiation (AVIF/WebP) and automatic quality
+ * into Cloudinary URLs so clients always fetch the fastest, smallest asset.
+ */
+export function formatCloudinaryUrl(url: string): string {
+  if (!url || !url.includes('res.cloudinary.com') || url.includes('/f_auto')) return url;
+  return url.replace('/image/upload/', '/image/upload/f_auto,q_auto/');
+}
+

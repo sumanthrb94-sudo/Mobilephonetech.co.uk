@@ -153,9 +153,19 @@ export default function VariantSelector({
   }), [product, choices]);
 
   React.useEffect(() => {
+    if (product.variants?.length) return;
     if (selectedVariant?.id !== own.id) onVariantSelect(own);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [own.id]);
+  }, [own.id, product.variants?.length]);
+
+  // A model created in the new admin matrix has real, independently stocked
+  // variants. Keep the shopper on this one product page and choose the exact
+  // row; legacy one-configuration records continue through the sibling flow.
+  // This branch comes after all hooks so switching a legacy model to variants
+  // never changes the hook order.
+  if (product.variants?.length) {
+    return <MatrixSelector variants={product.variants} selectedVariant={selectedVariant} onVariantSelect={onVariantSelect} />;
+  }
 
   const pick = (option: VariantOption) => {
     if (option.current) return;
@@ -217,6 +227,46 @@ export default function VariantSelector({
 
         renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
       />
+    </div>
+  );
+}
+
+function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
+  variants: ProductVariant[];
+  selectedVariant: ProductVariant | null;
+  onVariantSelect: (variant: ProductVariant) => void;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', paddingTop: '14px', borderTop: '1px solid var(--grey-10)' }}>
+      <label style={labelStyle}>Choose your configuration</label>
+      <div style={{ display: 'grid', gap: '8px' }}>
+        {variants.map(variant => {
+          const selected = selectedVariant?.id === variant.id;
+          const available = variant.stock > 0;
+          const label = [variant.storage, variant.color, variant.connectivity, variant.condition].filter(Boolean).join(' · ') || 'Standard configuration';
+          return (
+            <button
+              key={variant.id}
+              type="button"
+              disabled={!available}
+              aria-pressed={selected}
+              onClick={() => onVariantSelect(variant)}
+              style={{
+                display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', textAlign: 'left',
+                padding: '11px 12px', borderRadius: 'var(--radius-md)',
+                border: `1.5px solid ${selected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                background: selected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                color: available ? 'var(--black)' : 'var(--grey-50)',
+                cursor: available ? 'pointer' : 'not-allowed', opacity: available ? 1 : .58,
+                fontFamily: 'var(--font-body)', fontSize: 13,
+              }}
+            >
+              <span><strong style={{ fontFamily: 'var(--font-sans)' }}>{label}</strong>{variant.batteryHealth != null && <span style={{ display: 'block', marginTop: 3, fontSize: 12 }}>Battery health {variant.batteryHealth}%</span>}</span>
+              <span style={{ textAlign: 'right', whiteSpace: 'nowrap', fontFamily: 'var(--font-sans)', fontWeight: 800 }}>£{variant.price}{available ? <small style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 500, color: 'var(--grey-50)' }}>{variant.stock} available</small> : <small style={{ display: 'block', fontFamily: 'var(--font-body)', fontWeight: 600 }}>Sold out</small>}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

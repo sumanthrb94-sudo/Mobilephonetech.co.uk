@@ -13,11 +13,12 @@ const charger = (id: string): Product => ({
 });
 
 describe('chargerUpsellFor', () => {
-  it('offers the Apple charger for iPhones', () => {
+  it('offers an optional wall charger for iPhones', () => {
     const result = chargerUpsellFor(phone('Apple'), [
-      charger('vidvie-magnetic-wireless-charging-station-for-apple-series'),
+      charger('lehart-usb-c-fast-charger-brick-with-cable'),
     ]);
-    expect(result?.title).toMatch(/Apple magnetic/i);
+    expect(result?.title).toMatch(/wall charger/i);
+    expect(result?.description).toMatch(/does not include/i);
   });
 
   it('offers the USB-C charger for Android phones', () => {
@@ -30,7 +31,7 @@ describe('chargerUpsellFor', () => {
   it('does not offer a charger for non-phone products or missing stock', () => {
     expect(chargerUpsellFor({ ...phone('Apple'), category: 'Accessories' }, [])).toBeNull();
     expect(chargerUpsellFor(phone('Apple'), [{
-      ...charger('vidvie-magnetic-wireless-charging-station-for-apple-series'), stock: 0,
+      ...charger('lehart-usb-c-fast-charger-brick-with-cable'), stock: 0,
     }])).toBeNull();
   });
 });

@@ -45,12 +45,10 @@ export interface SectionSpec {
  * layout before it existed.
  */
 export const SECTIONS: SectionSpec[] = [
-  { id: 'trustBanner', label: 'Trust strip', blurb: 'The thin scrolling strip of promises at the very top.' },
   { id: 'hero', label: 'Banner carousel', blurb: 'The main banners. Edit their content under Home banners.', locked: true },
   { id: 'brandShowcase', label: 'Brand showcase', blurb: 'The large iPhone, Galaxy, Fold and Pixel panels.' },
   { id: 'ecoImpact', label: 'Sustainability', blurb: 'The environmental case for buying refurbished.' },
   { id: 'trustSection', label: 'Why buy from us', blurb: 'The value and trust block.' },
-  { id: 'pressLogos', label: 'Press logos', blurb: 'The strip of publications that have covered the shop.' },
   { id: 'testimonials', label: 'Customer reviews', blurb: 'Quotes from customers.' },
   { id: 'warranty', label: 'Warranty & returns', blurb: 'The warranty and returns explainer.' },
   { id: 'faq', label: 'FAQ', blurb: 'The accordion of common questions.' },

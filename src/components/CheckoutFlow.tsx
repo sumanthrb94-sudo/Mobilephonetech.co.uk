@@ -481,9 +481,10 @@ export default function CheckoutFlow() {
             </button>
           </div>
 
-          {/* Upsell / reassurance */}
+          {/* One quiet support route, rather than another panel competing with
+              the confirmation and its next action. */}
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', textAlign: 'center', marginTop: 'var(--spacing-32)', lineHeight: 1.6 }}>
-            Need to make a change? You have 30 minutes to update your delivery address.{' '}
+            Need help with this order? Visit the{' '}
             <a href="/faq" style={{ color: 'var(--brand-cyan-hover)', textDecoration: 'underline', textUnderlineOffset: '2px' }}>Help centre</a>.
           </p>
         </div>
@@ -847,27 +848,8 @@ export default function CheckoutFlow() {
                       <strong style={{ fontWeight: 700 }}>Pay securely with PayPal.</strong> You can use your
                       PayPal balance or a credit or debit card through PayPal — you do not need a PayPal
                       account to pay by card. You will confirm the payment on PayPal's own secure page.
+                      <span style={{ display: 'block', marginTop: '6px', color: 'var(--grey-60)', fontSize: '12px' }}>Card details are never entered on this site.</span>
                     </span>
-                  </div>
-
-                  {/* No card inputs, by design: card details belong to PayPal,
-                      never to this site's DOM. See the PCI note at the top. */}
-                  <div
-                    style={{
-                      display: 'flex', gap: '10px', alignItems: 'flex-start',
-                      padding: '14px 16px',
-                      background: 'var(--grey-5)',
-                      border: '1px solid var(--grey-10)',
-                      borderRadius: 'var(--radius-md)',
-                      fontFamily: 'var(--font-body)',
-                      fontSize: '13px',
-                      color: 'var(--grey-70)',
-                      marginTop: 'var(--spacing-16)',
-                      lineHeight: 1.55,
-                    }}
-                  >
-                    <Lock size={15} style={{ flexShrink: 0, marginTop: 2 }} aria-hidden="true" />
-                    <span>Card details are never entered on this site.</span>
                   </div>
 
                   <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>

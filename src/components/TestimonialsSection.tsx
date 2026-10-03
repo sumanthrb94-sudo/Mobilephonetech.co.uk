@@ -73,7 +73,7 @@ export default function TestimonialsSection() {
               lineHeight: 1.15,
             }}
           >
-            Rated 4.9/5 by 120,000+ UK shoppers.
+            Built on six years of device expertise.
           </h2>
         </div>
 

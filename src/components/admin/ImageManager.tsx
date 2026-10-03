@@ -26,6 +26,7 @@ export default function ImageManager({
   const [errors, setErrors] = useState<string[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [urlValue, setUrlValue] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
   // Last batch's savings, for the confirmation line under the button — the
   // one piece of feedback that tells whoever is uploading it actually did
   // something, since a well-optimised file still just looks like a photo.
@@ -183,14 +184,72 @@ export default function ImageManager({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={!canUpload || busy || full}
-        className="btn btn-secondary btn-md"
-        style={{ width: '100%', justifyContent: 'center', opacity: canUpload && !busy && !full ? 1 : 0.55 }}
+        onDragOver={e => {
+          e.preventDefault();
+          if (canUpload && !busy && !full) setIsDragging(true);
+        }}
+        onDragLeave={e => {
+          e.preventDefault();
+          setIsDragging(false);
+        }}
+        onDrop={e => {
+          e.preventDefault();
+          setIsDragging(false);
+          if (canUpload && !busy && !full && e.dataTransfer.files) {
+            handleFiles(e.dataTransfer.files);
+          }
+        }}
+        className="btn btn-secondary"
+        style={{
+          width: '100%',
+          border: `2px dashed ${isDragging ? 'var(--brand-cyan)' : full ? 'var(--grey-20)' : 'var(--grey-30)'}`,
+          borderRadius: 'var(--radius-lg)',
+          padding: '20px 16px',
+          textAlign: 'center',
+          cursor: canUpload && !busy && !full ? 'pointer' : 'default',
+          backgroundColor: isDragging ? 'rgba(0, 168, 204, 0.05)' : 'var(--grey-5)',
+          transition: 'all 0.15s ease',
+          opacity: canUpload && !busy && !full ? 1 : 0.6,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px',
+        }}
       >
-        {busy
-          ? <><Loader2 size={16} className="admin-spin" /> Uploading {pendingCount} more…</>
-          : full
-            ? <><Upload size={16} /> {MAX_PRODUCT_IMAGES} of {MAX_PRODUCT_IMAGES} — remove one to add another</>
-            : <><Upload size={16} /> Upload images</>}
+        {busy ? (
+          <>
+            <Loader2 size={22} className="admin-spin" style={{ color: 'var(--brand-cyan)' }} />
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13.5px', fontWeight: 600, color: 'var(--black)' }}>
+              Uploading {pendingCount} more…
+            </span>
+          </>
+        ) : full ? (
+          <>
+            <Upload size={20} style={{ color: 'var(--grey-40)' }} />
+            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'var(--grey-60)' }}>
+              {MAX_PRODUCT_IMAGES} of {MAX_PRODUCT_IMAGES} — remove one to add another
+            </span>
+          </>
+        ) : (
+          <>
+            <div style={{
+              width: 38, height: 38, borderRadius: '50%',
+              backgroundColor: 'var(--grey-10)', display: 'grid', placeItems: 'center',
+              color: 'var(--brand-cyan)'
+            }}>
+              <Upload size={18} />
+            </div>
+            <div>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13.5px', fontWeight: 600, color: 'var(--black)' }}>
+                Upload images (click or drag & drop directly)
+              </span>
+              <p style={{ margin: '2px 0 0', fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', fontWeight: 400 }}>
+                JPEG, PNG, WebP or AVIF up to 5MB · Auto-compressed for web
+              </p>
+            </div>
+          </>
+        )}
       </button>
 
       {/* Confirms the optimisation pass actually did something. A well
@@ -205,18 +264,19 @@ export default function ImageManager({
         </p>
       )}
 
-      <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+      {/* Secondary URL option for external CDN artwork or legacy links */}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
         <input
           value={urlValue}
           onChange={e => setUrlValue(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addUrl(); } }}
-          placeholder="…or paste an image URL"
+          placeholder="…or paste an external image URL if already hosted"
           aria-label="Add an image by URL"
           disabled={disabled || full}
           style={{
-            flex: 1, minWidth: 0, height: 40, padding: '0 12px',
+            flex: 1, minWidth: 0, height: 38, padding: '0 12px',
             border: '1.5px solid var(--grey-20)', borderRadius: 'var(--radius-md)',
-            fontFamily: 'var(--font-body)', fontSize: '13.5px', color: 'var(--black)',
+            fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--black)',
             background: 'var(--grey-0)', boxSizing: 'border-box',
           }}
         />
@@ -224,10 +284,10 @@ export default function ImageManager({
           type="button"
           onClick={addUrl}
           disabled={disabled || full || !urlValue.trim()}
-          className="btn btn-secondary btn-md"
+          className="btn btn-secondary btn-sm"
           style={{ flexShrink: 0 }}
         >
-          <LinkIcon size={15} /> Add
+          <LinkIcon size={14} /> Add
         </button>
       </div>
 

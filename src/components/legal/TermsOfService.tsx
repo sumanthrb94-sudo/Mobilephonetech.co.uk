@@ -44,13 +44,15 @@ export default function TermsOfService() {
           <section>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>2. Grading Definitions</h2>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6, marginBottom: '12px' }}>
-              As a marketplace for refurbished electronics, we guarantee the functionality of all devices. Cosmetic condition is categorized into the following grades:
+              We sell certified refurbished electronics. Cosmetic condition is categorised into the following grades:
             </p>
             <ul style={{ paddingLeft: '24px', margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}><strong>Pristine:</strong> Flawless cosmetic condition. Screen has no scratches. Body has no signs of use. Minimum 85% battery health.</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}><strong>Excellent:</strong> Very good cosmetic condition. Screen may have micro-scratches invisible from 20cm away. Body may have light signs of wear. Minimum 80% battery health.</li>
-              <li style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}><strong>Good:</strong> Visible signs of wear. Screen may have light scratches that do not affect visibility when the screen is on. Body may have scratches and dents. Minimum 80% battery health.</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}><strong>Pristine:</strong> Flawless cosmetic condition. Screen has no scratches. Body has no signs of use.</li>
+              <li style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}><strong>Excellent:</strong> Very good cosmetic condition. Screen may have micro-scratches invisible from 20cm away. Body may have light signs of wear.</li>
             </ul>
+            <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6, marginTop: '12px' }}>
+              Apple phones carry a verified minimum battery health of 85%. Android battery health is recorded for the individual unit where available, but does not carry that minimum promise.
+            </p>
           </section>
 
           <section>

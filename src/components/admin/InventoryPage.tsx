@@ -4,7 +4,7 @@ import {
   Plus, Search, Pencil, Trash2, Check, X, AlertTriangle, Loader2, PackageX, RefreshCw,
 } from 'lucide-react';
 import {
-  listInventory, listBrands, setStock, deleteProduct, describeError,
+  listInventory, setStock, deleteProduct, describeError,
   LOW_STOCK_THRESHOLD, type InventoryQuery,
 } from '../../lib/adminApi';
 import type { Product } from '../../types';
@@ -48,11 +48,12 @@ export default function InventoryPage() {
     setLoading(true);
     setError(null);
     try {
-      const { products: rows, total: count } = await listInventory({
+      const { products: rows, total: count, brands: availableBrands } = await listInventory({
         search: debouncedSearch, brand, stockFilter, sort, page, pageSize: PAGE_SIZE,
       });
       setProducts(rows);
       setTotal(count);
+      setBrands(availableBrands);
     } catch (err) {
       setError(describeError(err));
     } finally {
@@ -61,7 +62,6 @@ export default function InventoryPage() {
   }, [debouncedSearch, brand, stockFilter, sort, page]);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { listBrands().then(setBrands).catch(() => setBrands([])); }, []);
 
   const handleStockSaved = (id: string, stock: number) => {
     setProducts(prev => prev.map(p => (p.id === id ? { ...p, stock } : p)));
@@ -275,6 +275,7 @@ function InventoryRow({
   const cancel = () => { setValue(String(product.stock)); setEditing(false); };
 
   const tone = product.stock === 0 ? 'out' : product.stock <= LOW_STOCK_THRESHOLD ? 'low' : 'ok';
+  const hasVariants = Boolean(product.variants?.length);
 
   return (
     <li className="admin-row">
@@ -319,7 +320,16 @@ function InventoryRow({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        {editing ? (
+        {hasVariants ? (
+          <Link
+            to={`/admin/inventory/${product.id}`}
+            aria-label={`Manage ${product.variants?.length} variants for ${product.brand} ${product.model}`}
+            style={{ ...stockPillStyle, ...stockToneStyle[tone], textDecoration: 'none' }}
+          >
+            <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: stockDotColor[tone], flexShrink: 0 }} />
+            {product.variants?.length} variants · {product.stock} units
+          </Link>
+        ) : editing ? (
           <>
             <input
               type="number" min="0" step="1" value={value} autoFocus

@@ -1,5 +1,5 @@
 import {
-  collection, deleteDoc, doc, getDocs, orderBy, query, setDoc,
+  collection, deleteDoc, doc, getDocs, onSnapshot, orderBy, query, setDoc,
 } from 'firebase/firestore';
 import { db, COL, withAdminRetry } from './firebase';
 
@@ -92,6 +92,24 @@ export async function listBanners(): Promise<Banner[]> {
 export async function listLiveBanners(): Promise<Banner[]> {
   const all = await listBanners();
   return all.filter(b => b.active && b.headline && (b.image || b.imageMobile));
+}
+
+/**
+ * Keep an open storefront in sync with staff publishing changes. The previous
+ * one-off read meant a banner was correct only after a customer refreshed.
+ * This is intentionally the same validity filter as listLiveBanners, so a
+ * partial draft can never flash on the public home page.
+ */
+export function subscribeLiveBanners(
+  onChange: (banners: Banner[]) => void,
+  onError?: (error: Error) => void,
+): () => void {
+  return onSnapshot(
+    query(collection(db, COL.banners), orderBy('order', 'asc')),
+    snap => onChange(snap.docs.map(d => toBanner(d.id, d.data() as Record<string, unknown>))
+      .filter(b => b.active && b.headline && (b.image || b.imageMobile))),
+    error => onError?.(error),
+  );
 }
 
 /**

@@ -9,7 +9,7 @@ import { db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
 import { capImages } from './productImages';
-import type { Product, ProductGrade } from '../types';
+import type { Product, ProductGrade, ProductVariant } from '../types';
 
 /** Storage folder for product imagery. */
 export const IMAGE_BUCKET = 'product-images';
@@ -27,6 +27,8 @@ export { MAX_PRODUCT_IMAGES, capImages } from './productImages';
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 export const GRADES: ProductGrade[] = ['New', 'Pristine', 'Excellent', 'Good', 'Fair'];
+/** The two grades staff can publish for newly-created stock. */
+export const SELLABLE_GRADES: ProductGrade[] = ['Pristine', 'Excellent'];
 
 /**
  * Admin data layer for the back store.
@@ -58,6 +60,51 @@ export interface ProductDraft {
   conditionDescription?: string;
   colorOptions?: string[];
   storageOptions?: string[];
+  /** One model can have many independently priced, sellable configurations. */
+  variants?: ProductVariant[];
+  /** True once staff deliberately manage this record as a model matrix. */
+  variantMode?: boolean;
+}
+
+function cleanVariant(v: ProductVariant): ProductVariant {
+  return {
+    id: v.id.trim(),
+    color: v.color?.trim() || undefined,
+    storage: v.storage?.trim() || undefined,
+    connectivity: v.connectivity?.trim() || undefined,
+    condition: v.condition,
+    price: Number(v.price),
+    originalPrice: Number(v.originalPrice),
+    stock: Number(v.stock),
+    batteryHealth: v.batteryHealth == null ? undefined : Number(v.batteryHealth),
+    imageUrl: v.imageUrl?.trim() || undefined,
+    galleryImages: v.galleryImages?.filter(Boolean),
+  };
+}
+
+/**
+ * The storefront catalogue still has a top-level price and stock for cards,
+ * search and legacy integrations. For a model with variants they are derived
+ * from the sellable rows, never hand-maintained duplicates.
+ */
+function variantSummary(draft: ProductDraft) {
+  if (!draft.variantMode) return null;
+  const variants = (draft.variants ?? []).map(cleanVariant);
+  if (!variants.length) return null;
+  const prices = variants.map(v => v.price).filter(Number.isFinite);
+  const originalPrices = variants.map(v => v.originalPrice).filter(Number.isFinite);
+  const battery = variants.map(v => v.batteryHealth).filter((v): v is number => v != null);
+  return {
+    variants,
+    stock: variants.reduce((sum, v) => sum + Math.max(0, v.stock || 0), 0),
+    price: prices.length ? Math.min(...prices) : draft.price,
+    originalPrice: originalPrices.length ? Math.min(...originalPrices) : draft.originalPrice,
+    grade: variants[0].condition ?? draft.grade,
+    batteryHealth: battery.length ? Math.min(...battery) : draft.batteryHealth,
+    colorOptions: [...new Set(variants.map(v => v.color).filter((v): v is string => Boolean(v)))],
+    storageOptions: [...new Set(variants.map(v => v.storage).filter((v): v is string => Boolean(v)))],
+    conditionOptions: [...new Set(variants.map(v => v.condition).filter((v): v is ProductGrade => Boolean(v)))],
+  };
 }
 
 /**
@@ -69,15 +116,16 @@ export interface ProductDraft {
  * Firestore has no triggers to do it for us.
  */
 export function draftToRow(draft: ProductDraft): Record<string, unknown> {
+  const summary = variantSummary(draft);
   return stripUndefined({
     model: draft.model,
     brand: draft.brand,
     category: draft.category,
     storage: draft.storage || null,
-    price: draft.price,
-    originalPrice: draft.originalPrice,
-    grade: draft.grade,
-    batteryHealth: draft.batteryHealth ?? null,
+    price: summary?.price ?? draft.price,
+    originalPrice: summary?.originalPrice ?? draft.originalPrice,
+    grade: summary?.grade ?? draft.grade,
+    batteryHealth: summary?.batteryHealth ?? draft.batteryHealth ?? null,
     warrantyMonths: draft.warrantyMonths,
     returnDays: draft.returnDays,
     imageUrl: draft.imageUrl || null,
@@ -86,11 +134,13 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     // document edited by hand in the Firebase console.
     galleryImages: draft.galleryImages?.length ? capImages(draft.galleryImages) : null,
     isCertified: draft.isCertified,
-    stock: draft.stock,
+    stock: summary?.stock ?? draft.stock,
     description: draft.description || null,
     conditionDescription: draft.conditionDescription || null,
-    colorOptions: draft.colorOptions?.length ? draft.colorOptions : null,
-    storageOptions: draft.storageOptions?.length ? draft.storageOptions : null,
+    colorOptions: summary?.colorOptions.length ? summary.colorOptions : draft.colorOptions?.length ? draft.colorOptions : null,
+    storageOptions: summary?.storageOptions.length ? summary.storageOptions : draft.storageOptions?.length ? draft.storageOptions : null,
+    conditionOptions: summary?.conditionOptions.length ? summary.conditionOptions : null,
+    variants: summary?.variants.length ? summary.variants : null,
     searchTerms: buildSearchTerms(draft.brand, draft.model, draft.category),
   });
 }
@@ -104,12 +154,14 @@ export function emptyDraft(): ProductDraft {
     category: 'Phones',
     price: 0,
     originalPrice: 0,
-    grade: 'Good',
+    grade: 'Pristine',
     warrantyMonths: 12,
     returnDays: 30,
     isCertified: true,
     stock: 0,
     galleryImages: [],
+    variants: [],
+    variantMode: false,
   };
 }
 
@@ -134,6 +186,10 @@ export function productToDraft(p: Product): ProductDraft {
     conditionDescription: p.conditionDescription,
     colorOptions: p.colorOptions,
     storageOptions: p.storageOptions,
+    variants: p.variants ?? [],
+    // Preserve older catalogue documents exactly until staff choose to manage
+    // their rows as the new model matrix.
+    variantMode: false,
   };
 }
 
@@ -167,22 +223,45 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
   if (!draft.brand.trim()) errors.brand = 'Required.';
   if (!draft.category.trim()) errors.category = 'Required.';
 
-  if (!Number.isFinite(draft.price) || draft.price <= 0) errors.price = 'Must be more than £0.';
-  if (!Number.isFinite(draft.originalPrice) || draft.originalPrice <= 0) {
+  const hasVariants = Boolean(draft.variantMode && draft.variants?.length);
+  if (!hasVariants && (!Number.isFinite(draft.price) || draft.price <= 0)) errors.price = 'Must be more than £0.';
+  if (!hasVariants && (!Number.isFinite(draft.originalPrice) || draft.originalPrice <= 0)) {
     errors.originalPrice = 'Must be more than £0.';
-  } else if (draft.originalPrice < draft.price) {
+  } else if (!hasVariants && draft.originalPrice < draft.price) {
     errors.originalPrice = 'Cannot be below the selling price — that would show a negative saving.';
   }
 
   if (!GRADES.includes(draft.grade)) errors.grade = 'Pick a condition grade.';
+
+  const isApplePhone = draft.category === 'Phones' && draft.brand.trim().toLowerCase() === 'apple';
 
   if (draft.batteryHealth !== undefined && draft.batteryHealth !== null) {
     if (!Number.isInteger(draft.batteryHealth) || draft.batteryHealth < 0 || draft.batteryHealth > 100) {
       errors.batteryHealth = 'Must be a whole number between 0 and 100.';
     }
   }
+  if (!hasVariants && isApplePhone && (draft.batteryHealth === undefined || draft.batteryHealth === null || draft.batteryHealth < 85)) {
+    errors.batteryHealth = 'Apple phones require a verified battery health of at least 85%.';
+  }
 
-  if (!Number.isInteger(draft.stock) || draft.stock < 0) errors.stock = 'Must be 0 or more.';
+  if (hasVariants) {
+    const seen = new Set<string>();
+    for (const [index, raw] of (draft.variants ?? []).entries()) {
+      const v = cleanVariant(raw);
+      const key = [v.color, v.storage, v.connectivity, v.condition].map(x => (x ?? '').toLowerCase()).join('|');
+      if (!v.id) errors[`variant-${index}-id`] = 'Each variant needs an ID.';
+      if (seen.has(key)) errors[`variant-${index}-duplicate`] = 'This configuration is already listed; increase its stock instead.';
+      seen.add(key);
+      if (!Number.isFinite(v.price) || v.price <= 0) errors[`variant-${index}-price`] = 'Each variant needs a selling price above £0.';
+      if (!Number.isFinite(v.originalPrice) || v.originalPrice < v.price) errors[`variant-${index}-originalPrice`] = 'Was price must be at least the selling price.';
+      if (!Number.isInteger(v.stock) || v.stock < 0) errors[`variant-${index}-stock`] = 'Stock must be a whole number of 0 or more.';
+      if (!v.condition || !GRADES.includes(v.condition)) errors[`variant-${index}-condition`] = 'Choose a condition.';
+      if (v.batteryHealth != null && (!Number.isInteger(v.batteryHealth) || v.batteryHealth < 0 || v.batteryHealth > 100)) errors[`variant-${index}-batteryHealth`] = 'Battery health must be 0–100.';
+      if (isApplePhone && (v.batteryHealth == null || v.batteryHealth < 85)) errors[`variant-${index}-batteryHealth`] = 'Apple phone variants require verified battery health of at least 85%.';
+    }
+  }
+
+  if (!hasVariants && (!Number.isInteger(draft.stock) || draft.stock < 0)) errors.stock = 'Must be 0 or more.';
   if (!Number.isInteger(draft.warrantyMonths) || draft.warrantyMonths < 0) {
     errors.warrantyMonths = 'Must be 0 or more.';
   }
@@ -235,7 +314,7 @@ export interface InventoryQuery {
 
 export const LOW_STOCK_THRESHOLD = 5;
 
-export async function listInventory(q: InventoryQuery = {}): Promise<{ products: Product[]; total: number }> {
+export async function listInventory(q: InventoryQuery = {}): Promise<{ products: Product[]; total: number; brands: string[] }> {
   const { search, brand, stockFilter = 'all', sort = 'newest', page = 1, pageSize = 25 } = q;
 
   // One indexed query (brand, when given) then narrowing in memory.
@@ -248,6 +327,7 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
   const snap = await getDocs(query(collection(db, COL.products), ...constraints, fsLimit(1000)));
 
   let rows = snap.docs.map(d => docToProduct(d.id, d.data()));
+  const brands = [...new Set(rows.map(p => p.brand).filter(Boolean))].sort();
 
   if (search?.trim()) {
     const term = search.trim().toLowerCase();
@@ -269,7 +349,7 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
   }
 
   const total = rows.length;
-  return { products: rows.slice((page - 1) * pageSize, page * pageSize), total };
+  return { products: rows.slice((page - 1) * pageSize, page * pageSize), total, brands };
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────
@@ -481,12 +561,16 @@ export async function uploadImage(
   // Cloudinary when the deployment has it configured, Firebase Storage
   // otherwise — see src/lib/cloudinary.ts. Both return a URL, and everything
   // downstream only ever stores and renders that string.
-  const hosted = await uploadViaCloudinary(
-    bucket === BANNER_BUCKET ? 'banner' : 'product',
-    file,
-    productId,
-  );
-  if (hosted) return hosted;
+  try {
+    const hosted = await uploadViaCloudinary(
+      bucket === BANNER_BUCKET ? 'banner' : 'product',
+      file,
+      productId,
+    );
+    if (hosted) return hosted;
+  } catch (err) {
+    console.warn('[uploadImage] Cloudinary upload failed, falling back to Firebase Storage backup:', err);
+  }
 
   const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const path = imagePath(productId, file.name, unique);

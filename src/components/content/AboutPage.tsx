@@ -2,10 +2,10 @@ import Breadcrumbs from '../ui/Breadcrumbs';
 import { ShieldCheck, Leaf, Users, BadgeCheck } from 'lucide-react';
 
 const STATS = [
-  { value: '1.2M+', label: 'Certified devices shipped' },
+  { value: '6 years', label: 'Established' },
+  { value: '1,000+', label: 'Devices sold monthly' },
+  { value: '70,000+', label: 'Devices sold' },
   { value: '90', label: 'Inspection points per device' },
-  { value: '4.9', label: 'Trustpilot rating' },
-  { value: '12m', label: 'Warranty on every order' },
 ];
 
 const PILLARS = [
@@ -63,7 +63,7 @@ export default function AboutPage() {
             How we got here
           </h2>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.7, margin: '0 0 14px 0' }}>
-            LeHart.co.uk started in 2018 with a simple premise: the best phone for most people is a slightly older one, inspected properly and sold at a fair price. Seven years later, we've shipped more than 1.2 million devices across the UK, built one of the largest in-house refurbishment labs in the country, and planted our flag as the most-trusted refurbisher on Trustpilot.
+            LeHart.co.uk was built on a simple premise: the best phone for most people is a slightly older one, inspected properly and sold at a fair price. Over six years, we have sold more than 70,000 devices and now supply over 1,000 devices every month.
           </p>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.7, margin: 0 }}>
             We're independent, we don't lock you into contracts, and every device ships with the same 12-month warranty — no matter the grade. That's the deal.

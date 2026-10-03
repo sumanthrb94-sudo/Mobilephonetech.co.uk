@@ -92,7 +92,7 @@ export default function QuickViewModal({
               <span className={`badge ${GRADE_CLASS[phone.grade]}`}>{phone.grade}</span>
             )}
             {phone.batteryHealth && (
-              <span className="badge badge-tag">Battery {phone.batteryHealth}%+</span>
+              <span className="badge badge-tag">Battery {phone.batteryHealth}%{phone.brand.trim().toLowerCase() === 'apple' ? '+' : ''}</span>
             )}
           </div>
 

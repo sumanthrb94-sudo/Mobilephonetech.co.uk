@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listLiveBanners } from '../lib/banners';
+import { subscribeLiveBanners } from '../lib/banners';
 import HeroCarousel, { BUILT_IN_SLIDES, type Slide } from './HeroCarousel';
 
 /**
@@ -19,11 +19,9 @@ export default function Hero() {
   const [managed, setManaged] = useState<Slide[] | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    listLiveBanners()
-      .then(rows => {
-        if (cancelled || rows.length === 0) return;
-        setManaged(rows.map(b => ({
+    return subscribeLiveBanners(
+      rows => {
+        setManaged(rows.length ? rows.map(b => ({
           eyebrow: b.eyebrow,
           headline: b.headline,
           subline: b.subline,
@@ -41,15 +39,15 @@ export default function Hero() {
           fullBleed: true,
           focal: '50% 50%',
           focalMobile: '50% 30%',
-        })));
-      })
-      .catch((err) => {
+        })) : null);
+      },
+      err => {
         // The built-in set stands, but say so: a silent catch here means a
         // shop whose banners have stopped loading looks exactly like a shop
         // that has none, and nobody ever finds out.
         console.error('[hero] could not load managed banners:', err);
-      });
-    return () => { cancelled = true; };
+      },
+    );
   }, []);
 
   const SLIDES = managed ?? BUILT_IN_SLIDES;

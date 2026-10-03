@@ -37,7 +37,7 @@ import { generateProductDescription } from '../utils/productDescription';
 
 import type { Product } from '../types';
 import CountUp from './ui/CountUp';
-import PdpFinanceCalculator from './pdp/PdpFinanceCalculator';
+import PaymentTrustMark from './PaymentTrustMark';
 import PdpQualityInspector from './pdp/PdpQualityInspector';
 import PdpDeliveryUrgency from './pdp/PdpDeliveryUrgency';
 import PdpGradeVisualizer from './pdp/PdpGradeVisualizer';
@@ -269,7 +269,7 @@ export default function ProductDetail() {
   React.useEffect(() => {
     window.scrollTo(0, 0);
     if (phone?.variants && phone.variants.length > 0) {
-      setSelectedVariant(phone.variants[0]);
+      setSelectedVariant(phone.variants.find(variant => variant.stock > 0) ?? phone.variants[0]);
     }
     if (phone?.id) trackRecent(phone.id);
   }, [phone?.id]);
@@ -484,7 +484,7 @@ export default function ProductDetail() {
             </div>
           )}
 
-          <PdpFinanceCalculator price={displayPrice} />
+          <PaymentTrustMark />
         </div>
   );
 

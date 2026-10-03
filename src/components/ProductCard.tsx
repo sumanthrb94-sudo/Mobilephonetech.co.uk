@@ -7,6 +7,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useUI } from '../context/UIContext';
 import ProductImage from './ProductImage';
 import QuickViewModal from './QuickViewModal';
+import PaymentTrustMark from './PaymentTrustMark';
 import { useHoverPrefetch } from '../hooks/useHoverPrefetch';
 import { getFastestDelivery } from '../utils/deliveryCalculator';
 
@@ -370,6 +371,8 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
               Free delivery · {deliveryLabel}
             </p>
           )}
+
+          <PaymentTrustMark compact={compact} />
 
           {/* CTA */}
           <button

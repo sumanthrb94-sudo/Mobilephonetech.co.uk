@@ -5,7 +5,7 @@ const IMPACT = [
   { icon: Factory, value: '78,000 tonnes', label: 'CO₂ saved vs buying new' },
   { icon: Leaf,    value: '91,500 tonnes', label: 'Raw materials kept in circulation' },
   { icon: Droplet, value: '194 million L', label: 'Water conserved' },
-  { icon: Recycle, value: '1.2M+',         label: 'Devices given a second life' },
+  { icon: Recycle, value: '70,000+',       label: 'Devices given a second life' },
 ];
 
 const PRINCIPLES = [

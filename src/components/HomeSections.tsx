@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Hero from './Hero';
-import TrustBanner from './TrustBanner';
 import BrandShowcase from './BrandShowcase';
 import QualityPromise from './QualityPromise';
 import EcoImpactBlock from './EcoImpactBlock';
@@ -9,7 +8,6 @@ import HomeBlog from './HomeBlog';
 import NewsletterSignup from './NewsletterSignup';
 import TrustSection from './TrustSection';
 import TestimonialsSection from './TestimonialsSection';
-import PressLogosStrip from './PressLogosStrip';
 import WarrantyAndReturns from './WarrantyAndReturns';
 import { defaultLayout, loadHomeLayout, visibleSections } from '../lib/homeLayout';
 
@@ -27,12 +25,10 @@ import { defaultLayout, loadHomeLayout, visibleSections } from '../lib/homeLayou
  * live site.
  */
 export const SECTION_VIEWS: Record<string, () => React.ReactElement> = {
-  trustBanner: () => <TrustBanner />,
   hero: () => <Hero />,
   brandShowcase: () => <BrandShowcase />,
   ecoImpact: () => <EcoImpactBlock />,
   trustSection: () => <TrustSection />,
-  pressLogos: () => <PressLogosStrip />,
   testimonials: () => <TestimonialsSection />,
   warranty: () => <WarrantyAndReturns />,
   faq: () => <HomeFaq />,

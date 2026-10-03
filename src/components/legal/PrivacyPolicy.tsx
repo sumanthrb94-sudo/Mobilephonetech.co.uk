@@ -50,7 +50,7 @@ export default function PrivacyPolicy() {
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '15px', color: 'var(--grey-60)', lineHeight: 1.6 }}>
               The services that process personal data on our behalf are: <strong>Google Firebase</strong> (accounts,
               sign-in and our database, including Google sign-in), <strong>Vercel</strong> (website hosting), and our
-              payment provider once checkout goes live — card details are entered on the payment provider's secure
+              PayPal (payments) — card details are entered on PayPal's secure
               page and never touch this site. If we introduce an email service for order confirmations or marketing,
               it will be named here before it receives any personal data.
             </p>

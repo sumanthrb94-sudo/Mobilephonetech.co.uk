@@ -53,6 +53,7 @@ const CHECK_CATEGORIES = [
 export default function PdpQualityInspector({ brand, model, batteryHealth = 85, onWatchLabVideo }: PdpQualityInspectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const isApple = brand.trim().toLowerCase() === 'apple';
 
   return (
     <>
@@ -99,7 +100,9 @@ export default function PdpQualityInspector({ brand, model, batteryHealth = 85, 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
           <div style={{ background: 'white', padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--grey-15)', textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--grey-50)', fontWeight: 600 }}>Battery Health</div>
-            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-trust-text)', fontWeight: 800 }}>{batteryHealth}%+ Guaranteed</div>
+            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-trust-text)', fontWeight: 800 }}>
+              {isApple ? `${batteryHealth}%+ guaranteed` : `${batteryHealth}% recorded`}
+            </div>
           </div>
           <div style={{ background: 'white', padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--grey-15)', textAlign: 'center' }}>
             <div style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--grey-50)', fontWeight: 600 }}>Network Lock</div>

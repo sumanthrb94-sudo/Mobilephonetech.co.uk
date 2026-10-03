@@ -3043,7 +3043,17 @@ textarea,
 /* The preview embeds the real HeroCarousel component — see BannersPage's
    bannerToSlide and HeroCarousel.tsx. Approving something here approves
    exactly what ships, because it is not a copy, it is the same component. */
-.bn-preview { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bn-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  grid-column: 1 / -1;
+  padding: 14px;
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-lg);
+  background: var(--grey-5);
+}
 
 .bn-preview--desktop { grid-column: 1 / -1; }
 
@@ -3098,7 +3108,7 @@ textarea,
   color: var(--grey-50);
 }
 
-.bn-preview__stage { max-width: 100%; }
+.bn-preview__stage { max-width: min(100%, 960px); margin-inline: auto; }
 
 .bn-preview__frame2 {
   border-radius: var(--radius-lg);
