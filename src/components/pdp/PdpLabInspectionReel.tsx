@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Play, Pause, RotateCcw, Volume2, VolumeX, ShieldCheck,
-  BatteryCharging, Smartphone, CheckCircle2, X, Sparkles, Award
+  BatteryCharging, Smartphone, X, Sparkles, Award
 } from 'lucide-react';
 import { RefreshCw } from 'lucide-react';
 

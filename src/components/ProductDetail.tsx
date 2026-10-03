@@ -43,6 +43,7 @@ import PdpDeliveryUrgency from './pdp/PdpDeliveryUrgency';
 import PdpGradeVisualizer from './pdp/PdpGradeVisualizer';
 import PdpWhyRefurbishedBento from './pdp/PdpWhyRefurbishedBento';
 import PdpLabInspectionReel from './pdp/PdpLabInspectionReel';
+import { chargerUpsellFor } from '../lib/chargerUpsell';
 
 function TabPanel({
   phone, reviews, setReviews,
@@ -209,6 +210,7 @@ export default function ProductDetail() {
   const { track: trackRecent } = useRecentlyViewed();
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const [labReelOpen, setLabReelOpen] = React.useState(false);
+  const [includeCharger, setIncludeCharger] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
 
   // Load product: seed from the shared catalogue for an instant first paint,
@@ -284,6 +286,7 @@ export default function ProductDetail() {
   const displayBatteryHealth = selectedVariant?.batteryHealth ?? phone?.batteryHealth ?? 0;
   const displayStock = selectedVariant?.stock ?? phone?.stock ?? 0;
   const savings = displayOriginalPrice - displayPrice;
+  const chargerUpsell = phone ? chargerUpsellFor(phone, catalogue) : null;
   useSeo(phone
     ? { ...productSeo({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth }),
         jsonLd: [
@@ -349,6 +352,9 @@ export default function ProductDetail() {
   );
 
   const handleAddToCart = () => {
+    // The accessory is a real, independently priced catalogue item. Add it
+    // first so the confirmation modal continues to describe the chosen phone.
+    if (includeCharger && chargerUpsell) addToCart(chargerUpsell.product);
     if (selectedVariant) {
       // The variant id becomes the cart line's id, so the base product id has
       // to travel separately — the server prices the order from the catalogue
@@ -728,6 +734,32 @@ export default function ProductDetail() {
                 options when the product has no explicit variants[] matrix. */}
             <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
 
+            {chargerUpsell && (
+              <label
+                style={{
+                  display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '14px',
+                  border: `1.5px solid ${includeCharger ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                  borderRadius: 'var(--radius-lg)', background: includeCharger ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={includeCharger}
+                  onChange={(event) => setIncludeCharger(event.target.checked)}
+                  style={{ marginTop: '3px', accentColor: 'var(--brand-cyan)' }}
+                />
+                <span style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 800, fontSize: '14px', color: 'var(--black)' }}>
+                    {chargerUpsell.title} · £{chargerUpsell.product.price}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', lineHeight: 1.45, color: 'var(--grey-60)' }}>
+                    {chargerUpsell.description}
+                  </span>
+                </span>
+              </label>
+            )}
+
             {/* Delivery */}
             <div style={{ marginTop: '-2px' }}>
               <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
@@ -866,16 +898,16 @@ export default function ProductDetail() {
         )}
 
         <PdpGradeVisualizer
-          currentGrade={selectedVariant?.grade ?? phone.grade}
+          currentGrade={selectedVariant?.condition ?? phone.grade}
           onSelectGrade={(newGrade) => {
             if (selectedVariant) {
-              setSelectedVariant({ ...selectedVariant, grade: newGrade });
+              setSelectedVariant({ ...selectedVariant, condition: newGrade });
             } else if (phone) {
               setSelectedVariant({
                 id: `${phone.id}-${newGrade.toLowerCase()}`,
-                color: phone.color || 'Default',
+                color: phone.colorOptions?.[0] || 'Default',
                 storage: phone.storage || '128 GB',
-                grade: newGrade,
+                condition: newGrade,
                 price: phone.price,
                 originalPrice: phone.originalPrice,
                 stock: phone.stock,
