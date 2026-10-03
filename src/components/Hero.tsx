@@ -37,7 +37,7 @@ export default function Hero() {
           gradientFrom: '#0b0f1a',
           gradientTo: '#1b2440',
           glowColor: 'rgba(96, 120, 220, 0.30)',
-          savings: '',
+          savings: b.savings,
           fullBleed: true,
           focal: '50% 50%',
           focalMobile: '50% 30%',

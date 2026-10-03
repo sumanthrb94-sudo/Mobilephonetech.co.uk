@@ -263,7 +263,7 @@ export default function HeroCarousel({
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
         transition: 'background 0.6s ease',
-        paddingTop: isDesktop ? 'var(--nav-total)' : 0,
+        paddingTop: 0,
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -307,7 +307,7 @@ export default function HeroCarousel({
               fetchPriority={current === 0 ? 'high' : 'auto'}
               decoding="async"
               style={{
-                position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
+                position: 'absolute', top: 0,
                 left: 0, right: 0, bottom: 0, zIndex: 0, width: '100%',
                 objectFit: isDesktop ? 'contain' : 'cover', objectPosition: 'center top',
               }}
@@ -334,7 +334,7 @@ export default function HeroCarousel({
               top third, which is where the devices are: the point is to read
               the words, not to flatten the picture the client supplied. */}
           <div style={{
-            position: 'absolute', top: isDesktop ? 'var(--nav-total)' : 0,
+            position: 'absolute', top: 0,
             left: 0, right: 0, bottom: 0, zIndex: 1, pointerEvents: 'none',
             background: isDesktop
               ? 'linear-gradient(90deg, rgba(6,8,14,0.88) 0%, rgba(6,8,14,0.62) 30%, rgba(6,8,14,0.06) 56%, rgba(6,8,14,0) 100%)'

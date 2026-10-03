@@ -148,10 +148,37 @@
   --container-max: 1280px;
   --header-h: 64px;
   --catnav-h: 48px;
-  --nav-total: 112px;
+  --preview-banner-h: 0px;
+  --nav-total: calc(var(--header-h) + var(--catnav-h) + var(--preview-banner-h));
   /* header + category nav */
 
 
+}
+
+/* Preview mode adds a real fixed notice above the app shell. Keep every
+   fixed layer and every page offset on the same measurement, otherwise the
+   home trust cue lands over the hero on phones and leaves a phantom gap on
+   desktop. `:has` is supported by the browsers this shop targets. */
+body:has(.preview-banner) {
+  --preview-banner-h: 40px;
+}
+
+.app-header {
+  top: var(--preview-banner-h) !important;
+}
+
+/* The preview notice itself is fixed, so its height must not also create a
+   normal-flow spacer above the application. */
+.preview-banner {
+  height: var(--preview-banner-h);
+  box-sizing: border-box;
+}
+
+/* This is content, not fixed chrome. Start it only after the header (and the
+   mobile returns strip) so it cannot be hidden beneath either one; the hero
+   then follows immediately without an artificial desktop gap. */
+.home-trust-banner {
+  margin-top: var(--nav-total);
 }
 
 /* ───────────────────────────────────────────────────────────────
@@ -3317,7 +3344,7 @@ html.is-checkout .pdp-stickybuy {
      behind the clock. Zero on a device without one, so this is the same
      number as before everywhere else. */
   :root {
-    --nav-total: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+    --nav-total: calc(var(--preview-banner-h) + var(--header-h) + env(safe-area-inset-top, 0px));
   }
 
   .app-header {
@@ -3393,7 +3420,7 @@ html.is-checkout .pdp-stickybuy {
 
   html.is-home .announcement-bar {
     display: flex;
-    top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
+    top: calc(var(--preview-banner-h) + var(--header-h) + env(safe-area-inset-top, 0px));
     bottom: auto;
     border-top: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
@@ -3405,7 +3432,7 @@ html.is-checkout .pdp-stickybuy {
      alternative is a hard-coded 36px in each of them, which is how the
      old 40px band above the banner happened. */
   html.is-home {
-    --nav-total: calc(var(--header-h) + 36px + env(safe-area-inset-top, 0px));
+    --nav-total: calc(var(--preview-banner-h) + var(--header-h) + 36px + env(safe-area-inset-top, 0px));
   }
 
   /* The sitemap footer does not belong inside a tab. Its links live in the

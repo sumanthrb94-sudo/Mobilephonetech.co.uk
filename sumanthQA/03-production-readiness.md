@@ -95,7 +95,6 @@ Benchmark: Back Market, Swappa, Amazon refurbished marketplace
 | Order tracking | ❌ | ✅ |
 | Seller ratings | ❌ | ✅ |
 | Price match guarantee | ⚠️ badge only | ✅ |
-| Trade-in | ⚠️ quote form | ✅ full flow |
 | Mobile app | ❌ | ✅ |
 | Reviews | ✅ | ✅ |
 | SEO | ✅ | ✅ |

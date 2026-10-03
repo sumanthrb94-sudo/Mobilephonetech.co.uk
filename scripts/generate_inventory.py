@@ -1252,7 +1252,7 @@ def main():
 
     # Write output
     output_lines = [
-        "import { Product, Category } from './types';",
+        "import { Product, Category } from '../types';",
         "",
         "export const MOCK_PHONES: Product[] = [",
     ]
@@ -1296,10 +1296,10 @@ def main():
         output_lines.append("  },")
     output_lines.append("];")
 
-    with open('src/data.ts', 'w', encoding='utf-8') as f:
+    with open('src/data/mockPhones.ts', 'w', encoding='utf-8') as f:
         f.write('\n'.join(output_lines))
 
-    print(f'Generated {len(ts_products)} products in src/data.ts')
+    print(f'Generated {len(ts_products)} products in src/data/mockPhones.ts')
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ import {
   BANNER_SPEC, EMPTY_BANNER, type Banner,
 } from '../../lib/banners';
 import { uploadImage, describeError, BANNER_BUCKET, isUsableImageUrl } from '../../lib/adminApi';
-import HeroCarousel, { type Slide } from '../HeroCarousel';
+import HeroCarousel, { BUILT_IN_SLIDES, type Slide } from '../HeroCarousel';
 
 /**
  * A draft banner, rendered through the exact same carousel the home page
@@ -29,7 +29,7 @@ function bannerToSlide(b: Banner): Slide {
     gradientFrom: '#0b0f1a',
     gradientTo: '#1b2440',
     glowColor: 'rgba(96, 120, 220, 0.30)',
-    savings: '',
+    savings: b.savings,
     fullBleed: true,
     focal: '50% 50%',
     focalMobile: '50% 30%',
@@ -78,6 +78,32 @@ export default function BannersPage() {
       updatedAt: '',
     };
     setRows(rs => [...rs, fresh]);
+  };
+
+  /** Turn the currently visible fallback carousel into editable live rows. */
+  const importBuiltInBanners = async () => {
+    setBusyId('import'); setError(null); setNotice(null);
+    const starters: Banner[] = BUILT_IN_SLIDES.map((slide, order) => ({
+      id: `builtin-hero-${order + 1}`,
+      eyebrow: slide.eyebrow,
+      headline: slide.headline,
+      subline: slide.subline,
+      savings: slide.savings,
+      ctaLabel: slide.ctaLabel,
+      ctaHref: slide.ctaHref,
+      image: slide.image,
+      imageMobile: slide.imageMobile,
+      alt: slide.imageAlt,
+      active: true,
+      order,
+      updatedAt: '',
+    }));
+    try {
+      await Promise.all(starters.map(saveBanner));
+      setNotice(`${starters.length} live home banners imported. You can now edit or reorder them.`);
+      await load();
+    } catch (err) { setError(describeError(err)); }
+    finally { setBusyId(null); }
   };
 
   const save = async (b: Banner) => {
@@ -151,9 +177,21 @@ export default function BannersPage() {
         <div className="admin-panel ord-empty">
           <ImageIcon size={22} />
           <p style={{ margin: 0, maxWidth: 460 }}>
-            No banners yet. Until one is saved and switched on, the home page shows
-            the built-in set — so the shop is never bannerless.
+            These are the banners currently live on the home page. They are
+            built into the site until imported; import them once to make every
+            banner editable and reorderable for employees.
           </p>
+          <div className="bn-preview" style={{ width: '100%', maxWidth: 640, textAlign: 'left' }}>
+            <div className="bn-preview__head"><p className="bn-preview__label">Live home-page carousel</p></div>
+            <div className="bn-preview__stage" style={{ containerType: 'inline-size', width: '100%', maxWidth: 640 }}>
+              <div className="bn-preview__frame2">
+                <HeroCarousel slides={BUILT_IN_SLIDES} autoAdvance={false} />
+              </div>
+            </div>
+          </div>
+          <button type="button" className="btn btn-primary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInBanners()}>
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <Plus size={15} />} Make live banners editable
+          </button>
         </div>
       )}
 
@@ -264,9 +302,15 @@ function BannerEditor({
             <Field label="Button link" hint="A path inside the shop, e.g. /products?brand=Apple">
               <input className="input" value={b.ctaHref} maxLength={200}
                 placeholder="/products?brand=Apple"
-                onChange={e => onChange({ ctaHref: e.target.value })} />
+              onChange={e => onChange({ ctaHref: e.target.value })} />
             </Field>
           </div>
+
+          <Field label="Price drop / saving line" hint="Shown beneath the button, e.g. “Save up to £420” or “From £249”. Leave blank when there is no offer.">
+            <input className="input" value={b.savings} maxLength={60}
+              placeholder="e.g. Save up to £420"
+              onChange={e => onChange({ savings: e.target.value })} />
+          </Field>
 
           <Field label="Image description" hint="Read aloud by screen readers, and shown if the picture fails to load.">
             <input className="input" value={b.alt} maxLength={160}

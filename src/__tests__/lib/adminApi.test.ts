@@ -5,7 +5,7 @@ import {
   MAX_IMAGE_BYTES, IMAGE_BUCKET,
   type ProductDraft,
 } from '../../lib/adminApi';
-import { MOCK_PHONES } from '../../data';
+import { MOCK_PHONES } from '../../data/mockPhones';
 
 function draft(overrides: Partial<ProductDraft> = {}): ProductDraft {
   return {

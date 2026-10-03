@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT       = resolve(__dirname, '..');
-const DATA_PATH  = resolve(ROOT, 'src/data.ts');
+const DATA_PATH  = resolve(ROOT, 'src/data/mockPhones.ts');
 const PUBLIC_DIR = resolve(ROOT, 'public');
 const ORIGIN     = 'https://lehart.co.uk';
 

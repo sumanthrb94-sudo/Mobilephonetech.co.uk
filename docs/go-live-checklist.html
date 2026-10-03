@@ -449,8 +449,6 @@
           d: "Request reviews only after delivery, and never incentivise without disclosure — see the DMCC item below." },
         { t: "Back-in-stock notifications", s: "todo",
           d: "Especially valuable when stock is single-unit and sells out." },
-        { t: "Trade-in follow-up flow", s: "todo",
-          d: "Quotes are already captured and currently go nowhere." }
       ]
     },
     {
@@ -517,8 +515,6 @@
       items: [
         { t: "Per-IMEI stock records", s: "blocker",
           d: "Products currently carry one grade, one battery health and a <code>stock</code> count — a model for identical new boxes. You sell serialised items. Until stock is per-unit you cannot run the VAT margin scheme, cannot answer \"which handset did we send them\", and cannot price by real condition. Your InventoryManager repo already has an IMEI migration spec — port that model rather than designing it twice." },
-        { t: "Stolen-device checks on trade-in intake", s: "todo",
-          d: "CheckMEND is the UK standard. Record the result against the IMEI so you can prove you checked." },
         { t: "Courier account set up for lithium batteries", s: "todo",
           d: "Phones ship with batteries installed — a declared dangerous-goods category with packaging rules and air restrictions." },
         { t: "Tracked, insured, signed-for shipping", s: "todo", d: "" },
@@ -546,7 +542,7 @@
         { t: "Firebase App Check enabled", s: "todo",
           d: "Without it, anyone can call your Firestore directly with your public config. Rules limit what they can do; App Check limits who can ask." },
         { t: "Rate limiting on API routes", s: "done",
-          d: "Newsletter, trade-in and review submissions are rate-limited per client with 429 + Retry-After, unit-tested. Per-instance limits — a durable shared store is the upgrade path if abuse outruns it." },
+          d: "Newsletter and review submissions are rate-limited per client with 429 + Retry-After, unit-tested. Per-instance limits — a durable shared store is the upgrade path if abuse outruns it." },
         { t: "Scheduled Firestore backups", s: "blocker",
           d: "Still none, and now possible: scheduled exports need Blaze, which the project is on. A bad admin action or a bad script has no undo, and the database now holds the real catalogue and 595 per-unit stock records rather than demo data. Firebase console → Firestore → Backups, or a Cloud Scheduler job calling the export API." },
         { t: "Error monitoring", s: "todo",

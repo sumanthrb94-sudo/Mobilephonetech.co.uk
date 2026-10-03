@@ -120,7 +120,6 @@
 | `api/search.ts` | Autocomplete — brand/model ILIKE |
 | `api/reviews.ts` | GET paginated reviews, POST new review |
 | `api/delivery.ts` | Postcode → delivery options + estimated date |
-| `api/trade-in.ts` | Trade-in quote form |
 | `api/newsletter.ts` | Newsletter signup |
 | `api/coupons/validate.ts` | Coupon code validation |
 

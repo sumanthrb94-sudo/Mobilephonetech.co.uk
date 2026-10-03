@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * apply-refurb-prices.mjs — rewrite every price / originalPrice in
- * src/data.ts with current UK refurbished-market rates.
+ * src/data/mockPhones.ts with current UK refurbished-market rates.
  *
  * Model base prices below are the Good-grade, smallest-available-
  * storage UK retail price as of April 2026, averaged across Back
@@ -176,7 +176,7 @@ function roundPriceGBP(p) {
 }
 
 function main() {
-  const path = 'src/data.ts';
+  const path = 'src/data/mockPhones.ts';
   let content = readFileSync(path, 'utf8');
   let productsFixed = 0;
   let variantsFixed = 0;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useProducts, fetchCatalogue } from '../../hooks/useProducts';
-import { MOCK_PHONES } from '../../data';
+import { MOCK_PHONES } from '../../data/mockPhones';
 import { getDocs } from 'firebase/firestore';
 
 // firebase/firestore is globally mocked in src/test/setup.ts. The default

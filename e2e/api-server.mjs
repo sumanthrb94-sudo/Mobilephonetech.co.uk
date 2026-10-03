@@ -14,10 +14,13 @@
 import { createServer } from 'node:http';
 import { readdirSync, mkdirSync, rmSync } from 'node:fs';
 import { join, basename } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+// URL.pathname adds a leading slash before a Windows drive letter, producing
+// paths such as C:\\C:\\project when passed to node:path.join. Convert the URL
+// to a native path before deriving the API and bundle directories.
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const API_DIR = join(ROOT, 'api', '_routes');
 const PORT = Number(process.env.E2E_API_PORT || 4174);
 

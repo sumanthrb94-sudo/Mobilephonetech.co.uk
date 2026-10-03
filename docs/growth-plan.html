@@ -278,7 +278,7 @@
     <div class="callout">
       <p>Repeat purchase is not the growth lever here. Trust is.</p>
       <p>People buy one phone every two to three years, so you will never win on repeat orders the way a coffee brand does. What you can win is <strong>the decision</strong> — the moment someone weighs a £499 refurbished iPhone against a £999 new one and decides whether to trust a shop they have never heard of.</p>
-      <p>Everything below is judged on whether it moves that decision. The trade-in engine and the review engine move it most, and neither is a marketing spend.</p>
+      <p>Everything below is judged on whether it moves that decision. Reviews, clear grading and delivery confidence move it most, and none is a marketing spend.</p>
     </div>
   </section>
 
@@ -287,15 +287,6 @@
     <p>Tagged by when they earn their keep: <strong>now</strong> pays back inside a month, <strong>next</strong> needs volume first, <strong>later</strong> needs a team.</p>
 
     <div class="levers">
-
-      <div class="lever">
-        <div class="lever-head">
-          <span class="chip chip-now">Now</span>
-          <h3>Turn trade-ins into supply, not just a quote form</h3>
-          <span class="cost">already built, not wired</span>
-        </div>
-        <p>You capture trade-in quotes and they go nowhere. That is the single highest-value idle asset in the codebase. Every trade-in is <em>stock you buy below market from someone who has already chosen you</em> — it solves acquisition and supply in one transaction. Wire the quote to a follow-up sequence, a postage label and an inspection step, and your cost of goods drops while your customer list grows.</p>
-      </div>
 
       <div class="lever">
         <div class="lever-head">
@@ -433,7 +424,7 @@
             <td class="pick">Stolen-device checks</td>
             <td>CheckMEND</td>
             <td class="free">~£1–2/check</td>
-            <td>Non-negotiable once trade-ins are live. Cheap insurance against buying stolen stock.</td>
+            <td>Useful diligence whenever sourcing refurbished stock. Cheap insurance against buying stolen stock.</td>
           </tr>
         </tbody>
       </table>
@@ -446,7 +437,7 @@
 
     <ul>
       <li><strong>Two sending subdomains.</strong> <code>mail.lehart.co.uk</code> for receipts, <code>news.lehart.co.uk</code> for marketing. Reputation is tracked per domain — this is what stops a bad campaign taking order confirmations down with it.</li>
-      <li><strong>The flows worth building, in order:</strong> abandoned basket → post-purchase care → review request at day 7 → back-in-stock → trade-in follow-up → win-back at 18 months, when a phone starts feeling slow.</li>
+      <li><strong>The flows worth building, in order:</strong> abandoned basket → post-purchase care → review request at day 7 → back-in-stock → win-back at 18 months, when a phone starts feeling slow.</li>
       <li><strong>Your existing list cannot be mailed.</strong> The addresses collected before this week have no consent record, timestamp or source. New signups now store all three. Re-permission the old ones with a single opt-in request or drop them — an unprovable list is a liability, not an asset.</li>
       <li><strong>One-click unsubscribe headers are mandatory</strong>, not polite, for bulk senders to Gmail and Yahoo. Keep spam complaints under 0.3% or delivery degrades sharply.</li>
       <li><strong>Warm the domain up.</strong> Blasting a cold sending domain with a full list on day one is the classic way to land in spam permanently.</li>
@@ -458,7 +449,6 @@
     <ul>
       <li>Add the Brevo API key and turn on order, dispatch and return emails — the code is already written and no-ops until the key exists.</li>
       <li>Connect Stripe. Nothing else on this page matters while the shop cannot take money.</li>
-      <li>Wire the trade-in form to a real follow-up. It is the cheapest stock you will ever buy.</li>
       <li>Turn on back-in-stock capture for sold-out listings.</li>
       <li>Ship the abandoned-basket sequence.</li>
       <li>Ask your first fifty delivered customers for a review. By hand if necessary.</li>

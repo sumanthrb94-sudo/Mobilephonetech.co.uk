@@ -50,16 +50,16 @@ initializeApp({
 const db = getFirestore();
 
 /**
- * The catalogue lives in src/data.ts as TypeScript, which node cannot import.
+ * The catalogue lives in src/data/mockPhones.ts as TypeScript, which node cannot import.
  * Rather than add a build step for a one-off script, the array literal is
  * pulled out and evaluated — the file is generated data, not hand-written
  * logic, so there is nothing in it but object literals.
  */
 function loadProducts() {
-  const src = readFileSync(join(here, '..', 'src', 'data.ts'), 'utf8');
+  const src = readFileSync(join(here, '..', 'src', 'data', 'mockPhones.ts'), 'utf8');
   const marker = 'export const MOCK_PHONES';
   const start = src.indexOf(marker);
-  if (start === -1) fail('Could not find MOCK_PHONES in src/data.ts');
+  if (start === -1) fail('Could not find MOCK_PHONES in src/data/mockPhones.ts');
 
   // Seek past the "=" first. The declaration is
   //   export const MOCK_PHONES: Product[] = [

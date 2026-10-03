@@ -1,20 +1,58 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# LeHart storefront
 
-# Run and deploy your AI Studio app
+LeHart is a React and TypeScript storefront for refurbished phones, with a
+Firebase-backed customer account area and staff administration console.
 
-This contains everything you need to run your app locally.
+## Project map
 
-View your app in AI Studio: https://ai.studio/apps/cd68dc83-2029-4a52-8344-f0b3e6d76b57
+```text
+src/             Storefront, admin UI, shared components and client logic
+src/data/        Bundled catalogue fallback and AI reference data
+api/             Vercel serverless routes and shared server-side services
+e2e/             Playwright journeys and Firebase-rules security audit
+scripts/         Data import, seeding, deployment and maintenance tools
+docs/            Operational, product and launch documentation
+deploy/          Deployment-specific infrastructure
+```
 
-## Run Locally
+## Requirements
 
-**Prerequisites:**  Node.js
+- Node.js 20 or newer
+- Firebase project credentials for live server routes
+- Java 21 for the local Firebase Auth, Firestore and Storage emulators
 
+## Local development
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+```bash
+npm ci
+copy .env.example .env.local
+npm run dev
+```
+
+Add only the variables needed for the feature being tested to `.env.local`.
+Never commit `.env*` files or Firebase service-account JSON.
+
+## Quality checks
+
+```bash
+npm run lint                    # TypeScript checks for client and API code
+npm test                        # Vitest unit and component suite
+npm run build                   # Production build
+npm run emulators               # Firebase Auth, Firestore and Storage locally
+npm run audit:security          # Adversarial rules audit; requires emulators
+npm run e2e:interactions        # Playwright desktop and mobile interactions
+npm run e2e:focus               # Focus, input and keyboard behaviour
+```
+
+The security audit deliberately attempts IDOR, role escalation, price
+tampering, refund inflation, forged reviews and other unauthorized requests.
+It must pass before changes to Firebase rules are deployed.
+
+## Deployment
+
+- Vercel builds and serves the frontend and `api/` routes.
+- Firebase hosts authentication, Firestore and Storage rules.
+- Deploy rules and indexes with the scripts in `scripts/` after reviewing the
+  corresponding changes.
+
+See [docs/README.md](docs/README.md) for the maintained documentation index.

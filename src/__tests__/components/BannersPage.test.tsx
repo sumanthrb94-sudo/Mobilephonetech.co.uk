@@ -46,7 +46,7 @@ vi.mock('../../lib/adminApi', async (orig) => {
 
 const live: Banner = {
   id: 'summer-sale-x1', eyebrow: 'Summer', headline: 'Up to 40% off',
-  subline: 'Every device checked.', ctaLabel: 'Shop deals', ctaHref: '/products',
+  subline: 'Every device checked.', savings: 'Save up to £420', ctaLabel: 'Shop deals', ctaHref: '/products',
   image: 'https://example.test/d.jpg', imageMobile: 'https://example.test/m.jpg',
   alt: 'Phones on a bright background', active: true, order: 0,
   updatedAt: '2026-09-13T10:00:00.000Z',
@@ -146,6 +146,14 @@ describe('BannersPage', () => {
 
     expect(await screen.findByText('Off')).toBeTruthy();
     expect(screen.getByText(/A headline is required/)).toBeTruthy();
+  });
+
+  it('shows the live built-in carousel and offers to make it editable when no banner is stored', async () => {
+    listBanners.mockResolvedValue([]);
+    renderPage();
+
+    expect(await screen.findByText(/Live home-page carousel/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Make live banners editable/i })).toBeTruthy();
   });
 });
 

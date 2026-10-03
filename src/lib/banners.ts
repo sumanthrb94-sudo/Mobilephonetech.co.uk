@@ -24,6 +24,8 @@ export interface Banner {
   headline: string;
   /** One supporting line. Desktop only — a phone banner has no room. */
   subline: string;
+  /** Optional price-drop / saving line shown beneath the call to action. */
+  savings: string;
   ctaLabel: string;
   /** In-app path, e.g. /products?brand=Apple */
   ctaHref: string;
@@ -52,7 +54,7 @@ export const BANNER_SPEC = {
 } as const;
 
 export const EMPTY_BANNER: Omit<Banner, 'id' | 'updatedAt'> = {
-  eyebrow: '', headline: '', subline: '', ctaLabel: 'Shop now', ctaHref: '/products',
+  eyebrow: '', headline: '', subline: '', savings: '', ctaLabel: 'Shop now', ctaHref: '/products',
   image: '', imageMobile: '', alt: '', active: false, order: 0,
 };
 
@@ -64,6 +66,7 @@ export function toBanner(id: string, d: Record<string, unknown>): Banner {
     eyebrow: line(d.eyebrow, 60),
     headline: line(d.headline, 90),
     subline: line(d.subline, 160),
+    savings: line(d.savings, 60),
     ctaLabel: line(d.ctaLabel, 40) || 'Shop now',
     ctaHref: line(d.ctaHref, 200) || '/products',
     image: line(d.image, 600),

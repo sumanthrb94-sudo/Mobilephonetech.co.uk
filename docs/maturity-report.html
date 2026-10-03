@@ -72,7 +72,6 @@ Phase 4  Scale-competitive (Amazon class)</div>
 <tr><td>Cart drawer</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Save-for-later · subtotals · proper overlay + body-scroll lock.</td></tr>
 <tr><td>Checkout</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>3-step · Klarna · Clearpay · Apple &amp; Google Pay (UI only; no real charge).</td></tr>
 <tr><td>Account area</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>Wishlist w/ price-drop alerts · order history · returns flow. Mock auth.</td></tr>
-<tr><td>Trade-in</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td class="status-part">🟡</td><td>Static content section; no live quote engine yet.</td></tr>
 <tr><td>Reviews</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>UI supports reviews; seeded fake data; no photos/video; no Q&amp;A.</td></tr>
 <tr><td>Recommendations</td><td class="status-part">🟡</td><td class="status-part">🟡</td><td class="status-good">🟢</td><td>"Recently viewed" + "Related" rails. No ML. No "frequently bought together".</td></tr>
 <tr><td>Trust signals</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td class="status-good">🟢</td><td>Testimonials carousel · press logos · payments + certifications · Trustpilot.</td></tr>
@@ -107,8 +106,6 @@ Phase 4  Scale-competitive (Amazon class)</div>
 <table>
 <thead><tr><th>Gap</th><th>Why it matters</th><th>Effort</th></tr></thead>
 <tbody>
-<tr><td>Buy / Sell toggle in header</td><td>First-screen visibility for the trade-in business line.</td><td>S — 2 hours</td></tr>
-<tr><td>Live trade-in quote calculator</td><td>Real conversion tool, not just a content block.</td><td>L — needs pricing API or rules engine</td></tr>
 <tr><td>Carrier / network filter</td><td>UK-specific buyer filter (EE, O2, Vodafone, unlocked).</td><td>M — data schema + UI</td></tr>
 <tr><td>Real reviews with photos</td><td>Social proof with user-generated imagery.</td><td>XL — review platform + moderation</td></tr>
 <tr><td>Real product catalogue</td><td>Everything currently in src/data.ts is mock.</td><td>— requires your inventory feed</td></tr>
@@ -134,8 +131,6 @@ Phase 4  Scale-competitive (Amazon class)</div>
 
 <h3>To reach Phase 3 (ur.co.uk parity) on front-end</h3>
 <ol>
-  <li><strong>Buy/Sell header toggle</strong> — small, high-visibility win. <em>~2 hrs.</em></li>
-  <li><strong>Live trade-in quote engine</strong> — multi-step wizard (brand → model → condition → storage → quote). Rules-based, no API needed for v1. <em>~1 day.</em></li>
   <li><strong>Carrier filter on ProductsPage</strong> — add <code>carrier</code> field to Product, add filter chip. <em>~3 hrs.</em></li>
   <li><strong>Price slider</strong> — replace min/max inputs with a headless range slider. <em>~2 hrs.</em></li>
 </ol>

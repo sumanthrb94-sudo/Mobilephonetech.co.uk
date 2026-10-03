@@ -17,10 +17,14 @@ export default function PreviewBanner() {
 
   return (
     <div
+      className="preview-banner"
       role="status"
       aria-live="polite"
       style={{
-        position: 'relative',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
         zIndex: 120,
         background: '#7C2D12',
         color: '#FFF7ED',

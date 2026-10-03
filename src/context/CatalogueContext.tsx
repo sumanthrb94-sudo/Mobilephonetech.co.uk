@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Product } from '../types';
-import { MOCK_PHONES } from '../data';
+import { MOCK_PHONES } from '../data/mockPhones';
 import { fetchCatalogue } from '../hooks/useProducts';
 
 interface CatalogueValue {

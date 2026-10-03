@@ -7,6 +7,7 @@ import { ShieldCheck } from 'lucide-react';
 export default function TrustBanner() {
   return (
     <div
+      className="home-trust-banner"
       role="banner"
       style={{
         background: '#f0fdf4',

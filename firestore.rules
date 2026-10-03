@@ -146,21 +146,6 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // ── Trade-in quotes ─────────────────────────────────────
-    // Created only by /api/trade-in, with the Admin SDK — never directly by
-    // the client. estimatedValue is a real £ figure this business will
-    // actually pay out on; `allow create: if true` let a shopper write any
-    // number they liked straight into a document staff would read as a
-    // trusted quote, the same class of hole server-side order pricing
-    // already closed for the cart. The route looks the device up in its own
-    // valuations table, so nothing client-supplied decides the price.
-    match /tradeInQuotes/{quoteId} {
-      allow create: if false;
-      allow read: if isAdmin()
-                  || (signedIn() && resource.data.userId == request.auth.uid);
-      allow update, delete: if isAdmin();
-    }
-
     // ── Newsletter ──────────────────────────────────────────
     // Write-only from the client: subscribing is public, but the subscriber
     // list is not — allowing reads would expose every address to anyone.

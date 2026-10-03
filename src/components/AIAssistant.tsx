@@ -14,7 +14,7 @@ type GsmarenaEntry = { model: string; specs: Record<string, unknown> };
 let gsmarenaPromise: Promise<GsmarenaEntry[]> | null = null;
 const loadGsmarena = (): Promise<GsmarenaEntry[]> => {
   if (!gsmarenaPromise) {
-    gsmarenaPromise = import('../gsmarena_data.json').then((m) => m.default as GsmarenaEntry[]);
+    gsmarenaPromise = import('../data/gsmarena_data.json').then((m) => m.default as GsmarenaEntry[]);
   }
   return gsmarenaPromise;
 };

@@ -26,8 +26,8 @@ There are two — in *Project URL* and at the end of *Project description*.
 > A 133-product catalogue with faceted search, filtering and sorting. Every
 > listing carries condition grading, battery health and warranty terms — the
 > details that decide a refurbished purchase. Wishlist, product comparison,
-> basket, and a three-step checkout with both guest and account routes.
-> Trade-in quotes and an AI buying advisor round out the customer side.
+> basket, and a three-step checkout with both guest and account routes. An AI
+> buying advisor rounds out the customer side.
 >
 > **Staff back office**
 > An Operations Hub dashboard — stock valuation and unit KPIs, a stock-by-brand

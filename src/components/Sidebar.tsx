@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, BarChart3, ShoppingBag, Home, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_CATEGORIES } from '../data';
+import { MOCK_CATEGORIES } from '../data/mockPhones';
 import { useUI } from '../context/UIContext';
 
 const linkStyle: React.CSSProperties = {

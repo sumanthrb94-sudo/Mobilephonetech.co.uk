@@ -4,7 +4,7 @@ import React from 'react';
 import { WishlistProvider, useWishlist } from '../../context/WishlistContext';
 import { AuthProvider } from '../../context/AuthContext';
 import type { Product } from '../../types';
-import { MOCK_PHONES } from '../../data';
+import { MOCK_PHONES } from '../../data/mockPhones';
 
 // WishlistProvider depends on AuthProvider (calls useAuth() internally)
 const wrapper = ({ children }: { children: React.ReactNode }) => (

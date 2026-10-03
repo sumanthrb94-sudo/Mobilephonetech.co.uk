@@ -133,13 +133,6 @@ Covers: valid email subscribe → 200, duplicate email handling, invalid email �
 
 ---
 
-### `src/__tests__/api/trade-in.test.ts` — 22 tests
-Tests `/api/trade-in` endpoint.
-
-Covers: valid quote request → quote object, all required fields present, missing brand → 400, missing model → 400, grade affects quote value (Pristine > Good > Fair), storage affects quote value, quote ID is unique per request, wrong HTTP method, response shape, edge cases (unknown model, very old device).
-
----
-
 ### `src/__tests__/api/gemini-chat.test.ts` — 12 tests
 Tests the Gemini AI assistant integration.
 
@@ -233,7 +226,6 @@ Covers: productSeo returns correct title/description/canonical, price formatted 
 | Delivery API | delivery | 18 | Full |
 | Coupon API | coupons | 20 | Full |
 | Newsletter API | newsletter | 15 | Full |
-| Trade-in API | trade-in | 22 | Full |
 | AI chat API | gemini-chat | 12 | Full |
 | Delivery calc | deliveryCalculator | 22 | Full |
 | Postcode | postcodeLookup | 18 | Full |

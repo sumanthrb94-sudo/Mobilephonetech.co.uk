@@ -3,7 +3,7 @@ import {
   collection, doc, getDoc, getDocs, limit as fsLimit, query, where,
 } from 'firebase/firestore';
 import { Product, FilterState } from '../types';
-import { MOCK_PHONES } from '../data';
+import { MOCK_PHONES } from '../data/mockPhones';
 import { db, COL } from '../lib/firebase';
 import { docToProduct } from '../lib/productMapper';
 

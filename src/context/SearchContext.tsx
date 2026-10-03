@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import { FilterState } from '../types';
-import { MOCK_PHONES } from '../data';
+import { MOCK_PHONES } from '../data/mockPhones';
 
 interface SearchContextType {
   searchQuery: string;

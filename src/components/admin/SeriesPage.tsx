@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import {
   listPanels, savePanel, deletePanel, panelId, panelProblems, panelProducts,
-  parseWords, joinWords, EMPTY_PANEL, type SeriesPanel,
+  parseWords, joinWords, EMPTY_PANEL, BUILT_IN_PANELS, type SeriesPanel,
 } from '../../lib/seriesPanels';
 import { uploadImage, describeError, isUsableImageUrl, IMAGE_BUCKET } from '../../lib/adminApi';
 import { useCatalogue } from '../../context/CatalogueContext';
@@ -54,6 +54,17 @@ export default function SeriesPage() {
       order: rs.length,
       updatedAt: '',
     } as SeriesPanel]);
+  };
+
+  /** Makes the panels already visible on Home editable and reorderable. */
+  const importBuiltInPanels = async () => {
+    setBusyId('import'); setError(null); setNotice(null);
+    try {
+      await Promise.all(BUILT_IN_PANELS.map((panel, order) => savePanel({ ...panel, order })));
+      setNotice(`${BUILT_IN_PANELS.length} live series panels imported. You can now edit or reorder them.`);
+      await load();
+    } catch (err) { setError(describeError(err)); }
+    finally { setBusyId(null); }
   };
 
   const save = async (p: SeriesPanel) => {
@@ -150,10 +161,12 @@ export default function SeriesPage() {
         <div className="admin-panel ord-empty">
           <ImageIcon size={22} />
           <p style={{ margin: 0, maxWidth: 480 }}>
-            No series saved yet, so the home page is showing the four built-in
-            panels. Add one here and it takes over — the built-ins come back if
-            you ever delete them all.
+            The home page is using its built-in series panels. Import them once
+            to let employees edit, switch off, and reorder the live panels.
           </p>
+          <button type="button" className="btn btn-primary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInPanels()}>
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <Plus size={15} />} Import live series
+          </button>
         </div>
       )}
 

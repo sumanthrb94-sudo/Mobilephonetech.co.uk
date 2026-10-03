@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowRight, Smartphone, Tablet, Headphones, Monitor, Volume2, Gamepad2, Watch } from 'lucide-react';
-import { MOCK_CATEGORIES } from '../data';
+import { MOCK_CATEGORIES } from '../data/mockPhones';
 import CategoryIllustration from './CategoryIllustration';
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
