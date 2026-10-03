@@ -1,0 +1,1082 @@
+[
+  {
+    "id": "ret-353495111458589",
+    "channel": "BM",
+    "createdAt": "2026-10-01",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 2.75,
+    "shippingLegs": 2,
+    "feesKept": 36.47,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: OK",
+    "stockRestoredDate": "2026-08-31",
+    "items": [
+      {
+        "imei": "353495111458589",
+        "model": "Galaxy S20 Plus",
+        "storage": "128GB",
+        "color": "Black",
+        "supplier": "MHL",
+        "price": 229.0
+      }
+    ]
+  },
+  {
+    "id": "ret-352623172578703",
+    "channel": "BM",
+    "createdAt": "2026-09-29",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 1.6,
+    "shippingLegs": 2,
+    "feesKept": 24.950000000000003,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: OK",
+    "stockRestoredDate": "2026-08-19",
+    "items": [
+      {
+        "imei": "352623172578703",
+        "model": "SAMSUNG GALAXY A16 5G",
+        "storage": "128GB/4GB",
+        "color": "GREY",
+        "supplier": "IMAX",
+        "price": 133.0
+      }
+    ]
+  },
+  {
+    "id": "ret-SD12HG9HYC3",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-29",
+    "outcome": "refund",
+    "reason": "Change of Mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 6.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: OK",
+    "stockRestoredDate": "2026-09-01",
+    "items": [
+      {
+        "imei": "SD12HG9HYC3",
+        "model": "IPAD 11TG GEN",
+        "storage": "128GB",
+        "color": "Pink",
+        "supplier": "MHL",
+        "price": 419.99
+      }
+    ]
+  },
+  {
+    "id": "ret-352623172580691",
+    "channel": "BM",
+    "createdAt": "2026-09-24",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 4.15,
+    "shippingLegs": 2,
+    "feesKept": 50.510000000000005,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: Change of Mind \u00b7 Tech QC: OK",
+    "stockRestoredDate": "2026-08-19",
+    "items": [
+      {
+        "imei": "352623172580691",
+        "model": "SAMSUNG GALAXY A16 5G",
+        "storage": "128GB/4GB",
+        "color": "GREY",
+        "supplier": "IMAX",
+        "price": 173.0
+      }
+    ]
+  },
+  {
+    "id": "ret-355706542010494",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-23",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 3.8640000000000008,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: OK",
+    "stockRestoredDate": "2026-08-17",
+    "items": [
+      {
+        "imei": "355706542010494",
+        "model": "SAMSUNG GALAXY S22",
+        "storage": "256GB",
+        "color": "GRREN",
+        "supplier": "MHL",
+        "price": 229.99
+      }
+    ]
+  },
+  {
+    "id": "ret-355802954058202",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-23",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 5.544,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: OK",
+    "stockRestoredDate": "2026-08-19",
+    "items": [
+      {
+        "imei": "355802954058202",
+        "model": "SAMSUNG GALAXY S23 PLUS",
+        "storage": "256GB",
+        "color": "WHITE",
+        "supplier": "MHL",
+        "price": 329.99
+      }
+    ]
+  },
+  {
+    "id": "ret-R52HC0RYT5A",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-23",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 1.008,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: Ok",
+    "stockRestoredDate": "2026-08-08",
+    "items": [
+      {
+        "imei": "R52HC0RYT5A",
+        "model": "SAMSUNG GALAXY TAB A T580",
+        "storage": "16GB",
+        "color": "BLACK",
+        "supplier": "MOBILE KIT",
+        "price": 59.99
+      }
+    ]
+  },
+  {
+    "id": "ret-350669647119047",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-16",
+    "outcome": "refund",
+    "reason": "CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 4.536,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: CHANGE OF MIND \u00b7 Tech QC: ALL OKAY",
+    "stockRestoredDate": "2026-08-24",
+    "items": [
+      {
+        "imei": "350669647119047",
+        "model": "GALAXY S23",
+        "storage": "128GB",
+        "color": "Purple",
+        "supplier": "MHL",
+        "price": 269.99
+      }
+    ]
+  },
+  {
+    "id": "ret-355802950358408",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Randomly swith off",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 5.191199999999999,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: Randomly swith off \u00b7 Tech QC: yes Randomly swith off",
+    "stockRestoredDate": "2026-08-19",
+    "items": [
+      {
+        "imei": "355802950358408",
+        "model": "Galaxy S23 Plus",
+        "storage": "256GB",
+        "color": "Black",
+        "supplier": "MHL",
+        "price": 309.0
+      }
+    ]
+  },
+  {
+    "id": "ret-355952395219663",
+    "channel": "EBAY",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "We sent 9A instead of 8 Pro",
+    "carriageCost": 0.0,
+    "shippingLegs": 2,
+    "feesKept": 0.48,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "Customer: We sent 9A instead of 8 Pro \u00b7 Tech QC: We sent 9A instead of 8 Pro - All Okay",
+    "stockRestoredDate": "2026-08-17",
+    "items": [
+      {
+        "imei": "355952395219663",
+        "model": "Pixel 9A",
+        "storage": "128GB",
+        "color": "White",
+        "supplier": "MHL",
+        "price": 299.99
+      }
+    ]
+  },
+  {
+    "id": "ret-R52H70YMMTN",
+    "channel": "AMAZON",
+    "createdAt": "2026-10-01",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "R52H70YMMTN",
+        "model": "Galaxy TAB",
+        "storage": "",
+        "color": "",
+        "supplier": "MOBILE KIT",
+        "price": 69.99
+      }
+    ]
+  },
+  {
+    "id": "ret-359968971043836",
+    "channel": "AMAZON",
+    "createdAt": "2026-10-01",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "359968971043836",
+        "model": "iPhone SE3",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 169.99
+      }
+    ]
+  },
+  {
+    "id": "ret-353427864109648",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-29",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "353427864109648",
+        "model": "Galaxy A32",
+        "storage": "",
+        "color": "",
+        "supplier": "NANAK",
+        "price": 99.0
+      }
+    ]
+  },
+  {
+    "id": "ret-352654707666150",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-29",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "352654707666150",
+        "model": "Galaxy A12",
+        "storage": "",
+        "color": "",
+        "supplier": "IMAX",
+        "price": 84.99
+      }
+    ]
+  },
+  {
+    "id": "ret-R52H70ZF3BR",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-23",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "R52H70ZF3BR",
+        "model": "Galaxy TAB",
+        "storage": "",
+        "color": "",
+        "supplier": "MOBILE KIT",
+        "price": 59.99
+      }
+    ]
+  },
+  {
+    "id": "ret-351059817932149",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-23",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "351059817932149",
+        "model": "Galaxy S23",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 298.69
+      }
+    ]
+  },
+  {
+    "id": "ret-J07Q13YFP9",
+    "channel": "BM",
+    "createdAt": "2026-09-23",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 4.03,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "27.25",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "J07Q13YFP9",
+        "model": "iPad 9THGEN",
+        "storage": "",
+        "color": "",
+        "supplier": "IMAX",
+        "price": 336.0
+      }
+    ]
+  },
+  {
+    "id": "ret-354454655887793",
+    "channel": "EBAY",
+    "createdAt": "2026-09-22",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CONDITION",
+    "carriageCost": 0.0,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "354454655887793",
+        "model": "",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 149.99
+      }
+    ]
+  },
+  {
+    "id": "ret-356919881045729",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-18",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Change of Mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "356919881045729",
+        "model": "Galaxy S22",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 198.99
+      }
+    ]
+  },
+  {
+    "id": "ret-357452522520115",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-18",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Change of Mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "357452522520115",
+        "model": "Galaxy S22",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 192.89
+      }
+    ]
+  },
+  {
+    "id": "ret-354843630049380",
+    "channel": "BM",
+    "createdAt": "2026-09-17",
+    "outcome": "refund",
+    "reason": "Refund \u2014 QC - MINOR",
+    "carriageCost": 2.95,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "13.91",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "354843630049380",
+        "model": "Galaxy S22",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 246.0
+      }
+    ]
+  },
+  {
+    "id": "ret-359108093264123",
+    "channel": "EBAY",
+    "createdAt": "2026-09-16",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 0.0,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "359108093264123",
+        "model": "SAMSUNG X COVER 4 4G",
+        "storage": "",
+        "color": "",
+        "supplier": "RR STOCK",
+        "price": 43.99
+      }
+    ]
+  },
+  {
+    "id": "ret-R52H70ZDG7W",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-15",
+    "outcome": "refund",
+    "reason": "Refund \u2014 ALL OKAY",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "R52H70ZDG7W",
+        "model": "SAMSUNG GALAXY TAB A T580",
+        "storage": "",
+        "color": "",
+        "supplier": "MOBILE KIT",
+        "price": 66.0
+      }
+    ]
+  },
+  {
+    "id": "ret-353475500724486",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-15",
+    "outcome": "refund",
+    "reason": "Refund \u2014 ALL OKAY",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "353475500724486",
+        "model": "APPLE IPHONE SE3",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 169.99
+      }
+    ]
+  },
+  {
+    "id": "ret-351832199409211",
+    "channel": "BM",
+    "createdAt": "2026-09-15",
+    "outcome": "refund",
+    "reason": "Refund \u2014 ALL OKAY",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "351832199409211",
+        "model": "Galaxy A21S 4G",
+        "storage": "",
+        "color": "",
+        "supplier": "RR STOCK",
+        "price": 99.0
+      }
+    ]
+  },
+  {
+    "id": "ret-355623112499223",
+    "channel": "EBAY",
+    "createdAt": "2026-09-15",
+    "outcome": "refund",
+    "reason": "Refund \u2014 ALL OKAY",
+    "carriageCost": 4.65,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "355623112499223",
+        "model": "Galaxy S20",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 162.49
+      }
+    ]
+  },
+  {
+    "id": "ret-350237472765449",
+    "channel": "BM",
+    "createdAt": "2026-09-11",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Change of mind.",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "350237472765449",
+        "model": "Galaxy Tab A11 Plus",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 213.0
+      }
+    ]
+  },
+  {
+    "id": "ret-353499869579406",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Refund \u2014 change of mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "353499869579406",
+        "model": "GALAXY S21",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 182.99
+      }
+    ]
+  },
+  {
+    "id": "ret-351554742962534",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Refund \u2014 change of mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "351554742962534",
+        "model": "SAMSUNG GALAXY A32 5G",
+        "storage": "",
+        "color": "",
+        "supplier": "IMAX",
+        "price": 99.99
+      }
+    ]
+  },
+  {
+    "id": "ret-V7CFHP19YC",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Refund \u2014 change of mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "V7CFHP19YC",
+        "model": "IPAD 9TH GEN CELLULAR",
+        "storage": "",
+        "color": "",
+        "supplier": "MOBILE KIT",
+        "price": 264.99
+      }
+    ]
+  },
+  {
+    "id": "ret-R52HA15ZW2Z",
+    "channel": "BM",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Customer change of mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "R52HA15ZW2Z",
+        "model": "SAMSUNG GALAXY TAB A T580",
+        "storage": "",
+        "color": "",
+        "supplier": "MOBILE KIT",
+        "price": 72.0
+      }
+    ]
+  },
+  {
+    "id": "ret-350635886890150",
+    "channel": "TEMU",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Refund \u2014 change of mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "350635886890150",
+        "model": "Galaxy XCover 5 4G",
+        "storage": "",
+        "color": "",
+        "supplier": "RR STOCK",
+        "price": 52.49
+      }
+    ]
+  },
+  {
+    "id": "ret-352075826686350",
+    "channel": "TEMU",
+    "createdAt": "2026-09-08",
+    "outcome": "refund",
+    "reason": "Refund \u2014 change of mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "352075826686350",
+        "model": "Galaxy XCover 5 4G",
+        "storage": "",
+        "color": "",
+        "supplier": "RR STOCK",
+        "price": 52.49
+      }
+    ]
+  },
+  {
+    "id": "ret-352419255948008",
+    "channel": "AMAZON",
+    "createdAt": "2026-09-04",
+    "outcome": "refund",
+    "reason": "Refund \u2014 OK",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "352419255948008",
+        "model": "",
+        "storage": "",
+        "color": "",
+        "supplier": "NANAK",
+        "price": 64.99
+      }
+    ]
+  },
+  {
+    "id": "ret-350932551355001",
+    "channel": "BM",
+    "createdAt": "2026-09-04",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "350932551355001",
+        "model": "SAMSUNG GALAXY S23",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 263.0
+      }
+    ]
+  },
+  {
+    "id": "ret-350237472356561",
+    "channel": "BM",
+    "createdAt": "2026-09-04",
+    "outcome": "refund",
+    "reason": "Refund \u2014 OK",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "350237472356561",
+        "model": "Galaxy Tab A11 Plus",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 209.0
+      }
+    ]
+  },
+  {
+    "id": "ret-352235480925383",
+    "channel": "EBAY",
+    "createdAt": "2026-09-04",
+    "outcome": "refund",
+    "reason": "Refund \u2014 OK",
+    "carriageCost": 4.65,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "352235480925383",
+        "model": "iPhone 12",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 239.97
+      }
+    ]
+  },
+  {
+    "id": "ret-352991851216915",
+    "channel": "AMAZON",
+    "createdAt": "2026-08-28",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Change of Mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "352991851216915",
+        "model": "GALAXY S22",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 183.49
+      }
+    ]
+  },
+  {
+    "id": "ret-351554743137961",
+    "channel": "EBAY",
+    "createdAt": "2026-08-25",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CHANGE OF MIND",
+    "carriageCost": 4.65,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "351554743137961",
+        "model": "Galaxy A32",
+        "storage": "",
+        "color": "",
+        "supplier": "RR STOCK",
+        "price": 88.89
+      }
+    ]
+  },
+  {
+    "id": "ret-354285671352333",
+    "channel": "AMAZON",
+    "createdAt": "2026-08-22",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CX CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "RETURN FOR REFUND",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "354285671352333",
+        "model": "GALAXY S22",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 209.99
+      }
+    ]
+  },
+  {
+    "id": "ret-354285671431384",
+    "channel": "AMAZON",
+    "createdAt": "2026-08-22",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CX CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "354285671431384",
+        "model": "GALAXY S22",
+        "storage": "",
+        "color": "",
+        "supplier": "NIHAL",
+        "price": 194.0
+      }
+    ]
+  },
+  {
+    "id": "ret-355193487229019",
+    "channel": "AMAZON",
+    "createdAt": "2026-08-22",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CX CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "RETURN FOR REFUND",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "355193487229019",
+        "model": "APPLE IPHONE SE 3",
+        "storage": "",
+        "color": "",
+        "supplier": "NANAK",
+        "price": 169.99
+      }
+    ]
+  },
+  {
+    "id": "ret-353427860458700",
+    "channel": "AMAZON",
+    "createdAt": "2026-08-22",
+    "outcome": "refund",
+    "reason": "Refund \u2014 CX CHANGE OF MIND",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "353427860458700",
+        "model": "Galaxy A32",
+        "storage": "",
+        "color": "",
+        "supplier": "IMAX",
+        "price": 99.99
+      }
+    ]
+  },
+  {
+    "id": "ret-350799512745897",
+    "channel": "AMAZON",
+    "createdAt": "2026-08-14",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Change of Mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "350799512745897",
+        "model": "ASI-SG-S21 Fe",
+        "storage": "",
+        "color": "",
+        "supplier": "MHL",
+        "price": 169.99
+      }
+    ]
+  },
+  {
+    "id": "ret-R52H81JPZCZ",
+    "channel": "BM",
+    "createdAt": "2026-08-11",
+    "outcome": "refund",
+    "reason": "Refund \u2014 Change of Mind",
+    "carriageCost": 7.56,
+    "shippingLegs": 2,
+    "feesKept": 0.0,
+    "repairCost": 0,
+    "supplierCredit": 0,
+    "staffNote": "",
+    "stockRestoredDate": "",
+    "items": [
+      {
+        "imei": "R52H81JPZCZ",
+        "model": "ASI-SG-TABA (10.1)(T580)-16GB-BK-WIFI-EX1",
+        "storage": "",
+        "color": "",
+        "supplier": "MOBILE KIT",
+        "price": 74.0
+      }
+    ]
+  }
+]

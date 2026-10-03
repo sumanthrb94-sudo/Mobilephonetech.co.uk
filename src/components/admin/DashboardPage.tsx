@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Package, Boxes, CircleDollarSign, AlertTriangle, ShoppingBag,
-  Plus, Store, RefreshCw, PackageX, ArrowRight, FileWarning,
+  Plus, Store, RefreshCw, PackageX, ArrowRight, FileWarning, Download,
 } from 'lucide-react';
 import {
   loadDashboardStats, describeError, LOW_STOCK_THRESHOLD,
@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<'sales' | 'inventory' | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -39,6 +40,33 @@ export default function DashboardPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleDownloadSales = async () => {
+    setExporting('sales');
+    try {
+      const { downloadSalesReport } = await import('../../lib/reports');
+      const salesMod = await import('../../../data/sales.json');
+      const returnsMod = await import('../../../data/returns.json');
+      downloadSalesReport(salesMod.default as any, returnsMod.default as any);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleDownloadInventory = async () => {
+    setExporting('inventory');
+    try {
+      const { downloadInventoryReport } = await import('../../lib/reports');
+      const invMod = await import('../../../data/inventory.json');
+      downloadInventoryReport(invMod.default as any);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setExporting(null);
+    }
+  };
+
   return (
     <div className="ops-stack">
       <header className="ops-head">
@@ -47,6 +75,24 @@ export default function DashboardPage() {
           <h1 className="ops-title">Operations Hub</h1>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            onClick={handleDownloadSales}
+            disabled={exporting === 'sales'}
+            className="btn btn-secondary btn-md"
+            title="Download multi-channel Sales Report (.xlsx) for Amazon, eBay, Back Market, Temu, OnBuy, and Website"
+          >
+            <Download size={15} /> {exporting === 'sales' ? 'Exporting...' : 'Sales Report (.xlsx)'}
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadInventory}
+            disabled={exporting === 'inventory'}
+            className="btn btn-secondary btn-md"
+            title="Download full Inventory Report (.xlsx) with Office Stock and SHS Stock"
+          >
+            <Download size={15} /> {exporting === 'inventory' ? 'Exporting...' : 'Inventory Report (.xlsx)'}
+          </button>
           <button type="button" onClick={load} className="btn btn-secondary btn-md" aria-label="Refresh dashboard">
             <RefreshCw size={15} /> Refresh
           </button>

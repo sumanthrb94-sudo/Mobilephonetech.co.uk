@@ -30,3 +30,4 @@ deploy/listmonk/.env
 
 # Graphify output
 graphify-out/
+dist-reports/
