@@ -3656,6 +3656,33 @@ textarea,
     --pdp-buy-gap: 10px;
   }
 
+  /* A compact desktop decision window: the photograph stays prominent, but
+     it no longer consumes a near-full viewport before the configuration is
+     visible. The smaller inter-column gap gives the buy panel enough width
+     to show a complete storage ladder in one glance. */
+  .pdp-main-grid {
+    column-gap: var(--spacing-32);
+  }
+
+  .pdp-gallery,
+  .pdp-thumbnails {
+    width: min(100%, 520px) !important;
+    margin-inline: auto;
+  }
+
+  .pdp-storage-options {
+    /* Fits the normal 64/128/256/512GB/1TB ladder (and a sixth option) in
+       one row in the desktop buy column rather than turning capacity into a
+       tall card stack. Phone layout continues to use its comfortable grid. */
+    grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)) !important;
+  }
+
+  .pdp-storage-choice,
+  .pdp-condition-choice {
+    min-height: 52px !important;
+    padding: 6px 7px !important;
+  }
+
   .pdp-price-block {
     padding-bottom: 10px !important;
   }

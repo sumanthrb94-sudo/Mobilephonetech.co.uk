@@ -400,7 +400,7 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
             </span>
           </div>
           {storages.length > 1 && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '8px' }}>
+            <div className="pdp-storage-options" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '8px' }}>
               {storages.map(storage => {
               const isSelected = activeStorage === storage;
               // Find matching variant price for this storage
@@ -414,6 +414,7 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
                   <button
                     key={storage}
                     type="button"
+                    className="pdp-storage-choice"
                     onClick={() => handleSelectStorage(storage)}
                     aria-pressed={isSelected}
                     aria-label={`${storage}${price != null ? `, £${price}` : ''}${inStock ? '' : ', sold out'}`}
@@ -475,9 +476,10 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
               const price = matching?.price;
 
               return (
-                <button
-                  key={condition}
-                  type="button"
+                  <button
+                    key={condition}
+                    type="button"
+                    className="pdp-condition-choice"
                   onClick={() => handleSelectCondition(condition)}
                   style={{
                     display: 'flex',
