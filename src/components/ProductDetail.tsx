@@ -523,8 +523,8 @@ export default function ProductDetail() {
             (.lg:pdp-grid) — an inline gridTemplateColumns would outrank the
             Tailwind breakpoint class and flatten this back to one column. */}
         <div
-          style={{ display: 'grid', gap: 'var(--spacing-32)' }}
-          className="lg:pdp-grid lg:gap-16 items-start mb-16"
+          style={{ display: 'grid' }}
+          className="pdp-main-grid lg:pdp-grid items-start"
         >
           
           {/* ── Left Column: Claude-designed 6-frame gallery ─ */}
@@ -652,7 +652,7 @@ export default function ProductDetail() {
             </motion.div>
 
             {/* 6 Thumbnails */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px' }} role="tablist" aria-label="Product gallery">
+            <div className="pdp-thumbnails" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }} role="tablist" aria-label="Product gallery">
               {activeGallery.map((src, i) => {
                 const isActive = selectedImageIndex === i;
                 return (
@@ -703,7 +703,7 @@ export default function ProductDetail() {
               cart used to scroll away on the first flick. Amazon keeps this
               column pinned for the same reason — the decision travels with
               the evidence. */}
-          <div className="pdp-buy" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12)' }}>
+          <div className="pdp-buy" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--pdp-buy-gap)' }}>
             
             {isDesktop && identityBlock}
             {isDesktop && priceBlock}

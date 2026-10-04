@@ -1356,9 +1356,82 @@ html.is-checkout .ai-fab {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+/* ── Storefront product rhythm ───────────────────────────────
+   The catalogue and PDP share a deliberately small set of spacing values.
+   Phones are the primary surface: 16px page edges, 12px card gutters and
+   44px primary targets preserve breathing room without throwing products below the
+   fold. Desktop opens the same system rather than becoming a second design. */
+.product-listing-shell {
+  padding-top: var(--spacing-32);
+}
+
+.product-listing-header {
+  margin-bottom: var(--spacing-20);
+}
+
+.product-listing-main {
+  display: grid;
+  gap: var(--spacing-24);
+}
+
+.product-listing-toolbar {
+  gap: 10px;
+  margin-bottom: var(--spacing-16);
+  padding-bottom: var(--spacing-12);
+}
+
+.product-listing-grid {
+  gap: 12px;
+}
+
+.product-card {
+  --product-card-media-pad: 12px;
+  --product-card-media-pad-compact: 8px;
+  --product-card-body-pad: 14px 13px 15px;
+  --product-card-body-pad-compact: 11px 12px 12px;
+  --product-card-title-size: 15px;
+  --product-card-title-size-compact: 14px;
+  --product-card-price-size: 21px;
+  --product-card-price-size-compact: 19px;
+  --product-card-badge-offset: 8px;
+  --product-card-wishlist-offset: 8px;
+  --product-card-wishlist-size: 44px;
+}
+
+.product-card__media {
+  min-width: 0;
+}
+
+.product-card__wishlist {
+  min-width: 44px;
+  min-height: 44px;
+}
+
 @media (min-width: 640px) {
   .product-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .product-listing-shell {
+    padding-top: var(--spacing-40);
+  }
+
+  .product-listing-header {
+    margin-bottom: var(--spacing-24);
+  }
+
+  .product-listing-grid {
+    gap: var(--spacing-16);
+  }
+
+  .product-card {
+    --product-card-media-pad: 16px;
+    --product-card-body-pad: 17px 18px 18px;
+    --product-card-title-size: 17px;
+    --product-card-price-size: 24px;
+    --product-card-badge-offset: 10px;
+    --product-card-wishlist-offset: 10px;
+    --product-card-wishlist-size: 44px;
   }
 }
 
@@ -1373,6 +1446,14 @@ html.is-checkout .ai-fab {
   .lg\:products-grid {
     grid-template-columns: 264px minmax(0, 1fr);
     align-items: start;
+  }
+
+  .product-listing-main {
+    gap: var(--spacing-40);
+  }
+
+  .product-listing-grid {
+    gap: var(--spacing-20);
   }
 }
 
@@ -1391,10 +1472,37 @@ html.is-checkout .ai-fab {
    buy box stays wide enough for the variant chips not to wrap. */
 .lg\:pdp-grid { grid-template-columns: minmax(0, 1fr); }
 
+.pdp-main-grid {
+  gap: var(--spacing-24);
+  margin-bottom: var(--spacing-40);
+}
+
+.pdp-thumbnails {
+  gap: 6px;
+}
+
+.pdp-buy {
+  --pdp-buy-gap: var(--spacing-12);
+}
+
 @media (min-width: 1024px) {
   .lg\:pdp-grid {
     grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
     align-items: start;
+  }
+
+  .pdp-main-grid {
+    column-gap: var(--spacing-48);
+    row-gap: var(--spacing-32);
+    margin-bottom: var(--spacing-64);
+  }
+
+  .pdp-thumbnails {
+    gap: 8px;
+  }
+
+  .pdp-buy {
+    --pdp-buy-gap: var(--spacing-16);
   }
 }
 

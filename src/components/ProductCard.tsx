@@ -134,6 +134,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
   return (
     <>
       <motion.article
+        className={compact ? 'product-card product-card--compact' : 'product-card'}
         whileHover={{ y: -4 }}
         transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}
         onClick={() => navigate(`/product/${phone.id}`)}
@@ -171,7 +172,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             onto the card, and a hairline is enough to separate it from the
             details below. Less padding too: the dark box was doing the
             framing, so the product itself can now be bigger. */}
-        <div style={{
+        <div className="product-card__media" style={{
           position: 'relative',
           background: 'var(--grey-0)',
           borderBottom: '1px solid var(--grey-10)',
@@ -179,7 +180,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: compact ? '10px' : '18px',
+          padding: compact ? 'var(--product-card-media-pad-compact)' : 'var(--product-card-media-pad)',
           overflow: 'hidden',
         }}>
           <ProductImage
@@ -194,8 +195,8 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
 
           {/* Grade badge — top left */}
           {phone.grade && (
-            <span style={{
-              position: 'absolute', top: 12, left: 12,
+            <span className="product-card__grade" style={{
+              position: 'absolute', top: 'var(--product-card-badge-offset)', left: 'var(--product-card-badge-offset)',
               display: 'inline-flex', alignItems: 'center', gap: 4,
               background: GRADE_BG[phone.grade],
               // The tints are pale by design; on white they need an outline
@@ -213,8 +214,8 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
 
           {/* Save % — bottom left */}
           {savingsPct > 0 && (
-            <span style={{
-              position: 'absolute', bottom: 12, left: 12,
+            <span className="product-card__saving" style={{
+              position: 'absolute', bottom: 'var(--product-card-badge-offset)', left: 'var(--product-card-badge-offset)',
               background: '#16a34a', color: '#fff',
               fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 800,
               letterSpacing: '0.04em', textTransform: 'uppercase',
@@ -231,9 +232,10 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             aria-label={inWishlist ? 'Remove from wishlist' : 'Save'}
             whileTap={{ scale: 1.25 }}
             transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+            className="product-card__wishlist"
             style={{
-              position: 'absolute', top: 10, right: 10,
-              width: 34, height: 34,
+              position: 'absolute', top: 'var(--product-card-wishlist-offset)', right: 'var(--product-card-wishlist-offset)',
+              width: 'var(--product-card-wishlist-size)', height: 'var(--product-card-wishlist-size)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--grey-0)',
               border: '1px solid var(--grey-20)',
@@ -283,8 +285,8 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
         </div>
 
         {/* ── Card body ── */}
-        <div style={{
-          padding: compact ? '12px 13px 13px' : '18px 20px 20px',
+        <div className="product-card__body" style={{
+          padding: compact ? 'var(--product-card-body-pad-compact)' : 'var(--product-card-body-pad)',
           display: 'flex',
           flexDirection: 'column',
           flexGrow: 1,
@@ -303,7 +305,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
 
           {/* Model name */}
           <h3 style={{
-            fontFamily: 'var(--font-sans)', fontSize: compact ? '14px' : '18px', fontWeight: 900,
+            fontFamily: 'var(--font-sans)', fontSize: compact ? 'var(--product-card-title-size-compact)' : 'var(--product-card-title-size)', fontWeight: 900,
             letterSpacing: '-0.03em', color: '#111827',
             lineHeight: 1.25, marginBottom: 2,
           }}>
@@ -345,7 +347,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           {/* Price row */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 7, marginBottom: 3 }}>
             <span style={{
-              fontFamily: 'var(--font-sans)', fontSize: compact ? '19px' : '26px', fontWeight: 900,
+              fontFamily: 'var(--font-sans)', fontSize: compact ? 'var(--product-card-price-size-compact)' : 'var(--product-card-price-size)', fontWeight: 900,
               letterSpacing: '-0.04em', color: '#111827',
             }}>
               £{phone.price}

@@ -413,8 +413,8 @@ export default function ProductsPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingBottom: 'var(--spacing-80)' }}>
       <div
-        className="container-bm"
-        style={{ maxWidth: 'var(--container-max)', paddingTop: 'var(--spacing-48)' }}
+        className="container-bm product-listing-shell"
+        style={{ maxWidth: 'var(--container-max)' }}
       >
         {/* ── Breadcrumbs ───────────────────────────────── */}
         <Breadcrumbs
@@ -433,7 +433,7 @@ export default function ProductsPage() {
         />
 
         {/* ── Page header ──────────────────────────────── */}
-        <div style={{ marginBottom: 'var(--spacing-24)' }}>
+        <div className="product-listing-header">
           {pageLabel !== 'All devices' && <div className="overline mb-3">{pageLabel}</div>}
           <h1
             style={{
@@ -509,7 +509,7 @@ export default function ProductsPage() {
         {/* Columns live in CSS (.lg:products-grid) so the desktop breakpoint can
             own them. The inner wrapper is display:contents, so the sidebar and
             the results column are promoted into this grid directly. */}
-        <div style={{ display: 'grid', gap: 'var(--spacing-32)' }} className="lg:products-grid">
+        <div className="product-listing-main lg:products-grid">
           <div style={{ display: 'contents' }}>
 
             {/* Desktop sticky sidebar */}
@@ -520,16 +520,14 @@ export default function ProductsPage() {
             {/* Product Grid — no col-span here: the two columns are declared on
                 .lg:products-grid, and a `span 3` would not fit, bumping this
                 column onto its own row underneath the sidebar. */}
-            <div>
+            <div className="product-listing-results">
               {/* Unified toolbar: count · sort · (mobile) filters */}
               <div
+                className="product-listing-toolbar"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '12px',
-                  marginBottom: 'var(--spacing-20)',
-                  paddingBottom: 'var(--spacing-16)',
                   borderBottom: '1px solid var(--grey-10)',
                 }}
               >
@@ -717,14 +715,13 @@ export default function ProductsPage() {
                   </motion.div>
                 ) : (
                   <div
-                    className="product-grid"
+                    className="product-grid product-listing-grid"
                     style={{
                       display: 'grid',
                       // Columns come from .product-grid so the phone case is a
                       // fixed 2-up rather than whatever auto-fill decides. A single
                       // auto-fill rule could not serve both: 240px gave phones one
                       // column, 155px gave desktops six cramped ones.
-                      gap: 'var(--spacing-20)',
                     }}
                   >
                     {sortedProducts.map((phone, index) => (
