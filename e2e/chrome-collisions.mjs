@@ -201,6 +201,7 @@ async function run() {
   // a CTA pushed outside its frame, controls landing on the CTA, and a
   // horizontal scrollbar.
   for (const [view, width, height] of [
+    ['Instagram 9:16', 360, 640],
     ['iPhone SE', 320, 568],
     ['Android compact', 360, 800],
     ['iPhone standard', 375, 812],
@@ -211,6 +212,8 @@ async function run() {
     const ctx = await browser.newContext({ viewport: { width, height } });
     const page = await ctx.newPage();
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    const cookieAccept = page.getByRole('button', { name: /accept all cookies/i });
+    if (await cookieAccept.count()) await cookieAccept.first().click().catch(() => {});
     await page.waitForTimeout(650);
 
     const hero = await page.evaluate(() => {
@@ -228,6 +231,7 @@ async function run() {
         height: Math.round(h.height),
         expectedHeight: Math.round(window.innerWidth * 1.25),
         ctaInside: c.left >= h.left && c.right <= h.right && c.top >= h.top && c.bottom <= h.bottom,
+        ctaVisible: c.top >= 0 && c.bottom <= window.innerHeight,
         hitsControl,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
       };
@@ -238,6 +242,7 @@ async function run() {
       rec(view, 'six campaign banners', 6, hero.banners);
       rec(view, '4:5 mobile banner canvas', hero.expectedHeight, hero.height);
       rec(view, 'CTA stays inside its banner', true, hero.ctaInside);
+      if (view === 'Instagram 9:16') rec(view, 'CTA is visible in the 9:16 viewport', true, hero.ctaVisible);
       rec(view, 'CTA clears carousel controls', false, hero.hitsControl);
       rec(view, 'no horizontal overflow', true, hero.noHorizontalOverflow);
     }
