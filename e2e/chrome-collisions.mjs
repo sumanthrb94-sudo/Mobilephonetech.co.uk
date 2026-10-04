@@ -260,6 +260,8 @@ async function run() {
       const image = frame?.querySelector('img');
       if (!frame || !cta || !image) return null;
       const h = frame.getBoundingClientRect();
+      const imageBox = image.getBoundingClientRect();
+      const pictureTop = Number.parseFloat(getComputedStyle(image.parentElement).top);
       const c = cta.getBoundingClientRect();
       const hitsControl = [...frame.querySelectorAll('button')].some((button) => {
         const b = button.getBoundingClientRect();
@@ -267,8 +269,9 @@ async function run() {
       });
       return {
         banners: frame.querySelectorAll('button[aria-label^="Go to slide"]').length,
-        height: Math.round(h.height),
-        expectedHeight: Math.round(window.innerWidth * 1.25),
+        imageHeight: Math.round(imageBox.height),
+        expectedImageHeight: Math.round(window.innerWidth * 1.25),
+        imageClearsMobileChrome: imageBox.top >= h.top + pictureTop - 1,
         ctaInside: c.left >= h.left && c.right <= h.right && c.top >= h.top && c.bottom <= h.bottom,
         ctaVisible: c.top >= 0 && c.bottom <= window.innerHeight,
         hitsControl,
@@ -281,7 +284,8 @@ async function run() {
     if (hero) {
       rec(view, 'six campaign banners', 6, hero.banners);
       rec(view, 'uses safe 4:5 mobile artwork', true, hero.mobileSafeSource);
-      rec(view, '4:5 mobile banner canvas', hero.expectedHeight, hero.height);
+      rec(view, 'safe 4:5 mobile artwork keeps its full canvas', hero.expectedImageHeight, hero.imageHeight);
+      rec(view, 'mobile artwork begins below fixed chrome', true, hero.imageClearsMobileChrome);
       rec(view, 'CTA stays inside its banner', true, hero.ctaInside);
       if (view === 'Instagram 9:16') rec(view, 'CTA is visible in the 9:16 viewport', true, hero.ctaVisible);
       rec(view, 'CTA clears carousel controls', false, hero.hitsControl);

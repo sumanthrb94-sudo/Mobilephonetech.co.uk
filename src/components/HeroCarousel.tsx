@@ -269,7 +269,11 @@ export default function HeroCarousel({
            asks uploads to be. The shop desktop banner is a fixed 480px
            3:1-style canvas, so large displays do not create empty vertical
            space. The contained admin preview scales independently. */
-        height: isDesktop ? (isPreview ? '40cqw' : '480px') : '125cqw',
+        /* The home hero begins at page y=0 beneath fixed chrome. On phones
+           that chrome is the 64px app bar plus the 36px returns strip. Add
+           that space to the shell so the actual visible image canvas remains
+           an uncropped 4:5, rather than losing its upper part behind chrome. */
+        height: isDesktop ? (isPreview ? '40cqw' : '480px') : (isPreview ? '125cqw' : 'calc(125cqw + var(--nav-total))'),
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
@@ -319,7 +323,7 @@ export default function HeroCarousel({
                    padding, but the absolutely-positioned artwork did not.
                    That made the header physically mask the top of every
                    handset, regardless of the source image ratio. */
-                top: isDesktop && !isPreview ? 'var(--nav-total)' : 0,
+                top: !isPreview ? 'var(--nav-total)' : 0,
                 zIndex: 0,
               }}
             >
