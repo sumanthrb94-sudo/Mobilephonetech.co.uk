@@ -310,7 +310,19 @@ export default function HeroCarousel({
               src="" would ask the browser to fetch the current document as
               an image, so the tag is skipped entirely until there is one. */}
           {(slide.image || slide.imageMobile) && (
-            <picture key={`${slide.image}-${slide.imageWide}-${slide.imageMobile}`} style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+            <picture
+              key={`${slide.image}-${slide.imageWide}-${slide.imageMobile}`}
+              style={{
+                position: 'absolute', left: 0, right: 0, bottom: 0,
+                /* The home hero starts at page y=0 beneath the fixed header.
+                   Its copy already clears that chrome through the section's
+                   padding, but the absolutely-positioned artwork did not.
+                   That made the header physically mask the top of every
+                   handset, regardless of the source image ratio. */
+                top: isDesktop && !isPreview ? 'var(--nav-total)' : 0,
+                zIndex: 0,
+              }}
+            >
               {/* A 1920×462 (4.16:1) source is selected only when the actual
                   screen is wide enough to use it. Standard desktops retain
                   the 3:1 composition; phones retain their dedicated 4:5
