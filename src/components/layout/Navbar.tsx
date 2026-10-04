@@ -3,7 +3,7 @@ import { useMotionValue, useTransform, useSpring, motion, AnimatePresence } from
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Search, Heart, User,
-  HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown,
+  HelpCircle, ShieldCheck, Menu, MoreHorizontal, X, ChevronDown, ChevronLeft,
   Smartphone, Headphones, Watch, Tablet, Gamepad2, RefreshCw, Volume2,
   ShoppingCart, Boxes,
 } from 'lucide-react';
@@ -52,6 +52,7 @@ export default function Navbar(_: NavbarProps) {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
+  const isProductPage = pathname.startsWith('/product/');
 
   // Spring-based scroll shadow — smooth interpolation instead of binary toggle
   const scrollY = useMotionValue(0);
@@ -199,12 +200,12 @@ export default function Navbar(_: NavbarProps) {
                 lose an argument with. */}
             {!isDesktop && (
               <button
-                onClick={() => setIsMobileOpen(true)}
+                onClick={() => isProductPage ? navigate(-1) : setIsMobileOpen(true)}
                 style={{ width: '40px', height: '40px', border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '8px', flexShrink: 0 }}
-                aria-label="Open menu"
+                aria-label={isProductPage ? 'Go back' : 'Open menu'}
                 id="navbar-hamburger"
               >
-                <Menu size={22} style={{ color: '#374151' }} />
+                {isProductPage ? <ChevronLeft size={29} style={{ color: '#111827' }} /> : <Menu size={22} style={{ color: '#374151' }} />}
               </button>
             )}
 
@@ -258,6 +259,39 @@ export default function Navbar(_: NavbarProps) {
 
             {/* ── Icon actions — right side ── */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', marginLeft: 'auto', flexShrink: 0 }}>
+              {/* A product page is the one phone screen where the reference
+                  interaction is useful: back, wish list and cart sit beside
+                  search, while the product itself owns the share action.
+                  The regular app bar stays uncluttered everywhere else. */}
+              {!isDesktop && isProductPage && (
+                <>
+                  <Link
+                    to="/wishlist"
+                    aria-label="Wishlist"
+                    style={{
+                      width: 40, height: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#111827', textDecoration: 'none', borderRadius: 8,
+                    }}
+                  >
+                    <Heart size={24} strokeWidth={2.2} />
+                  </Link>
+                  <Link
+                    to="/cart"
+                    aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}
+                    style={{
+                      width: 40, height: 40, display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#111827', textDecoration: 'none', borderRadius: 8, position: 'relative',
+                    }}
+                  >
+                    <ShoppingCart size={24} strokeWidth={2.2} />
+                    {cartCount > 0 && (
+                      <span style={{ position: 'absolute', top: 1, right: 0, minWidth: 17, height: 17, padding: '0 3px', borderRadius: 999, background: 'var(--brand-cyan)', color: 'white', display: 'grid', placeItems: 'center', fontFamily: 'var(--font-sans)', fontSize: 10, fontWeight: 900 }}>
+                        {cartCount > 9 ? '9+' : cartCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
+              )}
               {/* The magnifier that used to open a search row below the bar
                   is gone, and so is the row. The app bar carries a real
                   search field at every width now, so this was a second way
@@ -266,7 +300,7 @@ export default function Navbar(_: NavbarProps) {
                   the shopper's finger. See .navbar-search in index.css. */}
 
               {/* Profile Menu Dropdown */}
-              <div style={{ position: 'relative' }} ref={dropdownRef}>
+              <div style={{ position: 'relative', display: !isDesktop && isProductPage ? 'none' : undefined }} ref={dropdownRef}>
                 <button
                   id="navbar-menu-btn"
                   onClick={() => setIsAccountOpen(!isAccountOpen)}

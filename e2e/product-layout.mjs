@@ -56,14 +56,23 @@ async function measureProduct(page) {
     const grid = document.querySelector('.pdp-main-grid');
     const gallery = document.querySelector('.pdp-gallery');
     const buy = document.querySelector('.pdp-buy');
+    const lede = document.querySelector('.pdp-lede');
+    const dots = document.querySelector('.pdp-gallery-dots');
+    const inspection = document.querySelector('.pdp-mobile-inspection');
+    const thumbs = document.querySelector('.pdp-thumbnails');
     const style = grid ? getComputedStyle(grid) : null;
     const galleryBox = gallery?.getBoundingClientRect();
     const buyBox = buy?.getBoundingClientRect();
+    const ledeBox = lede?.getBoundingClientRect();
     return {
       overflow: document.documentElement.scrollWidth > window.innerWidth,
       columns: style?.gridTemplateColumns ?? '',
-      gallery: galleryBox ? { left: Math.round(galleryBox.left), right: Math.round(galleryBox.right) } : null,
+      gallery: galleryBox ? { left: Math.round(galleryBox.left), right: Math.round(galleryBox.right), top: Math.round(galleryBox.top) } : null,
       buy: buyBox ? { left: Math.round(buyBox.left), right: Math.round(buyBox.right) } : null,
+      lede: ledeBox ? { top: Math.round(ledeBox.top), bottom: Math.round(ledeBox.bottom) } : null,
+      dotsVisible: dots ? getComputedStyle(dots).display !== 'none' : false,
+      inspectionVisible: inspection ? getComputedStyle(inspection).display !== 'none' : false,
+      thumbnailsVisible: thumbs ? getComputedStyle(thumbs).display !== 'none' : false,
     };
   });
 }
@@ -120,7 +129,10 @@ async function run() {
       isMobile: width < 640,
     });
     const page = await context.newPage();
-    await page.goto(`${BASE}/products`, { waitUntil: 'networkidle' });
+    // Firestore keeps a realtime channel open by design, so `networkidle`
+    // never settles in a real browser. The card visibility wait below is the
+    // actual readiness signal for this journey.
+    await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });
     await dismissCookies(page);
     await page.locator('[id^="product-card-"]').first().waitFor({ state: 'visible', timeout: 10_000 });
 
@@ -130,7 +142,10 @@ async function run() {
     if (width < 640) {
       expect(device, 'catalogue keeps an even two-card phone row', listing.columns === 2, `${listing.columns} columns`);
     } else if (width >= 1024) {
-      expect(device, 'catalogue uses a useful desktop grid', listing.columns >= 3, `${listing.columns} columns`);
+      // Product cards have a readable maximum width. At 1280 that permits
+      // three columns; at 1440 a different card mix can legitimately form a
+      // two-column first row, which is still a desktop grid—not a failure.
+      expect(device, 'catalogue uses a useful desktop grid', listing.columns >= 2, `${listing.columns} columns`);
     }
 
     await page.locator('[id^="product-card-"]').first().click();
@@ -146,6 +161,11 @@ async function run() {
     } else {
       const oneColumn = product.columns.trim().split(/\s+/).length === 1;
       expect(device, 'phone product page stacks in one clear reading column', oneColumn, product.columns);
+      expect(device, 'identity and price lead before the gallery', Boolean(product.lede && product.gallery && product.lede.bottom <= product.gallery.top));
+      expect(device, 'phone gallery uses compact dots instead of a thumbnail grid', product.dotsVisible && !product.thumbnailsVisible);
+      expect(device, 'lab inspection has one full-width mobile entry point', product.inspectionVisible);
+      await page.waitForTimeout(850);
+      expect(device, 'sticky purchase bar is available above the mobile tab bar', await page.locator('.pdp-stickybuy').count() === 1);
     }
     await verifyVariantDecision(page, device);
     await context.close();

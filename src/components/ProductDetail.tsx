@@ -287,6 +287,26 @@ export default function ProductDetail() {
     isWishlisted ? removeFromWishlist(phone.id) : addToWishlist(phone);
   };
 
+  const shareProduct = async () => {
+    if (!phone) return;
+    const shareData = {
+      title: `${phone.brand} ${phone.model}`,
+      text: `View this certified refurbished ${phone.brand} ${phone.model} from LeHart`,
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareData.url);
+      }
+    } catch (error) {
+      // Dismissing the native share sheet is a normal outcome. There is no
+      // toast here because it would cover the selected product image.
+      if ((error as DOMException)?.name !== 'AbortError') console.warn('Unable to share product', error);
+    }
+  };
+
   // SEO — must be called every render (Rules of Hooks), so use safe fallbacks
   const displayPrice = selectedVariant?.price ?? phone?.price ?? 0;
   const displayOriginalPrice = selectedVariant?.originalPrice ?? phone?.originalPrice ?? 0;
@@ -413,11 +433,23 @@ export default function ProductDetail() {
    * markup would drift the moment either is touched.
    */
   const identityBlock = (
-        <div>
-          <p className="overline" style={{ marginBottom: '8px', color: 'var(--grey-50)' }}>{phone.brand || 'Premium Device'}</p>
-          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, marginBottom: '12px', letterSpacing: '-0.02em' }}>
-            {phone.model || 'Product Details'}
-          </h1>
+        <div className="pdp-identity">
+          <div className="pdp-identity__heading">
+            <div>
+              <p className="overline pdp-identity__brand" style={{ color: 'var(--grey-50)' }}>{phone.brand || 'Premium Device'}</p>
+              <h1 className="pdp-identity__title" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+                {phone.model || 'Product Details'}
+              </h1>
+            </div>
+            <button
+              type="button"
+              onClick={shareProduct}
+              className="pdp-mobile-share"
+              aria-label="Share product"
+            >
+              <Share2 size={21} aria-hidden="true" />
+            </button>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             {phone.grade && (
               <button
@@ -484,11 +516,18 @@ export default function ProductDetail() {
   );
 
   const priceBlock = (
-        <div style={{ paddingBottom: 'var(--spacing-16)', borderBottom: '1px solid var(--grey-10)' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
-            {savings > 0 && (
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+        <div className="pdp-price-block" style={{ paddingBottom: 'var(--spacing-16)', borderBottom: '1px solid var(--grey-10)' }}>
+          <div className="pdp-price-block__line" style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', minWidth: 0 }}>
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
+              {savings > 0 && (
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+              )}
+            </div>
+            {savings > 0 && displayOriginalPrice > 0 && (
+              <span className="pdp-price-block__saving">
+                Save {Math.round((savings / displayOriginalPrice) * 100)}%
+              </span>
             )}
           </div>
 
@@ -607,10 +646,11 @@ export default function ProductDetail() {
               )}
 
               {/* 5-6s Lab Inspection Video Reel Trigger */}
-              <button
-                type="button"
-                onClick={() => setLabReelOpen(true)}
-                aria-label="Watch 6-second Lab Inspection & Quality Certification Reel"
+                <button
+                  type="button"
+                  onClick={() => setLabReelOpen(true)}
+                  aria-label="Watch 6-second Lab Inspection & Quality Certification Reel"
+                  className="pdp-gallery__lab-trigger"
                 style={{
                   position: 'absolute',
                   bottom: '16px',
@@ -648,10 +688,11 @@ export default function ProductDetail() {
                 <span>Watch 6s Lab Inspection</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => setLightboxOpen(true)}
-                aria-label="View image full-screen"
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  aria-label="View image full-screen"
+                  className="pdp-gallery__expand"
                 style={{ position: 'absolute', top: '12px', left: '12px', background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)', boxShadow: 'var(--shadow-sm)', zIndex: 3 }}
               >
                 <Expand size={16} />
@@ -674,6 +715,31 @@ export default function ProductDetail() {
             </motion.div>
 
             {/* 6 Thumbnails */}
+            <div className="pdp-gallery-dots" role="tablist" aria-label="Product gallery">
+              {activeGallery.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-label={`Image ${i + 1}`}
+                  aria-selected={selectedImageIndex === i}
+                  className={selectedImageIndex === i ? 'is-active' : ''}
+                  onClick={() => setSelectedImageIndex(i)}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setLabReelOpen(true)}
+              className="pdp-mobile-inspection"
+              aria-label="Watch 6-second Lab Inspection"
+            >
+              <span className="pdp-mobile-inspection__play"><Play size={15} fill="currentColor" aria-hidden="true" /></span>
+              <span>Watch 6s Lab Inspection</span>
+              <ChevronRight size={20} aria-hidden="true" />
+            </button>
+
             <div className="pdp-thumbnails" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }} role="tablist" aria-label="Product gallery">
               {activeGallery.map((src, i) => {
                 const isActive = selectedImageIndex === i;
@@ -861,6 +927,7 @@ export default function ProductDetail() {
 
                 <button
                   aria-label="Share product"
+                  onClick={shareProduct}
                   style={{
                     width: '56px',
                     height: '56px',
