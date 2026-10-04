@@ -212,17 +212,22 @@ async function run() {
       const image = hero?.querySelector('img');
       if (!hero || !image) return null;
       const frame = hero.getBoundingClientRect();
+      const picture = image.parentElement;
+      const pictureTop = Number.parseFloat(getComputedStyle(picture).top);
+      const imageBox = image.getBoundingClientRect();
       return {
         canvasRatio: Number((frame.width / frame.height).toFixed(2)),
         imageFit: getComputedStyle(image).objectFit,
         selectedSource: image.currentSrc,
         sourceRatio: Number((image.naturalWidth / image.naturalHeight).toFixed(2)),
         sourceLoaded: image.naturalWidth > 0 && image.naturalHeight > 0,
+        imageClearsFixedNavigation: imageBox.top >= pictureTop - 1,
       };
     });
     rec('wide desktop', 'hero source image is loaded', true, wideHero?.sourceLoaded ?? false);
     rec('wide desktop', 'hero canvas is wider than the 3:1 artwork', true, (wideHero?.canvasRatio ?? 0) > (wideHero?.sourceRatio ?? Infinity));
     rec('wide desktop', 'uses the dedicated 4.16:1 desktop artwork', true, /desktop-4x16-20261004\.png$/.test(wideHero?.selectedSource ?? ''));
+    rec('wide desktop', 'hero artwork starts below the fixed navigation', true, wideHero?.imageClearsFixedNavigation ?? false);
     rec('wide desktop', 'wide hero preserves the complete artwork instead of cropping it', 'contain', wideHero?.imageFit);
     await ctx.close();
   }
