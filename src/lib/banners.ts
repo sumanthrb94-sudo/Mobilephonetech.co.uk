@@ -31,6 +31,8 @@ export interface Banner {
   ctaHref: string;
   /** Wide image, used at 1024px and above. */
   image: string;
+  /** Exact 4.16:1 image for wide desktop screens; optional for staff uploads. */
+  imageWide?: string;
   /** Tall image for phones. Falls back to `image` when not set. */
   imageMobile: string;
   alt: string;
@@ -61,7 +63,7 @@ export const BANNER_SPEC = {
 
 export const EMPTY_BANNER: Omit<Banner, 'id' | 'updatedAt'> = {
   eyebrow: '', headline: '', subline: '', savings: '', ctaLabel: 'Shop now', ctaHref: '/products',
-  image: '', imageMobile: '', alt: '', active: false, order: 0,
+  image: '', imageWide: '', imageMobile: '', alt: '', active: false, order: 0,
 };
 
 const line = (v: unknown, max = 200) => String(v ?? '').trim().slice(0, max);
@@ -76,6 +78,7 @@ export function toBanner(id: string, d: Record<string, unknown>): Banner {
     ctaLabel: line(d.ctaLabel, 40) || 'Shop now',
     ctaHref: line(d.ctaHref, 200) || '/products',
     image: line(d.image, 600),
+    imageWide: line(d.imageWide, 600) || undefined,
     imageMobile: line(d.imageMobile, 600),
     alt: line(d.alt, 160),
     active: d.active === true,

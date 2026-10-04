@@ -33,6 +33,7 @@ export default function Hero() {
           ctaLabel: b.ctaLabel,
           ctaHref: b.ctaHref,
           image: b.image || b.imageMobile,
+          imageWide: b.imageWide,
           imageMobile: b.imageMobile || b.image,
           imageAlt: b.alt,
           // Uploaded artwork carries its own colour, so the gradient behind

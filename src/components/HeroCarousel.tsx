@@ -20,6 +20,8 @@ export interface Slide {
   ctaLabel: string;
   ctaHref: string;
   image: string;
+  /** Exact 4.16:1 artwork used only on wide desktop canvases. */
+  imageWide?: string;
   imageMobile: string;
   imageAlt: string;
   gradientFrom: string;
@@ -39,6 +41,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     ctaLabel: 'Shop iPhone Pro',
     ctaHref: '/products?brand=Apple',
     image: '/assets/hero-campaign-apple-desktop-20261004.png',
+    imageWide: '/assets/hero-campaign-apple-desktop-4x16-20261004.png',
     imageMobile: '/assets/hero-campaign-apple-mobile-20261004.png',
     imageAlt: 'Premium titanium Apple Pro smartphone shown front and back',
     gradientFrom: '#090d14',
@@ -56,6 +59,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     ctaLabel: 'Shop Samsung Galaxy',
     ctaHref: '/products?brand=Samsung',
     image: '/assets/hero-campaign-samsung-desktop-20261004.png',
+    imageWide: '/assets/hero-campaign-samsung-desktop-4x16-20261004.png',
     imageMobile: '/assets/hero-campaign-samsung-mobile-20261004.png',
     imageAlt: 'Premium Samsung Galaxy smartphone shown with a stylus',
     gradientFrom: '#0a0d18',
@@ -73,6 +77,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     ctaLabel: 'Shop Google Pixel',
     ctaHref: '/products?brand=Google',
     image: '/assets/hero-campaign-pixel-desktop-20261004.png',
+    imageWide: '/assets/hero-campaign-pixel-desktop-4x16-20261004.png',
     imageMobile: '/assets/hero-campaign-pixel-mobile-20261004.png',
     imageAlt: 'Premium Google Pixel smartphones in porcelain and obsidian finishes',
     gradientFrom: '#121316',
@@ -90,6 +95,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     ctaLabel: 'Shop Tablets',
     ctaHref: '/products?category=Tablets',
     image: '/assets/hero-campaign-tablets-desktop-20261004.png',
+    imageWide: '/assets/hero-campaign-tablets-desktop-4x16-20261004.png',
     imageMobile: '/assets/hero-campaign-tablets-mobile-20261004.png',
     imageAlt: 'Premium refurbished tablets and stylus on a blue studio background',
     gradientFrom: '#071528',
@@ -107,6 +113,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     ctaLabel: 'Shop Accessories',
     ctaHref: '/products?category=Accessories',
     image: '/assets/hero-campaign-accessories-desktop-20261004.png',
+    imageWide: '/assets/hero-campaign-accessories-desktop-4x16-20261004.png',
     imageMobile: '/assets/hero-campaign-accessories-mobile-20261004.png',
     imageAlt: 'Wall charger, USB-C cable, wireless earbuds and power bank',
     gradientFrom: '#1a120b',
@@ -124,6 +131,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     ctaLabel: 'Shop Gaming',
     ctaHref: '/products?category=Playables',
     image: '/assets/hero-campaign-gaming-desktop-20261004.png',
+    imageWide: '/assets/hero-campaign-gaming-desktop-4x16-20261004.png',
     imageMobile: '/assets/hero-campaign-gaming-mobile-20261004.png',
     imageAlt: 'White gaming console and controller on a violet studio background',
     gradientFrom: '#130b28',
@@ -301,26 +309,28 @@ export default function HeroCarousel({
           {/* A draft banner in the admin preview can have no image yet —
               src="" would ask the browser to fetch the current document as
               an image, so the tag is skipped entirely until there is one. */}
-          {(isDesktop ? slide.image : slide.imageMobile) && (
-            <img
-              key={slide.image}
-              src={isDesktop ? slide.image : slide.imageMobile}
-              alt={slide.imageAlt}
-              loading={current === 0 ? 'eager' : 'lazy'}
-              fetchPriority={current === 0 ? 'high' : 'auto'}
-              decoding="async"
-              style={{
-                position: 'absolute', top: 0,
-                left: 0, right: 0, bottom: 0, zIndex: 0, width: '100%',
-                /* A hero can be 3:1 at 1440×480 yet more than 4:1 on a
-                   widescreen desktop with the same fixed height. `cover`
-                   crops the top and bottom in that second case — exactly the
-                   product clipping this component is meant to prevent.
-                   Keep the complete approved artwork visible instead; the
-                   section's matching dark gradient fills any spare canvas. */
-                objectFit: 'contain', objectPosition: isDesktop ? slide.focal : slide.focalMobile, height: '100%',
-              }}
-            />
+          {(slide.image || slide.imageMobile) && (
+            <picture key={`${slide.image}-${slide.imageWide}-${slide.imageMobile}`} style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+              {/* A 1920×462 (4.16:1) source is selected only when the actual
+                  screen is wide enough to use it. Standard desktops retain
+                  the 3:1 composition; phones retain their dedicated 4:5
+                  artwork. No ratio ever has to crop a device to fill a box. */}
+              {slide.imageWide && <source media="(min-width: 1600px)" srcSet={slide.imageWide} />}
+              <source media="(max-width: 1023px)" srcSet={slide.imageMobile || slide.image} />
+              <img
+                src={slide.image || slide.imageMobile}
+                alt={slide.imageAlt}
+                loading={current === 0 ? 'eager' : 'lazy'}
+                fetchPriority={current === 0 ? 'high' : 'auto'}
+                decoding="async"
+                style={{
+                  width: '100%', height: '100%',
+                  /* Preserve the supplied campaign frame. `cover` would
+                     remove the top/bottom of a handset at the wrong ratio. */
+                  objectFit: 'contain', objectPosition: isDesktop ? slide.focal : slide.focalMobile,
+                }}
+              />
+            </picture>
           )}
           {/* Scrim.
               The mobile stops are set from where the copy actually lands, not
