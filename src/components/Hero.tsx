@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { subscribeLiveBanners } from '../lib/banners';
+import { HOME_BANNER_SET, subscribeLiveBanners } from '../lib/banners';
 import HeroCarousel, { BUILT_IN_SLIDES, type Slide } from './HeroCarousel';
 
 /**
@@ -21,7 +21,12 @@ export default function Hero() {
   useEffect(() => {
     return subscribeLiveBanners(
       rows => {
-        setManaged(rows.length ? rows.map(b => ({
+        // Old saved banners remain editable in Admin for reference, but only
+        // the approved four-banner campaign is allowed onto the storefront.
+        // This prevents an abandoned draft or last season's hero reappearing
+        // simply because its Firestore row is still active.
+        const campaign = rows.filter(b => b.campaignSet === HOME_BANNER_SET);
+        setManaged(campaign.length ? campaign.map(b => ({
           eyebrow: b.eyebrow,
           headline: b.headline,
           subline: b.subline,

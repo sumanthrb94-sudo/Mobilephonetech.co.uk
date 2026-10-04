@@ -39,7 +39,12 @@ export interface Banner {
   /** Ascending. Lower numbers come first. */
   order: number;
   updatedAt: string;
+  /** Identifies the approved campaign set allowed on the public home page. */
+  campaignSet?: string;
 }
+
+/** Legacy banner drafts remain in Admin, but never return to the storefront. */
+export const HOME_BANNER_SET = 'core-campaigns-2026';
 
 /**
  * What an uploaded picture should be, stated once and shown in the form.
@@ -76,6 +81,7 @@ export function toBanner(id: string, d: Record<string, unknown>): Banner {
     active: d.active === true,
     order: Number(d.order ?? 0),
     updatedAt: line(d.updatedAt, 40),
+    campaignSet: line(d.campaignSet, 60) || undefined,
   };
 }
 

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import {
   listBanners, saveBanner, deleteBanner, bannerId, bannerProblems,
-  BANNER_SPEC, EMPTY_BANNER, type Banner,
+  BANNER_SPEC, EMPTY_BANNER, HOME_BANNER_SET, type Banner,
 } from '../../lib/banners';
 import { uploadImage, describeError, BANNER_BUCKET, isUsableImageUrl } from '../../lib/adminApi';
 import HeroCarousel, { BUILT_IN_SLIDES, type Slide } from '../HeroCarousel';
@@ -97,6 +97,7 @@ export default function BannersPage() {
       active: true,
       order,
       updatedAt: '',
+      campaignSet: HOME_BANNER_SET,
     }));
     try {
       await Promise.all(starters.map(saveBanner));
@@ -155,7 +156,7 @@ export default function BannersPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
           <button type="button" className="btn btn-secondary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInBanners()}>
-            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <ImageIcon size={15} />} Add 4 campaign banners
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <ImageIcon size={15} />} Set 4 campaign banners live
           </button>
           <button type="button" className="btn btn-primary btn-md" onClick={addBanner}>
             <Plus size={15} /> New banner
