@@ -284,5 +284,21 @@ describe('VariantSelector — multi-variant matrix (Amazon style)', () => {
       price: 714,
     }));
   });
+
+  it('shows a lone storage as information rather than a full-width choice', () => {
+    const oneCapacity = product({
+      id: 'ipad-11',
+      model: 'iPad 11th Gen',
+      variants: [
+        { id: 'ipad-silver', storage: '128GB', color: 'Silver', condition: 'Pristine', price: 270, originalPrice: 270, stock: 3 },
+        { id: 'ipad-blue', storage: '128GB', color: 'Blue', condition: 'Pristine', price: 270, originalPrice: 270, stock: 2 },
+      ],
+    });
+
+    renderFor(oneCapacity);
+
+    expect(screen.getByText(/Capacity:/i).textContent).toContain('128GB');
+    expect(screen.queryByRole('button', { name: /128GB/i })).toBeNull();
+  });
 });
 

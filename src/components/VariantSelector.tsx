@@ -387,7 +387,11 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
         </div>
       )}
 
-      {/* 2. Storage Row (Segmented Pills with Prices) */}
+      {/* 2. Storage Row (Segmented Pills with Prices)
+          A single capacity is information, not a choice. Rendering that one
+          value as a full-width button made 128GB look like a picker with
+          missing options. As soon as the model has two or more genuine
+          storage variants, each gets its own live price and stock state. */}
       {storages.length > 0 && (
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -395,8 +399,9 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
               Capacity: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{activeStorage}</strong>
             </span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(95px, 1fr))`, gap: '8px' }}>
-            {storages.map(storage => {
+          {storages.length > 1 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(112px, 1fr))', gap: '8px' }}>
+              {storages.map(storage => {
               const isSelected = activeStorage === storage;
               // Find matching variant price for this storage
               const matching = variants.find(v => v.storage?.trim() === storage && v.color?.trim() === activeColor && v.condition?.trim() === activeCondition)
@@ -405,48 +410,50 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
               const inStock = variants.some(v => v.storage?.trim() === storage && v.stock > 0);
               const price = matching?.price;
 
-              return (
-                <button
-                  key={storage}
-                  type="button"
-                  onClick={() => handleSelectStorage(storage)}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
-                    background: isSelected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
-                    cursor: 'pointer',
-                    transition: 'border-color 0.15s, background 0.15s',
-                    opacity: inStock ? 1 : 0.6,
-                  }}
-                >
-                  <span style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '13px',
-                    fontWeight: 700,
-                    color: isSelected ? 'var(--brand-cyan)' : 'var(--black)',
-                  }}>
-                    {storage}
-                  </span>
-                  {price != null && (
+                return (
+                  <button
+                    key={storage}
+                    type="button"
+                    onClick={() => handleSelectStorage(storage)}
+                    aria-pressed={isSelected}
+                    aria-label={`${storage}${price != null ? `, £${price}` : ''}${inStock ? '' : ', sold out'}`}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '62px',
+                      padding: '8px 10px',
+                      borderRadius: '10px',
+                      border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                      background: isSelected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                      cursor: 'pointer',
+                      transition: 'border-color 0.15s, background 0.15s',
+                      opacity: inStock ? 1 : 0.6,
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      color: isSelected ? 'var(--brand-cyan)' : 'var(--black)',
+                    }}>
+                      {storage}
+                    </span>
                     <span style={{
                       fontFamily: 'var(--font-body)',
                       fontSize: '11px',
                       fontWeight: 600,
-                      color: isSelected ? 'var(--brand-cyan)' : 'var(--grey-50)',
+                      color: inStock ? (isSelected ? 'var(--brand-cyan)' : 'var(--grey-50)') : '#dc2626',
                       marginTop: '2px',
                     }}>
-                      £{price}
+                      {inStock && price != null ? `£${price}` : 'Sold out'}
                     </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
