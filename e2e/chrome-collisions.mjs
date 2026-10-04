@@ -257,7 +257,8 @@ async function run() {
     const hero = await page.evaluate(() => {
       const frame = document.querySelector('section[aria-label="Hero carousel"]');
       const cta = frame?.querySelector('a[id^="hero-cta-"]');
-      if (!frame || !cta) return null;
+      const image = frame?.querySelector('img');
+      if (!frame || !cta || !image) return null;
       const h = frame.getBoundingClientRect();
       const c = cta.getBoundingClientRect();
       const hitsControl = [...frame.querySelectorAll('button')].some((button) => {
@@ -272,12 +273,14 @@ async function run() {
         ctaVisible: c.top >= 0 && c.bottom <= window.innerHeight,
         hitsControl,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+        mobileSafeSource: /mobile-safe-20261004\.png$/.test(image.currentSrc),
       };
     });
 
     rec(view, 'hero is present', true, hero !== null);
     if (hero) {
       rec(view, 'six campaign banners', 6, hero.banners);
+      rec(view, 'uses safe 4:5 mobile artwork', true, hero.mobileSafeSource);
       rec(view, '4:5 mobile banner canvas', hero.expectedHeight, hero.height);
       rec(view, 'CTA stays inside its banner', true, hero.ctaInside);
       if (view === 'Instagram 9:16') rec(view, 'CTA is visible in the 9:16 viewport', true, hero.ctaVisible);
