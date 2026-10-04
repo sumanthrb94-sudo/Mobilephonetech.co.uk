@@ -37,8 +37,12 @@ export default function Hero() {
           glowColor: 'rgba(96, 120, 220, 0.30)',
           savings: b.savings,
           fullBleed: true,
-          focal: '50% 50%',
-          focalMobile: '50% 30%',
+          // Campaign artwork is composed with copy-safe negative space on
+          // the left and the product on the right. Keep that composition for
+          // staff-managed banners too; a centre crop loses the product on a
+          // narrow phone.
+          focal: 'right center',
+          focalMobile: '80% 30%',
         })) : null);
       },
       err => {

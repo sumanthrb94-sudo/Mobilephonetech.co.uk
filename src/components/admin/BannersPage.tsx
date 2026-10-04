@@ -31,8 +31,8 @@ function bannerToSlide(b: Banner): Slide {
     glowColor: 'rgba(96, 120, 220, 0.30)',
     savings: b.savings,
     fullBleed: true,
-    focal: '50% 50%',
-    focalMobile: '50% 30%',
+    focal: 'right center',
+    focalMobile: '80% 30%',
   };
 }
 
@@ -153,9 +153,14 @@ export default function BannersPage() {
           <p className="ops-eyebrow">Shop front</p>
           <h1 className="ops-title">Home banners</h1>
         </div>
-        <button type="button" className="btn btn-primary btn-md" onClick={addBanner}>
-          <Plus size={15} /> New banner
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="btn btn-secondary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInBanners()}>
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <ImageIcon size={15} />} Add 4 campaign banners
+          </button>
+          <button type="button" className="btn btn-primary btn-md" onClick={addBanner}>
+            <Plus size={15} /> New banner
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -177,20 +182,20 @@ export default function BannersPage() {
         <div className="admin-panel ord-empty">
           <ImageIcon size={22} />
           <p style={{ margin: 0, maxWidth: 460 }}>
-            These are the banners currently live on the home page. They are
-            built into the site until imported; import them once to make every
-            banner editable and reorderable for employees.
+            These four campaign banners are currently live on the home page.
+            Import them once to make every banner editable and reorderable for
+            employees.
           </p>
           <div className="bn-preview" style={{ width: '100%', maxWidth: 640, textAlign: 'left' }}>
             <div className="bn-preview__head"><p className="bn-preview__label">Live home-page carousel</p></div>
             <div className="bn-preview__stage" style={{ containerType: 'inline-size', width: '100%', maxWidth: 640 }}>
               <div className="bn-preview__frame2">
-                <HeroCarousel slides={BUILT_IN_SLIDES} autoAdvance={false} />
+                <HeroCarousel slides={BUILT_IN_SLIDES} autoAdvance={false} isPreview />
               </div>
             </div>
           </div>
           <button type="button" className="btn btn-primary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInBanners()}>
-            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <Plus size={15} />} Make live banners editable
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <Plus size={15} />} Make 4 campaign banners editable
           </button>
         </div>
       )}
@@ -386,6 +391,7 @@ function BannerEditor({
                 slides={[bannerToSlide(b)]}
                 autoAdvance={false}
                 isDesktopOverride={previewDevice === 'desktop'}
+                isPreview
                 replayKey={replayKey}
               />
             </div>

@@ -90,6 +90,33 @@ async function run() {
     await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
     await page.waitForTimeout(600);
 
+    // ── Fixed, collision-safe home hero ─────────────────────────────
+    // The hero used to grow between 540px and 640px on desktop. That created
+    // a large blank band below the campaign and made the position of the
+    // next section depend on monitor width. Keep this browser assertion here:
+    // visual geometry is exactly what jsdom cannot verify.
+    const heroLayout = await page.evaluate(() => {
+      const hero = document.querySelector('section[aria-label="Hero carousel"]');
+      const cta = hero?.querySelector('a[id^="hero-cta-"]');
+      if (!hero || !cta) return null;
+      const h = hero.getBoundingClientRect();
+      const b = cta.getBoundingClientRect();
+      return {
+        height: Math.round(h.height),
+        ctaInsideHero: b.left >= h.left && b.right <= h.right && b.top >= h.top && b.bottom <= h.bottom,
+        ctaInsideLeftSafeZone: b.left >= h.left && b.right <= h.left + h.width * 0.55,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+      };
+    });
+    if (!heroLayout) {
+      rec(view, 'home hero is present with a primary action', true, false);
+    } else {
+      if (view === 'desktop') rec(view, 'home hero has a fixed 480px desktop canvas', 480, heroLayout.height);
+      if (view === 'desktop') rec(view, 'hero action stays in the copy-safe left zone', true, heroLayout.ctaInsideLeftSafeZone);
+      else rec(view, 'hero action remains inside the banner', true, heroLayout.ctaInsideHero);
+      rec(view, 'hero causes no horizontal page overflow', true, heroLayout.noHorizontalOverflow);
+    }
+
     // Resting screen: nothing opened yet.
     const resting = await accountDoors(page);
 

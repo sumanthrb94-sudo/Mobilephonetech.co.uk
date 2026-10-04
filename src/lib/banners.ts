@@ -44,12 +44,13 @@ export interface Banner {
 /**
  * What an uploaded picture should be, stated once and shown in the form.
  *
- * These are the boxes the banner actually renders in — 40vw capped at 560px
- * on desktop, 125vw on a phone — so a file cut to these ratios is never
- * cropped. Staff should not have to read the CSS to find that out.
+ * The shop desktop canvas is a fixed 480px high 3:1 composition and the
+ * phone canvas is 4:5. Matching these ratios keeps staff artwork predictable;
+ * product detail belongs on the right of desktop images and in the upper half
+ * of phone images, leaving the copy-safe area clear.
  */
 export const BANNER_SPEC = {
-  desktop: { w: 2400, h: 900, ratio: '8:3', note: 'Wide. Keep the subject right of centre — the text sits on the left.' },
+  desktop: { w: 1920, h: 640, ratio: '3:1', note: 'Wide. Keep the subject on the right — the text sits safely on the left.' },
   mobile: { w: 1080, h: 1350, ratio: '4:5', note: 'Tall. Keep the subject in the top half — the text sits over the bottom.' },
 } as const;
 

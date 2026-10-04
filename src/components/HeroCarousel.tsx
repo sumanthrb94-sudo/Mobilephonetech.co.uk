@@ -33,89 +33,72 @@ export interface Slide {
 
 export const BUILT_IN_SLIDES: Slide[] = [
   {
-    eyebrow: 'iPhone 15 Pro · Aerospace Titanium',
-    headline: 'Titanium power.\nRefurbished value.',
-    subline: 'A17 Pro chip, Action Button & 48MP Pro camera. 12-month warranty & 85%+ battery guaranteed.',
-    ctaLabel: 'Shop iPhone 15 Pro',
+    eyebrow: 'Apple iPhone 18 Pro Max · Titanium',
+    headline: 'The next Pro.\nFor less than new.',
+    subline: 'A certified refurbished Apple flagship, quality checked and backed by a 12-month warranty.',
+    ctaLabel: 'Shop iPhone Pro',
     ctaHref: '/products?brand=Apple',
-    image: '/assets/hero-iphone15-titanium.jpg',
-    imageMobile: '/assets/hero-iphone15-titanium.jpg',
-    imageAlt: 'Refurbished Apple iPhone 15 Pro in natural aerospace titanium with triple-lens pro camera',
+    image: '/assets/hero-iphone-18-pro-max-desktop.png',
+    imageMobile: '/assets/hero-iphone-18-pro-max-desktop.png',
+    imageAlt: 'Premium titanium Apple Pro smartphone shown front and back',
     gradientFrom: '#090d14',
     gradientTo: '#172033',
     glowColor: 'rgba(56, 189, 248, 0.35)',
-    savings: 'Save up to £420',
+    savings: 'Refurbished Apple value',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '50% 30%',
+    focalMobile: '80% 30%',
   },
   {
-    eyebrow: 'Samsung Galaxy S24 Ultra · Galaxy AI',
-    headline: 'Next-gen AI.\nUnbeatable price.',
-    subline: '200MP camera, built-in S-Pen, and titanium frame — certified 70-point tested & unlocked.',
-    ctaLabel: 'Shop Galaxy S24 Ultra',
+    eyebrow: 'Samsung Galaxy S26 · Galaxy AI',
+    headline: 'Galaxy power.\nRefurbished value.',
+    subline: 'Premium Samsung flagships, 70-point checked, unlocked and ready for their next owner.',
+    ctaLabel: 'Shop Samsung Galaxy',
     ctaHref: '/products?brand=Samsung',
-    image: '/assets/hero-s24-ultra.jpg',
-    imageMobile: '/assets/hero-s24-ultra.jpg',
-    imageAlt: 'Samsung Galaxy S24 Ultra with S Pen stylus in titanium finish with quad-camera array',
+    image: '/assets/hero-galaxy-s26-desktop.png',
+    imageMobile: '/assets/hero-galaxy-s26-desktop.png',
+    imageAlt: 'Premium Samsung Galaxy smartphone shown with a stylus',
     gradientFrom: '#0a0d18',
     gradientTo: '#171e3b',
     glowColor: 'rgba(99, 102, 241, 0.38)',
-    savings: 'Save up to £480',
+    savings: 'Premium Galaxy, less spend',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '50% 30%',
+    focalMobile: '80% 30%',
   },
   {
-    eyebrow: 'Flagship Foldables & Tablets',
-    headline: 'Pro power.\nEveryday price.',
-    subline: 'Galaxy Z Fold, Flip & iPad Pro — immersive multitasking backed by our 12-month warranty.',
-    ctaLabel: 'Shop Tablets & Foldables',
+    eyebrow: 'Google Pixel Series · Pure Android',
+    headline: 'Pixel intelligence.\nBetter value.',
+    subline: 'Brilliant Google phones, professionally checked and covered with a 12-month warranty.',
+    ctaLabel: 'Shop Google Pixel',
+    ctaHref: '/products?brand=Google',
+    image: '/assets/hero-pixel-series-desktop.png',
+    imageMobile: '/assets/hero-pixel-series-desktop.png',
+    imageAlt: 'Premium Google Pixel smartphones in porcelain and obsidian finishes',
+    gradientFrom: '#121316',
+    gradientTo: '#2a323a',
+    glowColor: 'rgba(147, 197, 253, 0.35)',
+    savings: 'Google quality, less spend',
+    fullBleed: true,
+    focal: 'right center',
+    focalMobile: '80% 30%',
+  },
+  {
+    eyebrow: 'Tablets & iPads · Ready to create',
+    headline: 'More screen.\nLess spend.',
+    subline: 'Certified refurbished tablets for work, study and play, covered by a 12-month warranty.',
+    ctaLabel: 'Shop Tablets',
     ctaHref: '/products?category=Tablets',
-    image: '/assets/hero-foldable-duo.jpg',
-    imageMobile: '/assets/hero-foldable-duo-mobile.jpg',
-    imageAlt: 'Refurbished Samsung Galaxy Z Fold and iPad Pro tablets',
-    gradientFrom: '#0c0e18',
-    gradientTo: '#1b2238',
-    glowColor: 'rgba(129, 140, 248, 0.35)',
-    savings: 'Up to 50% off',
+    image: '/assets/hero-tablets-desktop.png',
+    imageMobile: '/assets/hero-tablets-desktop.png',
+    imageAlt: 'Premium refurbished tablets and stylus on a blue studio background',
+    gradientFrom: '#071528',
+    gradientTo: '#12417a',
+    glowColor: 'rgba(34, 211, 238, 0.35)',
+    savings: 'Big-screen value',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '50% 30%',
-  },
-  {
-    eyebrow: 'Certified Refurbished Flagships',
-    headline: 'Pro camera systems.\nEveryday value.',
-    subline: 'Cinematic 4K mode, Super Retina XDR displays & 70-point quality certified with 85%+ battery.',
-    ctaLabel: 'Shop iPhone Pro',
-    ctaHref: '/products?brand=Apple',
-    image: '/assets/hero-iphone-pro-crimson.jpg',
-    imageMobile: '/assets/hero-iphone-pro-crimson-mobile.jpg',
-    imageAlt: 'Apple iPhone Pro flagship in crimson finish',
-    gradientFrom: '#1a0d14',
-    gradientTo: '#2e1420',
-    glowColor: 'rgba(244, 63, 94, 0.35)',
-    savings: 'From £299',
-    fullBleed: true,
-    focal: 'right center',
-    focalMobile: '50% 30%',
-  },
-  {
-    eyebrow: 'LeHart Certified · 12-Month Warranty',
-    headline: 'Better than new.\nKinder to Earth.',
-    subline: '70 diagnostic checks, 85%+ battery health guarantee, and 30-day money-back guarantee.',
-    ctaLabel: 'Explore Quality Promise',
-    ctaHref: '/about',
-    image: '/assets/lehart-lab-inspection.jpg',
-    imageMobile: '/assets/lehart-lab-inspection.jpg',
-    imageAlt: 'Certified refurbished technician inspecting smartphones in laboratory',
-    gradientFrom: '#0a1017',
-    gradientTo: '#162334',
-    glowColor: 'rgba(6, 182, 212, 0.35)',
-    savings: '12-Month Free Warranty',
-    fullBleed: true,
-    focal: 'right center',
-    focalMobile: '50% 30%',
+    focalMobile: '80% 30%',
   },
 ] as const;
 
@@ -157,6 +140,8 @@ export interface HeroCarouselProps {
    * left unset.
    */
   isDesktopOverride?: boolean;
+  /** True for a contained admin preview. It must not reserve site-nav space. */
+  isPreview?: boolean;
   /**
    * Bumped to replay the entrance animation without changing slides — the
    * admin preview's "Replay" button, for a single-slide preview that would
@@ -181,7 +166,7 @@ export interface HeroCarouselProps {
  * what the caller is responsible for providing.
  */
 export default function HeroCarousel({
-  slides, autoAdvance = true, isDesktopOverride, replayKey = 0,
+  slides, autoAdvance = true, isDesktopOverride, isPreview = false, replayKey = 0,
 }: HeroCarouselProps) {
   const [current, setCurrent] = useState(0);
 
@@ -239,14 +224,15 @@ export default function HeroCarousel({
            Fixed now, not merely minimum: content fits the banner rather than
            the banner growing to the content. 125cqw on a phone is 4:5, the
            shape of the supplied assets, and is what the admin banner form
-           asks uploads to be. Desktop is a 21:9-ish letterbox that holds
-           without pushing the page below the fold. */
-        height: isDesktop ? 'clamp(540px, 44cqw, 640px)' : '125cqw',
+           asks uploads to be. The shop desktop banner is a fixed 480px
+           3:1-style canvas, so large displays do not create empty vertical
+           space. The contained admin preview scales independently. */
+        height: isDesktop ? (isPreview ? '40cqw' : '480px') : '125cqw',
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,
         transition: 'background 0.6s ease',
-        paddingTop: isDesktop ? 'var(--nav-total)' : 0, boxSizing: 'border-box',
+        paddingTop: isDesktop && !isPreview ? 'var(--nav-total)' : 0, boxSizing: 'border-box',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -292,7 +278,7 @@ export default function HeroCarousel({
               style={{
                 position: 'absolute', top: 0,
                 left: 0, right: 0, bottom: 0, zIndex: 0, width: '100%',
-                objectFit: 'cover', objectPosition: isDesktop ? 'right center' : 'center top', height: '100%',
+                objectFit: 'cover', objectPosition: isDesktop ? slide.focal : slide.focalMobile, height: '100%',
               }}
             />
           )}
@@ -360,6 +346,7 @@ export default function HeroCarousel({
               justifyContent: 'center',
               alignItems: isDesktop ? 'flex-start' : 'center',
               textAlign: isDesktop ? 'left' : 'center',
+              maxWidth: isDesktop && slide.fullBleed ? '480px' : undefined,
             }}>
               {/* Eyebrow pill */}
               <div style={{

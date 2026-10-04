@@ -19,6 +19,7 @@ sa-key.json
 
 # E2E screenshots are build output, not source
 e2e/screenshots/
+e2e-output/
 # Emulator placeholders only, no credentials — see the header in the file.
 !.env.e2e
 
