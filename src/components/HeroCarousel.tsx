@@ -38,8 +38,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'A certified refurbished Apple flagship, quality checked and backed by a 12-month warranty.',
     ctaLabel: 'Shop iPhone Pro',
     ctaHref: '/products?brand=Apple',
-    image: '/assets/hero-apple-pro-desktop.png',
-    imageMobile: '/assets/hero-apple-pro-mobile.png',
+    image: '/assets/hero-campaign-apple-desktop-20261004.png',
+    imageMobile: '/assets/hero-campaign-apple-mobile-20261004.png',
     imageAlt: 'Premium titanium Apple Pro smartphone shown front and back',
     gradientFrom: '#090d14',
     gradientTo: '#172033',
@@ -55,8 +55,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Premium Samsung flagships, 70-point checked, unlocked and ready for their next owner.',
     ctaLabel: 'Shop Samsung Galaxy',
     ctaHref: '/products?brand=Samsung',
-    image: '/assets/hero-samsung-galaxy-desktop.png',
-    imageMobile: '/assets/hero-samsung-galaxy-mobile.png',
+    image: '/assets/hero-campaign-samsung-desktop-20261004.png',
+    imageMobile: '/assets/hero-campaign-samsung-mobile-20261004.png',
     imageAlt: 'Premium Samsung Galaxy smartphone shown with a stylus',
     gradientFrom: '#0a0d18',
     gradientTo: '#171e3b',
@@ -72,8 +72,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Brilliant Google phones, professionally checked and covered with a 12-month warranty.',
     ctaLabel: 'Shop Google Pixel',
     ctaHref: '/products?brand=Google',
-    image: '/assets/hero-pixel-desktop.png',
-    imageMobile: '/assets/hero-pixel-mobile.png',
+    image: '/assets/hero-campaign-pixel-desktop-20261004.png',
+    imageMobile: '/assets/hero-campaign-pixel-mobile-20261004.png',
     imageAlt: 'Premium Google Pixel smartphones in porcelain and obsidian finishes',
     gradientFrom: '#121316',
     gradientTo: '#2a323a',
@@ -89,8 +89,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Certified refurbished tablets for work, study and play, covered by a 12-month warranty.',
     ctaLabel: 'Shop Tablets',
     ctaHref: '/products?category=Tablets',
-    image: '/assets/hero-tablets-v2-desktop.png',
-    imageMobile: '/assets/hero-tablets-v2-mobile.png',
+    image: '/assets/hero-campaign-tablets-desktop-20261004.png',
+    imageMobile: '/assets/hero-campaign-tablets-mobile-20261004.png',
     imageAlt: 'Premium refurbished tablets and stylus on a blue studio background',
     gradientFrom: '#071528',
     gradientTo: '#12417a',
@@ -106,8 +106,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Charging, power and audio essentials selected to keep your tech moving.',
     ctaLabel: 'Shop Accessories',
     ctaHref: '/products?category=Accessories',
-    image: '/assets/hero-accessories-desktop.png',
-    imageMobile: '/assets/hero-accessories-mobile.png',
+    image: '/assets/hero-campaign-accessories-desktop-20261004.png',
+    imageMobile: '/assets/hero-campaign-accessories-mobile-20261004.png',
     imageAlt: 'Wall charger, USB-C cable, wireless earbuds and power bank',
     gradientFrom: '#1a120b',
     gradientTo: '#40301c',
@@ -123,8 +123,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Certified refurbished consoles and gaming tech, professionally checked before dispatch.',
     ctaLabel: 'Shop Gaming',
     ctaHref: '/products?category=Playables',
-    image: '/assets/hero-gaming-desktop.png',
-    imageMobile: '/assets/hero-gaming-mobile.png',
+    image: '/assets/hero-campaign-gaming-desktop-20261004.png',
+    imageMobile: '/assets/hero-campaign-gaming-mobile-20261004.png',
     imageAlt: 'White gaming console and controller on a violet studio background',
     gradientFrom: '#130b28',
     gradientTo: '#36205e',
@@ -312,7 +312,13 @@ export default function HeroCarousel({
               style={{
                 position: 'absolute', top: 0,
                 left: 0, right: 0, bottom: 0, zIndex: 0, width: '100%',
-                objectFit: 'cover', objectPosition: isDesktop ? slide.focal : slide.focalMobile, height: '100%',
+                /* A hero can be 3:1 at 1440×480 yet more than 4:1 on a
+                   widescreen desktop with the same fixed height. `cover`
+                   crops the top and bottom in that second case — exactly the
+                   product clipping this component is meant to prevent.
+                   Keep the complete approved artwork visible instead; the
+                   section's matching dark gradient fills any spare canvas. */
+                objectFit: 'contain', objectPosition: isDesktop ? slide.focal : slide.focalMobile, height: '100%',
               }}
             />
           )}

@@ -98,7 +98,8 @@ async function run() {
     const heroLayout = await page.evaluate(() => {
       const hero = document.querySelector('section[aria-label="Hero carousel"]');
       const cta = hero?.querySelector('a[id^="hero-cta-"]');
-      if (!hero || !cta) return null;
+      const image = hero?.querySelector('img');
+      if (!hero || !cta || !image) return null;
       const h = hero.getBoundingClientRect();
       const b = cta.getBoundingClientRect();
       const ctaHitsControl = [...hero.querySelectorAll('button')].some((control) => {
@@ -110,6 +111,7 @@ async function run() {
         ctaInsideHero: b.left >= h.left && b.right <= h.right && b.top >= h.top && b.bottom <= h.bottom,
         ctaInsideLeftSafeZone: b.left >= h.left && b.right <= h.left + h.width * 0.55,
         campaignCount: hero.querySelectorAll('button[aria-label^="Go to slide"]').length,
+        imageFit: getComputedStyle(image).objectFit,
         ctaHitsControl,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
       };
@@ -118,6 +120,7 @@ async function run() {
       rec(view, 'home hero is present with a primary action', true, false);
     } else {
       if (view === 'desktop') rec(view, 'home hero has a fixed 480px desktop canvas', 480, heroLayout.height);
+      rec(view, 'hero keeps the entire approved artwork visible', 'contain', heroLayout.imageFit);
       rec(view, 'home hero has exactly six campaign banners', 6, heroLayout.campaignCount);
       if (view === 'desktop') rec(view, 'hero action stays in the copy-safe left zone', true, heroLayout.ctaInsideLeftSafeZone);
       else rec(view, 'hero action remains inside the banner', true, heroLayout.ctaInsideHero);
@@ -191,6 +194,34 @@ async function run() {
       console.log(`[${view.padEnd(11)}] SKIP  support button vs legal line: no folded-in legal strip at this width`);
     }
 
+    await ctx.close();
+  }
+
+  // ── Wide desktop hero ───────────────────────────────────────────
+  // The live report was taken at roughly 1917×461 (about 4.16:1), while
+  // the supplied desktop artwork is 3:1. `cover` crops the artwork's top
+  // and bottom at that shape. Test that precise condition in the browser so
+  // a future styling change cannot reintroduce clipped devices in production.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1917, height: 1080 } });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(650);
+    const wideHero = await page.evaluate(() => {
+      const hero = document.querySelector('section[aria-label="Hero carousel"]');
+      const image = hero?.querySelector('img');
+      if (!hero || !image) return null;
+      const frame = hero.getBoundingClientRect();
+      return {
+        canvasRatio: Number((frame.width / frame.height).toFixed(2)),
+        imageFit: getComputedStyle(image).objectFit,
+        sourceRatio: Number((image.naturalWidth / image.naturalHeight).toFixed(2)),
+        sourceLoaded: image.naturalWidth > 0 && image.naturalHeight > 0,
+      };
+    });
+    rec('wide desktop', 'hero source image is loaded', true, wideHero?.sourceLoaded ?? false);
+    rec('wide desktop', 'hero canvas is wider than the 3:1 artwork', true, (wideHero?.canvasRatio ?? 0) > (wideHero?.sourceRatio ?? Infinity));
+    rec('wide desktop', 'wide hero preserves the complete artwork instead of cropping it', 'contain', wideHero?.imageFit);
     await ctx.close();
   }
 
