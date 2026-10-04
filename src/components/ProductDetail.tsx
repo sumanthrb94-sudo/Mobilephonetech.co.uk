@@ -212,6 +212,13 @@ export default function ProductDetail() {
   const [labReelOpen, setLabReelOpen] = React.useState(false);
   const [includeCharger, setIncludeCharger] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
+  const chooseVariant = (variant: ProductVariant) => {
+    // The hero must start at the primary angle of the newly chosen finish.
+    // Keeping this in the selection event avoids introducing a conditional
+    // hook after the product-loading return below.
+    setSelectedImageIndex(0);
+    setSelectedVariant(variant);
+  };
 
   // Load product: seed from the shared catalogue for an instant first paint,
   // then refresh from Supabase (which also brings variant rows).
@@ -347,9 +354,18 @@ export default function ProductDetail() {
    * frames — and beyond six it takes the first six. The editor enforces the
    * same limit, so this only catches rows that predate it.
    */
-  const activeGallery = galleryFrames(
-    phone.galleryImages?.length ? phone.galleryImages : [phone.imageUrl],
-  );
+  // A colour/condition selection is state on this page, not a new route.
+  // Prefer its own gallery (or primary image) so the hero updates the moment
+  // a shopper taps a swatch; retain the model gallery as extra angles where
+  // a configuration supplies only one image.
+  const selectedGallery = selectedVariant?.galleryImages?.length
+    ? selectedVariant.galleryImages
+    : selectedVariant?.imageUrl
+      ? [selectedVariant.imageUrl, ...(phone.galleryImages ?? []).filter(image => image !== selectedVariant.imageUrl)]
+      : phone.galleryImages?.length
+        ? phone.galleryImages
+        : [phone.imageUrl];
+  const activeGallery = galleryFrames(selectedGallery);
 
   const handleAddToCart = () => {
     // The accessory is a real, independently priced catalogue item. Add it
@@ -404,9 +420,15 @@ export default function ProductDetail() {
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             {phone.grade && (
-              <span className={`badge ${GRADE_CLASS[phone.grade]}`}>
-                {phone.grade}
-              </span>
+              <button
+                type="button"
+                className={`badge ${GRADE_CLASS[selectedVariant?.condition ?? phone.grade]}`}
+                onClick={() => setGradeExplainerOpen(true)}
+                aria-label={`${selectedVariant?.condition ?? phone.grade} condition — view the grading guide`}
+                style={{ cursor: 'pointer' }}
+              >
+                {selectedVariant?.condition ?? phone.grade}
+              </button>
             )}
             <button
               onClick={() => setGradeExplainerOpen(true)}
@@ -723,16 +745,15 @@ export default function ProductDetail() {
               <span><RotateCcw size={16} aria-hidden="true" /> <strong>{phone.returnDays}-day</strong> returns</span>
             </div>
 
-            <PdpQualityInspector
-              brand={phone.brand}
-              model={phone.model}
-              batteryHealth={displayBatteryHealth}
-              onWatchLabVideo={() => setLabReelOpen(true)}
+            {/* Choice comes before proof: changing a finish, capacity or grade
+                updates price, stock and the gallery in-place. The inspection
+                evidence follows the decision rather than burying it. */}
+            <VariantSelector
+              product={phone}
+              onVariantSelect={chooseVariant}
+              selectedVariant={selectedVariant}
+              onExplainGrading={() => setGradeExplainerOpen(true)}
             />
-
-            {/* Variants — always render; VariantSelector derives sensible
-                options when the product has no explicit variants[] matrix. */}
-            <VariantSelector product={phone} onVariantSelect={setSelectedVariant} selectedVariant={selectedVariant} />
 
             {chargerUpsell && (
               <fieldset style={{ border: 0, margin: 0, padding: '14px 0 2px', borderTop: '1px solid var(--grey-10)' }}>
@@ -869,6 +890,15 @@ export default function ProductDetail() {
               </div>
               <PriceMatchBadge />
             </div>
+
+            {/* The test evidence follows the selected unit, delivery and
+                purchase action — it should reassure, not block colour choice. */}
+            <PdpQualityInspector
+              brand={phone.brand}
+              model={phone.model}
+              batteryHealth={displayBatteryHealth}
+              onWatchLabVideo={() => setLabReelOpen(true)}
+            />
           </div>
         </div>
 

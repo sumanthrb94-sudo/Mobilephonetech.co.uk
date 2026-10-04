@@ -3,34 +3,22 @@ import { ProductGrade } from '../types';
 
 const GRADES: { grade: ProductGrade; summary: string; detail: string; badgeClass: string }[] = [
   {
-    grade: 'New',
-    summary: 'Unopened. Factory seal intact.',
-    detail: 'Original retail packaging, sealed. Full manufacturer warranty and all accessories included.',
-    badgeClass: 'badge-new',
-  },
-  {
     grade: 'Pristine',
     summary: 'Indistinguishable from new.',
-    detail: 'No visible marks under any lighting. Battery health 95%+. Comes in our branded box with a new charging cable.',
+    detail: 'No visible marks under normal lighting. The screen, frame and back are exceptionally clean.',
     badgeClass: 'badge-pristine',
   },
   {
     grade: 'Excellent',
     summary: 'Very light signs of use.',
-    detail: 'Minor marks may be visible under bright light at arm\'s length. Screen is free of scratches. Battery health 90%+.',
+    detail: 'Very light signs of use may be visible under close inspection. The screen is free of noticeable scratches.',
     badgeClass: 'badge-excellent',
   },
   {
     grade: 'Good',
     summary: 'Visible signs of everyday use.',
-    detail: 'Light scuffs on frame and back are visible, no chips or dents. Screen may have superficial marks invisible when on. Battery health 85%+.',
+    detail: 'Visible signs of everyday use such as light scuffs on the frame or back. It remains fully functional and tested.',
     badgeClass: 'badge-good',
-  },
-  {
-    grade: 'Fair',
-    summary: 'Clearly used but fully working.',
-    detail: 'Cosmetic wear — visible scratches, scuffs, possibly minor dents. Fully functional and tested to the same standard as every other grade. Battery health 80%+.',
-    badgeClass: 'badge-fair',
   },
 ];
 
@@ -49,7 +37,7 @@ export default function GradeExplainer({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="How our grading works" width={620}>
       <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.6, margin: '0 0 20px 0' }}>
-        Every device passes the same 90-point technical inspection. Grades describe cosmetic condition only — performance and warranty are identical across all grades.
+        Every device passes the same 70-point technical inspection. Grades describe cosmetic condition only — performance and warranty are identical across all grades.
       </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {GRADES.map((g) => (
@@ -69,7 +57,7 @@ export default function GradeExplainer({
         ))}
       </div>
       <div style={{ marginTop: '20px', padding: '12px 14px', background: 'var(--color-brand-subtle)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--brand-header)', lineHeight: 1.55 }}>
-        Every grade comes with our 12-month warranty, free next-day delivery, and 30-day free returns.
+        Every grade comes with our 12-month warranty, free next-day delivery and 30-day free returns. Battery health is shown for the selected unit; the 85% minimum promise applies to Apple phones only.
       </div>
     </Modal>
   );

@@ -31,6 +31,7 @@ interface VariantSelectorProps {
   product: Product;
   onVariantSelect: (variant: ProductVariant) => void;
   selectedVariant: ProductVariant | null;
+  onExplainGrading?: () => void;
 }
 
 const colorSwatches: Record<string, string> = {
@@ -126,6 +127,7 @@ export default function VariantSelector({
   product,
   onVariantSelect,
   selectedVariant,
+  onExplainGrading,
 }: VariantSelectorProps) {
   const navigate = useNavigate();
   const { products: catalogue } = useCatalogue();
@@ -165,7 +167,7 @@ export default function VariantSelector({
   // This branch comes after all hooks so switching a legacy model to variants
   // never changes the hook order.
   if (product.variants?.length) {
-    return <MatrixSelector variants={product.variants} selectedVariant={selectedVariant} onVariantSelect={onVariantSelect} />;
+    return <MatrixSelector variants={product.variants} selectedVariant={selectedVariant} onVariantSelect={onVariantSelect} onExplainGrading={onExplainGrading} />;
   }
 
   const pick = (option: VariantOption) => {
@@ -228,6 +230,7 @@ export default function VariantSelector({
 
         renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
       />
+      <GradingHelp onOpen={onExplainGrading} />
     </div>
   );
 }
@@ -250,10 +253,11 @@ const CONDITION_RANK: Record<string, number> = {
   'Fair': 7,
 };
 
-function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
+function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainGrading }: {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onVariantSelect: (variant: ProductVariant) => void;
+  onExplainGrading?: () => void;
 }) {
   // Extract unique attributes present in this variant set
   const colors = useMemo(() => {
@@ -503,6 +507,7 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
               );
             })}
           </div>
+          <GradingHelp onOpen={onExplainGrading} />
         </div>
       )}
 
@@ -549,6 +554,32 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
         </div>
       )}
     </div>
+  );
+}
+
+function GradingHelp({ onOpen }: { onOpen?: () => void }) {
+  if (!onOpen) return null;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      style={{
+        alignSelf: 'flex-start',
+        marginTop: '8px',
+        padding: 0,
+        border: 0,
+        background: 'none',
+        color: 'var(--brand-cyan-hover)',
+        cursor: 'pointer',
+        fontFamily: 'var(--font-body)',
+        fontSize: '12px',
+        fontWeight: 700,
+        textDecoration: 'underline',
+        textUnderlineOffset: '3px',
+      }}
+    >
+      What does each grade mean?
+    </button>
   );
 }
 

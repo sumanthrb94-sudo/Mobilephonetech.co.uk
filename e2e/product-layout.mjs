@@ -68,6 +68,47 @@ async function measureProduct(page) {
   });
 }
 
+async function verifyVariantDecision(page, device) {
+  // Matrix colour buttons carry a title; gallery and utility buttons do not.
+  // Not every live product has a matrix, so a single-configuration listing is
+  // deliberately skipped rather than treated as a broken choice.
+  const alternative = await page.evaluate(() => {
+    const selected = [...document.querySelectorAll('button[aria-label*="(Selected)"]')]
+      .find(button => button.hasAttribute('title'));
+    const selectedTitle = selected?.title;
+    return [...document.querySelectorAll('.pdp-buy button[title]')]
+      .map(button => button.title)
+      .find(title => title && title !== selectedTitle) ?? null;
+  });
+
+  if (alternative) {
+    const beforePath = new URL(page.url()).pathname;
+    await page.getByTitle(alternative, { exact: true }).click();
+    await page.waitForTimeout(150);
+    const selected = await page.locator('button[aria-label*="(Selected)"][title]').evaluateAll(
+      buttons => buttons.some(button => (button.getAttribute('aria-label') ?? '').startsWith(button.getAttribute('title') ?? '')),
+    );
+    expect(device, 'colour selection updates in place without navigating away', new URL(page.url()).pathname === beforePath && selected);
+  } else {
+    console.log(`[${device}] SKIP  in-place colour update: this product has one configuration`);
+  }
+
+  const gradingHelp = page.getByRole('button', { name: 'What does each grade mean?' });
+  if (await gradingHelp.count()) {
+    await gradingHelp.first().click();
+    const dialog = page.getByRole('dialog');
+    await dialog.waitFor({ state: 'visible' });
+    const gradingIsAccurate = await dialog.getByText('Pristine', { exact: true }).count() > 0
+      && await dialog.getByText('Excellent', { exact: true }).count() > 0
+      && await dialog.getByText('Good', { exact: true }).count() > 0
+      && await dialog.getByText(/70-point technical inspection/i).count() > 0;
+    expect(device, 'grading overlay explains the three live grades and 70-point test', gradingIsAccurate);
+    await page.keyboard.press('Escape');
+  } else {
+    console.log(`[${device}] SKIP  grading overlay: no condition choices on this product`);
+  }
+}
+
 async function run() {
   const browser = await chromium.launch({ executablePath: resolveChromium() });
 
@@ -106,6 +147,7 @@ async function run() {
       const oneColumn = product.columns.trim().split(/\s+/).length === 1;
       expect(device, 'phone product page stacks in one clear reading column', oneColumn, product.columns);
     }
+    await verifyVariantDecision(page, device);
     await context.close();
   }
 

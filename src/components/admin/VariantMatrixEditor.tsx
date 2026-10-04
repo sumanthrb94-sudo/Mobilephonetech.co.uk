@@ -63,7 +63,7 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
           <p style={summaryStyle}>{variants.length} configurations · <strong>{total} units available</strong> · public price and stock are calculated from these rows.</p>
           <div style={tableWrapStyle}>
             <table style={tableStyle}>
-              <thead><tr>{['Storage', 'Colour', 'Connection', 'Condition', 'Battery', 'Sell £', 'Was £', 'Available', 'Physical units', ''].map(label => <th key={label} style={thStyle}>{label}</th>)}</tr></thead>
+              <thead><tr>{['Storage', 'Colour', 'Connection', 'Condition', 'Battery', 'Image URL', 'Sell £', 'Was £', 'Available', 'Physical units', ''].map(label => <th key={label} style={thStyle}>{label}</th>)}</tr></thead>
               <tbody>
                 {variants.map((variant, index) => {
                   const units = variant.inventoryUnits ?? [];
@@ -77,6 +77,7 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
                         <td style={tdStyle}><select aria-label={`Configuration ${index + 1} connection`} style={inputStyle} value={variant.connectivity ?? ''} onChange={e => patch(index, { connectivity: e.target.value })}><option value="">—</option><option value="Wi-Fi">Wi-Fi</option><option value="Cellular">Cellular</option></select></td>
                         <td style={tdStyle}><select aria-label={`Configuration ${index + 1} condition`} style={inputStyle} value={variant.condition ?? 'Pristine'} onChange={e => patch(index, { condition: e.target.value as ProductGrade })}>{gradeChoices.map(g => <option key={g} value={g}>{g}</option>)}</select></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} battery health`} style={inputStyle} type="number" min={isApplePhone ? 85 : 0} max="100" value={variant.batteryHealth ?? ''} placeholder={isApplePhone ? '85+' : '—'} onChange={e => patch(index, { batteryHealth: e.target.value === '' ? undefined : Number(e.target.value) })} /></td>
+                        <td style={tdStyle}><input aria-label={`Configuration ${index + 1} image URL`} style={inputStyle} value={variant.imageUrl ?? ''} placeholder="https://…" onChange={e => patch(index, { imageUrl: e.target.value })} /></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} selling price`} style={inputStyle} type="number" min="0" step="0.01" value={variant.price || ''} onChange={e => patch(index, { price: Number(e.target.value) || 0 })} /></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} was price`} style={inputStyle} type="number" min="0" step="0.01" value={variant.originalPrice || ''} onChange={e => patch(index, { originalPrice: Number(e.target.value) || 0 })} /></td>
                         <td style={tdStyle}>
@@ -91,7 +92,7 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
                       </tr>
                       {tracked && (
                         <tr key={`${variant.id}-units`}>
-                          <td colSpan={10} style={unitCellStyle}>
+                          <td colSpan={11} style={unitCellStyle}>
                             <div style={unitHeadStyle}>
                               <strong style={unitTitleStyle}>Physical unit ledger</strong>
                               <span style={unitHintStyle}>Sold status is changed automatically by the order flow. Remove only a unit entered in error.</span>
@@ -112,7 +113,7 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
                           </td>
                         </tr>
                       )}
-                      {Object.keys(errors).some(key => key.startsWith(prefix) && !key.includes('-unit-')) && <tr key={`${variant.id}-errors`}><td colSpan={10} style={errorCellStyle}>{Object.entries(errors).filter(([key]) => key.startsWith(prefix) && !key.includes('-unit-')).map(([, value]) => value).join(' ')}</td></tr>}
+                      {Object.keys(errors).some(key => key.startsWith(prefix) && !key.includes('-unit-')) && <tr key={`${variant.id}-errors`}><td colSpan={11} style={errorCellStyle}>{Object.entries(errors).filter(([key]) => key.startsWith(prefix) && !key.includes('-unit-')).map(([, value]) => value).join(' ')}</td></tr>}
                     </>
                   );
                 })}
@@ -161,7 +162,7 @@ const noteStyle: React.CSSProperties = { fontFamily: 'var(--font-body)', fontSiz
 const emptyStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, marginTop: 16, padding: 14, borderRadius: 'var(--radius-md)', background: 'var(--grey-5)', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-60)' };
 const summaryStyle: React.CSSProperties = { fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-60)', margin: '16px 0 10px' };
 const tableWrapStyle: React.CSSProperties = { overflowX: 'auto', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)' };
-const tableStyle: React.CSSProperties = { width: '100%', minWidth: 1100, borderCollapse: 'collapse' };
+const tableStyle: React.CSSProperties = { width: '100%', minWidth: 1240, borderCollapse: 'collapse' };
 const thStyle: React.CSSProperties = { textAlign: 'left', padding: '10px 8px', fontFamily: 'var(--font-sans)', fontSize: 10, letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--grey-50)', background: 'var(--grey-5)' };
 const tdStyle: React.CSSProperties = { padding: 8, borderTop: '1px solid var(--grey-10)', verticalAlign: 'top' };
 const inputStyle: React.CSSProperties = { width: '100%', minWidth: 74, height: 36, padding: '0 8px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-sm)', background: '#fff', fontFamily: 'var(--font-body)', fontSize: 13, boxSizing: 'border-box' };
