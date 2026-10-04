@@ -182,7 +182,7 @@ export default function VariantSelector({
     // 20px of gap, 20px of margin and 20px of padding, inside a buy column
     // that already spaces its children — three separate reasons for the same
     // blank band between Colour, Storage and Condition.
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '4px', paddingTop: '14px', borderTop: '1px solid var(--grey-10)' }}>
+    <div className="pdp-variant-selector" style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '4px', paddingTop: '14px', borderTop: '1px solid var(--grey-10)' }}>
 
       <Attribute
         label="Colour"
@@ -334,7 +334,7 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px', borderTop: '1px solid var(--grey-10)' }}>
+    <div className="pdp-variant-selector" style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px', borderTop: '1px solid var(--grey-10)' }}>
       {/* 1. Colour Row (Amazon Swatches) */}
       {colors.length > 0 && (
         <div>

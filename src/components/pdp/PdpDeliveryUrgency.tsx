@@ -33,6 +33,7 @@ export default function PdpDeliveryUrgency() {
 
   return (
     <div
+      className="pdp-delivery-urgency"
       style={{
         display: 'flex',
         alignItems: 'center',

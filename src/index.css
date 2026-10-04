@@ -3649,6 +3649,33 @@ textarea,
     position: sticky;
     top: calc(var(--nav-total) + 20px);
     align-self: start;
+    /* Keep the first configuration choices above the fixed delivery strip
+       on a standard 1080px desktop. The previous 16px rhythm was generous
+       between short, adjacent purchase facts but pushed Capacity under the
+       strip even when the shopper had not scrolled. */
+    --pdp-buy-gap: 10px;
+  }
+
+  .pdp-price-block {
+    padding-bottom: 10px !important;
+  }
+
+  .pdp-price-block__line {
+    margin-bottom: 4px !important;
+  }
+
+  .pdp-delivery-urgency {
+    margin-top: 0 !important;
+    padding: 8px 12px !important;
+  }
+
+  .pdp-facts {
+    padding-top: 5px;
+  }
+
+  .pdp-variant-selector {
+    gap: 12px !important;
+    padding-top: 10px !important;
   }
 }
 
