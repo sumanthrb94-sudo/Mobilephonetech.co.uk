@@ -101,10 +101,16 @@ async function run() {
       if (!hero || !cta) return null;
       const h = hero.getBoundingClientRect();
       const b = cta.getBoundingClientRect();
+      const ctaHitsControl = [...hero.querySelectorAll('button')].some((control) => {
+        const r = control.getBoundingClientRect();
+        return b.right > r.left && b.left < r.right && b.bottom > r.top && b.top < r.bottom;
+      });
       return {
         height: Math.round(h.height),
         ctaInsideHero: b.left >= h.left && b.right <= h.right && b.top >= h.top && b.bottom <= h.bottom,
         ctaInsideLeftSafeZone: b.left >= h.left && b.right <= h.left + h.width * 0.55,
+        campaignCount: hero.querySelectorAll('button[aria-label^="Go to slide"]').length,
+        ctaHitsControl,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
       };
     });
@@ -112,8 +118,10 @@ async function run() {
       rec(view, 'home hero is present with a primary action', true, false);
     } else {
       if (view === 'desktop') rec(view, 'home hero has a fixed 480px desktop canvas', 480, heroLayout.height);
+      rec(view, 'home hero has exactly six campaign banners', 6, heroLayout.campaignCount);
       if (view === 'desktop') rec(view, 'hero action stays in the copy-safe left zone', true, heroLayout.ctaInsideLeftSafeZone);
       else rec(view, 'hero action remains inside the banner', true, heroLayout.ctaInsideHero);
+      rec(view, 'hero action does not collide with carousel controls', false, heroLayout.ctaHitsControl);
       rec(view, 'hero causes no horizontal page overflow', true, heroLayout.noHorizontalOverflow);
     }
 

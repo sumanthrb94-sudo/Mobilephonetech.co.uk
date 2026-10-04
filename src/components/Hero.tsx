@@ -22,7 +22,7 @@ export default function Hero() {
     return subscribeLiveBanners(
       rows => {
         // Old saved banners remain editable in Admin for reference, but only
-        // the approved four-banner campaign is allowed onto the storefront.
+        // the approved six-banner campaign is allowed onto the storefront.
         // This prevents an abandoned draft or last season's hero reappearing
         // simply because its Firestore row is still active.
         const campaign = rows.filter(b => b.campaignSet === HOME_BANNER_SET);
@@ -47,7 +47,7 @@ export default function Hero() {
           // staff-managed banners too; a centre crop loses the product on a
           // narrow phone.
           focal: 'right center',
-          focalMobile: '80% 30%',
+          focalMobile: 'center top',
         })) : null);
       },
       err => {

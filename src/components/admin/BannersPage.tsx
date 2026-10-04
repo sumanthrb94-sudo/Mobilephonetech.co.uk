@@ -32,7 +32,7 @@ function bannerToSlide(b: Banner): Slide {
     savings: b.savings,
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '80% 30%',
+    focalMobile: 'center top',
   };
 }
 
@@ -156,7 +156,7 @@ export default function BannersPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
           <button type="button" className="btn btn-secondary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInBanners()}>
-            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <ImageIcon size={15} />} Set 4 campaign banners live
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <ImageIcon size={15} />} Set 6 campaign banners live
           </button>
           <button type="button" className="btn btn-primary btn-md" onClick={addBanner}>
             <Plus size={15} /> New banner
@@ -183,7 +183,7 @@ export default function BannersPage() {
         <div className="admin-panel ord-empty">
           <ImageIcon size={22} />
           <p style={{ margin: 0, maxWidth: 460 }}>
-            These four campaign banners are currently live on the home page.
+            These six campaign banners are currently live on the home page.
             Import them once to make every banner editable and reorderable for
             employees.
           </p>
@@ -196,7 +196,7 @@ export default function BannersPage() {
             </div>
           </div>
           <button type="button" className="btn btn-primary btn-md" disabled={busyId === 'import'} onClick={() => void importBuiltInBanners()}>
-            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <Plus size={15} />} Make 4 campaign banners editable
+            {busyId === 'import' ? <Loader2 size={15} className="admin-spin" /> : <Plus size={15} />} Make 6 campaign banners editable
           </button>
         </div>
       )}

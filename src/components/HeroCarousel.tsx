@@ -38,8 +38,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'A certified refurbished Apple flagship, quality checked and backed by a 12-month warranty.',
     ctaLabel: 'Shop iPhone Pro',
     ctaHref: '/products?brand=Apple',
-    image: '/assets/hero-iphone-18-pro-max-desktop.png',
-    imageMobile: '/assets/hero-iphone-18-pro-max-desktop.png',
+    image: '/assets/hero-apple-pro-desktop.png',
+    imageMobile: '/assets/hero-apple-pro-mobile.png',
     imageAlt: 'Premium titanium Apple Pro smartphone shown front and back',
     gradientFrom: '#090d14',
     gradientTo: '#172033',
@@ -47,7 +47,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     savings: 'Refurbished Apple value',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '80% 30%',
+    focalMobile: 'center top',
   },
   {
     eyebrow: 'Samsung Galaxy S26 · Galaxy AI',
@@ -55,8 +55,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Premium Samsung flagships, 70-point checked, unlocked and ready for their next owner.',
     ctaLabel: 'Shop Samsung Galaxy',
     ctaHref: '/products?brand=Samsung',
-    image: '/assets/hero-galaxy-s26-desktop.png',
-    imageMobile: '/assets/hero-galaxy-s26-desktop.png',
+    image: '/assets/hero-samsung-galaxy-desktop.png',
+    imageMobile: '/assets/hero-samsung-galaxy-mobile.png',
     imageAlt: 'Premium Samsung Galaxy smartphone shown with a stylus',
     gradientFrom: '#0a0d18',
     gradientTo: '#171e3b',
@@ -64,7 +64,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     savings: 'Premium Galaxy, less spend',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '80% 30%',
+    focalMobile: 'center top',
   },
   {
     eyebrow: 'Google Pixel Series · Pure Android',
@@ -72,8 +72,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Brilliant Google phones, professionally checked and covered with a 12-month warranty.',
     ctaLabel: 'Shop Google Pixel',
     ctaHref: '/products?brand=Google',
-    image: '/assets/hero-pixel-series-desktop.png',
-    imageMobile: '/assets/hero-pixel-series-desktop.png',
+    image: '/assets/hero-pixel-desktop.png',
+    imageMobile: '/assets/hero-pixel-mobile.png',
     imageAlt: 'Premium Google Pixel smartphones in porcelain and obsidian finishes',
     gradientFrom: '#121316',
     gradientTo: '#2a323a',
@@ -81,7 +81,7 @@ export const BUILT_IN_SLIDES: Slide[] = [
     savings: 'Google quality, less spend',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '80% 30%',
+    focalMobile: 'center top',
   },
   {
     eyebrow: 'Tablets & iPads · Ready to create',
@@ -89,8 +89,8 @@ export const BUILT_IN_SLIDES: Slide[] = [
     subline: 'Certified refurbished tablets for work, study and play, covered by a 12-month warranty.',
     ctaLabel: 'Shop Tablets',
     ctaHref: '/products?category=Tablets',
-    image: '/assets/hero-tablets-desktop.png',
-    imageMobile: '/assets/hero-tablets-desktop.png',
+    image: '/assets/hero-tablets-v2-desktop.png',
+    imageMobile: '/assets/hero-tablets-v2-mobile.png',
     imageAlt: 'Premium refurbished tablets and stylus on a blue studio background',
     gradientFrom: '#071528',
     gradientTo: '#12417a',
@@ -98,7 +98,41 @@ export const BUILT_IN_SLIDES: Slide[] = [
     savings: 'Big-screen value',
     fullBleed: true,
     focal: 'right center',
-    focalMobile: '80% 30%',
+    focalMobile: 'center top',
+  },
+  {
+    eyebrow: 'Everyday essentials · Ready to go',
+    headline: 'The extras.\nDone properly.',
+    subline: 'Charging, power and audio essentials selected to keep your tech moving.',
+    ctaLabel: 'Shop Accessories',
+    ctaHref: '/products?category=Accessories',
+    image: '/assets/hero-accessories-desktop.png',
+    imageMobile: '/assets/hero-accessories-mobile.png',
+    imageAlt: 'Wall charger, USB-C cable, wireless earbuds and power bank',
+    gradientFrom: '#1a120b',
+    gradientTo: '#40301c',
+    glowColor: 'rgba(251, 191, 36, 0.30)',
+    savings: 'Essential tech, less spend',
+    fullBleed: true,
+    focal: 'right center',
+    focalMobile: 'center top',
+  },
+  {
+    eyebrow: 'Console gaming · Ready for play',
+    headline: 'More play.\nLess spend.',
+    subline: 'Certified refurbished consoles and gaming tech, professionally checked before dispatch.',
+    ctaLabel: 'Shop Gaming',
+    ctaHref: '/products?category=Playables',
+    image: '/assets/hero-gaming-desktop.png',
+    imageMobile: '/assets/hero-gaming-mobile.png',
+    imageAlt: 'White gaming console and controller on a violet studio background',
+    gradientFrom: '#130b28',
+    gradientTo: '#36205e',
+    glowColor: 'rgba(168, 85, 247, 0.34)',
+    savings: 'Gaming value, ready now',
+    fullBleed: true,
+    focal: 'right center',
+    focalMobile: 'center top',
   },
 ] as const;
 
@@ -307,7 +341,7 @@ export default function HeroCarousel({
             left: 0, right: 0, bottom: 0, zIndex: 1, pointerEvents: 'none',
             background: isDesktop
               ? 'linear-gradient(90deg, rgba(6,8,14,0.95) 0%, rgba(6,8,14,0.82) 34%, rgba(6,8,14,0.30) 58%, rgba(6,8,14,0) 82%)'
-              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 26%, rgba(6,8,14,0.40) 38%, rgba(6,8,14,0.68) 48%, rgba(6,8,14,0.84) 66%, rgba(6,8,14,0.90) 100%)',
+              : 'linear-gradient(180deg, rgba(6,8,14,0) 0%, rgba(6,8,14,0) 42%, rgba(6,8,14,0.28) 52%, rgba(6,8,14,0.74) 66%, rgba(6,8,14,0.92) 82%, rgba(6,8,14,0.96) 100%)',
           }} />
         </>
       )}
@@ -348,8 +382,10 @@ export default function HeroCarousel({
               textAlign: isDesktop ? 'left' : 'center',
               maxWidth: isDesktop && slide.fullBleed ? '480px' : undefined,
             }}>
-              {/* Eyebrow pill */}
-              <div style={{
+              {/* Phone banners reserve their upper half for the product. The
+                  desktop eyebrow stays useful, but on a 4:5 frame it steals
+                  the exact space that keeps the product and copy separate. */}
+              {isDesktop && <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)',
                 border: '1px solid rgba(255,255,255,0.2)',
@@ -359,7 +395,7 @@ export default function HeroCarousel({
                 color: 'rgba(255,255,255,0.85)', marginBottom: 12,
               }}>
                 {slide.eyebrow}
-              </div>
+              </div>}
 
               <RevealText
                 as="h1"
@@ -371,7 +407,7 @@ export default function HeroCarousel({
                 key={`headline-${current}-${slide.headline}-${replayKey}`}
                 style={{
                   fontFamily: 'var(--font-sans)',
-                  fontSize: 'clamp(32px, 3.8cqw, 50px)',
+                  fontSize: isDesktop ? 'clamp(32px, 3.8cqw, 50px)' : 'clamp(28px, 8.2cqw, 34px)',
                   fontWeight: 900,
                   letterSpacing: '-0.04em', lineHeight: 1.0,
                   color: '#ffffff',
@@ -424,7 +460,7 @@ export default function HeroCarousel({
                 >
                   {slide.ctaLabel} <ArrowRight size={16} />
                 </Link>
-                {slide.savings && (
+                {isDesktop && slide.savings && (
                   <span style={{
                     fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700,
                     color: 'rgba(255,255,255,0.65)', whiteSpace: 'nowrap',
