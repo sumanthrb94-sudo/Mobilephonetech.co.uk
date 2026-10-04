@@ -194,6 +194,56 @@ async function run() {
     await ctx.close();
   }
 
+  // ── Mobile hero resolution matrix ────────────────────────────────
+  // A 390px assertion alone cannot protect a mobile-first shop. This covers
+  // compact Android/iPhone screens through Pro Max widths and checks the
+  // exact failure modes that banner changes have caused: a missing campaign,
+  // a CTA pushed outside its frame, controls landing on the CTA, and a
+  // horizontal scrollbar.
+  for (const [view, width, height] of [
+    ['iPhone SE', 320, 568],
+    ['Android compact', 360, 800],
+    ['iPhone standard', 375, 812],
+    ['iPhone 14', 390, 844],
+    ['Android large', 412, 915],
+    ['iPhone Pro Max', 430, 932],
+  ]) {
+    const ctx = await browser.newContext({ viewport: { width, height } });
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.waitForTimeout(650);
+
+    const hero = await page.evaluate(() => {
+      const frame = document.querySelector('section[aria-label="Hero carousel"]');
+      const cta = frame?.querySelector('a[id^="hero-cta-"]');
+      if (!frame || !cta) return null;
+      const h = frame.getBoundingClientRect();
+      const c = cta.getBoundingClientRect();
+      const hitsControl = [...frame.querySelectorAll('button')].some((button) => {
+        const b = button.getBoundingClientRect();
+        return c.right > b.left && c.left < b.right && c.bottom > b.top && c.top < b.bottom;
+      });
+      return {
+        banners: frame.querySelectorAll('button[aria-label^="Go to slide"]').length,
+        height: Math.round(h.height),
+        expectedHeight: Math.round(window.innerWidth * 1.25),
+        ctaInside: c.left >= h.left && c.right <= h.right && c.top >= h.top && c.bottom <= h.bottom,
+        hitsControl,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+      };
+    });
+
+    rec(view, 'hero is present', true, hero !== null);
+    if (hero) {
+      rec(view, 'six campaign banners', 6, hero.banners);
+      rec(view, '4:5 mobile banner canvas', hero.expectedHeight, hero.height);
+      rec(view, 'CTA stays inside its banner', true, hero.ctaInside);
+      rec(view, 'CTA clears carousel controls', false, hero.hitsControl);
+      rec(view, 'no horizontal overflow', true, hero.noHorizontalOverflow);
+    }
+    await ctx.close();
+  }
+
   // ── 2b. The search bar must not move between routes ───────────────
   // There used to be two phone app bars. On Home the wordmark gave way to an
   // inline search field; everywhere else the wordmark returned and search
