@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { trackProductView } from '../lib/analytics';
 import {
   ShieldCheck, RotateCcw, Battery, CheckCircle2,
@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useCatalogue } from '../context/CatalogueContext';
 import { useCart } from '../context/CartContext';
 import ReviewsSection from './ReviewsSection';
+import StockAlertForm from './StockAlertForm';
 import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
@@ -278,10 +279,19 @@ export default function ProductDetail() {
     })();
   }, [id, catalogue]);
 
+  const { hash } = useLocation();
   React.useEffect(() => {
     window.scrollTo(0, 0);
     if (phone?.id) trackRecent(phone.id);
   }, [phone?.id]);
+
+  // "Notify me" on a sold-out card lands here with #notify: bring the
+  // back-in-stock form into view once the product has rendered.
+  React.useEffect(() => {
+    if (hash !== '#notify' || !phone?.id) return;
+    const t = setTimeout(() => document.getElementById('notify')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+    return () => clearTimeout(t);
+  }, [hash, phone?.id]);
 
   // Re-pick the configuration whenever the product data changes, keeping the
   // shopper's choice by id. The page first renders the shop-list copy, then
@@ -855,12 +865,23 @@ export default function ProductDetail() {
             )}
 
             {/* Delivery */}
+            {displayStock > 0 && (
             <div style={{ marginTop: '-2px' }}>
               <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
             </div>
+            )}
 
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+              {/* Sold out: take an address instead of showing a dead button. */}
+              {displayStock === 0 && (
+                <StockAlertForm
+                  productId={phone.id}
+                  productName={`${phone.brand} ${phone.model}`}
+                  variant={[selectedVariant?.storage, selectedVariant?.color, selectedVariant?.condition].filter(Boolean).join(' · ') || undefined}
+                />
+              )}
 
               <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch' }}>
                 {/* Quantity and share are desktop-only. On a 390px phone they
@@ -868,7 +889,7 @@ export default function ProductDetail() {
                     with its label touching the edges. A phone buyer sets
                     quantity in the basket, and the share icon already sits
                     beside the product title. */}
-                {isDesktop && (
+                {isDesktop && displayStock > 0 && (
                 <div
                   style={{
                     display: 'flex',
@@ -906,15 +927,16 @@ export default function ProductDetail() {
                 </div>
                 )}
 
+                {displayStock > 0 && (
                 <button
                   ref={addToCartRef}
                   onClick={handleAddToCart}
-                  disabled={displayStock === 0}
                   className="btn btn-primary btn-lg"
                   style={{ flex: 1, minWidth: 0 }}
                 >
-                  {displayStock > 0 ? 'Add to cart' : 'Out of stock'}
+                  Add to cart
                 </button>
+                )}
 
                 <motion.button
                   onClick={toggleWishlist}
@@ -1001,14 +1023,15 @@ export default function ProductDetail() {
             there, and a second full-width bar pinned under a mouse-driven
             page reads as clutter rather than help — a phone's one-CTA-per-
             screen is the case this bar earns its place for. */}
-        {!isDesktop && (
+        {/* Only when it can be bought: a sold-out product shows the
+            "email me when it's back" form instead of a dead button. */}
+        {!isDesktop && displayStock > 0 && (
           <StickyBuyBar
             watch={addToCartRef}
             title={`${phone.brand} ${phone.model}`}
             price={`£${displayPrice}`}
             originalPrice={savings > 0 ? `£${displayOriginalPrice}` : null}
-            label={displayStock > 0 ? 'Add to cart' : 'Out of stock'}
-            disabled={displayStock === 0}
+            label="Add to cart"
             onAdd={handleAddToCart}
           />
         )}

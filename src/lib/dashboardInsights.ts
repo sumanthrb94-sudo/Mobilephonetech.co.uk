@@ -37,6 +37,8 @@ export interface ProductDemand {
   productId: string;
   views: number;
   addToCart: number;
+  /** People who asked to be emailed when it is back in stock. */
+  waiting?: number;
 }
 
 /** What /api/health reports about the live configuration. */
@@ -264,7 +266,13 @@ export interface AheadItem {
   detail: string;
 }
 
+export interface WaitingItem extends AheadItem {
+  waiting: number;
+}
+
 export interface Ahead {
+  /** Back in stock with people waiting for an email: send it. */
+  backInStock: WaitingItem[];
   /** Will sell out within two weeks at the current rate. */
   runningOut: AheadItem[];
   /** Out of stock but people are still looking or buying. */
@@ -281,6 +289,7 @@ export function ahead(
 ): Ahead {
   const sold30 = soldSince(orders, new Date(now.getTime() - 30 * DAY));
   const views = new Map(demand.map(d => [d.productId, d.views]));
+  const waiting = new Map(demand.map(d => [d.productId, d.waiting ?? 0]));
   const name = (p: InsightProduct) => `${p.brand} ${p.model}`;
 
   const runningOut = products
@@ -290,12 +299,16 @@ export function ahead(
     .sort((a, b) => a.days - b.days)
     .map(({ p, days }) => ({ id: p.id, name: name(p), detail: `${p.stock} left, about ${days} day${days === 1 ? '' : 's'} at this rate` }));
 
+  // People waiting for an email come first: each one is a sale to make.
   const missedDemand = products
-    .filter(p => p.listed && p.stock <= 0 && ((sold30.get(p.id) ?? 0) > 0 || (views.get(p.id) ?? 0) >= 5))
+    .filter(p => p.listed && p.stock <= 0
+      && ((sold30.get(p.id) ?? 0) > 0 || (views.get(p.id) ?? 0) >= 5 || (waiting.get(p.id) ?? 0) > 0))
+    .sort((a, b) => (waiting.get(b.id) ?? 0) - (waiting.get(a.id) ?? 0))
     .map(p => {
       const s = sold30.get(p.id) ?? 0;
       const v = views.get(p.id) ?? 0;
-      const parts = [s ? `${s} sold in 30 days` : '', v ? `${v} views` : ''].filter(Boolean);
+      const w = waiting.get(p.id) ?? 0;
+      const parts = [w ? `${w} waiting` : '', s ? `${s} sold in 30 days` : '', v ? `${v} views` : ''].filter(Boolean);
       return { id: p.id, name: name(p), detail: `Out of stock · ${parts.join(', ')}` };
     });
 
@@ -303,7 +316,15 @@ export function ahead(
     .filter(p => p.stock > 0 && p.createdAt && daysBetween(now, new Date(p.createdAt)) > 90 && !sold30.get(p.id))
     .map(p => ({ id: p.id, name: name(p), detail: `${p.stock} in stock for ${daysBetween(now, new Date(p.createdAt!))} days` }));
 
-  return { runningOut, missedDemand, ageing };
+  const backInStock = products
+    .filter(p => p.listed && p.stock > 0 && (waiting.get(p.id) ?? 0) > 0)
+    .map(p => {
+      const w = waiting.get(p.id) ?? 0;
+      return { id: p.id, name: name(p), waiting: w, detail: `${w} waiting · ${p.stock} in stock` };
+    })
+    .sort((a, b) => b.waiting - a.waiting);
+
+  return { backInStock, runningOut, missedDemand, ageing };
 }
 
 // ── 6. Ready for launch ────────────────────────────────────────

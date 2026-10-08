@@ -131,6 +131,29 @@ describe('coming up', () => {
   });
 });
 
+describe('back-in-stock requests', () => {
+  it('put sold-out products with people waiting first', () => {
+    const a = ahead(
+      [product('viewed', { stock: 0 }), product('waited', { stock: 0 })],
+      [],
+      [{ productId: 'viewed', views: 30, addToCart: 0 }, { productId: 'waited', views: 0, addToCart: 0, waiting: 3 }],
+      NOW,
+    );
+    expect(a.missedDemand.map(i => i.id)).toEqual(['waited', 'viewed']);
+    expect(a.missedDemand[0].detail).toMatch(/3 waiting/);
+  });
+
+  it('lists products back in stock with people still waiting, to email them', () => {
+    const a = ahead(
+      [product('restocked', { stock: 2 }), product('still-out', { stock: 0 })],
+      [],
+      [{ productId: 'restocked', views: 0, addToCart: 0, waiting: 4 }, { productId: 'still-out', views: 0, addToCart: 0, waiting: 1 }],
+      NOW,
+    );
+    expect(a.backInStock).toEqual([{ id: 'restocked', name: 'Apple restocked', waiting: 4, detail: '4 waiting · 2 in stock' }]);
+  });
+});
+
 describe('ready for launch', () => {
   it('reads PayPal and email from the live health check', () => {
     const live = readiness([product('a')], [order('1', 'a')], { paypalConfigured: true, paypalEnv: 'live', emailConfigured: true }, { icoRegistration: 'ZA1' });

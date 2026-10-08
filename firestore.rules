@@ -256,6 +256,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // "Email me when it's back" requests. Written only by /api/stock-alert
+    // through the Admin SDK; staff read them to see demand for sold-out
+    // products. Each row is a customer's email address, so no public read.
+    match /stockAlerts/{alertId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
     // Anything not matched above is denied. Firestore already defaults to
     // deny, but stating it means a new collection cannot be reached by
     // accident before its rules are written.

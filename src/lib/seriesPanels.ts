@@ -232,6 +232,9 @@ export function panelProducts(catalogue: Product[], panel: SeriesPanel): Product
   const seen = new Set<string>();
   const deduped: Product[] = [];
   for (const p of catalogue) {
+    // Home rails sell: only what can be bought today. Out-of-stock models
+    // stay in the shop and search, after the ones in stock.
+    if ((p.stock ?? 0) <= 0) continue;
     if (!matchesPanel(p, panel)) continue;
     const key = p.model.trim().toLowerCase();
     if (seen.has(key)) continue;

@@ -12,8 +12,11 @@ export default function RelatedProductsSection({ currentProduct }: RelatedProduc
   const { products } = useCatalogue();
   const relatedProducts = useMemo(() => {
     return products.filter(phone => {
-      // Exclude current product
+      // Exclude current product, and anything that cannot be bought: a
+      // related strip is there to sell, and is most useful when the product
+      // being viewed is itself sold out.
       if (phone.id === currentProduct.id) return false;
+      if (!(phone.stock > 0)) return false;
       
       // Prefer same brand
       if (phone.brand === currentProduct.brand) return true;

@@ -117,6 +117,11 @@ describe('the built-in panels still select what their JavaScript rules did', () 
       .toEqual(['iPhone 17 Pro Max', 'iPhone 17 Pro', 'iPhone 17']);
   });
 
+  it('home rails show only what can be bought today', () => {
+    const withSoldOut = [product('Apple', 'iPhone 17 Air', { stock: 0 }), ...CATALOGUE];
+    expect(models(panelProducts(withSoldOut, byId('iphone-17')))).not.toContain('iPhone 17 Air');
+  });
+
   it('Galaxy S: the phones, not the tablet', () => {
     const out = models(panelProducts(CATALOGUE, byId('galaxy-s')));
     expect(out).toContain('Galaxy S23 Ultra');

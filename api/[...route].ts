@@ -39,6 +39,8 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'gemini-image': () => import('./_routes/gemini-image.js'),
   health: () => import('./_routes/health.js'),
   newsletter: () => import('./_routes/newsletter.js'),
+  'stock-alert': () => import('./_routes/stock-alert.js'),
+  'stock-alert-notify': () => import('./_routes/stock-alert-notify.js'),
   'order-notify': () => import('./_routes/order-notify.js'),
   'order-refund': () => import('./_routes/order-refund.js'),
   orders: () => import('./_routes/orders.js'),

@@ -46,7 +46,9 @@ export function ProductImage({ brand, model, imageUrl, color, category, alt, con
   }
 
   const drawing = <DeviceMock brand={brand} model={model} color={color} category={category} alt={alt} />;
-  if (context === 'thumb') return drawing;
+  // Cards carry their own badges (grade, saving) where the tag would sit,
+  // and staff see missing photos in admin; the tag stays on the product page.
+  if (context === 'thumb' || context === 'card') return drawing;
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {drawing}

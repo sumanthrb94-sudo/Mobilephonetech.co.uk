@@ -10,8 +10,9 @@ import {
 } from '../../lib/adminApi';
 import { loadDashboardInputs, type DashboardInputs } from '../../lib/dashboardData';
 import {
-  todo, selling, pushToSell, accounts, ahead, readiness,
+  todo, selling, pushToSell, accounts, ahead, readiness, type WaitingItem,
 } from '../../lib/dashboardInsights';
+import { auth } from '../../lib/firebase';
 import { COMPANY } from '../../config/company';
 import { useAdminPermissions } from '../../hooks/useAdminPermissions';
 
@@ -253,6 +254,9 @@ export default function DashboardPage() {
         <Panel title="Coming up" icon={<Clock size={16} />} hint="act before it costs sales">
           {loading || !view ? <Skeleton rows={5} /> : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {view.ahead.backInStock.length > 0 && (
+                <BackInStock items={view.ahead.backInStock} onSent={load} />
+              )}
               <AheadGroup title="Running out within 2 weeks" empty="Nothing selling fast enough to run out." items={view.ahead.runningOut} tone="low" />
               <AheadGroup title="Sold out but still wanted" empty="No demand going unmet." items={view.ahead.missedDemand} tone="out" />
               <AheadGroup title="Stock over 90 days, not selling" empty="No ageing stock." items={view.ahead.ageing} tone="neutral" />
@@ -393,6 +397,51 @@ function AheadGroup({ title, items, empty, tone }: {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Back in stock with people waiting: one button emails them all, once. */
+function BackInStock({ items, onSent }: { items: WaitingItem[]; onSent: () => void }) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const send = async (item: WaitingItem) => {
+    setBusy(item.id);
+    setNotice(null);
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      const res = await fetch('/api/stock-alert-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ productId: item.id }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `That did not work (${res.status}).`);
+      setNotice(`${item.name}: emailed ${data.sent} ${data.sent === 1 ? 'person' : 'people'}${data.failed ? `, ${data.failed} could not be sent` : ''}.`);
+      onSent();
+    } catch (err) {
+      setNotice(describeError(err));
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <div>
+      <p className="ops-eyebrow" style={{ margin: '0 0 6px' }}>Back in stock, people waiting · {items.length}</p>
+      <ul className="ops-list">
+        {items.slice(0, 4).map(i => (
+          <li key={i.id} className="ops-list-row">
+            <span style={{ minWidth: 0 }}>
+              <Link to={`/admin/inventory/${i.id}`} className="ops-list-name" style={{ display: 'block' }}>{i.name}</Link>
+              <span className="ops-meta">{i.detail}</span>
+            </span>
+            <button type="button" className="btn btn-buy btn-md" disabled={busy === i.id} onClick={() => send(i)}>
+              {busy === i.id ? 'Sending…' : `Email ${i.waiting} ${i.waiting === 1 ? 'person' : 'people'}`}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {notice && <p className="ops-meta" role="status" style={{ margin: '6px 0 0' }}>{notice}</p>}
     </div>
   );
 }

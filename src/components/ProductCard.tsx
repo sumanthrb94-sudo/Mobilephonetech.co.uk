@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight } from 'lucide-react';
+import { Heart, ArrowRight, BellRing } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product, ProductGrade } from '../types';
 import { useWishlist } from '../context/WishlistContext';
@@ -10,6 +10,7 @@ import QuickViewModal from './QuickViewModal';
 import PaymentTrustMark from './PaymentTrustMark';
 import { useHoverPrefetch } from '../hooks/useHoverPrefetch';
 import { getFastestDelivery } from '../utils/deliveryCalculator';
+import { knownColourHex } from '../utils/deviceColors';
 
 const GRADE_DOT: Record<ProductGrade, string> = {
   Pristine: '#3b82f6',
@@ -56,13 +57,6 @@ const SWATCHES: Record<string, string> = {
   'White':            '#F5F5F5',
 };
 
-const BRAND_COLOUR_DEFAULTS: Record<string, string[]> = {
-  Apple:    ['Natural Titanium', 'Blue Titanium', 'White Titanium', 'Black Titanium'],
-  Samsung:  ['Phantom Black', 'Phantom White', 'Lavender', 'Cream'],
-  Google:   ['Obsidian', 'Snow', 'Hazel'],
-  OnePlus:  ['Black', 'Green'],
-  Motorola: ['Black', 'Blue'],
-};
 
 interface ProductCardProps {
   phone: Product;
@@ -125,9 +119,14 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
   };
 
   const fromVariants = Array.from(new Set((phone.variants ?? []).map(v => v.color).filter(Boolean) as string[]));
-  const colours = phone.colorOptions?.length ? phone.colorOptions
-    : fromVariants.length ? fromVariants
-    : BRAND_COLOUR_DEFAULTS[phone.brand] ?? [];
+  // Only colours this product actually comes in. A brand-wide default list
+  // here used to show finishes that were not for sale.
+  const colours = phone.colorOptions?.length ? phone.colorOptions : fromVariants;
+  // The stored hex for that finish, else the shared palette. A bare colour
+  // name as CSS ("Porcelain", "Obsidian") is not a colour, so the dot drew
+  // empty.
+  const swatchOf = (c: string) =>
+    phone.variants?.find(v => v.color === c && v.colorHex)?.colorHex ?? SWATCHES[c] ?? knownColourHex(c) ?? '#c7c7cc';
   const visibleColours = colours.slice(0, 4);
   const overflowColours = colours.length - visibleColours.length;
 
@@ -191,6 +190,7 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             category={phone.category}
             imageUrl={phone.imageUrl}
             alt={phone.model}
+            context="card"
           />
 
           {/* Grade badge — top left */}
@@ -326,10 +326,11 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           {visibleColours.length > 0 && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
               {visibleColours.map(c => (
-                <span key={c} title={c} style={{
-                  width: 13, height: 13, borderRadius: '50%',
-                  background: SWATCHES[c] ?? c.toLowerCase(),
-                  border: '1.5px solid rgba(0,0,0,0.10)',
+                <span key={c} title={c} role="img" aria-label={c} style={{
+                  width: 14, height: 14, borderRadius: '50%',
+                  background: swatchOf(c),
+                  // A pale finish (white, silver) needs a visible edge on a white card.
+                  border: `1.5px solid ${isPale(swatchOf(c)) ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.12)'}`,
                   boxShadow: '0 0 0 1.5px #fff inset',
                   flexShrink: 0,
                 }} />
@@ -375,22 +376,24 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             </p>
           )}
 
-          {/* CTA — an out-of-stock card says so rather than offering to buy. */}
+          {/* CTA. Sold out: capture the demand ("Notify me" opens the
+              product page at its back-in-stock form) rather than a dead end. */}
           {phone.stock <= 0 && (
             <p style={{
               fontFamily: 'var(--font-body)', fontSize: compact ? '10.5px' : '12px', lineHeight: 1.3,
-              color: 'var(--grey-50)', margin: '2px 0 0 0', fontWeight: 600,
+              color: '#b45309', margin: '2px 0 0 0', fontWeight: 700,
             }}>
-              Out of stock
+              Sold out · back soon
             </p>
           )}
           <button
-            onClick={handleViewProduct}
-            aria-label={`View ${phone.model} details`}
+            onClick={phone.stock > 0 ? handleViewProduct : (e) => { e.stopPropagation(); navigate(`/product/${phone.id}#notify`); }}
+            aria-label={phone.stock > 0 ? `Buy ${phone.model}` : `Get notified when ${phone.model} is back in stock`}
             style={{
               width: '100%', height: compact ? 38 : 48,
-              background: phone.stock <= 0 ? 'var(--grey-50)' : 'var(--brand-cyan)',
-              color: '#fff',
+              background: phone.stock <= 0 ? 'var(--grey-0)' : 'var(--brand-cyan)',
+              color: phone.stock <= 0 ? 'var(--brand-header)' : '#fff',
+              boxShadow: phone.stock <= 0 ? 'inset 0 0 0 1.5px var(--brand-header)' : 'none',
               fontFamily: 'var(--font-sans)', fontSize: compact ? '12.5px' : '14px', fontWeight: 800,
               letterSpacing: '-0.01em',
               border: 'none', borderRadius: '999px',
@@ -403,13 +406,15 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             onMouseEnter={e => { if (phone.stock > 0) e.currentTarget.style.background = 'var(--brand-cyan-hover)'; }}
             onMouseLeave={e => { if (phone.stock > 0) e.currentTarget.style.background = 'var(--brand-cyan)'; }}
           >
-            {phone.stock > 0 ? 'Buy Now' : 'View details'} <ArrowRight size={14} style={{marginLeft: 6}} />
+            {phone.stock > 0
+              ? <>Buy Now <ArrowRight size={14} style={{ marginLeft: 6 }} /></>
+              : <><BellRing size={14} style={{ marginRight: 6 }} /> Notify me</>}
           </button>
 
           {/* Payment logos sit under the button rather than between price and
               button: the price block stays tight, and the marks answer "how
               can I pay?" at the moment the shopper is about to click. */}
-          <PaymentTrustMark compact={compact} />
+          {phone.stock > 0 && <PaymentTrustMark compact={compact} />}
         </div>
       </motion.article>
 
@@ -425,3 +430,12 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
 });
 
 export default ProductCard;
+
+/** True for light colours (white, silver, cream) that vanish on a white card. */
+function isPale(hex: string): boolean {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  return 0.299 * r + 0.587 * g + 0.114 * b > 200;
+}

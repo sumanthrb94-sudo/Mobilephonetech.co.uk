@@ -69,7 +69,7 @@ export async function loadDashboardInputs(): Promise<DashboardInputs> {
     try { return await p; } catch { unavailable.push(label); return fallback; }
   };
 
-  const [products, orders, analytics, health, returns, unread] = await Promise.all([
+  const [products, orders, analytics, health, returns, unread, alerts] = await Promise.all([
     settle('products', loadProducts(), [] as InsightProduct[]),
     settle('orders', listOrders(), []),
     settle('shop views', staffFetch<{ demand?: ProductDemand[] }>('/api/analytics?days=30'), null),
@@ -77,7 +77,19 @@ export async function loadDashboardInputs(): Promise<DashboardInputs> {
     settle('live settings', staffFetch<{ checks?: SiteHealth }>('/api/health').then(h => h.checks ?? null), null),
     settle('returns', listReturns('open').then(r => r.length), null),
     settle('messages', getDocs(query(collection(db, COL.conversations), where('unreadForAdmin', '>', 0), limit(100))).then(s => s.size), null),
+    settle('back-in-stock requests', getDocs(query(collection(db, 'stockAlerts'), where('notifiedAt', '==', null), limit(2000)))
+      .then(s => s.docs.map(d => String(d.data().productId ?? ''))), [] as string[]),
   ]);
+
+  // Views and add-to-carts per product, plus how many people asked to be
+  // emailed when it is back.
+  const demand = new Map<string, ProductDemand>((analytics?.demand ?? []).map(d => [d.productId, { ...d }]));
+  for (const id of alerts) {
+    if (!id) continue;
+    const row = demand.get(id) ?? { productId: id, views: 0, addToCart: 0 };
+    row.waiting = (row.waiting ?? 0) + 1;
+    demand.set(id, row);
+  }
 
   return {
     products,
@@ -91,7 +103,7 @@ export async function loadDashboardInputs(): Promise<DashboardInputs> {
       dispatchedAt: o.dispatchedAt,
       items: o.items.map(i => ({ productId: i.productId, quantity: i.quantity, price: i.price, buyPrice: i.buyPrice })),
     })),
-    demand: analytics?.demand ?? [],
+    demand: [...demand.values()],
     health,
     openReturns: returns,
     unreadMessages: unread,

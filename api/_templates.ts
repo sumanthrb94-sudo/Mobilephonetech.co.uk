@@ -963,3 +963,23 @@ export function newOrderAlertEmail(order: OrderLike & { contactPhone?: string })
     text,
   };
 }
+
+/**
+ * Back in stock: the one email a shopper asked for from a sold-out product.
+ * Plain and short — what is back, the price, and a button to it.
+ */
+export function backInStockEmail(item: { id: string; name: string; price: number; variant?: string | null }): Built {
+  const url = `${SHOP_URL}/product/${encodeURIComponent(item.id)}`;
+  const headline = `${item.name} is back in stock`;
+  const line = item.variant ? `You asked us to tell you when the ${esc(item.name)} (${esc(item.variant)}) was back.` : `You asked us to tell you when the ${esc(item.name)} was back.`;
+  const body = [
+    p(`${line} It is available again from ${money(item.price)}. Refurbished stock is often one of a kind, so it may not last.`),
+    button('See it now', url),
+    p(`<span style="font-size:12.5px;color:${PALETTE.muted};">This was a one-off email you requested. We have not added you to any mailing list.</span>`),
+  ].join('');
+  return {
+    subject: headline,
+    html: shell({ preview: `Available again from ${money(item.price)}.`, kicker: 'Back in stock', headline, body }),
+    text: [headline, '', `${item.name}${item.variant ? ` (${item.variant})` : ''} is available again from ${money(item.price)}.`, url, '', 'This was a one-off email you requested.'].join('\n'),
+  };
+}

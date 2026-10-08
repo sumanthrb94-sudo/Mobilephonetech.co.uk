@@ -256,12 +256,13 @@ export default function ProductsPage() {
   }, [scopedProducts, searchQuery, filters]);
 
   const sortedProducts = useMemo(() => {
-    if (!sortBy) return filteredProducts;
     const copy = [...filteredProducts];
     if (sortBy === 'price-asc')  copy.sort((a, b) => a.price - b.price);
     if (sortBy === 'price-desc') copy.sort((a, b) => b.price - a.price);
     if (sortBy === 'condition')  copy.sort((a, b) => (GRADE_ORDER[a.grade] ?? 99) - (GRADE_ORDER[b.grade] ?? 99));
-    return copy;
+    // Whatever the sort, what can be bought today comes first; sold-out
+    // models follow, still findable, keeping their order among themselves.
+    return [...copy.filter(p => p.stock > 0), ...copy.filter(p => !(p.stock > 0))];
   }, [filteredProducts, sortBy]);
 
   const seoBrand =

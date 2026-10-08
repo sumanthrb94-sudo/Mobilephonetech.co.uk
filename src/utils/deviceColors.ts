@@ -8,6 +8,35 @@
  */
 
 const PALETTE: Record<string, string> = {
+  // ── Google Pixel and Samsung Galaxy finishes ─────────────────────
+  'porcelain':        '#ece6db',
+  'peony':            '#e9b7c2',
+  'chalk':            '#eceae5',
+  'sorta seafoam':    '#c9e2d6',
+  'bay':              '#8fb4dc',
+  'mint':             '#cfe8d6',
+  'rose':             '#f1c6c2',
+  'iris':             '#9fa6da',
+  'aloe':             '#c4dac1',
+  'wintergreen':      '#cfe4d5',
+  'icy blue':         '#c7dbe9',
+  'onyx black':       '#262628',
+  'marble grey':      '#c6c4c0',
+  'cobalt violet':    '#6f5f99',
+  'amber yellow':     '#efd38b',
+  'awesome lilac':    '#c9b6dc',
+  'awesome lime':     '#d6e6a3',
+  'awesome iceblue':  '#c5def0',
+  'awesome navy':     '#2c3956',
+  'awesome graphite': '#4b4c4f',
+  'titanium gray':    '#8e8e90',
+  'titanium black':   '#2d2d2f',
+  'titanium violet':  '#9b8fb8',
+  'titanium yellow':  '#e8dc9c',
+  'titanium silverblue': '#a9b8c8',
+  'titanium whitesilver': '#e3e3e1',
+  'light blue':       '#bcd7ee',
+  'light green':      '#cfe6c8',
   // ── Apple colours from the reference catalogue not listed below ──
   '(product)red':     '#bf0013',
   'light gold':       '#efe2c8',
@@ -178,3 +207,9 @@ export function colourHex(name: string | undefined, brand?: string): string {
 
 export const SCREEN = SCREEN_GLASS;
 export const FRAME  = FRAME_OUTLINE;
+
+/** The palette colour for a finish name, or null when the name is not known. */
+export function knownColourHex(name: string | undefined): string | null {
+  if (!name) return null;
+  return PALETTE[name.trim().toLowerCase()] ?? null;
+}

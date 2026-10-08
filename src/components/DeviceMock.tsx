@@ -82,7 +82,17 @@ const ScreenCtx = createContext('#0a0c0e');
 
 /** A side button or crown in the variant colour, outlined so pale colours still show. */
 function AccentButton({ x, y, width, height }: { x: number; y: number; width: number; height: number }) {
-  return <rect x={x} y={y} width={width} height={height} rx={Math.min(width, height) / 2} fill={useContext(AccentCtx)} stroke="rgba(0,0,0,0.35)" strokeWidth="0.5" />;
+  const fill = useContext(AccentCtx);
+  // White and silver buttons vanish against the light page: a firmer edge
+  // keeps the finish readable.
+  const pale = luminance(fill) > 200;
+  return <rect x={x} y={y} width={width} height={height} rx={Math.min(width, height) / 2} fill={fill}
+    stroke={pale ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.35)'} strokeWidth={pale ? 0.9 : 0.5} />;
+}
+
+function luminance(c: string): number {
+  const { r, g, b } = parseHex(c);
+  return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
 function pageBackground(brand: string): string {

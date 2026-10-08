@@ -19,10 +19,16 @@ describe('product card stock', () => {
     expect(screen.queryByText('Out of stock')).toBeNull();
   });
 
-  it('says out of stock, and does not offer to buy, at stock 0', () => {
+  it('at stock 0 asks for an email instead of offering to buy', () => {
     render(<MemoryRouter><ProductCard phone={{ ...base, stock: 0 }} /></MemoryRouter>);
-    expect(screen.getByText('Out of stock')).toBeTruthy();
+    expect(screen.getByText(/Sold out/)).toBeTruthy();
     expect(screen.queryByText(/Buy Now/)).toBeNull();
-    expect(screen.getByText(/View details/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /notified when .* back in stock/i })).toBeTruthy();
+  });
+
+  it('shows a real colour for finishes a browser does not know by name', () => {
+    const { container } = render(<MemoryRouter><ProductCard phone={{ ...base, stock: 1, colorOptions: ['Porcelain'], variants: [] }} /></MemoryRouter>);
+    const dot = container.querySelector('[aria-label="Porcelain"]') as HTMLElement;
+    expect(dot.style.background).toMatch(/rgb|#/);
   });
 });

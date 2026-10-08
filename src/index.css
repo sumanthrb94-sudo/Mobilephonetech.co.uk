@@ -4730,3 +4730,13 @@ html.is-paying .checkout-header {
 .guide-body ul { margin: 0 0 16px; padding-left: 22px; }
 .guide-body li { margin-bottom: 8px; }
 .guide-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: var(--spacing-32); padding-top: var(--spacing-24); border-top: 1px solid var(--grey-10); }
+
+/* Back-in-stock form: replaces the add-to-cart button on a sold-out product. */
+.stock-alert { display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1.5px solid var(--brand-cyan); border-radius: var(--radius-md); background: var(--color-brand-subtle, #fef9ec); }
+.stock-alert__title { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-sans); font-size: 15px; font-weight: 800; color: var(--black); }
+.stock-alert__row { display: flex; gap: 8px; flex-wrap: wrap; }
+.stock-alert__row .input { flex: 1 1 200px; min-width: 0; height: 48px; padding: 0 14px; border: 1px solid var(--grey-20); border-radius: var(--radius-md); }
+.stock-alert__row .btn { flex: 0 0 auto; }
+.stock-alert__note { margin: 0; font-family: var(--font-body); font-size: 12px; color: var(--grey-50); }
+.stock-alert__error { margin: 0; font-family: var(--font-body); font-size: 13px; color: #b91c1c; }
+.stock-alert--done { flex-direction: row; align-items: center; color: #065f46; background: #ecfdf5; border-color: #10b981; font-family: var(--font-body); font-size: 14px; }
