@@ -193,12 +193,33 @@ export async function getProduct(id) {
   const res = await fetch(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products/${id}`, { headers: authHeaders });
   if (res.status === 404) return null;
   const body = await res.json();
+  return fromFields(body.fields);
+}
+
+/** Firestore REST values -> plain JS, including arrays and maps (variants). */
+function fromValue(v) {
+  if (v.stringValue != null) return v.stringValue;
+  if (v.integerValue != null) return Number(v.integerValue);
+  if (v.doubleValue != null) return v.doubleValue;
+  if (v.booleanValue != null) return v.booleanValue;
+  if (v.nullValue !== undefined) return null;
+  if (v.timestampValue != null) return v.timestampValue;
+  if (v.arrayValue) return (v.arrayValue.values ?? []).map(fromValue);
+  if (v.mapValue) return fromFields(v.mapValue.fields);
+  return v;
+}
+
+function fromFields(fields) {
   const out = {};
-  for (const [k, v] of Object.entries(body.fields ?? {})) {
-    out[k] = v.stringValue ?? (v.integerValue != null ? Number(v.integerValue)
-      : v.doubleValue ?? v.booleanValue ?? (v.nullValue !== undefined ? null : v));
-  }
+  for (const [k, v] of Object.entries(fields ?? {})) out[k] = fromValue(v);
   return out;
+}
+
+/** Any document, decoded, as an admin reads it. null when absent. */
+export async function getDocument(collection, id) {
+  const res = await fetch(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${collection}/${id}`, { headers: authHeaders });
+  if (res.status === 404) return null;
+  return fromFields((await res.json()).fields);
 }
 
 export async function countProducts() {

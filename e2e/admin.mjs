@@ -17,7 +17,7 @@ import { mkdirSync } from 'node:fs';
 import { resolveChromium } from './chromium-path.mjs';
 import {
   seed, waitForEmulators, getProduct, countProducts, attemptProductWriteAs,
-  ADMIN_EMAIL, CUSTOMER_EMAIL, PASSWORD, seedOrders,
+  ADMIN_EMAIL, CUSTOMER_EMAIL, PASSWORD, seedOrders, getDocument,
 } from './emulator-seed.mjs';
 
 const BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
@@ -124,7 +124,10 @@ async function auditLayout(page, view, label) {
       borderless: [...document.querySelectorAll('input:not([type=hidden])')]
         .filter(el => !['checkbox', 'radio', 'range', 'color', 'file'].includes(el.type))
         .filter(vis)
-        .filter(el => parseFloat(getComputedStyle(el).borderTopWidth) === 0)
+        // A search field whose box is drawn by its wrapper (icon + input in
+        // one bordered pill, like the orders search) has a visible border.
+        .filter(el => parseFloat(getComputedStyle(el).borderTopWidth) === 0
+          && !(el.parentElement && parseFloat(getComputedStyle(el.parentElement).borderTopWidth) > 0))
         .map(el => el.id || el.placeholder || 'input'),
       // An icon on its own line is the signature of a button with no
       // inline-flex — the defect that made three controls look like plain text.
@@ -609,7 +612,36 @@ async function run(view, contextOpts) {
     await page.waitForTimeout(300);
   }
 
+  /* Dispatching, for real: the button has to save the move, the courier and
+     the tracking number, not just appear. Staff do this for every order. */
   await page.locator('.ord-head', { hasText: 'ORD-E2E-1' }).first().click();
+  await settled(page, '.ord-actions');
+  const dispatch = page.getByRole('button', { name: /^Mark dispatched$/i });
+  rec(view, 'Dispatch waits for courier and tracking', await dispatch.isDisabled());
+  await page.getByLabel('Courier').fill('Royal Mail');
+  await page.getByLabel('Tracking number').fill('AB123456789GB');
+  await dispatch.click();
+  await page.waitForTimeout(3000);
+  const dispatched = await getDocument('orders', 'ORD-E2E-1');
+  rec(view, 'Dispatch saves the order as dispatched', dispatched?.status === 'dispatched', `status ${dispatched?.status}`);
+  rec(view, 'Dispatch saves the tracking number',
+    JSON.stringify(dispatched ?? {}).includes('AB123456789GB'));
+  rec(view, 'Dispatch reports success, not an error', /dispatched/i.test(await txt()) && !/could not|failed|error/i.test(await page.locator('.admin-error, [role=alert]').allInnerTexts().then(t => t.join(' '))));
+
+  // The next stage moves on in one tap, with no fields to fill.
+  await page.getByRole('tab', { name: /^All/ }).click().catch(() => {});
+  await page.waitForTimeout(400);
+  const head2 = page.locator('.ord-head', { hasText: 'ORD-E2E-2' }).first();
+  await head2.click();
+  await page.waitForTimeout(450);
+  await page.getByRole('button', { name: /^Mark out for delivery$/i }).click();
+  await page.waitForTimeout(3000);
+  const outForDelivery = await getDocument('orders', 'ORD-E2E-2');
+  rec(view, 'Out for delivery is saved', outForDelivery?.status === 'out-for-delivery', `status ${outForDelivery?.status}`);
+
+  await page.getByRole('tab', { name: /^All/ }).click().catch(() => {});
+  await page.waitForTimeout(400);
+  await page.locator('.ord-head', { hasText: 'ORD-E2E-3' }).first().click();
   await settled(page, '.ord-actions');
 
   // Money leaving takes two deliberate steps at every width.

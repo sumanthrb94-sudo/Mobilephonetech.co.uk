@@ -140,15 +140,30 @@ export function bannerProblems(b: Pick<Banner, 'headline' | 'image' | 'imageMobi
   return out;
 }
 
+/**
+ * The document written for a banner. Optional fields read back as undefined
+ * (imageWide, savings…), and Firestore refuses an undefined value outright, so
+ * any banner saved once without them could never be saved again — editing it
+ * or switching it off failed with "Unsupported field value: undefined".
+ */
+export function bannerDocument(b: Banner, now = new Date()): Record<string, unknown> {
+  const data: Record<string, unknown> = {
+    ...b,
+    // The home page shows only the current campaign set (see Hero), so a
+    // banner saved here joins it. Without this a new banner was reported as
+    // "live on the home page" and then filtered out of it.
+    campaignSet: HOME_BANNER_SET,
+    ctaHref: b.ctaHref.trim() || '/products',
+    updatedAt: now.toISOString(),
+  };
+  for (const key of Object.keys(data)) if (data[key] === undefined) delete data[key];
+  return data;
+}
+
 export async function saveBanner(b: Banner): Promise<void> {
   const problems = bannerProblems(b);
   if (problems.length) throw new Error(problems[0]);
-
-  await withAdminRetry(() => setDoc(doc(db, COL.banners, b.id), {
-    ...b,
-    ctaHref: b.ctaHref.trim() || '/products',
-    updatedAt: new Date().toISOString(),
-  }));
+  await withAdminRetry(() => setDoc(doc(db, COL.banners, b.id), bannerDocument(b)));
 }
 
 export function deleteBanner(id: string): Promise<void> {

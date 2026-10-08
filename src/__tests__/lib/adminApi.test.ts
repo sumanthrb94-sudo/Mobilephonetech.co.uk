@@ -82,6 +82,16 @@ describe('validateDraft', () => {
     expect(errors).toHaveProperty('variant-0-batteryHealth');
   });
 
+  it('allows a priced configuration with the was-price left blank', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 949, originalPrice: 0, stock: 1, batteryHealth: 95 }];
+    expect(validateDraft(draft({ listed: true, variantMode: true, variants }))).toEqual({});
+  });
+
+  it('refuses a was-price that is filled in but below the selling price', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 949, originalPrice: 500, stock: 1, batteryHealth: 95 }];
+    expect(validateDraft(draft({ listed: true, variantMode: true, variants }))).toHaveProperty('variant-0-originalPrice');
+  });
+
   it('refuses stock on a configuration with no price', () => {
     const variants = [
       { id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 650, originalPrice: 799, stock: 1, batteryHealth: 92, galleryImages: ['https://example.test/black.jpg'] },

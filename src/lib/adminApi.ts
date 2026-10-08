@@ -140,7 +140,8 @@ function variantSummary(draft: ProductDraft) {
   const offered = variants.filter(isOffered);
   const basis = offered.length ? offered : variants;
   const prices = basis.map(v => v.price).filter(Number.isFinite);
-  const originalPrices = basis.map(v => v.originalPrice).filter(Number.isFinite);
+  // A blank was-price (0) is no comparison, not a comparison price of £0.
+  const originalPrices = basis.map(v => v.originalPrice).filter(p => Number.isFinite(p) && p > 0);
   const battery = basis.map(v => v.batteryHealth).filter((v): v is number => v != null);
   return {
     variants,
@@ -347,7 +348,9 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
         continue;
       }
       if (forSale && (!Number.isFinite(v.price) || v.price <= 0)) errors[`variant-${index}-price`] = 'Each variant needs a selling price above £0.';
-      if (forSale && (!Number.isFinite(v.originalPrice) || v.originalPrice < v.price)) errors[`variant-${index}-originalPrice`] = 'Was price must be at least the selling price.';
+      // Blank (0) means no comparison price: the shop then shows no saving.
+      // Only a was-price that is filled in and below the selling price is wrong.
+      if (forSale && (!Number.isFinite(v.originalPrice) || (v.originalPrice > 0 && v.originalPrice < v.price))) errors[`variant-${index}-originalPrice`] = 'Was price must be at least the selling price, or left blank.';
       if (!Number.isInteger(v.stock) || v.stock < 0) errors[`variant-${index}-stock`] = 'Stock must be a whole number of 0 or more.';
       if (forSale && (!v.condition || !GRADES.includes(v.condition))) errors[`variant-${index}-condition`] = 'Choose a condition.';
       if (v.batteryHealth != null && (!Number.isInteger(v.batteryHealth) || v.batteryHealth < 0 || v.batteryHealth > 100)) errors[`variant-${index}-batteryHealth`] = 'Battery health must be 0–100.';

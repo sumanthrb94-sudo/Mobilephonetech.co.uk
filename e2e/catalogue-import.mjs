@@ -144,6 +144,85 @@ try {
   rec('unpriced capacities are not offered', !body.includes('2TB'));
   await page.screenshot({ path: `${OUT}/3-product-page.png`, fullPage: false });
 
+  // ── 6. Staff change the price; the shop follows ─────────────────────────
+  const editor = `${BASE}/admin/inventory/apple-iphone-17-pro-max`;
+  const saveEditor = async () => {
+    await page.getByRole('button', { name: /Save changes/ }).click();
+    await page.waitForURL(/\/admin\/inventory$/, { timeout: 20000 });
+  };
+  await page.goto(editor, { waitUntil: 'domcontentloaded' });
+  await page.getByLabel('Configuration 1 selling price').waitFor({ timeout: 20000 });
+  rec('editor reloads the saved price', await page.getByLabel('Configuration 1 selling price').inputValue() === '899');
+  await page.getByLabel('Configuration 1 selling price').fill('849');
+  // A second configuration goes on sale alongside it.
+  await page.getByLabel('Configuration 2 condition').selectOption({ index: 1 });
+  await page.getByLabel('Configuration 2 battery health').fill('95');
+  await page.getByLabel('Configuration 2 selling price').fill('949');
+  await page.getByLabel('Configuration 2 stock').fill('1');
+  await saveEditor();
+  const repriced = await getProduct('apple-iphone-17-pro-max');
+  rec('new price saved', repriced?.price === 849, `price ${repriced?.price}`);
+  rec('second configuration saved with its price',
+    (repriced?.variants ?? []).filter(v => v.price > 0).map(v => v.price).sort().join(',') === '849,949');
+
+  await page.goto(`${BASE}/product/apple-iphone-17-pro-max`, { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Add to cart' }).first().waitFor({ timeout: 20000 });
+  const repricedBody = await page.locator('body').innerText();
+  rec('product page shows the new price', repricedBody.includes('£849'));
+  rec('old price is gone from the product page', !repricedBody.includes('£899'));
+  rec('both priced finishes are offered', /2 finishes\b/.test(repricedBody), repricedBody.match(/\d+ finish(es)?/)?.[0]);
+
+  await page.goto(`${BASE}/products?brand=Apple`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3500);
+  const listing = await page.locator('body').innerText();
+  rec('shop listing shows the product at its from-price', listing.includes('iPhone 17 Pro Max') && listing.includes('£849'));
+
+  // ── 7. A customer adds it to the cart at the price staff set ────────────
+  await page.goto(`${BASE}/product/apple-iphone-17-pro-max`, { waitUntil: 'domcontentloaded' });
+  await page.getByRole('button', { name: 'Add to cart' }).first().click();
+  await page.waitForTimeout(1500);
+  await page.goto(`${BASE}/cart`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(2500);
+  const cart = await page.locator('body').innerText();
+  rec('cart holds the product at the staff price', cart.includes('iPhone 17 Pro Max') && cart.includes('£849'));
+
+  // ── 8. Back to draft: off the shop, then listed again ────────────────────
+  await page.goto(editor, { waitUntil: 'domcontentloaded' });
+  await page.locator('#field-listed').waitFor({ timeout: 20000 });
+  await page.locator('#field-listed').uncheck();
+  await saveEditor();
+  rec('switched to draft', (await getProduct('apple-iphone-17-pro-max'))?.listed === false);
+  await page.goto(`${BASE}/product/apple-iphone-17-pro-max`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3500);
+  rec('a draft cannot be bought', await page.getByRole('button', { name: 'Add to cart' }).count() === 0);
+  await page.goto(`${BASE}/products?brand=Apple`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3500);
+  rec('a draft leaves the shop listing', !(await page.locator('body').innerText()).includes('iPhone 17 Pro Max'));
+
+  await page.goto(editor, { waitUntil: 'domcontentloaded' });
+  await page.locator('#field-listed').waitFor({ timeout: 20000 });
+  await page.locator('#field-listed').check();
+  await saveEditor();
+  await page.goto(`${BASE}/product/apple-iphone-17-pro-max`, { waitUntil: 'domcontentloaded' });
+  rec('listing it again puts it back on sale at the same price',
+    await page.getByRole('button', { name: 'Add to cart' }).first().waitFor({ timeout: 20000 }).then(() => true, () => false)
+      && (await page.locator('body').innerText()).includes('£849'));
+
+  // ── 9. Delete: quick, and gone from the shop ─────────────────────────────
+  await page.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
+  await page.getByLabel('Search inventory').fill('iPhone 17 Pro Max');
+  await page.waitForTimeout(800);
+  await page.getByRole('button', { name: /Delete Apple iPhone 17 Pro Max/i }).first().click();
+  const started = Date.now();
+  await page.getByRole('button', { name: /Delete permanently/i }).first().click();
+  const closed = await page.getByText(/cannot be undone/i).waitFor({ state: 'detached', timeout: 15000 }).then(() => true, () => false);
+  const took = Date.now() - started;
+  rec('delete finishes within a few seconds', closed && took < 6000, `${took}ms`);
+  rec('deleted product is gone from the database', (await getProduct('apple-iphone-17-pro-max')) === null);
+  await page.goto(`${BASE}/product/apple-iphone-17-pro-max`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(3500);
+  rec('deleted product page says it is no longer available', /no longer available/i.test(await page.locator('body').innerText()));
+
   rec('no uncaught page errors', errors.length === 0, errors.slice(0, 3).join(' | '));
 } catch (err) {
   rec('suite ran to completion', false, err.message.split('\n')[0]);
