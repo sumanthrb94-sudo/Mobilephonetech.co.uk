@@ -201,6 +201,21 @@ async function run(view, contextOpts) {
   rec(view, 'A brand with zero stock draws no bar', zeroBarWidth === 0, `${zeroBarWidth}px`);
 
   rec(view, 'Restocking queue lists the out-of-stock item', /Samsung Galaxy S23/.test(hub) && /OUT OF STOCK/i.test(hub));
+
+  // The at-a-glance sections: what to do now, what to push, launch readiness.
+  rec(view, 'Needs-doing-now tiles are shown', await page.locator('.ops-todo-tile').count() === 5);
+  rec(view, 'Push to sell names the unsold in-stock product and why',
+    /Push to sell/i.test(hub) && /Apple iPhone 17/.test(hub) && /Upload photos/i.test(hub));
+  rec(view, 'Readiness counts in-stock products with photos', /0 of 1 in-stock products have photos/.test(hub));
+  rec(view, 'Accounts panel is shown', /Accounts/.test(hub) && /Stock on hand/i.test(hub));
+
+  // Setup and insights pages sit behind two menus; every page is still reachable.
+  await page.locator('.admin-navgroup summary', { hasText: 'Shop setup' }).click();
+  await page.locator('.admin-navgroup-item', { hasText: 'Banners' }).click();
+  await page.waitForURL(/\/admin\/banners$/, { timeout: 10000 }).catch(() => {});
+  rec(view, 'Shop setup menu reaches Banners', /\/admin\/banners$/.test(page.url()), page.url());
+  await page.goto(`${BASE}/admin`, { waitUntil: 'domcontentloaded' });
+  await settled(page, '.ops-bar-row');
   await shot(page, `${view}-dashboard-hub`);
 
   // ── 1. Inventory loads for an admin ──

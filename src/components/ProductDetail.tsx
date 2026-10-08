@@ -263,11 +263,11 @@ export default function ProductDetail() {
           setPhone(forShop(docToProduct(snap.id, snap.data())));
           return;
         }
-        if (snap.exists()) {
-          // A draft: not for sale yet, so it reads as not found.
-          setPhone(null);
-          return;
-        }
+        // A draft (not for sale yet), or a product deleted since the shop
+        // list was cached: either way it reads as not found. Keeping the
+        // cached copy here showed deleted products as still for sale.
+        setPhone(null);
+        return;
       } catch {
         // Firestore unreachable — fall through to the catalogue copy.
       }
@@ -280,11 +280,21 @@ export default function ProductDetail() {
 
   React.useEffect(() => {
     window.scrollTo(0, 0);
-    if (phone?.variants && phone.variants.length > 0) {
-      setSelectedVariant(phone.variants.find(variant => variant.stock > 0) ?? phone.variants[0]);
-    }
     if (phone?.id) trackRecent(phone.id);
   }, [phone?.id]);
+
+  // Re-pick the configuration whenever the product data changes, keeping the
+  // shopper's choice by id. The page first renders the shop-list copy, then
+  // the fresh record; holding on to the first copy's variant object kept its
+  // price, so a price staff had just changed stayed on screen.
+  React.useEffect(() => {
+    const variants = phone?.variants ?? [];
+    if (!variants.length) return;
+    setSelectedVariant(current =>
+      variants.find(v => v.id === current?.id)
+      ?? variants.find(v => v.stock > 0)
+      ?? variants[0]);
+  }, [phone]);
 
   const isWishlisted = phone ? isInWishlist(phone.id) : false;
   const toggleWishlist = () => {
@@ -482,34 +492,33 @@ export default function ProductDetail() {
             >
               How does grading work?
             </button>
-            {/* Rating is derived from the product's own reviews and hidden
-                when there are none. This previously rendered five filled
-                stars and a hardcoded "4.8★ (342 reviews)" on every product,
-                which is an invented aggregate — a banned practice under the
-                DMCC Act, and misleading regardless. */}
-            {/* Only shown once a verified buyer has written a review. A grey
-                "No reviews yet" beside the title read as a warning on every
-                product, which is how it was in practice until the first
-                review lands; the reviews section further down still says so
-                and still invites the first one. */}
-            {reviewCount > 0 && (
-              <a
-                href="#pdp-reviews"
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '6px',
-                  textDecoration: 'none', color: 'inherit',
-                }}
-              >
-                <span style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
-                  ))}
-                </span>
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                  {averageRating.toFixed(1)} ({reviewCount} review{reviewCount === 1 ? '' : 's'})
-                </span>
-              </a>
-            )}
+            {/* Always at the top, for trust, and always a link down to the
+                reviews. Stars and the average come only from verified-buyer
+                reviews: an invented rating (this page once hardcoded
+                "4.8★ (342 reviews)") is banned under the DMCC Act 2024. Until
+                the first review lands it says so and invites one. */}
+            <a
+              href="#pdp-reviews"
+              className="pdp-rating-link"
+              aria-label={reviewCount > 0
+                ? `Rated ${averageRating.toFixed(1)} out of 5 from ${reviewCount} review${reviewCount === 1 ? '' : 's'}`
+                : 'No reviews yet. Be the first to review'}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                textDecoration: 'none', color: 'inherit',
+              }}
+            >
+              <span style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={16} fill={reviewCount > 0 && i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+                ))}
+              </span>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                {reviewCount > 0
+                  ? `${averageRating.toFixed(1)} (${reviewCount} review${reviewCount === 1 ? '' : 's'})`
+                  : 'No reviews yet · be the first'}
+              </span>
+            </a>
           </div>
         </div>
   );

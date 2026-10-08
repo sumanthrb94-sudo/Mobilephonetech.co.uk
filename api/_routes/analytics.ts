@@ -184,6 +184,9 @@ export default async function handler(req: any, res: any) {
         .sort((a, b) => b.cost - a.cost),
     },
     attention: attention.slice(0, 15),
+    // Views and add-to-carts for every product seen (up to 200), so the
+    // dashboard can say why a product in stock is not selling.
+    demand: attention.map(({ productId, views, addToCart }) => ({ productId, views, addToCart })),
     // Attention with nothing to show for it — the actionable end of the list.
     noSales: attention.filter((a) => a.views >= 5 && a.unitsSold === 0).slice(0, 10),
   });

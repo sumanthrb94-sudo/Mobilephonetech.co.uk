@@ -1,5 +1,6 @@
-import { NavLink, Outlet, Link } from 'react-router-dom';
-import { Boxes, Store } from 'lucide-react';
+import { useRef } from 'react';
+import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
+import { Boxes, Store, ChevronDown } from 'lucide-react';
 import { useSeo } from '../../hooks/useSeo';
 
 /**
@@ -21,19 +22,25 @@ export default function AdminLayout() {
             Admin
           </span>
 
-          <nav style={{ display: 'flex', gap: 4 }} aria-label="Admin sections">
+          {/* The daily work up front; setup and insights grouped behind two
+              menus, so staff are not reading eleven links to find Orders. */}
+          <nav style={{ display: 'flex', gap: 4, alignItems: 'center' }} aria-label="Admin sections">
             {/* `end` on the index link, or it stays active on every child route. */}
             <NavLink to="/admin" end style={navLinkStyle}>Dashboard</NavLink>
             <NavLink to="/admin/orders" style={navLinkStyle}>Orders</NavLink>
             <NavLink to="/admin/inventory" end style={navLinkStyle}>Inventory</NavLink>
-            <NavLink to="/admin/catalogue-import" style={navLinkStyle}>Catalogue import</NavLink>
-            <NavLink to="/admin/banners" style={navLinkStyle}>Banners</NavLink>
-            <NavLink to="/admin/home" style={navLinkStyle}>Home layout</NavLink>
-            <NavLink to="/admin/series" style={navLinkStyle}>Series</NavLink>
-            <NavLink to="/admin/analytics" style={navLinkStyle}>Analytics</NavLink>
-            <NavLink to="/admin/reports" style={navLinkStyle}>Reports</NavLink>
             <NavLink to="/admin/returns" style={navLinkStyle}>Returns</NavLink>
             <NavLink to="/admin/support" style={navLinkStyle}>Support</NavLink>
+            <NavGroup label="Shop setup" links={[
+              ['/admin/catalogue-import', 'Catalogue import'],
+              ['/admin/banners', 'Banners'],
+              ['/admin/home', 'Home layout'],
+              ['/admin/series', 'Series'],
+            ]} />
+            <NavGroup label="Insights" links={[
+              ['/admin/analytics', 'Analytics'],
+              ['/admin/reports', 'Reports'],
+            ]} />
           </nav>
 
           <Link to="/" style={{ ...navLinkStyle({ isActive: false }), marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -46,6 +53,25 @@ export default function AdminLayout() {
         <Outlet />
       </main>
     </div>
+  );
+}
+
+function NavGroup({ label, links }: { label: string; links: Array<[string, string]> }) {
+  const ref = useRef<HTMLDetailsElement>(null);
+  const { pathname } = useLocation();
+  const active = links.some(([to]) => pathname.startsWith(to));
+  const close = () => ref.current?.removeAttribute('open');
+  return (
+    <details ref={ref} className="admin-navgroup">
+      <summary style={{ ...navLinkStyle({ isActive: active }), cursor: 'pointer', gap: 4, listStyle: 'none' }}>
+        {label} <ChevronDown size={13} aria-hidden="true" />
+      </summary>
+      <div className="admin-navgroup-menu" role="menu">
+        {links.map(([to, text]) => (
+          <NavLink key={to} to={to} role="menuitem" onClick={close} className="admin-navgroup-item">{text}</NavLink>
+        ))}
+      </div>
+    </details>
   );
 }
 

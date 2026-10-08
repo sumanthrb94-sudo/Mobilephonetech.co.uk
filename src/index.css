@@ -1531,6 +1531,27 @@ html.is-checkout .ai-fab {
   flex-wrap: wrap;
 }
 
+/* Grouped admin menus (Shop setup, Insights): native <details>, so they
+   open by keyboard and close on Escape without any script. */
+.admin-bar nav { flex-wrap: wrap; }
+.admin-navgroup { position: relative; }
+.admin-navgroup > summary::-webkit-details-marker { display: none; }
+.admin-navgroup-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 60;
+  min-width: 190px; padding: 6px;
+  background: var(--grey-0); border: 1px solid var(--grey-10);
+  border-radius: var(--radius-md); box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  display: flex; flex-direction: column;
+}
+.admin-navgroup-item {
+  display: flex; align-items: center; min-height: 36px; padding: 0 12px;
+  border-radius: var(--radius-sm, 8px);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  color: var(--grey-70); text-decoration: none;
+}
+.admin-navgroup-item:hover { background: var(--grey-5); color: var(--black); }
+.admin-navgroup-item.active { background: var(--color-brand-subtle, var(--grey-5)); color: var(--black); }
+
 /* One surface for the whole inventory table — toolbar, column header and rows
    share a single border. Per-row cards on a tinted page read as boxes inside
    boxes, which is exactly what every real back office (Seller Central, Back
@@ -1672,6 +1693,55 @@ html.is-checkout .ai-fab {
 }
 
 /* KPI strip — auto-fit so it degrades to 2-up and 1-up without breakpoints. */
+/* Operations Hub: "needs doing now" tiles. Grey at zero, so a tile that
+   asks for action is the one that stands out. */
+.ops-todo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.ops-todo-tile {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 14px 16px;
+  background: var(--grey-0);
+  border: 1px solid var(--grey-10);
+  border-radius: var(--radius-md);
+  color: var(--grey-50);
+  text-decoration: none;
+  transition: box-shadow .18s ease, transform .18s ease;
+}
+.ops-todo-tile:hover { box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.ops-todo-tile:focus-visible { outline: 3px solid var(--brand-cyan); outline-offset: 3px; }
+.ops-todo-icon { color: var(--grey-40); }
+.ops-todo-count { font-family: var(--font-sans); font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--grey-30); }
+.ops-todo-active .ops-todo-count { font-weight: 900; }
+.ops-todo-label { font-family: var(--font-sans); font-size: 14px; font-weight: 800; color: var(--grey-60); }
+.ops-todo-active { border-color: var(--brand-cyan); }
+.ops-todo-active .ops-todo-icon,
+.ops-todo-active .ops-todo-count,
+.ops-todo-active .ops-todo-label { color: var(--black); }
+.ops-todo-urgent { border-color: #dc2626; background: var(--color-sale-subtle); }
+.ops-todo-urgent .ops-todo-count { color: #991b1b; }
+
+/* Accounts ledger: label left, figure right. */
+.ops-ledger { margin: 0; display: flex; flex-direction: column; }
+.ops-ledger-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--grey-10);
+}
+.ops-ledger-row:last-child { border-bottom: 0; }
+.ops-ledger-row dt { font-family: var(--font-body); font-size: 14px; color: var(--grey-70); margin: 0; }
+.ops-ledger-row dd { font-family: var(--font-sans); font-size: 16px; font-weight: 800; color: var(--black); margin: 0; white-space: nowrap; }
+
+/* Launch readiness checklist. */
+.ops-checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.ops-check { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: var(--radius-md); background: var(--grey-5); font-family: var(--font-body); font-size: 14px; }
+.ops-check svg { flex-shrink: 0; margin-top: 1px; }
+.ops-check-done svg { color: #047857; }
+.ops-check-todo { background: var(--color-warn-subtle); }
+.ops-check-todo svg { color: #92400e; }
+.ops-check-unknown svg { color: var(--grey-40); }
+
 .ops-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -4623,3 +4693,10 @@ html.is-paying .checkout-header {
   padding-top: var(--home-section-y);
   padding-bottom: var(--home-section-y);
 }
+
+/* Operations Hub on phones: panels shrink to the screen and long labels wrap,
+   rather than one wide pill stretching the whole panel past the edge. */
+.ops-split > * { min-width: 0; }
+.ops-list-row { flex-wrap: wrap; row-gap: 6px; }
+.ops-list-row .ops-pill { max-width: 100%; white-space: normal; text-align: right; }
+.ops-ledger-row dt { min-width: 0; }

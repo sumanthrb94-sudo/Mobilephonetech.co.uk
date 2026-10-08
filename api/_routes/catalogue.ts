@@ -45,7 +45,13 @@ export default async function handler(req: any, res: any) {
         .localeCompare(String(a.data.createdAt ?? a.data.updatedAt ?? '')))
       .map(r => forShop(docToProduct(r.id, r.data)));
 
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
+    // Checkout charges the price in the database, so the shop must not show
+    // an old one. Browsers never reuse a copy (stale-while-revalidate in this
+    // header let them flash the previous price); only Vercel's edge caches,
+    // through its own header, sharing one read per region for 30s and
+    // refreshing in the background for 60s more.
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Vercel-CDN-Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
     return res.status(200).json({ products });
   } catch (err) {
     console.error('[api/catalogue]', err);
