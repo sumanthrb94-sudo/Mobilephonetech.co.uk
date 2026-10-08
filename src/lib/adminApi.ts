@@ -688,10 +688,30 @@ export async function setStock(id: string, stock: number): Promise<void> {
   await withAdminRetry(() => updateDoc(doc(db, COL.products, id), { stock, updatedAt: serverTimestamp() }));
 }
 
+/** Longest a delete will wait on clearing old Firebase Storage files. */
+const STORAGE_CLEANUP_TIMEOUT_MS = 8000;
+
+/** Whether a product document points at any file in Firebase Storage. */
+export function usesFirebaseStorage(data: unknown): boolean {
+  return JSON.stringify(data ?? null).includes('firebasestorage.googleapis.com');
+}
+
 export async function deleteProduct(id: string): Promise<void> {
   // Stored images are removed first: losing an image is recoverable, but a
   // deleted document leaves no record of which files belonged to it.
-  await deleteAllImagesFor(id).catch(() => { /* orphaned files are not fatal */ });
+  //
+  // Only when the product actually has Firebase Storage files. Photos now go
+  // to Cloudinary, and a project without a Storage bucket makes listAll retry
+  // for about two minutes before failing, which left the delete dialog stuck
+  // on "Deleting…". The cleanup is also capped: an orphaned file is not worth
+  // holding up the delete for.
+  const snap = await getDoc(doc(db, COL.products, id)).catch(() => null);
+  if (!snap || usesFirebaseStorage(snap.data())) {
+    await Promise.race([
+      deleteAllImagesFor(id),
+      new Promise(resolve => setTimeout(resolve, STORAGE_CLEANUP_TIMEOUT_MS)),
+    ]).catch(() => { /* orphaned files are not fatal */ });
+  }
   await withAdminRetry(() => deleteDoc(doc(db, COL.products, id)));
 }
 
