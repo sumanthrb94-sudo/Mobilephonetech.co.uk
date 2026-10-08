@@ -143,7 +143,8 @@ async function run() {
   rec('and its results survive too', true, (await cards(page)) === committedCards, `${committedCards} cards`);
 
   // ── 4. The URL is the search ──────────────────────────────────────
-  await page.goto(`${BASE}/products?search=${encodeURIComponent('iPhone 17 Pro Max')}`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
+  // A model the emulator seed carries (no demo catalogue any more).
+  await page.goto(`${BASE}/products?search=${encodeURIComponent('iPhone 17')}`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await page.waitForTimeout(1500);
   const seeded = await cards(page);
   rec('a cold-loaded ?search= actually filters', true, seeded > 0 && seeded < 20, `${seeded} cards`);
