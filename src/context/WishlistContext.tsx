@@ -40,10 +40,10 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
   // the stored ids before anything could read them, so the hearts were gone
   // for good, sign-in merge included.
   //
-  // Every change, not once: the catalogue arrives in two waves — the bundled
-  // fallback first, then the live one — and an id the first wave cannot
-  // resolve must still be waiting when the second arrives. Until then it is
-  // kept in `pending` and written back to storage untouched.
+  // Every change, not once: the catalogue is empty on first render and fills
+  // when the database answers, and an id it cannot resolve yet must still be
+  // waiting when it does. Until then it is kept in `pending` and written back
+  // to storage untouched.
   useEffect(() => {
     if (pending.current === null) pending.current = loadLocal();
     if (pending.current.length === 0 || catalogue.length === 0) return;

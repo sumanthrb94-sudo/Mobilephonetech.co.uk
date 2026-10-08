@@ -10,36 +10,14 @@ type Testimonial = {
   rating: number;
 };
 
-const DATA: Testimonial[] = [
-  {
-    quote: "Bought a refurbished iPhone 14 Pro — honestly looks brand new. Delivery was next day and the battery's been spot on for 3 months.",
-    name: 'Priya K.',
-    city: 'Manchester',
-    device: 'iPhone 14 Pro · Pristine',
-    rating: 5,
-  },
-  {
-    quote: "I was nervous about going refurbished but the grading page sold me. Got a Galaxy S24 Ultra for half the price of new. Zero regrets.",
-    name: 'Tom W.',
-    city: 'Bristol',
-    device: 'Galaxy S24 Ultra · Excellent',
-    rating: 5,
-  },
-  {
-    quote: "Customer service was genuinely helpful when I had a question about warranty. They called me back within the hour. Rare these days.",
-    name: 'Sofía M.',
-    city: 'Edinburgh',
-    device: 'Pixel 8 Pro · Pristine',
-    rating: 5,
-  },
-  {
-    quote: "My Pay-in-3 on a £799 iPhone meant no interest, no fuss. Site made it obvious which phones I could afford monthly. Exactly what I wanted.",
-    name: 'Dave R.',
-    city: 'Birmingham',
-    device: 'iPhone 15 · Good',
-    rating: 5,
-  },
-];
+/**
+ * Real, attributable customer quotes only. The four that shipped here were
+ * placeholders written for the design — names, cities and one praising a
+ * Pay-in-3 plan the shop does not offer — and presenting invented reviews as
+ * genuine is prohibited under the DMCC Act 2024. The section renders nothing
+ * until this holds at least one quote a customer actually gave, with consent.
+ */
+const DATA: Testimonial[] = [];
 
 /**
  * TestimonialsSection — homepage social-proof carousel with 8s auto-rotate,
@@ -51,15 +29,16 @@ export default function TestimonialsSection() {
   const total = DATA.length;
 
   useEffect(() => {
-    if (paused) return;
+    if (paused || total === 0) return;
     const t = setTimeout(() => setIndex((i) => (i + 1) % total), 8000);
     return () => clearTimeout(t);
   }, [index, paused, total]);
 
+  if (total === 0) return null;
   const t = DATA[index];
 
   return (
-    <section className="section-y" style={{ background: 'var(--grey-5)' }}>
+    <section className="home-section-y" style={{ background: 'var(--grey-5)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 'var(--spacing-32)' }}>
           <div className="overline mb-3">What customers say</div>

@@ -124,15 +124,15 @@ async function captureStorefront() {
 // ── Admin ─────────────────────────────────────────────────────
 
 /**
- * src/data/mockPhones.ts is TypeScript, which node cannot import. The array is generated
+ * src/test/fixtures/mockPhones.ts is TypeScript, which node cannot import. The array is generated
  * data — object literals only — so it is extracted and evaluated rather than
  * adding a build step for a screenshot script. Same approach as
  * scripts/seed-firestore.mjs.
  */
 function loadCatalogue(limit) {
-  const src = readFileSync(join(here, '..', 'src', 'data', 'mockPhones.ts'), 'utf8');
+  const src = readFileSync(join(here, '..', 'src', 'test', 'fixtures', 'mockPhones.ts'), 'utf8');
   const marker = src.indexOf('export const MOCK_PHONES');
-  if (marker === -1) throw new Error('MOCK_PHONES not found in src/data/mockPhones.ts');
+  if (marker === -1) throw new Error('MOCK_PHONES not found in src/test/fixtures/mockPhones.ts');
 
   // Seek past the "=" first. The declaration is
   //   export const MOCK_PHONES: Product[] = [

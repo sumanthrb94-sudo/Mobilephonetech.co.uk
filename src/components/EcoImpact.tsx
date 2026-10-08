@@ -4,16 +4,16 @@ import { Leaf, Droplet, Factory } from 'lucide-react';
 /**
  * EcoImpact — per-product "buying refurbished saves..." panel. Numbers come
  * from widely-cited refurb industry figures (Back Market, Fraunhofer IZM).
- * Deterministic per-product variation via the id so values feel tangible
- * rather than copy-paste.
+ * The figures are the shop-wide per-device ones the home page uses (see
+ * EcoImpactBlock): 70kg CO₂e, 80kg raw materials, 12,000L water. They used
+ * to vary per product from a hash of the id, so the same claim appeared as
+ * several different numbers across the site.
  */
-export default function EcoImpact({ productId }: { productId: string }) {
-  const seed = hash(productId);
-  // Smartphone refurb saves roughly 50-80kg CO2, 75-85kg of raw materials,
-  // and 100-180L water vs producing a new unit. Clamp to plausible ranges.
-  const co2    = 52 + (seed % 28);      // 52 - 80 kg
-  const raw    = 76 + ((seed >> 3) % 14); // 76 - 90 kg
-  const water  = 108 + ((seed >> 7) % 74); // 108 - 182 L
+// productId is kept so callers need not change if figures become per-model.
+export default function EcoImpact(_props: { productId: string }) {
+  const co2   = '70 kg';
+  const raw   = '80 kg';
+  const water = '12,000 L';
 
   return (
     <section
@@ -42,9 +42,9 @@ export default function EcoImpact({ productId }: { productId: string }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px' }}>
-        <Metric icon={Factory} value={`${co2} kg`} label="CO₂ emissions" />
-        <Metric icon={Leaf}    value={`${raw} kg`} label="Raw materials" />
-        <Metric icon={Droplet} value={`${water} L`} label="Water" />
+        <Metric icon={Factory} value={co2}   label="CO₂ emissions" />
+        <Metric icon={Leaf}    value={raw}   label="Raw materials" />
+        <Metric icon={Droplet} value={water} label="Water" />
       </div>
 
       <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-60)', margin: '14px 0 0 0', lineHeight: 1.55 }}>
@@ -66,10 +66,4 @@ function Metric({ icon: Icon, value, label }: { icon: React.ElementType; value: 
       </div>
     </div>
   );
-}
-
-function hash(s: string): number {
-  let h = 5381;
-  for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
-  return h >>> 0;
 }

@@ -199,11 +199,19 @@ const API = process.env.E2E_API_URL || 'http://127.0.0.1:4174';
 // of having one; keep this address complete.
 const ADDRESS = { fullName: 'Attacker', addressLine1: '1 Test St', postalCode: 'NW1 6XE', email: 'a@example.com', phone: '07700900123' };
 
+// Each probe comes from its own documentation-range address. The order route
+// allows 12 requests a minute per client, and this suite sends more than
+// that, so from one address the later probes were refused with 429 before
+// any pricing ran — "denied", but for the wrong reason, and the control that
+// proves a real order succeeds failed with them. Rate limiting is not what
+// this suite tests.
+let probe = 0;
 async function postOrder(payload) {
   try {
+    probe += 1;
     const res = await fetch(`${API}/api/orders`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': `198.51.100.${probe}` },
       body: JSON.stringify({ shippingAddress: ADDRESS, shippingOptionId: 'standard', ...payload }),
     });
     return { status: res.status, body: await res.json().catch(() => ({})) };

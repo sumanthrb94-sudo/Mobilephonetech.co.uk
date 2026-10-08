@@ -272,8 +272,10 @@ export default function HeroCarousel({
         /* The home hero begins at page y=0 beneath fixed chrome. On phones
            that chrome is the 64px app bar plus the 36px returns strip. Add
            that space to the shell so the actual visible image canvas remains
-           an uncropped 4:5, rather than losing its upper part behind chrome. */
-        height: isDesktop ? (isPreview ? '40cqw' : '480px') : (isPreview ? '125cqw' : 'calc(125cqw + var(--nav-total))'),
+           an uncropped 4:5, rather than losing its upper part behind chrome.
+           Desktop does the same: the artwork canvas stays 368px tall however
+           tall the fixed header stack is. */
+        height: isDesktop ? (isPreview ? '40cqw' : 'calc(368px + var(--nav-total))') : (isPreview ? '125cqw' : 'calc(125cqw + var(--nav-total))'),
         position: 'relative',
         overflow: 'hidden',
         background: `linear-gradient(135deg, ${slide.gradientFrom} 0%, ${slide.gradientTo} 100%)`,

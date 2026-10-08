@@ -63,6 +63,7 @@ const InventoryPage = lazyRoute(() => import('./components/admin/InventoryPage')
 const BannersPage = lazyRoute(() => import('./components/admin/BannersPage'));
 const HomeLayoutPage = lazyRoute(() => import('./components/admin/HomeLayoutPage'));
 const SeriesPage = lazyRoute(() => import('./components/admin/SeriesPage'));
+const CatalogueImportPage = lazyRoute(() => import('./components/admin/CatalogueImportPage'));
 const ReturnsPage = lazyRoute(() => import('./components/admin/ReturnsPage'));
 const AnalyticsPage = lazyRoute(() => import('./components/admin/AnalyticsPage'));
 const ReportsPage = lazyRoute(() => import('./components/admin/ReportsPage'));
@@ -137,6 +138,16 @@ function AppContent() {
     document.documentElement.classList.toggle('is-home', location.pathname === '/');
     return () => { document.documentElement.classList.remove('is-home'); };
   }, [location.pathname]);
+
+  // Product pages carry their own back button, cart and sticky buy bar, so
+  // below 1024px the tab bar is dropped there: stacked under the buy bar it
+  // took 128px of a 844px screen. The class lets CSS reclaim that room.
+  const isProductRoute = location.pathname.startsWith('/product/');
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('is-product', isProductRoute);
+    return () => { document.documentElement.classList.remove('is-product'); };
+  }, [isProductRoute]);
 
   return (
     <div
@@ -327,6 +338,7 @@ function AppContent() {
                 <Route path="banners" element={<BannersPage />} />
                 <Route path="home" element={<HomeLayoutPage />} />
                 <Route path="series" element={<SeriesPage />} />
+                <Route path="catalogue-import" element={<CatalogueImportPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
@@ -373,7 +385,7 @@ function AppContent() {
       <Toast />
       <CookieBanner />
       {isCheckoutRoute ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
-      {!isCheckoutRoute && !isAdminRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
+      {!isCheckoutRoute && !isAdminRoute && !isProductRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
       {/* Same again for the trust strip: delivery and returns promises are a
           shopper cue, and pinned to the bottom it covers the last table row. */}
     </div>

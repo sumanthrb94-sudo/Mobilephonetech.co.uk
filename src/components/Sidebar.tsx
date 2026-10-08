@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, BarChart3, ShoppingBag, Home, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MOCK_CATEGORIES } from '../data/mockPhones';
+import { SHOP_CATEGORIES } from '../data/categories';
 import { useUI } from '../context/UIContext';
 
 const linkStyle: React.CSSProperties = {
@@ -153,7 +153,7 @@ export default function Sidebar() {
               {/* Categories */}
               <div style={{ paddingTop: '16px', marginTop: '8px', borderTop: '1px solid var(--grey-10)' }}>
                 <p style={{ ...sectionLabelStyle, paddingTop: '12px' }}>Categories</p>
-                {MOCK_CATEGORIES.map((category) => {
+                {SHOP_CATEGORIES.map((category) => {
                   const expanded = expandedCategory === category.id;
                   return (
                     <div key={category.id}>

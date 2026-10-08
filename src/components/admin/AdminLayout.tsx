@@ -25,7 +25,8 @@ export default function AdminLayout() {
             {/* `end` on the index link, or it stays active on every child route. */}
             <NavLink to="/admin" end style={navLinkStyle}>Dashboard</NavLink>
             <NavLink to="/admin/orders" style={navLinkStyle}>Orders</NavLink>
-            <NavLink to="/admin/inventory" style={navLinkStyle}>Inventory</NavLink>
+            <NavLink to="/admin/inventory" end style={navLinkStyle}>Inventory</NavLink>
+            <NavLink to="/admin/catalogue-import" style={navLinkStyle}>Catalogue import</NavLink>
             <NavLink to="/admin/banners" style={navLinkStyle}>Banners</NavLink>
             <NavLink to="/admin/home" style={navLinkStyle}>Home layout</NavLink>
             <NavLink to="/admin/series" style={navLinkStyle}>Series</NavLink>

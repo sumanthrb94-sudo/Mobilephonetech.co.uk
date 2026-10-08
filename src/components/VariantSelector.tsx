@@ -349,7 +349,10 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
             {colors.map(color => {
               const isSelected = activeColor === color;
-              const hex = colourHex(color);
+              // A finish recorded with its own swatch (catalogue imports carry
+              // Apple's) wins over the shared palette, where one name such as
+              // "Blue" covers several different Apple blues.
+              const hex = variants.find(v => v.color?.trim() === color && v.colorHex)?.colorHex ?? colourHex(color);
               // Check if in stock in current storage or any storage
               const inStock = variants.some(v => v.color?.trim() === color && v.stock > 0);
               return (

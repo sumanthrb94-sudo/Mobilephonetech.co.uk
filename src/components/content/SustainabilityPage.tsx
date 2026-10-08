@@ -2,9 +2,9 @@ import Breadcrumbs from '../ui/Breadcrumbs';
 import { Leaf, Droplet, Factory, Recycle } from 'lucide-react';
 
 const IMPACT = [
-  { icon: Factory, value: '78,000 tonnes', label: 'CO₂ saved vs buying new' },
-  { icon: Leaf,    value: '91,500 tonnes', label: 'Raw materials kept in circulation' },
-  { icon: Droplet, value: '194 million L', label: 'Water conserved' },
+  { icon: Factory, value: '4,900+ tonnes', label: 'CO₂ saved vs buying new' }, // 70,000 devices × 70kg
+  { icon: Leaf,    value: '5,600+ tonnes', label: 'Raw materials kept in circulation' }, // 70,000 devices × 80kg
+  { icon: Droplet, value: '840 million L', label: 'Water conserved' }, // 70,000 devices × 12,000L
   { icon: Recycle, value: '70,000+',       label: 'Devices given a second life' },
 ];
 
@@ -27,7 +27,7 @@ export default function SustainabilityPage() {
             Refurbished isn't just a price — it's a pledge.
           </h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '17px', color: 'var(--grey-60)', lineHeight: 1.65, maxWidth: '680px' }}>
-            A new smartphone carries roughly 65kg of CO₂ before it's out of the box. Every device we refurbish pushes the next one further down the line — and keeps the rare metals inside already-manufactured hardware in circulation.
+            A new smartphone carries roughly 70kg of CO₂ before it's out of the box. Every device we refurbish pushes the next one further down the line — and keeps the rare metals inside already-manufactured hardware in circulation.
           </p>
         </header>
 

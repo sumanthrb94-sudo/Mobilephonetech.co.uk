@@ -6,7 +6,6 @@ import { defaultLayout, loadHomeLayout, visibleSections } from '../lib/homeLayou
 // The hero and category navigation are immediately useful. Everything below
 // that fold becomes a separate chunk so it cannot delay the first interaction
 // or compete with product imagery on a mobile connection.
-const QualityPromise = lazy(() => import('./QualityPromise'));
 const EcoImpactBlock = lazy(() => import('./EcoImpactBlock'));
 const HomeFaq = lazy(() => import('./HomeFaq'));
 const HomeBlog = lazy(() => import('./HomeBlog'));
@@ -37,7 +36,6 @@ export const SECTION_VIEWS: Record<string, () => React.ReactElement> = {
   warranty: () => <WarrantyAndReturns />,
   faq: () => <HomeFaq />,
   blog: () => <HomeBlog />,
-  qualityPromise: () => <QualityPromise />,
   newsletter: () => <NewsletterSignup />,
 };
 

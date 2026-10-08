@@ -27,7 +27,6 @@ type Handler = (req: any, res: any) => unknown | Promise<unknown>;
 const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   'account-welcome': () => import('./_routes/account-welcome.js'),
   'bootstrap-admin': () => import('./_routes/bootstrap-admin.js'),
-  'bootstrap-seed': () => import('./_routes/bootstrap-seed.js'),
   analytics: () => import('./_routes/analytics.js'),
   'brevo-webhook': () => import('./_routes/brevo-webhook.js'),
   'cart-events': () => import('./_routes/cart-events.js'),

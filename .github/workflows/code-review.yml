@@ -55,4 +55,6 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci
-      - run: npx firebase emulators:exec --project demo-lehart --only auth,firestore,storage "npm run audit:security"
+      # The audit's API checks need the order route running against the
+      # emulators; the script starts it (see e2e/run-security-audit.sh).
+      - run: npx firebase emulators:exec --project demo-lehart --only auth,firestore,storage "sh e2e/run-security-audit.sh"

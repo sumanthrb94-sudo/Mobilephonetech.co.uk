@@ -1,10 +1,18 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import React from 'react';
 import { WishlistProvider, useWishlist } from '../../context/WishlistContext';
 import { AuthProvider } from '../../context/AuthContext';
 import type { Product } from '../../types';
-import { MOCK_PHONES } from '../../data/mockPhones';
+import { MOCK_PHONES } from '../../test/fixtures/mockPhones';
+
+// The wishlist resolves saved ids against the shop catalogue. There is no
+// bundled catalogue any more, so these tests supply the fixture as if it had
+// loaded from the database.
+vi.mock('../../context/CatalogueContext', async () => {
+  const { MOCK_PHONES: products } = await import('../../test/fixtures/mockPhones');
+  return { useCatalogue: () => ({ products, isLoading: false, fromSupabase: true }) };
+});
 
 // WishlistProvider depends on AuthProvider (calls useAuth() internally)
 const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -244,9 +252,8 @@ describe('WishlistContext', () => {
   });
 
   it('keeps a saved id the catalogue cannot resolve yet, rather than dropping it', () => {
-    // The live catalogue arrives after the bundled fallback. An id only the
-    // live one knows must survive the first render untouched, or it is gone
-    // before the catalogue that could show it has loaded.
+    // An id the loaded catalogue does not (yet) contain — a product added
+    // since, or a draft — must survive untouched rather than be dropped.
     localStorage.setItem(WISHLIST_KEY, JSON.stringify(['only-in-the-live-catalogue', MOCK_PHONES[0].id]));
 
     const { result } = renderHook(() => useWishlist(), { wrapper });

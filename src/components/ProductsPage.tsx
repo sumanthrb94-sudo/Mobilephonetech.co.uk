@@ -71,6 +71,13 @@ const CATEGORY_DEPARTMENTS: Department[] = [
     categories: ['Tablets', 'Ipads & Tabs'],
   },
   {
+    id: 'watches',
+    label: 'Watches',
+    intro: 'Refurbished Apple Watch and smartwatches, checked and covered by our warranty.',
+    matches: ['watches', 'watch', 'smartwatch', 'smartwatches'],
+    categories: ['Smartwatches'],
+  },
+  {
     id: 'accessories',
     label: 'Accessories',
     intro: 'Cases, chargers, and essential mobile add-ons.',

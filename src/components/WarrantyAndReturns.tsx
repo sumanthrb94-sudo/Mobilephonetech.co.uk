@@ -1,19 +1,22 @@
 import { motion } from 'motion/react';
 import { CheckCircle2, Truck, Shield } from 'lucide-react';
-import Accordion from './ui/Accordion';
 
 /**
  * WarrantyAndReturns — Verified Form aesthetic refactor
  * Optimized for mobile: responsive padding, stacking grids.
+ *
+ * It no longer carries its own "Common questions" accordion: the home FAQ a
+ * few hundred pixels below answers the same warranty and returns questions,
+ * and two accordions in a row read as padding rather than reassurance.
  */
 
 export default function WarrantyAndReturns() {
   return (
-    <section className="section-y" style={{ background: 'var(--grey-5)' }}>
+    <section className="home-section-y" style={{ background: 'var(--grey-0)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-64)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-40)' }}>
           <div className="overline mb-4" style={{ justifyContent: 'center' }}>Hassle-Free Protection</div>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: 'var(--black)', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '20px' }}>
             Warranty & Returns
@@ -23,7 +26,7 @@ export default function WarrantyAndReturns() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 gap-8">
           {/* Warranty Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -90,35 +93,6 @@ export default function WarrantyAndReturns() {
               </p>
             </div>
           </motion.div>
-        </div>
-
-        {/* FAQ */}
-        <div>
-          <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', marginBottom: '20px', letterSpacing: '-0.02em' }}>Common questions</h3>
-          <Accordion
-            items={[
-              {
-                id: 'defect',
-                question: 'What if my device has a defect?',
-                answer: 'Contact our support team within 12 months. We arrange repair or replacement at zero cost to you, including shipping.',
-              },
-              {
-                id: 'battery',
-                question: 'Does the warranty cover the battery?',
-                answer: 'Yes. If battery health falls below 80% within the first 12 months, we will replace the battery free of charge.',
-              },
-              {
-                id: 'after30',
-                question: 'Can I return a device after 30 days?',
-                answer: 'After 30 days, your purchase is covered by the 12-month defect warranty, but general returns are no longer possible.',
-              },
-              {
-                id: 'accidental',
-                question: 'Is accidental damage covered?',
-                answer: 'Our standard warranty covers manufacturing defects. Accidental damage can be covered via our protection plans at checkout.',
-              },
-            ]}
-          />
         </div>
 
       </div>

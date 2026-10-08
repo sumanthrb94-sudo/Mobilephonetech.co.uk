@@ -27,6 +27,7 @@ const CATEGORIES = [
   { label: 'Samsung',           href: '/products?brand=Samsung',       icon: Smartphone },
   { label: 'Google',            href: '/products?brand=Google',        icon: Smartphone },
   { label: 'Ipads & Tabs',      href: '/products?category=tablets',    icon: Tablet },
+  { label: 'Watches',           href: '/products?category=watches',    icon: Watch },
   { label: 'Accessories',       href: '/products?category=Accessories',icon: Watch },
   { label: 'Speakers',          href: '/products?category=Speakers',   icon: Volume2 },
   { label: 'Hearables',         href: '/products?category=Hearables',  icon: Headphones },

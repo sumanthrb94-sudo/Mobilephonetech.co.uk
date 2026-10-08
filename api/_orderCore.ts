@@ -158,6 +158,9 @@ export async function priceAndValidate(
     if (!snap.exists) return fail(400, 'That product is no longer available');
 
     const product = snap.data() as Record<string, any>;
+    // A draft has no real price yet; it must never be orderable, even by a
+    // client that knows its id.
+    if (product.listed === false) return fail(400, 'That product is no longer available');
     const variantId = clean(line.variantId, 200);
     const variant = variantId && Array.isArray(product.variants)
       ? product.variants.find((v: any) => v?.id === variantId) ?? null
@@ -165,6 +168,10 @@ export async function priceAndValidate(
     if (variantId && Array.isArray(product.variants) && product.variants.length > 0 && !variant) {
       return fail(400, 'That configuration is no longer available');
     }
+
+    // An unpriced configuration is not on offer (see productMapper.isOffered),
+    // and must never be priced at £0 by a client that knows its id.
+    if (variant && !(Number(variant.price) > 0)) return fail(400, 'That configuration is no longer available');
 
     const stock = Number((variant?.stock ?? product.stock) ?? 0);
     if (stock < quantity) return fail(409, `${product.brand} ${product.model} is out of stock`);

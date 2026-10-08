@@ -38,6 +38,11 @@ export interface ProductDoc {
   imei?: string | null;
   sku?: string | null;
   stockLocation?: string | null;
+  /** False hides the product from the shop; absent means listed. */
+  listed?: boolean | null;
+  variantMode?: boolean | null;
+  /** Reference-catalogue fields carried for staff: release month and family. */
+  released?: string | null;
   createdAt?: unknown;
   updatedAt?: unknown;
   /** Lowercased "brand model" for prefix search — Firestore has no ILIKE. */
@@ -76,7 +81,33 @@ export function docToProduct(id: string, d: Record<string, unknown>): Product {
     imei: (d.imei as string) ?? undefined,
     sku: (d.sku as string) ?? undefined,
     stockLocation: (d.stockLocation as Product['stockLocation']) ?? undefined,
+    listed: d.listed === false ? false : undefined,
+    variantMode: d.variantMode === true ? true : undefined,
   };
+}
+
+/**
+ * Whether shoppers may see a product. Only an explicit `listed: false` hides
+ * one: every document written before drafts existed has no such field and
+ * must stay on the shop.
+ */
+export function isListed(d: { listed?: unknown } | null | undefined): boolean {
+  return d?.listed !== false;
+}
+
+/**
+ * A configuration is on offer once it has a price. Imported models carry a
+ * row for every storage × colour Apple made; staff price the ones they stock
+ * and the rest stay unpriced, which keeps them out of the shop entirely.
+ */
+export function isOffered(v: { price?: unknown } | null | undefined): boolean {
+  return Number(v?.price) > 0;
+}
+
+/** The product as shoppers see it: unpriced configurations removed. */
+export function forShop(p: Product): Product {
+  if (!p.variants?.length) return p;
+  return { ...p, variants: p.variants.filter(isOffered) };
 }
 
 /**

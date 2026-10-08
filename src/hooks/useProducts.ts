@@ -3,9 +3,8 @@ import {
   collection, doc, getDoc, getDocs, limit as fsLimit, query, where,
 } from 'firebase/firestore';
 import { Product, FilterState } from '../types';
-import { MOCK_PHONES } from '../data/mockPhones';
 import { db, COL } from '../lib/firebase';
-import { docToProduct } from '../lib/productMapper';
+import { docToProduct, forShop, isListed } from '../lib/productMapper';
 
 /**
  * Legacy name kept so the ~15 existing call sites and their tests keep working.
@@ -79,18 +78,18 @@ export function useProducts(opts: UseProductsOptions = {}) {
 
     try {
       const snap = await getDocs(query(collection(db, COL.products), fsLimit(FETCH_CAP)));
-      if (snap.empty) throw new Error('empty');
 
-      const all = snap.docs.map(d => docToProduct(d.id, d.data()));
+      const all = snap.docs.filter(d => isListed(d.data())).map(d => forShop(docToProduct(d.id, d.data())));
       const filtered = applyFilters(all, filters ? JSON.parse(filtersKey) : undefined, search, sort);
 
       setTotal(filtered.length);
       setProducts(filtered.slice((page - 1) * pageSize, page * pageSize));
       setFromRemote(true);
     } catch {
-      const filtered = applyFilters(MOCK_PHONES, filters ? JSON.parse(filtersKey) : undefined, search, sort);
-      setTotal(filtered.length);
-      setProducts(filtered.slice((page - 1) * pageSize, page * pageSize));
+      // No sample fallback: an unreachable database shows no products.
+      setTotal(0);
+      setProducts([]);
+      setError('Products could not be loaded');
       setFromRemote(false);
     } finally {
       setIsLoading(false);
@@ -120,20 +119,19 @@ export function useProduct(id: string | undefined) {
     getDoc(doc(db, COL.products, id))
       .then(snap => {
         if (cancelled) return;
-        if (snap.exists()) {
-          setProduct(docToProduct(snap.id, snap.data()));
+        // A draft reads as not found: it is not for sale yet.
+        if (snap.exists() && isListed(snap.data())) {
+          setProduct(forShop(docToProduct(snap.id, snap.data())));
         } else {
-          const found = MOCK_PHONES.find(p => p.id === id) ?? null;
-          setProduct(found);
-          if (!found) setError('Product not found');
+          setProduct(null);
+          setError('Product not found');
         }
         setIsLoading(false);
       })
       .catch(() => {
         if (cancelled) return;
-        const found = MOCK_PHONES.find(p => p.id === id) ?? null;
-        setProduct(found);
-        if (!found) setError('Product not found');
+        setProduct(null);
+        setError('Product could not be loaded');
         setIsLoading(false);
       });
 
@@ -152,7 +150,7 @@ export async function searchProducts(term: string, max = 20): Promise<Product[]>
     where('searchTerms', 'array-contains', q),
     fsLimit(max),
   ));
-  return snap.docs.map(d => docToProduct(d.id, d.data()));
+  return snap.docs.filter(d => isListed(d.data())).map(d => forShop(docToProduct(d.id, d.data())));
 }
 
 /**
@@ -198,8 +196,9 @@ async function fetchCatalogueDirect(max: number): Promise<Product[]> {
 
   return snap.docs
     .map(d => ({ id: d.id, data: d.data() }))
+    .filter(r => isListed(r.data))
     // Newest first, on whichever timestamp the writer actually set.
     .sort((a, b) => String(b.data.createdAt ?? b.data.updatedAt ?? '')
       .localeCompare(String(a.data.createdAt ?? a.data.updatedAt ?? '')))
-    .map(r => docToProduct(r.id, r.data));
+    .map(r => forShop(docToProduct(r.id, r.data)));
 }

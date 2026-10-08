@@ -1,28 +1,51 @@
 #!/usr/bin/env node
 /**
- * Generates public/sitemap.xml + public/robots.txt from the product
- * catalogue so both files ship with the bundle. Runs via the
- * `prebuild` npm script, keeping sitemap URLs in lockstep with
- * data.ts without a manual step.
+ * Generates public/sitemap.xml + public/robots.txt so both files ship with
+ * the bundle. Runs via the `prebuild` npm script; product URLs are read from
+ * the live catalogue at build time (see listedProductIds below).
  */
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT       = resolve(__dirname, '..');
-const DATA_PATH  = resolve(ROOT, 'src/data/mockPhones.ts');
 const PUBLIC_DIR = resolve(ROOT, 'public');
 const ORIGIN     = 'https://lehart.co.uk';
 
-const data = readFileSync(DATA_PATH, 'utf8');
+/**
+ * Product URLs come from the live catalogue: listed products only, read with
+ * the same service account the API uses. Without credentials (a local build,
+ * a fork's CI) the sitemap carries the static pages alone. It used to read
+ * the bundled demo catalogue, which advertised 134 product pages to search
+ * engines whether or not those products existed.
+ */
+async function listedProductIds() {
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) {
+    console.warn('[seo] FIREBASE_SERVICE_ACCOUNT not set — sitemap lists static pages only.');
+    return [];
+  }
+  try {
+    const creds = JSON.parse(raw.trim().startsWith('{') ? raw : Buffer.from(raw, 'base64').toString('utf8'));
+    if (typeof creds.private_key === 'string') creds.private_key = creds.private_key.replace(/\\n/g, '\n');
+    const { cert, initializeApp } = await import('firebase-admin/app');
+    const { getFirestore } = await import('firebase-admin/firestore');
+    const app = initializeApp({
+      credential: cert({ projectId: creds.project_id, clientEmail: creds.client_email, privateKey: creds.private_key }),
+      projectId: creds.project_id,
+    }, 'seo-assets');
+    const snap = await getFirestore(app).collection('products').select('listed').limit(2000).get();
+    return snap.docs.filter(d => d.get('listed') !== false).map(d => d.id).sort();
+  } catch (err) {
+    // A sitemap without product URLs is a smaller sitemap; a failed build is
+    // a site that does not deploy. Never let this step break the build.
+    console.warn(`[seo] Could not read products (${err.message}) — sitemap lists static pages only.`);
+    return [];
+  }
+}
 
-// Cheap regex extract — avoids booting TS/bundler just for a build step.
-// Only picks product-level `id:` entries (those followed by `model:` or
-// `brand:` within ~400 chars); skips `variants[].id` and category IDs.
-const ids = [...data.matchAll(
-  /id:\s*["']([a-z0-9][a-z0-9-]+)["'][\s\S]{0,400}?(?:model|brand):/gi
-)].map(m => m[1]);
+const ids = await listedProductIds();
 
 const today = new Date().toISOString().slice(0, 10);
 
@@ -33,6 +56,7 @@ const staticRoutes = [
   { path: '/products?category=samsung',priority: '0.9', freq: 'daily'   },
   { path: '/products?category=google', priority: '0.9', freq: 'daily'   },
   { path: '/products?category=tablets',priority: '0.9', freq: 'daily'   },
+  { path: '/products?category=watches',priority: '0.8', freq: 'daily'   },
   { path: '/products?category=accessories', priority: '0.7', freq: 'weekly' },
   { path: '/products?category=speakers',    priority: '0.6', freq: 'weekly' },
   { path: '/products?category=hearables',   priority: '0.6', freq: 'weekly' },

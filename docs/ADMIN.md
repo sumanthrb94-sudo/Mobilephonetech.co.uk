@@ -72,16 +72,25 @@ stick — a silent permissions failure would otherwise look like success.
 already signed in somewhere, they must sign out and back in before the console
 will let them through.
 
-### 3. Seed the catalogue
+### 3. Build the catalogue
 
-```bash
-export FIREBASE_SERVICE_ACCOUNT="$(base64 -w0 serviceAccountKey.json)"
-node scripts/seed-firestore.mjs
-```
+There is no demo seed any more: the shop only ever shows products staff have
+created or imported. After signing in as an admin:
 
-Idempotent — documents are keyed by product id, so re-running updates in place.
-Existing stock levels are preserved unless you pass `--reset-stock`: re-seeding
-to pick up a copy change must not quietly restock sold-out items.
+1. Open **Admin → Catalogue import**. If the database still holds products
+   from the old demo seed, step 1 on that page lists them — review and delete
+   them first.
+2. Import the Apple range (iPhone, iPad and Apple Watch, 2020 onwards). Every
+   model arrives as a **draft** with all its colours, storage and connectivity
+   options and its specs, but no prices, conditions or photos.
+3. In **Inventory**, filter to *Drafts only*, open a model, set a condition and
+   price on each configuration you stock, upload photos under *Photos by
+   colour* (compressed in the browser, stored on Cloudinary), and tick
+   *Listed on the shop*.
+
+Drafts never appear on the shop, in search or in the sitemap, and cannot be
+ordered. Re-running the import only adds models that are not already in the
+database, so it never overwrites prices, photos or stock.
 
 ### 4. Sign in
 
