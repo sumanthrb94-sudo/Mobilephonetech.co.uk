@@ -88,6 +88,8 @@ interface Sent {
   tags?: string[];
 }
 const sent: Sent[] = [];
+/** Staff new-order alerts, kept apart so the customer's messages stay numbered in order. */
+const alerts: Sent[] = [];
 
 beforeAll(() => {
   process.env.BREVO_API_KEY = 'xkeysib-test';
@@ -97,7 +99,8 @@ beforeAll(() => {
 
   vi.stubGlobal('fetch', vi.fn(async (url: string, init: { body: string }) => {
     if (String(url).includes('api.brevo.com/v3/smtp/email')) {
-      sent.push(JSON.parse(init.body) as Sent);
+      const mail = JSON.parse(init.body) as Sent;
+      (mail.tags?.includes('order-alert') ? alerts : sent).push(mail);
       return { ok: true, status: 201, json: async () => ({ messageId: `m${sent.length}` }), text: async () => '' };
     }
     throw new Error(`unexpected network call to ${url}`);
@@ -165,6 +168,7 @@ describe('the whole journey, in order', () => {
 
   beforeAll(() => {
     sent.length = 0;
+    alerts.length = 0;
     for (const k of Object.keys(store)) delete store[k];
     store.products = { 'apple-iphone-13-128gb': { ...PRODUCT } };
     isAdmin = false;
@@ -218,6 +222,11 @@ describe('the whole journey, in order', () => {
     expect(mail.to[0].email).toBe('ram@example.com');
     expect(mail.tags).toContain('order-confirmation');
     expect(mail.subject).toContain(orderId);
+
+    // Shipping is manual: the shop inbox hears about the order once.
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0].to[0].email).toBe(process.env.ORDER_ALERT_EMAIL || process.env.EMAIL_REPLY_TO || 'info@lehart.co.uk');
+    expect(alerts[0].subject).toContain(orderId);
   });
 
   it('4. the confirmation leads with the same arrival date checkout quoted', async () => {

@@ -42,14 +42,14 @@ const PILLARS = [
     accentColor: '#0d9488',
     accentBg: '#ccfbf1',
     title: 'Six years of expertise',
-    body: 'More than 70,000 devices sold, with over 1,000 devices supplied every month.',
+    body: 'More than 16,000 devices sold, around 200 every month for seven years.',
   },
 ];
 
 const STATS = [
   { value: '6 yrs', label: 'Established' },
-  { value: '1,000+', label: 'Devices sold monthly' },
-  { value: '70K+', label: 'Devices sold' },
+  { value: '200+', label: 'Devices sold monthly' },
+  { value: '16K+', label: 'Devices sold' },
   { value: '70pt',  label: 'Inspection standard' },
 ];
 
@@ -283,7 +283,7 @@ export default function TrustSection() {
                   lineHeight: 1,
                 }}
               >
-                6 years
+                7 years
               </div>
               <div
                 style={{
@@ -296,7 +296,7 @@ export default function TrustSection() {
                   textTransform: 'uppercase',
                 }}
               >
-                70,000+ devices sold
+                16,000+ devices sold
               </div>
             </div>
           </motion.div>

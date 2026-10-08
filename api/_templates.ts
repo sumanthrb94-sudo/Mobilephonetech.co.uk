@@ -915,3 +915,51 @@ export function accountWelcomeEmail(opts: { name?: string | null; email?: string
     text,
   };
 }
+
+/**
+ * Staff alert for a new paid order. Shipping is done by hand, so an order
+ * nobody notices is an order that never ships: this goes to the shop inbox
+ * the moment payment is captured, with everything needed to pick and pack.
+ */
+export function newOrderAlertEmail(order: OrderLike & { contactPhone?: string }): Built {
+  const items = order.items ?? [];
+  const count = items.reduce((n, i) => n + Number(i.quantity ?? 1), 0);
+  const method = order.shippingMethod || 'Standard Delivery';
+  const headline = `New order to pack — ${money(order.total)}`;
+  const subline = `Order ${order.id} · ${count} item${count === 1 ? '' : 's'} · ${method}`;
+  const phone = order.contactPhone || order.shippingAddress?.phone || '';
+
+  const body = [
+    button('Open in Admin → Orders', `${SHOP_URL}/admin/orders`),
+    `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:22px;border-top:1px solid ${PALETTE.border};">${itemRows(
+      items,
+    )}</table>`,
+    totalsBlock(order),
+    addressBlock(order),
+    p(`Customer: ${esc(order.contactEmail ?? '')}${phone ? ` · ${esc(phone)}` : ''}`),
+    p(`<span style="font-size:12.5px;color:${PALETTE.muted};">Delivery chosen: ${esc(method)}. Mark it dispatched with the courier and tracking number in Admin, which emails the customer.</span>`),
+  ].join('');
+
+  const a = order.shippingAddress ?? {};
+  const text = [
+    headline,
+    subline,
+    '',
+    ...items.map((i) => {
+      const variant = variantLine(i);
+      return `- ${`${i.brand ?? ''} ${i.model ?? ''}`.trim()}${variant ? ` (${variant})` : ''} x${i.quantity ?? 1}`;
+    }),
+    '',
+    `Total: ${money(order.total)}`,
+    `Ship to: ${[a.fullName, a.addressLine1, a.addressLine2, a.city, a.postalCode].filter(Boolean).join(', ')}`,
+    `Customer: ${order.contactEmail ?? ''}${phone ? ` · ${phone}` : ''}`,
+    '',
+    `Admin: ${SHOP_URL}/admin/orders`,
+  ].join('\n');
+
+  return {
+    subject: `New order ${order.id} — ${money(order.total)}, ${count} item${count === 1 ? '' : 's'}, ${method}`,
+    html: shell({ preview: `${count} item${count === 1 ? '' : 's'} to pack · ${method}`, kicker: 'New order', headline, subline, body }),
+    text,
+  };
+}

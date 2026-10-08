@@ -52,7 +52,7 @@ export default function TestimonialsSection() {
               lineHeight: 1.15,
             }}
           >
-            Built on six years of device expertise.
+            Built on seven years of device expertise.
           </h2>
         </div>
 

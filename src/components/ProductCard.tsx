@@ -375,13 +375,21 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             </p>
           )}
 
-          {/* CTA */}
+          {/* CTA — an out-of-stock card says so rather than offering to buy. */}
+          {phone.stock <= 0 && (
+            <p style={{
+              fontFamily: 'var(--font-body)', fontSize: compact ? '10.5px' : '12px', lineHeight: 1.3,
+              color: 'var(--grey-50)', margin: '2px 0 0 0', fontWeight: 600,
+            }}>
+              Out of stock
+            </p>
+          )}
           <button
             onClick={handleViewProduct}
             aria-label={`View ${phone.model} details`}
             style={{
               width: '100%', height: compact ? 38 : 48,
-              background: 'var(--brand-cyan)',
+              background: phone.stock <= 0 ? 'var(--grey-50)' : 'var(--brand-cyan)',
               color: '#fff',
               fontFamily: 'var(--font-sans)', fontSize: compact ? '12.5px' : '14px', fontWeight: 800,
               letterSpacing: '-0.01em',
@@ -392,10 +400,10 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
               transform: 'translateZ(0)',
               marginTop: compact ? 10 : 14,
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--brand-cyan-hover)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--brand-cyan)')}
+            onMouseEnter={e => { if (phone.stock > 0) e.currentTarget.style.background = 'var(--brand-cyan-hover)'; }}
+            onMouseLeave={e => { if (phone.stock > 0) e.currentTarget.style.background = 'var(--brand-cyan)'; }}
           >
-            Buy Now <ArrowRight size={14} style={{marginLeft: 6}} />
+            {phone.stock > 0 ? 'Buy Now' : 'View details'} <ArrowRight size={14} style={{marginLeft: 6}} />
           </button>
 
           {/* Payment logos sit under the button rather than between price and

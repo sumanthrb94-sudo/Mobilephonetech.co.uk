@@ -1,5 +1,6 @@
 import { sendEmail, looksLikeEmail } from './_email.js';
-import { orderConfirmationEmail } from './_templates.js';
+import { orderConfirmationEmail, newOrderAlertEmail } from './_templates.js';
+import { COMPANY } from '../src/config/company.js';
 
 /**
  * The shared heart of ordering: price a basket, reserve its stock, write it,
@@ -447,17 +448,40 @@ export async function finalizeOrder(
     tag: 'order-confirmation',
   });
 
-  const [emailed, copied] = await Promise.all([
+  // Shipping is manual, so staff must hear about every order.
+  const alert = newOrderAlertEmail({ ...order, contactPhone });
+  const alerts = orderAlertRecipients().map(to => sendEmail({
+    to,
+    subject: alert.subject,
+    html: alert.html,
+    text: alert.text,
+    replyTo: order.contactEmail,
+    tag: 'order-alert',
+  }));
+
+  const [emailed, copied, ...alerted] = await Promise.all([
     send(order.contactEmail),
     order.copyEmail ? send(order.copyEmail) : Promise.resolve(null),
+    ...alerts,
   ]);
 
   if (emailed.error) console.error(`[orderCore] confirmation for ${order.id}:`, emailed.error);
   if (copied?.error) console.error(`[orderCore] copy for ${order.id}:`, copied.error);
+  for (const a of alerted) if (a?.error) console.error(`[orderCore] staff alert for ${order.id}:`, a.error);
 
   return {
     sent: emailed.sent,
     skipped: emailed.skipped,
     ...(order.copyEmail ? { copySent: Boolean(copied?.sent) } : {}),
   };
+}
+
+/**
+ * Who hears about a new order: ORDER_ALERT_EMAIL (comma-separated), else the
+ * reply-to inbox staff already read, else the published support address. So
+ * the alert works with no extra configuration.
+ */
+export function orderAlertRecipients(env: Record<string, string | undefined> = process.env): string[] {
+  const raw = env.ORDER_ALERT_EMAIL || env.EMAIL_REPLY_TO || COMPANY.supportEmail || '';
+  return [...new Set(raw.split(',').map(s => s.trim().toLowerCase()).filter(looksLikeEmail))];
 }

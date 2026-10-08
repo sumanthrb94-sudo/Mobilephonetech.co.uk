@@ -9,6 +9,7 @@ import ProductImage from './ProductImage';
 import PayPalCheckout, { PayPalPayload, isPayPalConfigured } from './PayPalCheckout';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
+import { estimateArrival } from '../../api/_deliveryEstimate';
 
 // PayPal is the only payment gateway. This form NEVER collects card details.
 //
@@ -351,9 +352,16 @@ export default function CheckoutFlow() {
 
   // ── CONFIRMATION PAGE ──────────────────────────────────────────────────────
   if (currentStep === 'confirmation' && lastOrder) {
-    // Plausible delivery ETA — matches the "order by 4pm" promise
-    const etaDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    const etaStr  = etaDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    // The same working-day estimate the confirmation email quotes (delivery
+    // option, postcode, cut-off, weekends), so the page and the email agree.
+    // It used to be "now + 24 hours", which promised a Friday-night order
+    // for Saturday whatever delivery was chosen.
+    const eta = estimateArrival({
+      postcode: lastOrder.shippingAddress.postalCode,
+      shippingMethod: lastOrder.shippingOption?.name,
+      from: lastOrder.createdAt,
+    });
+    const etaStr = eta?.date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 
     return (
       <div style={{ minHeight: 'calc(100vh - 200px)', background: 'var(--grey-5)', padding: 'var(--spacing-32) var(--spacing-16)' }}>
@@ -413,7 +421,9 @@ export default function CheckoutFlow() {
               }}
             >
               <Truck size={16} />
-              Arriving <strong>{etaStr}</strong>
+              {etaStr
+                ? <>Estimated arrival <strong>{etaStr}</strong></>
+                : <>We will email you when it is dispatched</>}
             </div>
           </motion.div>
 

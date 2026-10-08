@@ -120,8 +120,8 @@ export default function Footer() {
                 maxWidth: '240px',
               }}
             >
-              Certified refurbished phones and tech, established for six years.
-              Over 1,000 devices sold every month.
+              Certified refurbished phones and tech, trading for seven years.
+              Around 200 devices sold every month.
             </p>
 
             {/* Business experience marker */}
@@ -138,7 +138,7 @@ export default function Footer() {
               }}
             >
               <BadgeCheck size={16} style={{ color: 'var(--brand-cyan)' }} />
-              <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: '#111827' }}>6 years established</span>
+              <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '13px', color: '#111827' }}>7 years trading</span>
             </div>
 
             {/* Social icons */}

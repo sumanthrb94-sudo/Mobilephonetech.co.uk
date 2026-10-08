@@ -2,10 +2,10 @@ import Breadcrumbs from '../ui/Breadcrumbs';
 import { Leaf, Droplet, Factory, Recycle } from 'lucide-react';
 
 const IMPACT = [
-  { icon: Factory, value: '4,900+ tonnes', label: 'CO₂ saved vs buying new' }, // 70,000 devices × 70kg
-  { icon: Leaf,    value: '5,600+ tonnes', label: 'Raw materials kept in circulation' }, // 70,000 devices × 80kg
-  { icon: Droplet, value: '840 million L', label: 'Water conserved' }, // 70,000 devices × 12,000L
-  { icon: Recycle, value: '70,000+',       label: 'Devices given a second life' },
+  { icon: Factory, value: '1,100+ tonnes', label: 'CO₂ saved vs buying new' }, // 16,800 devices (200 a month × 7 years) × 70kg
+  { icon: Leaf,    value: '1,300+ tonnes', label: 'Raw materials kept in circulation' }, // 16,800 devices × 80kg
+  { icon: Droplet, value: '200 million L', label: 'Water conserved' }, // 16,800 devices × 12,000L
+  { icon: Recycle, value: '16,000+',       label: 'Devices given a second life' },
 ];
 
 const PRINCIPLES = [
