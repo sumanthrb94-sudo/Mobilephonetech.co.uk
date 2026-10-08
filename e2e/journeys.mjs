@@ -48,7 +48,7 @@ async function openInStockProduct(page) {
     const card = cards.nth(i);
     const text = (await card.innerText().catch(() => '')).toLowerCase();
     if (/out of stock|sold out/.test(text)) continue;
-    await card.locator('[aria-label^="View "]').first().click();
+    await card.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').first().click();
     await page.getByRole('button', { name: /add to cart/i }).first().waitFor({ timeout: 25000 });
     return;
   }
@@ -72,9 +72,10 @@ async function run(view, contextOpts) {
     await shot(page, view, 'home');
     const t = await txt(page);
     // The emulator seed is two products (no demo catalogue any more), so the
-    // home page is shorter than a live one; this only guards against a blank page.
-    rec(view, 'Home renders', t.length > 600 ? 'PASS' : 'FAIL', `${t.length} chars`);
-    const homeCards = await page.locator('[aria-label^="View "]').count();
+    // home page is shorter than a live one (rails show in-stock phones only);
+    // this only guards against a blank page.
+    rec(view, 'Home renders', t.length > 400 ? 'PASS' : 'FAIL', `${t.length} chars`);
+    const homeCards = await page.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').count();
     rec(view, 'Home shows catalogue-driven products', homeCards > 0 ? 'PASS' : 'FAIL', `${homeCards} cards`);
   } catch (e) { rec(view, 'Home renders', 'FAIL', e.message.slice(0, 100)); }
 
@@ -315,7 +316,7 @@ async function run(view, contextOpts) {
     const t = await txt(page);
     const n = Number((t.match(/(\d+) items? available/) || [])[1] || 0);
     rec(view, 'Products grid renders', n > 0 ? 'PASS' : 'FAIL', `${n} items`);
-    const cards = await page.locator('[aria-label^="View "]').count();
+    const cards = await page.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').count();
     rec(view, 'Product cards present', cards > 0 ? 'PASS' : 'FAIL', `${cards} cards`);
   } catch (e) { rec(view, 'Products grid renders', 'FAIL', e.message.slice(0, 100)); }
 
@@ -325,7 +326,7 @@ async function run(view, contextOpts) {
       await page.locator('#products-filter-toggle').first().click();
       await page.waitForTimeout(1000);
     }
-    const before = await page.locator('[aria-label^="View "]').count();
+    const before = await page.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').count();
     const cbs = page.locator('input[type=checkbox]');
     let applied = false;
     for (let i = 0; i < await cbs.count(); i++) {
@@ -334,7 +335,7 @@ async function run(view, contextOpts) {
     }
     await page.waitForTimeout(1500);
     await shot(page, view, 'filter-applied');
-    const after = await page.locator('[aria-label^="View "]').count();
+    const after = await page.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').count();
     if (!applied) rec(view, 'Brand filter narrows results', 'WARN', 'no brand control found');
     else rec(view, 'Brand filter narrows results', after > 0 && after < before ? 'PASS' : 'FAIL',
              `${before} -> ${after} cards`);

@@ -41,7 +41,7 @@ async function openInStockProduct(page) {
     const card = cards.nth(i);
     const text = (await card.innerText().catch(() => '')).toLowerCase();
     if (/out of stock|sold out/.test(text)) continue;
-    await card.locator('[aria-label^="View "]').first().click();
+    await card.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').first().click();
     await page.getByRole('button', { name: /add to cart/i }).first().waitFor({ timeout: 25000 });
     return;
   }
@@ -98,7 +98,7 @@ async function run(view, contextOpts) {
   // ── Card -> product detail route ────────────────────────────
   try {
     await gotoProducts(page);
-    const view1 = page.locator('[aria-label^="View "]').first();
+    const view1 = page.locator('[aria-label^="Buy "], [aria-label^="Get notified when"]').first();
     const label = await view1.getAttribute('aria-label');
     await view1.click();
     await page.waitForTimeout(2500);
