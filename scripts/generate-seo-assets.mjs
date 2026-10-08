@@ -4,7 +4,7 @@
  * the bundle. Runs via the `prebuild` npm script; product URLs are read from
  * the live catalogue at build time (see listedProductIds below).
  */
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -72,8 +72,14 @@ const staticRoutes = [
   { path: '/cookies',                  priority: '0.2', freq: 'yearly'  },
 ];
 
+// Every blog article, read from the guides data so a new article is in the
+// sitemap without anyone remembering to add it here.
+const guideSlugs = [...readFileSync(new URL('../src/data/guides.ts', import.meta.url), 'utf8')
+  .matchAll(/^\s+slug: '([a-z0-9-]+)'/gm)].map(m => m[1]);
+
 const urls = [
   ...staticRoutes.map(r => ({ loc: `${ORIGIN}${r.path}`, lastmod: today, priority: r.priority, changefreq: r.freq })),
+  ...guideSlugs.map(slug => ({ loc: `${ORIGIN}/guides/${slug}`, lastmod: today, priority: '0.5', changefreq: 'monthly' })),
   ...ids.map(id => ({ loc: `${ORIGIN}/product/${id}`,    lastmod: today, priority: '0.8', changefreq: 'weekly' })),
 ];
 
