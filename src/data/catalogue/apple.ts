@@ -97,6 +97,8 @@ const C = {
   softPink: { name: 'Soft Pink', hex: '#f3d6d6' },
   glacier: { name: 'Glacier', hex: '#c9dcea' },
   burgundy: { name: 'Burgundy', hex: '#6b2a35' },
+  starWhite: { name: 'Star White', hex: '#f1efe9' },
+  nightSky: { name: 'Night Sky', hex: '#2b2f3a' },
   // iPad
   spaceGrey: { name: 'Space Grey', hex: '#7d7e80' },
   roseGold: { name: 'Rose Gold', hex: '#e8c4b8' },
@@ -317,11 +319,18 @@ const IPHONES: CatalogueModel[] = [
     commsUSB: 'USB-C', os: 'iOS 26',
   }, 'Released March 2026: confirm SIM type and front camera from the unit before listing.'),
   iphone('apple-iphone-18-pro', 'iPhone 18 Pro', '2026-09', [C.black, C.silver, C.glacier, C.burgundy], S256_2T, {
-    network: '5G',
-  }, 'Released September 2026: finishes and storage are from Apple\'s announcement; add display, chip and camera specs before listing.'),
+    chip: 'A20 Pro', network: '5G',
+  }, 'Released September 2026: finishes, storage and chip are from Apple\'s announcement; add display and camera specs before listing.'),
   iphone('apple-iphone-18-pro-max', 'iPhone 18 Pro Max', '2026-09', [C.black, C.silver, C.glacier, C.burgundy], S256_2T, {
-    network: '5G',
-  }, 'Released September 2026: finishes and storage are from Apple\'s announcement; add display, chip and camera specs before listing.'),
+    chip: 'A20 Pro', network: '5G',
+  }, 'Released September 2026: finishes, storage and chip are from Apple\'s announcement; add display and camera specs before listing.'),
+  iphone('apple-iphone-duo', 'iPhone Duo', '2026-10', [C.starWhite, C.nightSky], S256_2T, {
+    displaySize: '7.6-inch inner, 5.4-inch outer',
+    display: 'Foldable Super Retina XDR OLED, ProMotion (120Hz), Always-On',
+    displayResolution: '2670 x 1878 inner, 2034 x 1398 outer',
+    chip: 'A20 Pro', mainCamera: '48MP Main, 48MP Ultra Wide', network: '5G',
+    bodyBuild: 'Grade 5 titanium',
+  }, 'Apple\'s first foldable, on sale 23 October 2026: confirm the camera and SIM details from the unit before listing.'),
 ];
 
 // ── iPad ─────────────────────────────────────────────────────────────────
