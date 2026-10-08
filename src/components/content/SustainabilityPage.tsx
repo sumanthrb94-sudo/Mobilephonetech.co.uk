@@ -3,8 +3,8 @@ import { Leaf, Droplet, Factory, Recycle } from 'lucide-react';
 
 const IMPACT = [
   { icon: Factory, value: '4,900+ tonnes', label: 'CO₂ saved vs buying new' }, // 70,000 devices × 70kg
-  { icon: Leaf,    value: '91,500 tonnes', label: 'Raw materials kept in circulation' },
-  { icon: Droplet, value: '194 million L', label: 'Water conserved' },
+  { icon: Leaf,    value: '5,600+ tonnes', label: 'Raw materials kept in circulation' }, // 70,000 devices × 80kg
+  { icon: Droplet, value: '840 million L', label: 'Water conserved' }, // 70,000 devices × 12,000L
   { icon: Recycle, value: '70,000+',       label: 'Devices given a second life' },
 ];
 
