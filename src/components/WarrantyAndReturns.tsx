@@ -12,11 +12,11 @@ import { CheckCircle2, Truck, Shield } from 'lucide-react';
 
 export default function WarrantyAndReturns() {
   return (
-    <section className="section-y" style={{ background: 'var(--grey-5)' }}>
+    <section className="home-section-y" style={{ background: 'var(--grey-0)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-64)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-40)' }}>
           <div className="overline mb-4" style={{ justifyContent: 'center' }}>Hassle-Free Protection</div>
           <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, color: 'var(--black)', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: '20px' }}>
             Warranty & Returns

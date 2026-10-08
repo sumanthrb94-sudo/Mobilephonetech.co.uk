@@ -38,7 +38,7 @@ export default function TestimonialsSection() {
   const t = DATA[index];
 
   return (
-    <section className="section-y" style={{ background: 'var(--grey-5)' }}>
+    <section className="home-section-y" style={{ background: 'var(--grey-5)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 'var(--spacing-32)' }}>
           <div className="overline mb-3">What customers say</div>

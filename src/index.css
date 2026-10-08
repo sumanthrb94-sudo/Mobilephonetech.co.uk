@@ -4559,3 +4559,61 @@ html.is-paying .checkout-header {
     bottom: calc(64px + 12px + 52px + 10px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* ───────────────────────────────────────────────────────────────
+   HOME SERIES RAILS — card widths
+
+   On a phone the rail shows two cards and the edge of a third (42vw), which
+   is what tells a shopper it scrolls. From 768px up the card width is a
+   fraction of the rail, so a row is a whole number of cards: a fixed 240px
+   card on a 1184px desktop rail put 4.7 cards on screen and sliced the
+   fifth in half, which read as a layout bug rather than as "scroll for
+   more". The arrows and "See all" still say there are more.
+─────────────────────────────────────────────────────────────── */
+.series-rail__item {
+  width: clamp(150px, 42vw, 240px);
+}
+
+/* Snap cards to the rail's gutter, not the screen edge: without this the
+   first card snapped flush to the left edge of a phone and lost its 16px
+   margin as soon as the rail settled. */
+.series-rail { scroll-padding-inline: var(--spacing-16); }
+@media (min-width: 768px) {
+  .series-rail__item { width: calc((100% - 3 * 14px) / 4); }
+
+  /* The rail bleeds 16px past the container so phone cards can scroll to
+     the screen edge. With whole-card widths that bleed showed a 2-3px
+     sliver of the next card at the right edge, so from here up the rail
+     sits flush with the container. !important because the bleed is set
+     inline in BrandShowcase. */
+  .series-rail {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    scroll-padding-inline: 0;
+  }
+}
+@media (min-width: 1024px) {
+  .series-rail__item { width: calc((100% - 4 * 14px) / 5); }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   HOME SECTION RHYTHM
+
+   The home sections below the series panels each set their own vertical
+   padding: 64px on some, 80px (.section-y) on others. Two adjacent 80px
+   sections on the same grey made a 160px blank band between "Why choose
+   us" and "Warranty & Returns", and FAQ + blog did the same in white. One
+   value for all of them, smaller on phones, with backgrounds alternating
+   in the shipped order (see each component) so a section edge is always
+   visible. .section-y stays as it was for the pages outside Home.
+─────────────────────────────────────────────────────────────── */
+:root { --home-section-y: 48px; }
+@media (min-width: 1024px) {
+  :root { --home-section-y: 64px; }
+}
+.home-section-y {
+  padding-top: var(--home-section-y);
+  padding-bottom: var(--home-section-y);
+}

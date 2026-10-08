@@ -148,8 +148,8 @@ export default function HomeBlog() {
       aria-label="From the workshop blog"
       style={{
         background: 'var(--grey-0)',
-        paddingTop: 'var(--spacing-64)',
-        paddingBottom: 'var(--spacing-64)',
+        paddingTop: 'var(--home-section-y)',
+        paddingBottom: 'var(--home-section-y)',
       }}
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>

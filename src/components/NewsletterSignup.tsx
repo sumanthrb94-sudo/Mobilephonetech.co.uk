@@ -72,8 +72,8 @@ export default function NewsletterSignup() {
       style={{
         background: 'linear-gradient(135deg, var(--grey-90) 0%, var(--black) 100%)',
         color: 'white',
-        paddingTop: 'var(--spacing-64)',
-        paddingBottom: 'var(--spacing-64)',
+        paddingTop: 'var(--home-section-y)',
+        paddingBottom: 'var(--home-section-y)',
         position: 'relative',
         overflow: 'hidden',
       }}

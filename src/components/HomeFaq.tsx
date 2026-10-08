@@ -54,9 +54,9 @@ export default function HomeFaq() {
     <section
       aria-label="Frequently asked questions"
       style={{
-        background: 'var(--grey-0)',
-        paddingTop: 'var(--spacing-64)',
-        paddingBottom: 'var(--spacing-64)',
+        background: 'var(--grey-5)',
+        paddingTop: 'var(--home-section-y)',
+        paddingBottom: 'var(--home-section-y)',
       }}
     >
       <script

@@ -214,7 +214,10 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
             <div
               style={{
                 width: '100%',
-                maxWidth: isDesktop ? '220px' : '150px',
+                // 220px left the flagship as a small tile in a wide empty
+                // column on desktop; 300px fills it without pushing the rail
+                // further down (the copy column is about as tall).
+                maxWidth: isDesktop ? '300px' : '150px',
                 aspectRatio: '4 / 3',
                 background: t.frame,
                 borderRadius: 'var(--radius-lg)',
@@ -351,16 +354,14 @@ function ProductRail({
         }}
       >
         {products.map((p) => (
+          // Width lives in CSS (.series-rail__item): phones show two cards and
+          // the edge of a third, wider screens a whole number of cards.
           <div
             key={p.id}
             role="listitem"
+            className="series-rail__item"
             style={{
               flex: '0 0 auto',
-              // 56vw showed less than two cards on a 390px phone, so each
-              // rail read as one enormous tile you had to scroll to discover
-              // was a rail at all. 42vw shows two and the edge of a third —
-              // enough to say "there are more of these" without a hint arrow.
-              width: 'clamp(150px, 42vw, 240px)',
               scrollSnapAlign: 'start',
               display: 'flex',
             }}

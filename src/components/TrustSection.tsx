@@ -56,14 +56,14 @@ const STATS = [
 export default function TrustSection() {
   return (
     <section
-      className="section-y"
+      className="home-section-y"
       style={{ background: 'var(--grey-5)' }}
       id="why-us"
     >
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
 
         {/* ── Value Prop heading — BM spec "Tech better with us." ─── */}
-        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-64)' }}>
+        <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-40)' }}>
           <div className="overline mb-4" style={{ display: 'block' }}>Why choose us</div>
           <h2
             style={{

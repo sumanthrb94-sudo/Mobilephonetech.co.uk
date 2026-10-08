@@ -40,8 +40,8 @@ export default function EcoImpactBlock() {
       style={{
         background:
           'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 55%, #a5d6a7 100%)',
-        paddingTop: 'var(--spacing-64)',
-        paddingBottom: 'var(--spacing-64)',
+        paddingTop: 'var(--home-section-y)',
+        paddingBottom: 'var(--home-section-y)',
         position: 'relative',
         overflow: 'hidden',
       }}
