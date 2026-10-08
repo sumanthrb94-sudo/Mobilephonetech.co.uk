@@ -233,6 +233,8 @@ function PixelClassic({ bodyId, body }: { bodyId: string; body: string }) {
       {/* Top + bottom bezels with speaker grille */}
       <line x1="78" y1="32" x2="122" y2="32" stroke={darken(body, 0.3)} strokeWidth="1.2" strokeLinecap="round" />
       <line x1="78" y1="168" x2="122" y2="168" stroke={darken(body, 0.3)} strokeWidth="1.2" strokeLinecap="round" />
+      <AccentButton x={137.5} y={55} width={4} height={14} />
+      <AccentButton x={137.5} y={76} width={4} height={22} />
     </g>
   );
 }
@@ -260,6 +262,8 @@ function GalaxyClassic({ bodyId, body }: { bodyId: string; body: string }) {
       <rect x="62" y="22" width="76" height="156" rx="10" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
       <rect x="67" y="36" width="66" height="124" rx="5" fill={useContext(ScreenCtx)} />
       <circle cx="100" cy="170" r="4" fill="none" stroke={darken(body, 0.25)} strokeWidth="1" />
+      <AccentButton x={137.5} y={55} width={4} height={14} />
+      <AccentButton x={137.5} y={76} width={4} height={22} />
     </g>
   );
 }
@@ -278,6 +282,8 @@ function GalaxyFold({ bodyId, body }: { bodyId: string; body: string }) {
       <circle cx="86" cy="25" r="1.5" fill="#0a0a0a" />
       <circle cx="100" cy="25" r="1.5" fill="#0a0a0a" />
       <circle cx="114" cy="25" r="1.5" fill="#0a0a0a" />
+      <AccentButton x={71} y={50} width={4} height={14} />
+      <AccentButton x={71} y={70} width={4} height={22} />
     </g>
   );
 }
@@ -296,6 +302,8 @@ function GalaxyFlip({ bodyId, body }: { bodyId: string; body: string }) {
       <rect x="60" y="100" width="80" height="4" rx="1" fill={darken(body, 0.4)} />
       {/* Bottom half */}
       <rect x="60" y="104" width="80" height="64" rx="8" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
+      <AccentButton x={139.5} y={110} width={4} height={14} />
+      <AccentButton x={139.5} y={128} width={4} height={20} />
     </g>
   );
 }

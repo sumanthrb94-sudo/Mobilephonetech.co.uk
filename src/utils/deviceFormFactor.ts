@@ -38,6 +38,7 @@ export function resolveFormFactor(brand: string, model: string, category?: strin
 
   // ── Apple ─────────────────────────────────────────────────────
   if (b === 'apple') {
+    if (m.includes('watch') || c.includes('watch')) return 'watch';
     // iPads first so "iPad Pro" doesn't match "Pro" in iPhone path
     if (m.includes('ipad mini')) return 'ipad-mini';
     if (m.includes('ipad pro'))  return 'ipad-pro';
@@ -58,7 +59,8 @@ export function resolveFormFactor(brand: string, model: string, category?: strin
     if (m.includes('galaxy tab'))           return 'galaxy-tab';
     if (m.includes('z fold') || m.includes('fold'))   return 'galaxy-fold';
     if (m.includes('z flip') || m.includes('flip'))   return 'galaxy-flip';
-    if (/galaxy\s*a(1[0-9]|2[0-9]|3[0-9])/.test(m))   return 'galaxy-classic';
+    // Galaxy A10 onwards are full-screen with a notch or punch hole, not
+    // bezels and a home button, so they share the S-range drawing.
     return 'galaxy-s';
   }
 
