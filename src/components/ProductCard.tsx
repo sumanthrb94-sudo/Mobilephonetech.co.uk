@@ -374,8 +374,6 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             </p>
           )}
 
-          <PaymentTrustMark compact={compact} />
-
           {/* CTA */}
           <button
             onClick={handleViewProduct}
@@ -398,6 +396,11 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           >
             Buy Now <ArrowRight size={14} style={{marginLeft: 6}} />
           </button>
+
+          {/* Payment logos sit under the button rather than between price and
+              button: the price block stays tight, and the marks answer "how
+              can I pay?" at the moment the shopper is about to click. */}
+          <PaymentTrustMark compact={compact} />
         </div>
       </motion.article>
 

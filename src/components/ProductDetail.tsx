@@ -535,8 +535,6 @@ export default function ProductDetail() {
               />
             </div>
           )}
-
-          <PaymentTrustMark />
         </div>
   );
 
@@ -944,6 +942,11 @@ export default function ProductDetail() {
                 </button>
                 )}
               </div>
+
+              {/* Directly under Add to cart: the payment question is asked at
+                  the button, not up by the price, where it used to sit as a
+                  line of grey text. */}
+              <PaymentTrustMark variant="pdp" />
             </div>
 
             {/* Reassurance, below the decision rather than above it. Returns
