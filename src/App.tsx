@@ -138,6 +138,16 @@ function AppContent() {
     return () => { document.documentElement.classList.remove('is-home'); };
   }, [location.pathname]);
 
+  // Product pages carry their own back button, cart and sticky buy bar, so
+  // below 1024px the tab bar is dropped there: stacked under the buy bar it
+  // took 128px of a 844px screen. The class lets CSS reclaim that room.
+  const isProductRoute = location.pathname.startsWith('/product/');
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    document.documentElement.classList.toggle('is-product', isProductRoute);
+    return () => { document.documentElement.classList.remove('is-product'); };
+  }, [isProductRoute]);
+
   return (
     <div
       style={{
@@ -373,7 +383,7 @@ function AppContent() {
       <Toast />
       <CookieBanner />
       {isCheckoutRoute ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
-      {!isCheckoutRoute && !isAdminRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
+      {!isCheckoutRoute && !isAdminRoute && !isProductRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
       {/* Same again for the trust strip: delivery and returns promises are a
           shopper cue, and pinned to the bottom it covers the last table row. */}
     </div>

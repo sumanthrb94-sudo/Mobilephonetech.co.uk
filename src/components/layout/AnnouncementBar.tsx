@@ -10,11 +10,10 @@ const MESSAGES = [
 ] as const;
 
 /**
- * AnnouncementBar — slim trust-cue strip pinned to the bottom of the
- * viewport. On mobile it sits above the MobileBottomNav (tab bar);
- * CSS (see index.css .announcement-bar / html.is-checkout) handles
- * the positional offsets so the bar drops flush to bottom on checkout
- * routes where the tab bar is hidden.
+ * AnnouncementBar — slim trust-cue strip. On desktop it sits in the fixed
+ * header stack under the category row; on phones it renders only on Home,
+ * under the app bar. Positioning lives in index.css (.announcement-bar and
+ * the DESKTOP TRUST STRIP block).
  *
  * - Mobile: rotating single cue (icon + label), fades every 3.5s.
  * - ≥sm: inline joined string, all three cues in one row.

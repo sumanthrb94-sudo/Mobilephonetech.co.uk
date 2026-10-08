@@ -4,10 +4,10 @@ import { ScanLine, BatteryCharging, ShieldCheck, Truck } from 'lucide-react';
 const STEPS = [
   {
     icon: ScanLine,
-    number: '30',
+    number: '70',
     unit: 'point',
     label: 'Engineering Audit',
-    blurb: 'Every device passes a 30-point physical and functional inspection — screen, chassis, buttons, sensors.',
+    blurb: 'Every device passes a 70-point physical and functional inspection — screen, chassis, buttons, sensors.',
     accent: '#f0fdf4',
     accentBorder: '#bbf7d0',
     iconColor: '#059669',

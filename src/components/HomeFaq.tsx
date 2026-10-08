@@ -13,7 +13,7 @@ import { Plus, ArrowRight } from 'lucide-react';
 const FAQS = [
   {
     q: 'What does "refurbished" actually mean here?',
-    a: 'Every device has been professionally inspected, tested across 30+ points, battery-verified, data-wiped, factory-reset, sanitised and re-packaged. If a unit fails any step it doesn\'t ship — we replace or refund.',
+    a: 'Every device has been professionally inspected, tested across 70 points, battery-verified, data-wiped, factory-reset, sanitised and re-packaged. If a unit fails any step it doesn\'t ship — we replace or refund.',
   },
   {
     q: 'How do your grades work — Pristine, Excellent, Good, Fair?',

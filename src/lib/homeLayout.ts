@@ -49,7 +49,7 @@ export const SECTIONS: SectionSpec[] = [
   { id: 'brandShowcase', label: 'Brand showcase', blurb: 'The large iPhone, Galaxy, Fold and Pixel panels.' },
   { id: 'ecoImpact', label: 'Sustainability', blurb: 'The environmental case for buying refurbished.' },
   { id: 'trustSection', label: 'Why buy from us', blurb: 'The value and trust block.' },
-  { id: 'testimonials', label: 'Customer reviews', blurb: 'Quotes from customers.' },
+  { id: 'testimonials', label: 'Customer reviews', blurb: 'Quotes from customers. Shows nothing until real quotes are added in TestimonialsSection.' },
   { id: 'warranty', label: 'Warranty & returns', blurb: 'The warranty and returns explainer.' },
   { id: 'faq', label: 'FAQ', blurb: 'The accordion of common questions.' },
   { id: 'blog', label: 'Workshop journal', blurb: 'The refurbishment articles.' },

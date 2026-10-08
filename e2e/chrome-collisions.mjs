@@ -119,7 +119,7 @@ async function run() {
     if (!heroLayout) {
       rec(view, 'home hero is present with a primary action', true, false);
     } else {
-      if (view === 'desktop') rec(view, 'home hero has a fixed 480px desktop canvas', 480, heroLayout.height);
+      if (view === 'desktop') rec(view, 'home hero has a fixed 516px desktop shell (368px canvas under 148px of chrome)', 516, heroLayout.height);
       rec(view, 'hero keeps the entire approved artwork visible', 'contain', heroLayout.imageFit);
       rec(view, 'home hero has exactly six campaign banners', 6, heroLayout.campaignCount);
       if (view === 'desktop') rec(view, 'hero action stays in the copy-safe left zone', true, heroLayout.ctaInsideLeftSafeZone);
@@ -216,7 +216,9 @@ async function run() {
       const pictureTop = Number.parseFloat(getComputedStyle(picture).top);
       const imageBox = image.getBoundingClientRect();
       return {
-        canvasRatio: Number((frame.width / frame.height).toFixed(2)),
+        // The artwork canvas is the <picture> box, which starts below the
+        // fixed header stack; the section itself also contains that chrome.
+        canvasRatio: Number((picture.getBoundingClientRect().width / picture.getBoundingClientRect().height).toFixed(2)),
         imageFit: getComputedStyle(image).objectFit,
         selectedSource: image.currentSrc,
         sourceRatio: Number((image.naturalWidth / image.naturalHeight).toFixed(2)),

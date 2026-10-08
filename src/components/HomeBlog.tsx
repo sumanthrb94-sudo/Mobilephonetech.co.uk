@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { ArrowRight, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 /**
  * HomeBlog — 10 storytelling-style refurbished-phone posts.
@@ -26,10 +27,17 @@ interface Post {
   accent: { from: string; to: string; ink: string };
 }
 
+/**
+ * How many posts the home page shows. Ten cards ran to ~2,000px on desktop
+ * and three screens on a phone, for articles that do not open yet; three is
+ * one row and makes the point. The full list stays here for the blog itself.
+ */
+const HOME_POST_COUNT = 3;
+
 const POSTS: Post[] = [
   {
     slug: 'thirty-point-inspection',
-    title: 'The 30-point inspection that decides whether a phone goes on sale',
+    title: 'The 70-point inspection that decides whether a phone goes on sale',
     excerpt:
       'Before any device hits the shop it spends about 47 minutes on a workshop bench. Here\'s what those 47 minutes look like — and why one phone in twelve never makes it through.',
     category: 'Behind the Scenes',
@@ -179,7 +187,7 @@ export default function HomeBlog() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
           style={{ gap: '20px' }}
         >
-          {POSTS.map((p, i) => (
+          {POSTS.slice(0, HOME_POST_COUNT).map((p, i) => (
             <motion.article
               key={p.slug}
               initial={{ opacity: 0, y: 14 }}
@@ -193,10 +201,7 @@ export default function HomeBlog() {
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
-                transition: 'transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast)',
-                cursor: 'pointer',
               }}
-              whileHover={{ y: -3, boxShadow: '0 16px 32px rgba(0,0,0,0.08)' }}
             >
               {/* Card hero with category eyebrow + decorative gradient */}
               <div
@@ -318,8 +323,11 @@ export default function HomeBlog() {
           ))}
         </div>
 
-        <div style={{ textAlign: 'center', marginTop: 'var(--spacing-40)' }}>
-          <span
+        {/* The articles do not open yet, so the way onward is the buying
+            guides, which do. */}
+        <div style={{ textAlign: 'center', marginTop: 'var(--spacing-32)' }}>
+          <Link
+            to="/guides"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -327,11 +335,12 @@ export default function HomeBlog() {
               fontFamily: 'var(--font-body)',
               fontSize: '14px',
               fontWeight: 600,
-              color: 'var(--grey-50)',
+              color: 'var(--brand-cyan-hover)',
+              textDecoration: 'none',
             }}
           >
-            More stories landing on the workshop blog soon <ArrowRight size={14} />
-          </span>
+            Read our buying guides <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
     </section>

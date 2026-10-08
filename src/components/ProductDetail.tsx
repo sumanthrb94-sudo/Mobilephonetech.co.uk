@@ -479,38 +479,29 @@ export default function ProductDetail() {
                 stars and a hardcoded "4.8★ (342 reviews)" on every product,
                 which is an invented aggregate — a banned practice under the
                 DMCC Act, and misleading regardless. */}
-            {/* Always present, and always a link down to the reviews section.
-                It used to render nothing at all when a product had no
-                reviews yet — which is every product until the first verified
-                buyer writes one — so the page gave no sign that reviews
-                existed. Saying "no reviews yet" is honest and still points
-                at the section; inventing an average is what the DMCC Act
-                prohibits and what this page used to do with a hardcoded
-                "4.8★ (342 reviews)" on every product. */}
-            <a
-              href="#pdp-reviews"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                textDecoration: 'none', color: 'inherit',
-              }}
-            >
-              {reviewCount > 0 ? (
-                <>
-                  <span style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
-                    ))}
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                    {averageRating.toFixed(1)} ({reviewCount} review{reviewCount === 1 ? '' : 's'})
-                  </span>
-                </>
-              ) : (
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                  No reviews yet
+            {/* Only shown once a verified buyer has written a review. A grey
+                "No reviews yet" beside the title read as a warning on every
+                product, which is how it was in practice until the first
+                review lands; the reviews section further down still says so
+                and still invites the first one. */}
+            {reviewCount > 0 && (
+              <a
+                href="#pdp-reviews"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  textDecoration: 'none', color: 'inherit',
+                }}
+              >
+                <span style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+                  ))}
                 </span>
-              )}
-            </a>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                  {averageRating.toFixed(1)} ({reviewCount} review{reviewCount === 1 ? '' : 's'})
+                </span>
+              </a>
+            )}
           </div>
         </div>
   );
@@ -550,7 +541,7 @@ export default function ProductDetail() {
   );
 
   return (
-    <div className="pdp-root" style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingBottom: 'var(--spacing-32)', overflowX: 'hidden' }}>
+    <div className="pdp-root" style={{ background: 'var(--grey-0)', minHeight: '100vh', paddingBottom: 'var(--spacing-32)' }}>
       <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
 
         {/* Breadcrumb and Back are desktop wayfinding. On a phone they cost
@@ -590,6 +581,7 @@ export default function ProductDetail() {
           
           {/* ── Left Column: Claude-designed 6-frame gallery ─ */}
           <div
+            className="pdp-gallery-col"
             style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-16)' }}
             tabIndex={0}
             onKeyDown={handleGalleryKeyDown}
@@ -851,7 +843,12 @@ export default function ProductDetail() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
               <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch' }}>
-                {/* Quantity */}
+                {/* Quantity and share are desktop-only. On a 390px phone they
+                    squeezed Add to cart into the narrowest control in the row,
+                    with its label touching the edges. A phone buyer sets
+                    quantity in the basket, and the share icon already sits
+                    beside the product title. */}
+                {isDesktop && (
                 <div
                   style={{
                     display: 'flex',
@@ -887,6 +884,7 @@ export default function ProductDetail() {
                     style={{ width: '40px', height: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 700, color: 'var(--black)' }}
                   >+</button>
                 </div>
+                )}
 
                 <button
                   ref={addToCartRef}
@@ -925,6 +923,7 @@ export default function ProductDetail() {
                   </motion.div>
                 </motion.button>
 
+                {isDesktop && (
                 <button
                   aria-label="Share product"
                   onClick={shareProduct}
@@ -940,10 +939,10 @@ export default function ProductDetail() {
                     justifyContent: 'center',
                     cursor: 'pointer',
                   }}
-                  className="hidden sm:inline-flex"
                 >
                   <Share2 size={20} />
                 </button>
+                )}
               </div>
             </div>
 

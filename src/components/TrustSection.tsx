@@ -34,8 +34,8 @@ const PILLARS = [
     icon: BadgeCheck,
     accentColor: 'var(--brand-cyan-hover)',
     accentBg: 'var(--color-brand-subtle)',
-    title: '90-Point Inspection',
-    body: 'Every device passes a rigorous 90-point diagnostic check before it ships. Cameras, speakers, connectors — all tested.',
+    title: '70-Point Inspection',
+    body: 'Every device passes a rigorous 70-point diagnostic check before it ships. Cameras, speakers, connectors — all tested.',
   },
   {
     icon: Users,
@@ -50,7 +50,7 @@ const STATS = [
   { value: '6 yrs', label: 'Established' },
   { value: '1,000+', label: 'Devices sold monthly' },
   { value: '70K+', label: 'Devices sold' },
-  { value: '90pt',  label: 'Inspection standard' },
+  { value: '70pt',  label: 'Inspection standard' },
 ];
 
 export default function TrustSection() {
@@ -241,7 +241,7 @@ export default function TrustSection() {
                     marginBottom: '6px',
                   }}
                 >
-                  90-Point Inspection
+                  70-Point Inspection
                 </div>
                 <div
                   style={{

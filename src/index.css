@@ -474,6 +474,15 @@ html.is-checkout .ai-fab {
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
+  /* With html already clipping sideways, `hidden` here no longer passes to
+     the viewport: it makes body its own (never-scrolling) scroll container,
+     and every position: sticky on the site — the product page's gallery and
+     buy column, the basket summary — silently stopped sticking. `clip` cuts
+     the overflow without creating a scroll container. */
+  @supports (overflow-x: clip) {
+    body { overflow-x: clip; }
+  }
+
   img {
     max-width: 100%;
     height: auto;
@@ -4452,4 +4461,101 @@ html.is-paying .checkout-header {
   flex-wrap: wrap;
   padding: 12px 16px;
   border-top: 1px solid var(--grey-10);
+}
+
+/* ───────────────────────────────────────────────────────────────
+   DESKTOP TRUST STRIP (≥1024px)
+
+   The delivery / warranty / returns strip used to be pinned to the bottom
+   edge of the viewport. At 1440×900 it sat across the product cards on the
+   home page and across the buy box on product pages, and together with the
+   desktop sticky buy bar it covered 104px of every product page. It now
+   sits in the fixed header stack, directly under the category row, which is
+   where UK retailers put the same three promises. Every page already
+   offsets by --nav-total, so adding the strip's 36px there moves content,
+   sticky columns, toasts and scroll-padding together.
+─────────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  /* :root, not html — the base definition is on :root, which outranks a
+     plain type selector on the same element. */
+  :root {
+    --nav-total: calc(var(--header-h) + var(--catnav-h) + var(--preview-banner-h) + 36px);
+  }
+
+  .announcement-bar {
+    top: calc(var(--preview-banner-h) + var(--header-h) + var(--catnav-h));
+    bottom: auto;
+    border-top: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Nothing is pinned to the bottom edge any more. */
+  body {
+    padding-bottom: 0;
+  }
+
+  .support-fab { bottom: 20px; }
+  .ai-fab { bottom: calc(20px + 52px + 12px); }
+  .support-panel { bottom: 12px; }
+
+  .pdp-stickybuy { bottom: 0; }
+  body:has(.pdp-stickybuy) .support-fab { bottom: calc(68px + 16px); }
+  body:has(.pdp-stickybuy) .ai-fab { bottom: calc(68px + 16px + 52px + 10px); }
+
+  .account-gate {
+    min-height: calc(100vh - var(--nav-total));
+    min-height: calc(100dvh - var(--nav-total));
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────
+   PRODUCT PAGE — sticky gallery
+
+   The root clips sideways overflow (the carousel and the 6-frame gallery
+   both translate beyond it). `overflow-x: hidden` did that by turning the
+   root into a scroll container, which silently disabled every
+   position: sticky inside it: the buy box never stuck, and the gallery
+   ended after one screen and left ~500px of blank column beside the
+   configuration. `clip` cuts the overflow without creating a scroll
+   container; `hidden` remains the fallback where `clip` is unknown.
+─────────────────────────────────────────────────────────────── */
+.pdp-root { overflow-x: hidden; }
+@supports (overflow-x: clip) {
+  .pdp-root { overflow-x: clip; }
+}
+
+@media (min-width: 1024px) {
+  /* The buy column is taller than the screen, so it scrolls; the photograph
+     is shorter, so it is the column that stays in view beside it — as on
+     Apple and Back Market. */
+  .pdp-gallery-col {
+    position: sticky;
+    top: calc(var(--nav-total) + 20px);
+    align-self: start;
+  }
+}
+
+/* Product pages below 1024px have no tab bar (see App.tsx, is-product): the
+   app bar keeps back and cart, and the sticky buy bar owns the bottom edge.
+   Everything that cleared the 64px tab bar drops to the screen edge. */
+@media (max-width: 1023px) {
+  html.is-product body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html.is-product .pdp-stickybuy {
+    bottom: 0;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+  html.is-product .support-fab {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  html.is-product .ai-fab {
+    bottom: calc(16px + 52px + 10px + env(safe-area-inset-bottom, 0px));
+  }
+  html.is-product body:has(.pdp-stickybuy) .support-fab {
+    bottom: calc(64px + 12px + env(safe-area-inset-bottom, 0px));
+  }
+  html.is-product body:has(.pdp-stickybuy) .ai-fab {
+    bottom: calc(64px + 12px + 52px + 10px + env(safe-area-inset-bottom, 0px));
+  }
 }

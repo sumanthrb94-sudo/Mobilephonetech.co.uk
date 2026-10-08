@@ -284,7 +284,7 @@ function BannerEditor({
         <div className="bn-fields">
           <Field label="Eyebrow" hint="Small line above the headline. Optional.">
             <input className="input" value={b.eyebrow} maxLength={60}
-              placeholder="e.g. iPhone Pro · 30-point audit"
+              placeholder="e.g. iPhone Pro · 70-point audit"
               onChange={e => onChange({ eyebrow: e.target.value })} />
           </Field>
 

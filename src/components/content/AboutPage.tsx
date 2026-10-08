@@ -9,7 +9,7 @@ const STATS = [
 ];
 
 const PILLARS = [
-  { icon: ShieldCheck, title: 'Certified, not just refurbished', body: 'Every device passes a 90-point technical inspection and ships with a 12-month warranty. No third-party exceptions.' },
+  { icon: ShieldCheck, title: 'Certified, not just refurbished', body: 'Every device passes a 70-point technical inspection and ships with a 12-month warranty. No third-party exceptions.' },
   { icon: Leaf,        title: 'Better for the planet',          body: 'We extend each device\'s life by 3-5 years, saving an average of 65kg CO₂ and 150L of water per handset.' },
   { icon: Users,       title: 'Real people, real support',      body: 'UK-based customer team, reachable in under 10 minutes on average. No bots, no decision trees.' },
   { icon: BadgeCheck,  title: 'Transparent grading',            body: 'Our grades tell you exactly what you\'re buying — no surprises when the box arrives.' },
