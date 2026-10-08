@@ -1,10 +1,13 @@
+import { createContext, useContext, useId } from 'react';
 import { colourHex, SCREEN, FRAME } from '../utils/deviceColors';
 import { resolveFormFactor, type FormFactor } from '../utils/deviceFormFactor';
 
 /**
  * DeviceMock — programmatic SVG product renders. One component,
- * 13 form factors, every variant colour applied to the body fill
- * so the card always shows the device the user picked.
+ * 13 form factors. Every device is drawn in the same neutral graphite
+ * finish; the variant colour shows only as an accent (side buttons,
+ * camera ring, crown), so it reads as an illustration with a colour
+ * indicator rather than a solid block of colour pretending to be a photo.
  *
  * Why SVG instead of raster product photography:
  *   - Instant render (zero network requests)
@@ -24,7 +27,13 @@ interface Props {
 
 export default function DeviceMock({ brand, model, color, category, alt }: Props) {
   const formFactor = resolveFormFactor(brand, model, category);
-  const body = colourHex(color, brand);
+  const body = NEUTRAL_BODY;
+  const accent = colourHex(color, brand);
+  // Unique per instance: several drawings share a page, and a duplicate
+  // gradient id makes every card paint with whichever was defined first.
+  const uid = useId().replace(/:/g, '');
+  const bodyId = `bodyGrad-${uid}`;
+  const screenId = `screenGrad-${uid}`;
 
   return (
     <div
@@ -47,19 +56,33 @@ export default function DeviceMock({ brand, model, color, category, alt }: Props
         style={{ width: '100%', height: '100%', overflow: 'visible' }}
       >
         <defs>
-          <linearGradient id={`bodyGrad-${formFactor}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={bodyId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor={lighten(body, 0.10)} />
             <stop offset="100%" stopColor={darken(body, 0.10)} />
           </linearGradient>
-          <linearGradient id="screenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <linearGradient id={screenId} x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#1a1d22" />
             <stop offset="100%" stopColor="#0a0c0e" />
           </linearGradient>
         </defs>
-        <FormFactorSvg form={formFactor} bodyId={`bodyGrad-${formFactor}`} body={body} />
+        <ScreenCtx.Provider value={`url(#${screenId})`}>
+          <AccentCtx.Provider value={accent}>
+            <FormFactorSvg form={formFactor} bodyId={bodyId} body={body} />
+          </AccentCtx.Provider>
+        </ScreenCtx.Provider>
       </svg>
     </div>
   );
+}
+
+/** The one body finish every drawing uses; the colour goes on the accents. */
+const NEUTRAL_BODY = '#3a3c41';
+const AccentCtx = createContext('#8e8e93');
+const ScreenCtx = createContext('#0a0c0e');
+
+/** A side button or crown in the variant colour, outlined so pale colours still show. */
+function AccentButton({ x, y, width, height }: { x: number; y: number; width: number; height: number }) {
+  return <rect x={x} y={y} width={width} height={height} rx={Math.min(width, height) / 2} fill={useContext(AccentCtx)} stroke="rgba(0,0,0,0.35)" strokeWidth="0.5" />;
 }
 
 function pageBackground(brand: string): string {
@@ -142,7 +165,7 @@ function PhoneShell({ bodyId, body, withNotch, withIsland, withHomeButton }: {
       {/* Outer body */}
       <rect x="60" y="20" width="80" height="160" rx="14" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
       {/* Screen glass */}
-      <rect x="65" y="26" width="70" height={withHomeButton ? 142 : 148} rx="9" fill="url(#screenGrad)" />
+      <rect x="65" y="26" width="70" height={withHomeButton ? 142 : 148} rx="9" fill={useContext(ScreenCtx)} />
       {withNotch && (
         <rect x="86" y="26" width="28" height="6" rx="3" fill={SCREEN} />
       )}
@@ -152,10 +175,10 @@ function PhoneShell({ bodyId, body, withNotch, withIsland, withHomeButton }: {
       {withHomeButton && (
         <circle cx="100" cy="174" r="5" fill="none" stroke={darken(body, 0.3)} strokeWidth="1" />
       )}
-      {/* Side buttons */}
-      <rect x="58.5" y="55" width="2" height="14" rx="1" fill={darken(body, 0.2)} />
-      <rect x="58.5" y="78" width="2" height="20" rx="1" fill={darken(body, 0.2)} />
-      <rect x="139.5" y="65" width="2" height="22" rx="1" fill={darken(body, 0.2)} />
+      {/* Side buttons, in the variant colour */}
+      <AccentButton x={56.5} y={55} width={4} height={14} />
+      <AccentButton x={56.5} y={76} width={4} height={22} />
+      <AccentButton x={139.5} y={65} width={4} height={24} />
     </g>
   );
 }
@@ -171,8 +194,14 @@ function IphoneIsland({ bodyId, body }: { bodyId: string; body: string }) {
         <circle cx="79" cy="29" r="3" fill="#1a1a1a" />
         <circle cx="71" cy="37" r="3" fill="#1a1a1a" />
       </g>
+      <IslandRing />
     </>
   );
+}
+
+/** A thin ring round the Dynamic Island in the variant colour. */
+function IslandRing() {
+  return <rect x="86.5" y="30.5" width="27" height="9" rx="4.5" fill="none" stroke={useContext(AccentCtx)} strokeWidth="1" />;
 }
 
 function IphoneNotch({ bodyId, body }: { bodyId: string; body: string }) {
@@ -200,7 +229,7 @@ function PixelClassic({ bodyId, body }: { bodyId: string; body: string }) {
   return (
     <g>
       <rect x="62" y="22" width="76" height="156" rx="10" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
-      <rect x="68" y="40" width="64" height="120" rx="4" fill="url(#screenGrad)" />
+      <rect x="68" y="40" width="64" height="120" rx="4" fill={useContext(ScreenCtx)} />
       {/* Top + bottom bezels with speaker grille */}
       <line x1="78" y1="32" x2="122" y2="32" stroke={darken(body, 0.3)} strokeWidth="1.2" strokeLinecap="round" />
       <line x1="78" y1="168" x2="122" y2="168" stroke={darken(body, 0.3)} strokeWidth="1.2" strokeLinecap="round" />
@@ -229,7 +258,7 @@ function GalaxyClassic({ bodyId, body }: { bodyId: string; body: string }) {
   return (
     <g>
       <rect x="62" y="22" width="76" height="156" rx="10" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
-      <rect x="67" y="36" width="66" height="124" rx="5" fill="url(#screenGrad)" />
+      <rect x="67" y="36" width="66" height="124" rx="5" fill={useContext(ScreenCtx)} />
       <circle cx="100" cy="170" r="4" fill="none" stroke={darken(body, 0.25)} strokeWidth="1" />
     </g>
   );
@@ -241,7 +270,7 @@ function GalaxyFold({ bodyId, body }: { bodyId: string; body: string }) {
       {/* Tall narrow body */}
       <rect x="74" y="20" width="52" height="160" rx="6" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
       {/* Cover screen */}
-      <rect x="78" y="26" width="44" height="144" rx="4" fill="url(#screenGrad)" />
+      <rect x="78" y="26" width="44" height="144" rx="4" fill={useContext(ScreenCtx)} />
       {/* Hinge spine on the right edge */}
       <rect x="124" y="20" width="4" height="160" rx="1" fill={darken(body, 0.35)} />
       {/* Camera bar at top */}
@@ -259,7 +288,7 @@ function GalaxyFlip({ bodyId, body }: { bodyId: string; body: string }) {
       {/* Top half */}
       <rect x="60" y="32" width="80" height="68" rx="8" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
       {/* Cover screen square */}
-      <rect x="70" y="42" width="42" height="40" rx="3" fill="url(#screenGrad)" />
+      <rect x="70" y="42" width="42" height="40" rx="3" fill={useContext(ScreenCtx)} />
       {/* Two camera lenses on cover */}
       <circle cx="123" cy="56" r="4" fill="#0d0d0d" />
       <circle cx="123" cy="76" r="4" fill="#0d0d0d" />
@@ -278,9 +307,13 @@ function IpadShell({ bodyId, narrow }: { bodyId: string; narrow?: boolean }) {
   return (
     <g>
       <rect x={x} y="22" width={w} height="156" rx="10" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
-      <rect x={x + 6} y="30" width={w - 12} height="140" rx="5" fill="url(#screenGrad)" />
+      <rect x={x + 6} y="30" width={w - 12} height="140" rx="5" fill={useContext(ScreenCtx)} />
       {/* Front camera */}
       <circle cx="100" cy="26" r="1.6" fill="#0a0a0a" />
+      {/* Top button and volume buttons, in the variant colour */}
+      <AccentButton x={x + w - 26} y={18.5} width={14} height={4} />
+      <AccentButton x={x + w - 0.5} y={40} width={4} height={14} />
+      <AccentButton x={x + w - 0.5} y={58} width={4} height={14} />
     </g>
   );
 }
@@ -327,7 +360,7 @@ function ConsoleSwitch({ body }: { body: string }) {
       <rect x="40" y="65" width="22" height="70" rx="5" fill="#e63946" />
       <rect x="138" y="65" width="22" height="70" rx="5" fill="#1d4ed8" />
       <rect x="62" y="60" width="76" height="80" rx="3" fill={body} stroke={FRAME} strokeWidth="0.6" />
-      <rect x="66" y="64" width="68" height="72" rx="2" fill="url(#screenGrad)" />
+      <rect x="66" y="64" width="68" height="72" rx="2" fill={useContext(ScreenCtx)} />
     </g>
   );
 }
@@ -336,8 +369,8 @@ function ConsoleVr({ body }: { body: string }) {
     <g>
       <path d="M 40 85 Q 40 60 70 60 L 130 60 Q 160 60 160 85 L 160 110 Q 160 135 130 135 L 70 135 Q 40 135 40 110 Z"
             fill={body} stroke={FRAME} strokeWidth="0.6" />
-      <rect x="60" y="80" width="32" height="32" rx="2" fill="url(#screenGrad)" />
-      <rect x="108" y="80" width="32" height="32" rx="2" fill="url(#screenGrad)" />
+      <rect x="60" y="80" width="32" height="32" rx="2" fill={useContext(ScreenCtx)} />
+      <rect x="108" y="80" width="32" height="32" rx="2" fill={useContext(ScreenCtx)} />
     </g>
   );
 }
@@ -416,9 +449,10 @@ function Watch({ body, bodyId }: { body: string; bodyId: string }) {
       {/* Watch body */}
       <rect x="65" y="65" width="70" height="70" rx="14" fill={`url(#${bodyId})`} stroke={FRAME} strokeWidth="0.6" />
       {/* Display */}
-      <rect x="72" y="73" width="56" height="54" rx="9" fill="url(#screenGrad)" />
-      {/* Crown */}
-      <rect x="135" y="92" width="3" height="12" rx="1" fill={darken(body, 0.2)} />
+      <rect x="72" y="73" width="56" height="54" rx="9" fill={useContext(ScreenCtx)} />
+      {/* Crown and side button, in the variant colour */}
+      <AccentButton x={134} y={84} width={6} height={13} />
+      <AccentButton x={134.5} y={103} width={4} height={14} />
     </g>
   );
 }

@@ -294,7 +294,7 @@ function InventoryRow({
             of thing an admin comes here to notice and fix. */}
         {/* The same rule as the shop: an uploaded photo, or the LeHart mark,
             which is how staff spot what still needs photographing. */}
-        <ProductImage brand={product.brand} model={product.model} imageUrl={product.imageUrl} alt="" context="thumb" />
+        <ProductImage brand={product.brand} model={product.model} category={product.category} color={product.colorOptions?.[0] ?? product.variants?.[0]?.color} imageUrl={product.imageUrl} alt="" context="thumb" />
       </div>
 
       <div style={{ flex: '1 1 200px', minWidth: 0 }}>

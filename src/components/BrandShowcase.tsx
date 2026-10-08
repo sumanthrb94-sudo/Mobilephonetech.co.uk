@@ -234,7 +234,7 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
                   back to the lead product's own photo, or the logo. */}
               {panel.heroImage
                 ? <img src={panel.heroImage} alt={hero.model} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                : <ProductImage brand={hero.brand} model={hero.model} category={hero.category} imageUrl={hero.imageUrl} alt={hero.model} />}
+                : <ProductImage brand={hero.brand} model={hero.model} category={hero.category} color={hero.colorOptions?.[0] ?? hero.variants?.[0]?.color} imageUrl={hero.imageUrl} alt={hero.model} />}
             </div>
           </div>
         </motion.div>

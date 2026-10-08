@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isUploadedPhoto } from '../lib/productImages';
-import PhotoPending from './PhotoPending';
+import DeviceMock from './DeviceMock';
 
 export interface ProductImageProps {
   brand: string;
@@ -14,23 +14,21 @@ export interface ProductImageProps {
   alt?: string;
   /** Forces the synthetic fallback even when a real asset exists. */
   variant?: 'primary' | 'synthetic';
-  /** Render hint: 'thumb' drops the wording and shows the logo alone. */
+  /** Render hint: 'thumb' drops the "photo coming soon" tag. */
   context?: 'card' | 'hero' | 'thumb';
 }
 
 /**
- * ProductImage — the product's uploaded photo, or the LeHart "photo coming
- * soon" mark.
+ * ProductImage — the product's uploaded photo, or a drawing of the device in
+ * the chosen colour until one is uploaded.
  *
- * There used to be four tiers: Apple's marketing CDN by model and colour,
- * then the demo catalogue's shared /assets pictures, then a drawn device,
- * then a category silhouette. All of them showed shoppers a picture that was
- * not the stock, and hid from staff which products still needed photos. Now
- * only a photo someone uploaded is shown (see isUploadedPhoto); everything
- * else gets the logo. brand/model/color/storage/category stay in the props so
- * call sites need not change.
+ * Only a photo someone uploaded is shown as a photo (see isUploadedPhoto):
+ * the demo catalogue's shared /assets pictures and brand CDN shots showed
+ * shoppers a picture that was not the stock. The drawing (DeviceMock) is
+ * plainly an illustration, follows the selected colour, and carries a small
+ * "Photo coming soon" tag so staff can see which products still need photos.
  */
-export function ProductImage({ imageUrl, alt, context }: ProductImageProps) {
+export function ProductImage({ brand, model, imageUrl, color, category, alt, context }: ProductImageProps) {
   const [failed, setFailed] = useState(false);
   useEffect(() => { setFailed(false); }, [imageUrl]);
 
@@ -47,7 +45,24 @@ export function ProductImage({ imageUrl, alt, context }: ProductImageProps) {
     );
   }
 
-  return <PhotoPending alt={alt} compact={context === 'thumb'} />;
+  const drawing = <DeviceMock brand={brand} model={model} color={color} category={category} alt={alt} />;
+  if (context === 'thumb') return drawing;
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      {drawing}
+      <span
+        style={{
+          position: 'absolute', left: '50%', bottom: '4%', transform: 'translateX(-50%)',
+          padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap',
+          background: 'rgba(255,255,255,0.88)', color: 'var(--grey-60)',
+          fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 600,
+          boxShadow: '0 1px 2px rgba(0,0,0,0.08)', pointerEvents: 'none',
+        }}
+      >
+        Photo coming soon
+      </span>
+    </div>
+  );
 }
 
 export default ProductImage;

@@ -144,6 +144,7 @@ export default function AddedToCartModal() {
                     brand={lastAddedItem.brand}
                     model={lastAddedItem.model}
                     category={lastAddedItem.category}
+                    color={lastAddedItem.selectedColor}
                     imageUrl={lastAddedItem.imageUrl}
                     alt={lastAddedItem.model}
                   />

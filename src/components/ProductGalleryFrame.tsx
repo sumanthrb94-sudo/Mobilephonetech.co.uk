@@ -113,7 +113,7 @@ function ProductFrame({ product, compact }: { product: Product; compact?: boolea
           transition: 'transform 0.28s var(--ease-default, cubic-bezier(0.2, 0, 0, 1))',
         }}
       >
-        <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model}`} />
+        <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} color={product.colorOptions?.[0] ?? product.variants?.[0]?.color} imageUrl={product.imageUrl} alt={`${product.model}`} />
       </div>
       {!compact && zoom.scale === 1 && (
         <span
@@ -385,7 +385,7 @@ function ColorwaysFrame({ product, swatches, compact }: { product: Product; swat
       <div style={{ position: 'absolute', inset: 0, background: 'var(--grey-5)' }} />
       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', padding: 'clamp(16px, 4vw, 32px)', boxSizing: 'border-box' }}>
         <div style={{ width: '46%', maxWidth: '200px', aspectRatio: '1/1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} imageUrl={product.imageUrl} alt={`${product.model} — colour options`} />
+          <ProductImage brand={product.brand} model={product.model} storage={product.storage} category={product.category} color={product.colorOptions?.[0] ?? product.variants?.[0]?.color} imageUrl={product.imageUrl} alt={`${product.model} — colour options`} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(10px, 2vw, 18px)' }}>
           {swatches.map((c, i) => (

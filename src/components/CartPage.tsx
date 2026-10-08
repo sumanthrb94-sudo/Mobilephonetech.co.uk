@@ -206,6 +206,7 @@ export default function CartPage() {
                     brand={item.brand}
                     model={item.model}
                     category={item.category}
+                    color={item.selectedColor}
                     imageUrl={item.imageUrl}
                     alt={item.model}
                   />

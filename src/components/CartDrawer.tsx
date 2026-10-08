@@ -154,7 +154,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   >
                     {/* Product Image */}
                     <div style={{ width: '80px', height: '80px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '8px', overflow: 'hidden' }}>
-                      <ProductImage brand={item.brand} model={item.model} category={item.category} imageUrl={item.imageUrl} alt={item.model} />
+                      <ProductImage brand={item.brand} model={item.model} category={item.category} color={item.selectedColor} imageUrl={item.imageUrl} alt={item.model} />
                     </div>
 
                     {/* Details */}

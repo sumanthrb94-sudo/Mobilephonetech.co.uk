@@ -8,6 +8,17 @@
  */
 
 const PALETTE: Record<string, string> = {
+  // ── Apple colours from the reference catalogue not listed below ──
+  '(product)red':     '#bf0013',
+  'light gold':       '#efe2c8',
+  'soft pink':        '#f3d6d6',
+  'glacier':          '#c9dcea',
+  'star white':       '#f1efe9',
+  'night sky':        '#2b2f3a',
+  'jet black':        '#141414',
+  'slate':            '#5a5b5e',
+  'natural':          '#c9c4bb',
+  'dark bronze':      '#5e4a3a',
   // ── Apple iPhone 17 / 16 / 15 / 14 titanium and standard ─────────
   'cosmic orange':    '#d65a31',
   'deep blue':        '#1f3a5f',

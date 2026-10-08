@@ -124,7 +124,7 @@ export default function ComparisonTool() {
                     
                     <div className="h-48 mb-8 flex flex-col items-center justify-center text-center">
                       <div style={{ height: '128px', width: '100%', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        <ProductImage brand={phone.brand} model={phone.model} category={phone.category} imageUrl={phone.imageUrl} alt={phone.model} />
+                        <ProductImage brand={phone.brand} model={phone.model} category={phone.category} color={phone.colorOptions?.[0] ?? phone.variants?.[0]?.color} imageUrl={phone.imageUrl} alt={phone.model} />
                       </div>
                       <h3 className="font-black text-slate-900 tracking-tight">{phone.model}</h3>
                     </div>
