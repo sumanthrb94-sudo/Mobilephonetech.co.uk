@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import {
   listPanels, savePanel, deletePanel, panelId, panelProblems, panelProducts,
-  parseWords, joinWords, EMPTY_PANEL, BUILT_IN_PANELS, type SeriesPanel,
+  parseWords, joinWords, EMPTY_PANEL, BUILT_IN_PANELS, toneForPosition, type SeriesPanel,
 } from '../../lib/seriesPanels';
 import { uploadImage, describeError, isUsableImageUrl, IMAGE_BUCKET } from '../../lib/adminApi';
 import { useCatalogue } from '../../context/CatalogueContext';
@@ -406,12 +406,10 @@ function PanelEditor({
           </fieldset>
 
           <div className="bn-row">
-            <Field label="Tone" hint="Panels usually alternate down the page.">
-              <select className="input" value={p.tone}
-                onChange={e => onChange({ tone: e.target.value === 'dark' ? 'dark' : 'light' })}>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
+            <Field label="Colour" hint="Set by position on the home page: 1st white, 2nd black, 3rd white, and so on. Reorder panels to change it.">
+              <span className="input" style={{ display: 'flex', alignItems: 'center' }}>
+                {toneForPosition(index) === 'light' ? 'White' : 'Black'} (panel {index + 1})
+              </span>
             </Field>
           </div>
 
@@ -462,7 +460,7 @@ function PanelEditor({
           <div className="bn-preview__head"><span>Live preview</span></div>
           <div className="sp-preview__frame">
             {matched.length > 0 ? (
-              <SeriesPanelView panel={p} products={matched} />
+              <SeriesPanelView panel={{ ...p, tone: toneForPosition(index) }} products={matched} />
             ) : (
               <p className="bn-preview__empty-note">
                 Nothing to preview until the rule above matches a product.

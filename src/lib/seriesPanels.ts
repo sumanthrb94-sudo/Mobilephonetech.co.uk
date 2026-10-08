@@ -41,7 +41,10 @@ export interface SeriesPanel {
   ctaHref: string;
   /** Optional artwork. Without one the panel uses the first matching product. */
   heroImage: string;
-  /** Panels alternate light and dark down the page. */
+  /**
+   * Stored for older documents only. The home page colours panels by
+   * position (see toneForPosition), so this no longer decides anything.
+   */
   tone: 'light' | 'dark';
   /** Exact product brand, e.g. "Samsung". Blank matches any brand. */
   brand: string;
@@ -76,7 +79,7 @@ export const BUILT_IN_PANELS: SeriesPanel[] = [
     ctaLabel: 'Shop iPhone 17',
     ctaHref: `/products?brand=Apple&model=${encodeURIComponent('iPhone 17')}`,
     heroImage: '/assets/iphone-17-pro-max-trio.jpg',
-    tone: 'dark',
+    tone: 'light',
     brand: 'Apple',
     include: ['iPhone 17'],
     exclude: [],
@@ -93,7 +96,7 @@ export const BUILT_IN_PANELS: SeriesPanel[] = [
     ctaLabel: 'Shop Galaxy S',
     ctaHref: `/products?brand=Samsung&model=${encodeURIComponent('Samsung Galaxy S')}`,
     heroImage: '',
-    tone: 'light',
+    tone: 'dark',
     brand: 'Samsung',
     include: ['Galaxy S'],
     exclude: ['Tab'],
@@ -110,7 +113,7 @@ export const BUILT_IN_PANELS: SeriesPanel[] = [
     ctaLabel: 'Shop foldables',
     ctaHref: `/products?brand=Samsung&model=${encodeURIComponent('Samsung Galaxy Z')}`,
     heroImage: '',
-    tone: 'dark',
+    tone: 'light',
     brand: 'Samsung',
     include: ['Fold', 'Flip'],
     exclude: [],
@@ -127,7 +130,7 @@ export const BUILT_IN_PANELS: SeriesPanel[] = [
     ctaLabel: 'Shop Pixel',
     ctaHref: `/products?brand=Google&model=${encodeURIComponent('Google Pixel')}`,
     heroImage: '',
-    tone: 'light',
+    tone: 'dark',
     brand: 'Google',
     include: ['Pixel'],
     exclude: ['Watch', 'Buds'],
@@ -162,6 +165,16 @@ export function joinWords(words: string[]): string {
 
 const wordList = (v: unknown): string[] =>
   Array.isArray(v) ? v.map(w => line(w, 60)).filter(Boolean).slice(0, 12) : [];
+
+/**
+ * Panels alternate down the home page, starting light: white, black, white,
+ * black. By position rather than per panel, so reordering panels, adding
+ * one, or a panel that matches no products can never put two of the same
+ * colour next to each other.
+ */
+export function toneForPosition(index: number): SeriesPanel['tone'] {
+  return index % 2 === 0 ? 'light' : 'dark';
+}
 
 export function toPanel(id: string, d: Record<string, unknown>): SeriesPanel {
   return {

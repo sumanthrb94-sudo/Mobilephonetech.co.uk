@@ -7,7 +7,7 @@ import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import {
-  BUILT_IN_PANELS, listLivePanels, panelProducts, type SeriesPanel,
+  BUILT_IN_PANELS, listLivePanels, panelProducts, toneForPosition, type SeriesPanel,
 } from '../lib/seriesPanels';
 import type { Product } from '../types';
 
@@ -39,15 +39,19 @@ export default function BrandShowcase() {
     return () => { cancelled = true; };
   }, []);
 
+  // A panel whose rule matches nothing is simply not rendered, which is what
+  // makes a mistyped rule harmless rather than a broken page. Colour is given
+  // after that filter, so the panels that do show always alternate white,
+  // black, white, black.
+  const shown = panels
+    .map(panel => ({ panel, products: panelProducts(catalogue, panel) }))
+    .filter(({ products }) => products.length > 0);
+
   return (
     <div id="products">
-      {panels.map((panel) => {
-        const products = panelProducts(catalogue, panel);
-        // A panel whose rule matches nothing is simply not rendered, which is
-        // what makes a mistyped rule harmless rather than a broken page.
-        if (products.length === 0) return null;
-        return <SeriesPanelView key={panel.id} panel={panel} products={products} />;
-      })}
+      {shown.map(({ panel, products }, i) => (
+        <SeriesPanelView key={panel.id} panel={{ ...panel, tone: toneForPosition(i) }} products={products} />
+      ))}
     </div>
   );
 }
