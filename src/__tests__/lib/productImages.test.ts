@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAX_PRODUCT_IMAGES, capImages, galleryFrames } from '../../lib/productImages';
+import { MAX_PRODUCT_IMAGES, capImages, galleryFrames, isUploadedPhoto } from '../../lib/productImages';
 
 /**
  * Six images per product.
@@ -82,5 +82,23 @@ describe('galleryFrames', () => {
 
   it('ignores blanks among real images rather than framing them', () => {
     expect(galleryFrames(['a', '', 'b'])).toEqual(['a', 'b', 'a', 'b', 'a', 'b']);
+  });
+});
+
+describe('isUploadedPhoto', () => {
+  it('accepts photos staff uploaded or linked', () => {
+    expect(isUploadedPhoto('https://res.cloudinary.com/lehart/image/upload/v1/products/iphone.jpg')).toBe(true);
+    expect(isUploadedPhoto('https://firebasestorage.googleapis.com/v0/b/x/o/products%2Fa.jpg')).toBe(true);
+  });
+
+  it('rejects the demo catalogue pictures bundled with the site', () => {
+    expect(isUploadedPhoto('/assets/iphone-17-pro-max-orange.jpg')).toBe(false);
+    expect(isUploadedPhoto('assets/galaxy-s23.jpg')).toBe(false);
+  });
+
+  it('rejects placeholders and empty values', () => {
+    expect(isUploadedPhoto('https://placehold.co/600x600')).toBe(false);
+    expect(isUploadedPhoto('')).toBe(false);
+    expect(isUploadedPhoto(undefined)).toBe(false);
   });
 });

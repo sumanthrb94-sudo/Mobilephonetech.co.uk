@@ -229,13 +229,12 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
                 boxShadow: t.frameShadow,
               }}
             >
-              <ProductImage
-                brand={hero.brand}
-                model={hero.model}
-                category={hero.category}
-                imageUrl={panel.heroImage ?? hero.imageUrl}
-                alt={hero.model}
-              />
+              {/* Panel artwork is campaign imagery chosen in Admin › Series, like
+                  the banners, so it is shown as set. Without it the panel falls
+                  back to the lead product's own photo, or the logo. */}
+              {panel.heroImage
+                ? <img src={panel.heroImage} alt={hero.model} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                : <ProductImage brand={hero.brand} model={hero.model} category={hero.category} imageUrl={hero.imageUrl} alt={hero.model} />}
             </div>
           </div>
         </motion.div>

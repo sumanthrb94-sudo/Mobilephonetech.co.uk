@@ -14,6 +14,21 @@
 
 export const MAX_PRODUCT_IMAGES = 6;
 
+const PLACEHOLDER_HOSTS = /^https?:\/\/(placehold\.co|placeholder\.com|via\.placeholder\.com|dummyimage\.com)\b/i;
+
+/**
+ * Whether a stored image is a real photo staff uploaded (Cloudinary, Firebase
+ * Storage, or a link pasted in the editor) rather than a stand-in.
+ *
+ * Local paths are not: /assets/* are the demo catalogue's shared pictures,
+ * identical across models and colours, and a shop selling specific used
+ * devices must not present one as the unit a buyer receives. Anything that
+ * fails this shows the LeHart "photo coming soon" mark instead.
+ */
+export function isUploadedPhoto(url: unknown): url is string {
+  return typeof url === 'string' && /^https?:\/\//i.test(url.trim()) && !PLACEHOLDER_HOSTS.test(url);
+}
+
 /**
  * The images a product is allowed to keep, in order.
  *

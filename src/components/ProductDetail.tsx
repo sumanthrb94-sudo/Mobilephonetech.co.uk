@@ -13,7 +13,7 @@ import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
 import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
-import { galleryFrames } from '../lib/productImages';
+import { galleryFrames, isUploadedPhoto } from '../lib/productImages';
 import TechnicalSpecs from './TechnicalSpecs';
 import { enrichSpecs } from '../utils/deviceSpecs';
 import { ProductVariant, ProductGrade } from '../types';
@@ -383,13 +383,16 @@ export default function ProductDetail() {
   // Prefer its own gallery (or primary image) so the hero updates the moment
   // a shopper taps a swatch; retain the model gallery as extra angles where
   // a configuration supplies only one image.
-  const selectedGallery = selectedVariant?.galleryImages?.length
+  const selectedGallery = (selectedVariant?.galleryImages?.length
     ? selectedVariant.galleryImages
     : selectedVariant?.imageUrl
       ? [selectedVariant.imageUrl, ...(phone.galleryImages ?? []).filter(image => image !== selectedVariant.imageUrl)]
       : phone.galleryImages?.length
         ? phone.galleryImages
-        : [phone.imageUrl];
+        : [phone.imageUrl]
+  // Only uploaded photos make frames. With none, the gallery is a single
+  // "photo coming soon" mark with no arrows, thumbnails or full-screen view.
+  ).filter(isUploadedPhoto);
   const activeGallery = galleryFrames(selectedGallery);
 
   const handleAddToCart = () => {
@@ -413,8 +416,8 @@ export default function ProductDetail() {
     }
   };
 
-  const nextImage = () => setSelectedImageIndex((prev) => (prev + 1) % activeGallery.length);
-  const prevImage = () => setSelectedImageIndex((prev) => (prev - 1 + activeGallery.length) % activeGallery.length);
+  const nextImage = () => { if (activeGallery.length) setSelectedImageIndex((prev) => (prev + 1) % activeGallery.length); };
+  const prevImage = () => { if (activeGallery.length) setSelectedImageIndex((prev) => (prev - 1 + activeGallery.length) % activeGallery.length); };
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -686,6 +689,7 @@ export default function ProductDetail() {
                 <span>Watch 6s Lab Inspection</span>
               </button>
 
+              {activeGallery.length > 0 && (<>
                 <button
                   type="button"
                   onClick={() => setLightboxOpen(true)}
@@ -710,6 +714,7 @@ export default function ProductDetail() {
               >
                 <ChevronRight size={20} />
               </button>
+              </>)}
             </motion.div>
 
             {/* 6 Thumbnails */}

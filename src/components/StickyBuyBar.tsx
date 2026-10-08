@@ -89,7 +89,7 @@ export default function StickyBuyBar({
       {title && <span className="pdp-stickybuy__title">{title}</span>}
       <div className="pdp-stickybuy__price">
         <strong>{price}</strong>
-        {originalPrice && <s>{originalPrice}</s>}
+        {originalPrice && <span className="pdp-stickybuy__was"><s>{originalPrice}</s> new</span>}
       </div>
       <button
         type="button"
