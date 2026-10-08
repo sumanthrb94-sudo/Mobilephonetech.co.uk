@@ -89,7 +89,9 @@ try {
   await page.getByText(/models added as drafts/).waitFor({ timeout: 120000 });
   const after = await countProducts();
   rec('every new model was written', after === before - deleted + expected, `${before - deleted} + ${expected} -> ${after}`);
-  rec('re-running finds nothing new', await page.getByRole('button', { name: /Nothing new to import/ }).count() === 1);
+  // The page re-reads the database after the notice appears; wait for it.
+  rec('re-running finds nothing new', await page.getByRole('button', { name: /Nothing new to import/ })
+    .waitFor({ timeout: 15000 }).then(() => true, () => false));
 
   const imported = await getProduct('apple-iphone-17-pro-max');
   rec('imported model is a draft', imported?.listed === false);
@@ -115,11 +117,10 @@ try {
   await page.getByLabel('Configuration 1 was price').fill('1199');
   await page.getByLabel('Configuration 1 stock').fill('2');
 
-  // Listing with no photo must be refused with a reason.
+  // Listing with no photo is allowed, with a warning that the shop will
+  // show an illustration until one is uploaded.
   await page.locator('#field-listed').check();
-  await page.getByRole('button', { name: /Save changes/ }).click();
-  await page.waitForTimeout(800);
-  rec('listing without a photo is refused', await page.getByText(/Add at least one photo before listing/).count() === 1);
+  rec('listing without a photo warns', await page.getByText(/No photos yet/).count() === 1);
 
   // Configuration 1 is 256GB Cosmic Orange, the first colour block.
   await page.locator('input[type=file]').first().setInputFiles({ name: 'orange.png', mimeType: 'image/png', buffer: PNG_1PX });

@@ -4,7 +4,7 @@ import { ArrowLeft, Save, Loader2, AlertTriangle, ExternalLink } from 'lucide-re
 import {
   emptyDraft, productToDraft, validateDraft, slugify, describeError,
   getProduct, createProduct, updateProduct, SELLABLE_GRADES,
-  type ProductDraft, type ValidationErrors,
+  hasProductPhoto, type ProductDraft, type ValidationErrors,
 } from '../../lib/adminApi';
 import ImageManager from './ImageManager';
 import VariantMatrixEditor from './VariantMatrixEditor';
@@ -155,10 +155,13 @@ export default function ProductEditor() {
               {' · '}
               {draft.listed
                 ? 'Shoppers can find and buy this product.'
-                : 'Save as often as you like. Listing needs a price and condition on every configuration and at least one photo.'}
+                : 'Save as often as you like. Listing needs at least one configuration with a price and condition; unpriced rows stay hidden.'}
             </span>
           </label>
           {errors.listed && <p role="alert" style={listedErrorStyle}>{errors.listed}</p>}
+          {draft.listed && !errors.listed && !hasProductPhoto(draft) && (
+            <p style={photoWarningStyle}>No photos yet: the shop shows an illustration until you upload some under Photos by colour.</p>
+          )}
         </Section>
 
         <Section title="Identity">
@@ -464,6 +467,9 @@ const legendStyle: React.CSSProperties = {
   letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-50)',
 };
 
+const photoWarningStyle: React.CSSProperties = {
+  margin: '8px 0 0', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: '#92400e',
+};
 const listedErrorStyle: React.CSSProperties = {
   margin: '8px 0 0', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--color-sale)',
 };

@@ -285,19 +285,14 @@ async function run(view, contextOpts) {
 
   await page.locator('#field-originalPrice').fill('1099');
   await page.locator('#field-stock').fill('6');
-  // Listing needs a photo; with none, the save is refused with the reason.
-  await page.getByRole('button', { name: /Create (product|model)/i }).first().click();
-  await page.waitForTimeout(400);
-  rec(view, 'Listing without a photo is refused', /Add at least one photo before listing/i.test(await txt()));
-
-  // Saved as a draft instead, which needs no photo.
-  await page.locator('#field-listed').uncheck();
+  // No photo yet: allowed, with a warning.
+  rec(view, 'Listing without a photo warns', /No photos yet/i.test(await txt()));
   await page.getByRole('button', { name: /Create (product|model)/i }).first().click();
   await page.waitForTimeout(1000);
 
   const created = await getProduct('google-pixel-9-pro');
   rec(view, 'Product is created in Firestore', Boolean(created), created ? '' : 'not found in Firestore');
-  rec(view, 'Created product is a draft until it has a photo', created?.listed === false);
+  rec(view, 'Created product is listed', created?.listed === true);
   rec(view, 'Created product carries the right price',
     created?.price === 649 && created?.originalPrice === 1099,
     `price=${created?.price} was=${created?.originalPrice}`);

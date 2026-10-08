@@ -352,12 +352,13 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             }}>
               £{phone.price}
             </span>
+            {/* The comparison is the price new, and says so: an unlabelled
+                struck-through figure reads as this shop's own former price. */}
             {savings > 0 && (
               <span style={{
-                fontFamily: 'var(--font-body)', fontSize: compact ? '11px' : '13px',
-                color: '#9CA3AF', textDecoration: 'line-through',
+                fontFamily: 'var(--font-body)', fontSize: compact ? '11px' : '13px', color: '#9CA3AF',
               }}>
-                £{phone.originalPrice}
+                <span style={{ textDecoration: 'line-through' }}>£{phone.originalPrice}</span> new
               </span>
             )}
           </div>

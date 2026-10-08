@@ -79,7 +79,7 @@ describe('catalogue import', () => {
     for (const m of APPLE_CATALOGUE) expect(validateDraft(modelToDraft(m)), m.id).toEqual({});
   });
 
-  it('produces drafts the editor refuses to list until priced and photographed', () => {
+  it('produces drafts the editor refuses to list until priced', () => {
     expect(validateDraft({ ...modelToDraft(iphone17ProMax), listed: true })).toHaveProperty('listed');
   });
 });

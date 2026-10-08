@@ -288,6 +288,12 @@ export interface ValidationErrors {
  * Field-level validation. Mirrors the CHECK constraints in the schema so the
  * admin sees a useful message instead of a raw Postgres error.
  */
+/** Whether the product has any photo, shared or per colour. Listing without one is allowed but warned about. */
+export function hasProductPhoto(draft: ProductDraft): boolean {
+  return Boolean(draft.imageUrl || draft.galleryImages?.length
+    || draft.variants?.some(v => v.imageUrl || v.galleryImages?.length));
+}
+
 export function validateDraft(draft: ProductDraft): ValidationErrors {
   const errors: ValidationErrors = {};
 
@@ -377,11 +383,9 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
     errors.listed = 'Price at least one configuration before listing, or keep this as a draft.';
   }
 
-  // Nothing goes on sale as an illustration: the shop sells specific used
-  // devices, and the photo is part of the description.
-  const hasPhoto = Boolean(draft.imageUrl || draft.galleryImages?.length
-    || draft.variants?.some(v => v.imageUrl || v.galleryImages?.length));
-  if (forSale && !hasPhoto && !errors.listed) errors.listed = 'Add at least one photo before listing, or keep this as a draft.';
+  // Photos are not required to list: catalogue models go live with an
+  // illustration while staff photograph the stock. The editor warns instead
+  // (see hasProductPhoto).
 
   return errors;
 }

@@ -45,8 +45,8 @@ describe('validateDraft', () => {
     expect(validateDraft(draft({ batteryHealth: 85 }))).toEqual({});
   });
 
-  it('refuses to list a product with no photo', () => {
-    expect(validateDraft(draft({ batteryHealth: 85, imageUrl: undefined }))).toHaveProperty('listed');
+  it('lists a product with no photo yet (the shop shows an illustration)', () => {
+    expect(validateDraft(draft({ batteryHealth: 85, imageUrl: undefined }))).toEqual({});
   });
 
   it('accepts a photo uploaded only for one colour', () => {

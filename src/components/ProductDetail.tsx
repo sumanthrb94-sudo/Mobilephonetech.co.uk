@@ -517,7 +517,10 @@ export default function ProductDetail() {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', minWidth: 0 }}>
               <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
               {savings > 0 && (
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)', textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)' }}>
+                  <span style={{ textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
+                  <span style={{ fontSize: '0.7em', fontWeight: 600 }}> new</span>
+                </span>
               )}
             </div>
             {savings > 0 && displayOriginalPrice > 0 && (
