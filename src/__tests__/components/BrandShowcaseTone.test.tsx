@@ -32,14 +32,6 @@ describe('home page series panels', () => {
     expect(tones[1]).toBe('dark');
   });
 
-  it('never shows a demo picture as panel artwork', async () => {
-    const { container } = render(<MemoryRouter><BrandShowcase /></MemoryRouter>);
-    await waitFor(() => expect(container.querySelectorAll('section[data-tone]').length).toBeGreaterThan(1));
-    expect(BUILT_IN_PANELS.some(p => p.heroImage.startsWith('/assets/'))).toBe(true);
-    const srcs = [...container.querySelectorAll('section[data-tone] img')].map(i => i.getAttribute('src') ?? '');
-    expect(srcs.filter(s => s.startsWith('/assets/'))).toEqual([]);
-  });
-
   it('positions start white', () => {
     expect([0, 1, 2, 3].map(toneForPosition)).toEqual(['light', 'dark', 'light', 'dark']);
     expect(BUILT_IN_PANELS[0].tone).toBe('light');

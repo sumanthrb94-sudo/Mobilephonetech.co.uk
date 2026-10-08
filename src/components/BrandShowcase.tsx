@@ -4,7 +4,6 @@ import { motion } from 'motion/react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
-import { isUploadedPhoto } from '../lib/productImages';
 import ProductImage from './ProductImage';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import {
@@ -230,11 +229,10 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
                 boxShadow: t.frameShadow,
               }}
             >
-              {/* Panel artwork is campaign imagery uploaded in Admin › Series, like
-                  the banners. The built-in panels pointed at demo pictures
-                  under /assets, which are not ours to show, so without an
-                  upload the panel draws the lead product in its colour. */}
-              {isUploadedPhoto(panel.heroImage)
+              {/* Panel artwork is campaign imagery chosen in Admin › Series, like
+                  the banners, so it is shown as set. Without it the panel falls
+                  back to the lead product's own photo, or the logo. */}
+              {panel.heroImage
                 ? <img src={panel.heroImage} alt={hero.model} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 : <ProductImage brand={hero.brand} model={hero.model} category={hero.category} color={hero.colorOptions?.[0] ?? hero.variants?.[0]?.color} imageUrl={hero.imageUrl} alt={hero.model} />}
             </div>
