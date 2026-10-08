@@ -5,6 +5,7 @@
   "scripts": {
     "sfx": "./make-sfx.sh",
     "check": "npx --yes hyperframes@0.8.141 check",
-    "render": "npx --yes hyperframes@0.8.141 render -q high -o ../../public/videos/lab-inspection.mp4"
+    "build": "node build.mjs",
+    "render": "node build.mjs && npx --yes hyperframes@0.8.141 render -q high -o ../../public/videos/lab-inspection.mp4"
   }
 }

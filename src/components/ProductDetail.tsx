@@ -705,7 +705,7 @@ export default function ProductDetail() {
                 >
                   <Play size={10} fill="white" color="white" style={{ marginLeft: '1px' }} />
                 </span>
-                <span>Watch 12s Lab Inspection</span>
+                <span>Watch the 70-point lab check</span>
               </button>
 
               {activeGallery.length > 0 && (<>
@@ -758,7 +758,7 @@ export default function ProductDetail() {
               aria-label="Watch 6-second Lab Inspection"
             >
               <span className="pdp-mobile-inspection__play"><Play size={15} fill="currentColor" aria-hidden="true" /></span>
-              <span>Watch 12s Lab Inspection</span>
+              <span>Watch the 70-point lab check</span>
               <ChevronRight size={20} aria-hidden="true" />
             </button>
 

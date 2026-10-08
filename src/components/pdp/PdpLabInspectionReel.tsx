@@ -11,7 +11,7 @@ export const LAB_VIDEO_SRC = '/videos/lab-inspection.mp4';
 export const LAB_VIDEO_POSTER = '/videos/lab-inspection-poster.jpg';
 
 /**
- * The 70-point inspection film: one 12-second video of how every device is
+ * The 70-point inspection film: one video, every check shown by name, of how every device is
  * checked in the lab, the same for every product. It opens from a tap, so it
  * starts playing with sound; the native controls let the shopper pause,
  * mute or replay it.

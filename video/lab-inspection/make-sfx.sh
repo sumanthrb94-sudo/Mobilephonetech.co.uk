@@ -21,3 +21,10 @@ f -f lavfi -i "anoisesrc=d=1.4:c=white:a=0.25" -f lavfi -i "aevalsrc='0.2*sin(2*
 f -f lavfi -i "aevalsrc='0.3*sin(2*PI*784*t)*exp(-3*t)+0.25*sin(2*PI*988*max(t-0.08,0))*exp(-3*max(t-0.08,0))*gte(t,0.08)+0.25*sin(2*PI*1175*max(t-0.16,0))*exp(-2.5*max(t-0.16,0))*gte(t,0.16)':s=44100:d=1.6" chime.wav
 # Stamp: a low thud for the certified seal.
 f -f lavfi -i "aevalsrc='0.9*sin(2*PI*(90*t-30*t*t))*exp(-14*t)':s=44100:d=0.4" stamp.wav
+# Pop: a short bubbly pop with a falling pitch, in three pitches so a run of
+# checks does not drone. One plays for every check that appears.
+f -f lavfi -i "aevalsrc='0.55*sin(2*PI*(1100*t-2600*t*t))*exp(-38*t)':s=44100:d=0.14" pop1.wav
+f -f lavfi -i "aevalsrc='0.55*sin(2*PI*(1250*t-2900*t*t))*exp(-38*t)':s=44100:d=0.14" pop2.wav
+f -f lavfi -i "aevalsrc='0.55*sin(2*PI*(1400*t-3200*t*t))*exp(-38*t)':s=44100:d=0.14" pop3.wav
+# Group done: two quick rising notes when a group's last check passes.
+f -f lavfi -i "aevalsrc='0.3*sin(2*PI*880*t)*exp(-9*t)+0.3*sin(2*PI*1320*max(t-0.09,0))*exp(-8*max(t-0.09,0))*gte(t,0.09)':s=44100:d=0.6" done.wav
