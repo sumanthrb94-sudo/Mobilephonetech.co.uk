@@ -56,7 +56,7 @@ async function run() {
   const page = await ctx.newPage();
 
   // ── 1. Tapping an empty field offers something ────────────────────
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await dismissCookies(page);
   await page.waitForTimeout(900);
   await page.locator('input[role="combobox"]').first().click();
@@ -80,7 +80,7 @@ async function run() {
   // string on purpose — so searching the label is a fair test of the row.
   let empties = 0;
   for (const term of terms) {
-    await page.goto(`${BASE}/products?search=${encodeURIComponent(term)}`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/products?search=${encodeURIComponent(term)}`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     await page.waitForTimeout(1100);
     const n = await cards(page);
     if (n === 0) { empties++; console.log(`      ^ "${term}" returned nothing`); }
@@ -88,7 +88,7 @@ async function run() {
   rec('every suggestion returns results', 0, empties, `${terms.length} checked`);
 
   // ── 3. Clearing ───────────────────────────────────────────────────
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await dismissCookies(page);
   await page.waitForTimeout(800);
   const box = page.locator('input[role="combobox"]').first();
@@ -117,7 +117,7 @@ async function run() {
   // searchQuery is one useState in SearchContext and the Navbar never
   // unmounts, so a half-typed term used to sit in the bar for the whole
   // visit — and feed ProductsPage's filter while it sat there.
-  await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await dismissCookies(page);
   await page.waitForTimeout(800);
   const draft = page.locator('input[role="combobox"]').first();
@@ -132,7 +132,7 @@ async function run() {
 
   // ...but a committed search is NOT a draft. Dismissing the dropdown on a
   // results page must leave the term, and the results, alone.
-  await page.goto(`${BASE}/products?search=${encodeURIComponent('Pixel')}`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/products?search=${encodeURIComponent('Pixel')}`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await page.waitForTimeout(1500);
   const committedCards = await cards(page);
   await page.mouse.click(200, 700);
@@ -143,12 +143,12 @@ async function run() {
   rec('and its results survive too', true, (await cards(page)) === committedCards, `${committedCards} cards`);
 
   // ── 4. The URL is the search ──────────────────────────────────────
-  await page.goto(`${BASE}/products?search=${encodeURIComponent('iPhone 17 Pro Max')}`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/products?search=${encodeURIComponent('iPhone 17 Pro Max')}`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await page.waitForTimeout(1500);
   const seeded = await cards(page);
   rec('a cold-loaded ?search= actually filters', true, seeded > 0 && seeded < 20, `${seeded} cards`);
 
-  await page.goto(`${BASE}/products`, { waitUntil: 'networkidle' });
+  await page.goto(`${BASE}/products`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
   await page.waitForTimeout(1400);
   const unfiltered = await cards(page);
   rec('no param does not carry the last search over', true, unfiltered > seeded, `${unfiltered} cards`);

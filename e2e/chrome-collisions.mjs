@@ -87,7 +87,7 @@ async function run() {
     const ctx = await browser.newContext({ viewport: { width, height: 900 } });
     const page = await ctx.newPage();
 
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     await page.waitForTimeout(600);
 
     // ── Fixed, collision-safe home hero ─────────────────────────────
@@ -145,7 +145,7 @@ async function run() {
 
     // The More ("...") menu. Reloaded first so a half-closed drawer cannot
     // leak its controls into this count.
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     await page.waitForTimeout(500);
     await page.locator('#navbar-menu-btn').click();
     await page.waitForTimeout(500);
@@ -169,7 +169,7 @@ async function run() {
     // breakpoints in index.css, so "it clears it at 390px" is not a fact
     // about the other widths. Assert it everywhere instead of trusting the
     // arithmetic in .account-gate to hold.
-    await page.goto(`${BASE}/account`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/account`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     const cookies = page.getByRole('button', { name: /accept all cookies/i });
     if (await cookies.count()) { await cookies.first().click().catch(() => {}); await page.waitForTimeout(400); }
     await page.waitForTimeout(800);
@@ -205,7 +205,7 @@ async function run() {
   {
     const ctx = await browser.newContext({ viewport: { width: 1917, height: 1080 } });
     const page = await ctx.newPage();
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     await page.waitForTimeout(650);
     const wideHero = await page.evaluate(() => {
       const hero = document.querySelector('section[aria-label="Hero carousel"]');
@@ -251,7 +251,7 @@ async function run() {
   ]) {
     const ctx = await browser.newContext({ viewport: { width, height } });
     const page = await ctx.newPage();
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     const cookieAccept = page.getByRole('button', { name: /accept all cookies/i });
     if (await cookieAccept.count()) await cookieAccept.first().click().catch(() => {});
     await page.waitForTimeout(650);
@@ -310,12 +310,12 @@ async function run() {
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     const cookies = page.getByRole('button', { name: /accept all cookies/i });
     if (await cookies.count()) { await cookies.first().click().catch(() => {}); await page.waitForTimeout(400); }
 
     const probe = async (path) => {
-      await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
+      await page.goto(`${BASE}${path}`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
       await page.waitForTimeout(1300);
       return page.evaluate(() => {
         const shown = [...document.querySelectorAll('input[role="combobox"]')]
@@ -357,7 +357,7 @@ async function run() {
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
-    await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/checkout`, { waitUntil: 'load' }); await page.waitForTimeout(2500);
     await page.waitForTimeout(1000);
 
     const read = () => page.evaluate(() => {

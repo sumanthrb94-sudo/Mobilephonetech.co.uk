@@ -71,7 +71,9 @@ async function run(view, contextOpts) {
     await dismissCookies(page);
     await shot(page, view, 'home');
     const t = await txt(page);
-    rec(view, 'Home renders', t.length > 2000 ? 'PASS' : 'FAIL', `${t.length} chars`);
+    // The emulator seed is two products (no demo catalogue any more), so the
+    // home page is shorter than a live one; this only guards against a blank page.
+    rec(view, 'Home renders', t.length > 600 ? 'PASS' : 'FAIL', `${t.length} chars`);
     const homeCards = await page.locator('[aria-label^="View "]').count();
     rec(view, 'Home shows catalogue-driven products', homeCards > 0 ? 'PASS' : 'FAIL', `${homeCards} cards`);
   } catch (e) { rec(view, 'Home renders', 'FAIL', e.message.slice(0, 100)); }

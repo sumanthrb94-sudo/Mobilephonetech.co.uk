@@ -131,7 +131,11 @@ async function collectInputs(page, limit = 14) {
     const out = [];
     let n = 0;
     for (const el of document.querySelectorAll(`[${TAG}]`)) el.removeAttribute(TAG);
-    for (const el of document.querySelectorAll('input')) {
+    // With a modal open (the mobile filter sheet), the page behind it is
+    // meant to be covered: only the dialog's own fields are reachable.
+    const modal = [...document.querySelectorAll('[aria-modal="true"]')]
+      .find(m => m.getBoundingClientRect().height > 0);
+    for (const el of (modal ?? document).querySelectorAll('input')) {
       if (out.length >= limit) break;
       const type = (el.getAttribute('type') || '').toLowerCase();
       if (!WANTED.has(type)) continue;

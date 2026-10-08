@@ -23,12 +23,28 @@ const PORT = 4190;
 const BASE = `http://127.0.0.1:${PORT}`;
 
 const vercelConfig = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+// Every header block that applies to all paths, not just the first: the CSP
+// lives in the catch-all block, which is not necessarily listed first.
 const HEADERS = Object.fromEntries(
-  (vercelConfig.headers?.[0]?.headers ?? []).map(h => [h.key, h.value]),
+  (vercelConfig.headers ?? [])
+    .filter(block => block.source === '/(.*)')
+    .flatMap(block => block.headers ?? [])
+    .map(h => [h.key, h.value]),
 );
 if (!HEADERS['Content-Security-Policy']) {
   console.error('vercel.json carries no Content-Security-Policy — nothing to test');
   process.exit(1);
+}
+
+// The e2e build talks to the local Firebase emulators instead of Google's
+// hosts. Their origins are added to the production policy for this run only,
+// exactly where the production hosts sit, so the rest of the policy is tested
+// unchanged. E2E_CSP_STRICT=1 tests the production policy untouched.
+if (!process.env.E2E_CSP_STRICT) {
+  const emulators = 'http://127.0.0.1:8080 ws://127.0.0.1:8080 http://127.0.0.1:9099 http://127.0.0.1:9199';
+  HEADERS['Content-Security-Policy'] = HEADERS['Content-Security-Policy']
+    .replace(/connect-src ([^;]*)/, `connect-src $1 ${emulators}`)
+    .replace(/img-src ([^;]*)/, 'img-src $1 http://127.0.0.1:9199');
 }
 
 const MIME = {
