@@ -7,7 +7,7 @@ import {
 } from 'firebase/storage';
 import { db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
-import { buildSearchTerms, docToProduct, stripUndefined } from './productMapper';
+import { buildSearchTerms, docToProduct, isOffered, stripUndefined } from './productMapper';
 import { capImages } from './productImages';
 import type { InventoryUnit, Product, ProductGrade, ProductVariant } from '../types';
 
@@ -69,6 +69,11 @@ export interface ProductDraft {
   variants?: ProductVariant[];
   /** True once staff deliberately manage this record as a model matrix. */
   variantMode?: boolean;
+  /**
+   * Whether shoppers can see the product. A draft (false) can be saved
+   * without prices, conditions or photos; listing it requires all three.
+   */
+  listed: boolean;
 }
 
 function cleanVariant(v: ProductVariant): ProductVariant {
@@ -98,6 +103,7 @@ function cleanVariant(v: ProductVariant): ProductVariant {
     batteryHealth: v.batteryHealth == null ? undefined : Number(v.batteryHealth),
     imageUrl: v.imageUrl?.trim() || undefined,
     galleryImages: v.galleryImages?.filter(Boolean),
+    colorHex: v.colorHex?.trim() || undefined,
     inventoryUnits: inventoryUnits?.length ? inventoryUnits : undefined,
   };
 }
@@ -127,19 +133,25 @@ function variantSummary(draft: ProductDraft) {
   if (!draft.variantMode) return null;
   const variants = (draft.variants ?? []).map(cleanVariant);
   if (!variants.length) return null;
-  const prices = variants.map(v => v.price).filter(Number.isFinite);
-  const originalPrices = variants.map(v => v.originalPrice).filter(Number.isFinite);
-  const battery = variants.map(v => v.batteryHealth).filter((v): v is number => v != null);
+  // The shop-facing summary (from-price, swatches, options) describes only
+  // what is on offer. Unpriced rows — the rest of an imported matrix — would
+  // otherwise make every card read "from £0" and show finishes nobody sells.
+  // A draft with nothing priced yet falls back to the full set.
+  const offered = variants.filter(isOffered);
+  const basis = offered.length ? offered : variants;
+  const prices = basis.map(v => v.price).filter(Number.isFinite);
+  const originalPrices = basis.map(v => v.originalPrice).filter(Number.isFinite);
+  const battery = basis.map(v => v.batteryHealth).filter((v): v is number => v != null);
   return {
     variants,
     stock: variants.reduce((sum, v) => sum + Math.max(0, v.stock || 0), 0),
     price: prices.length ? Math.min(...prices) : draft.price,
     originalPrice: originalPrices.length ? Math.min(...originalPrices) : draft.originalPrice,
-    grade: variants[0].condition ?? draft.grade,
+    grade: basis.find(v => v.condition)?.condition ?? draft.grade,
     batteryHealth: battery.length ? Math.min(...battery) : draft.batteryHealth,
-    colorOptions: [...new Set(variants.map(v => v.color).filter((v): v is string => Boolean(v)))],
-    storageOptions: [...new Set(variants.map(v => v.storage).filter((v): v is string => Boolean(v)))],
-    conditionOptions: [...new Set(variants.map(v => v.condition).filter((v): v is ProductGrade => Boolean(v)))],
+    colorOptions: [...new Set(basis.map(v => v.color).filter((v): v is string => Boolean(v)))],
+    storageOptions: [...new Set(basis.map(v => v.storage).filter((v): v is string => Boolean(v)))],
+    conditionOptions: [...new Set(basis.map(v => v.condition).filter((v): v is ProductGrade => Boolean(v)))],
   };
 }
 
@@ -153,6 +165,13 @@ function variantSummary(draft: ProductDraft) {
  */
 export function draftToRow(draft: ProductDraft): Record<string, unknown> {
   const summary = variantSummary(draft);
+  // The card and search thumbnail read the top-level image. When staff only
+  // uploaded photos per colour, the first of those stands in for it.
+  const firstVariantImage = summary?.variants.find(v => v.galleryImages?.length || v.imageUrl);
+  const coverImage = draft.imageUrl
+    || firstVariantImage?.galleryImages?.[0]
+    || firstVariantImage?.imageUrl
+    || null;
   return stripUndefined({
     model: draft.model,
     brand: draft.brand,
@@ -164,7 +183,7 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     batteryHealth: summary?.batteryHealth ?? draft.batteryHealth ?? null,
     warrantyMonths: draft.warrantyMonths,
     returnDays: draft.returnDays,
-    imageUrl: draft.imageUrl || null,
+    imageUrl: coverImage,
     // Capped here rather than only in the editor, so a product cannot carry
     // a seventh image into the gallery through an import, a script, or a
     // document edited by hand in the Firebase console.
@@ -176,7 +195,14 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     colorOptions: summary?.colorOptions.length ? summary.colorOptions : draft.colorOptions?.length ? draft.colorOptions : null,
     storageOptions: summary?.storageOptions.length ? summary.storageOptions : draft.storageOptions?.length ? draft.storageOptions : null,
     conditionOptions: summary?.conditionOptions.length ? summary.conditionOptions : null,
-    variants: summary?.variants.length ? summary.variants : null,
+    // Outside matrix mode the rows are written back untouched. Writing null
+    // here used to erase every configuration on a product that was opened and
+    // saved without touching its matrix.
+    variants: summary?.variants.length
+      ? summary.variants
+      : draft.variants?.length ? draft.variants : null,
+    variantMode: draft.variantMode ? true : null,
+    listed: draft.listed,
     buyPrice: summary?.variants?.[0]?.buyPrice ?? draft.buyPrice ?? null,
     supplier: summary?.variants?.[0]?.supplier ?? draft.supplier ?? null,
     imei: draft.imei ?? null,
@@ -203,6 +229,7 @@ export function emptyDraft(): ProductDraft {
     galleryImages: [],
     variants: [],
     variantMode: false,
+    listed: true,
   };
 }
 
@@ -234,8 +261,10 @@ export function productToDraft(p: Product): ProductDraft {
     sku: p.sku ?? p.variants?.[0]?.sku,
     stockLocation: p.stockLocation ?? p.variants?.[0]?.stockLocation ?? 'OFFICE',
     // Preserve older catalogue documents exactly until staff choose to manage
-    // their rows as the new model matrix.
-    variantMode: false,
+    // their rows as the new model matrix. Products saved from the matrix (and
+    // imported catalogue models) record that choice and reopen in it.
+    variantMode: p.variantMode === true,
+    listed: p.listed !== false,
   };
 }
 
@@ -270,10 +299,14 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
   if (!draft.category.trim()) errors.category = 'Required.';
 
   const hasVariants = Boolean(draft.variantMode && draft.variants?.length);
-  if (!hasVariants && (!Number.isFinite(draft.price) || draft.price <= 0)) errors.price = 'Must be more than £0.';
-  if (!hasVariants && (!Number.isFinite(draft.originalPrice) || draft.originalPrice <= 0)) {
+  // A draft is work in progress: an imported model has every configuration
+  // but no prices, grades or photos yet. Those are only required once staff
+  // put the product on sale.
+  const forSale = draft.listed !== false;
+  if (forSale && !hasVariants && (!Number.isFinite(draft.price) || draft.price <= 0)) errors.price = 'Must be more than £0.';
+  if (forSale && !hasVariants && (!Number.isFinite(draft.originalPrice) || draft.originalPrice <= 0)) {
     errors.originalPrice = 'Must be more than £0.';
-  } else if (!hasVariants && draft.originalPrice < draft.price) {
+  } else if (forSale && !hasVariants && draft.originalPrice < draft.price) {
     errors.originalPrice = 'Cannot be below the selling price — that would show a negative saving.';
   }
 
@@ -286,7 +319,7 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
       errors.batteryHealth = 'Must be a whole number between 0 and 100.';
     }
   }
-  if (!hasVariants && isApplePhone && (draft.batteryHealth === undefined || draft.batteryHealth === null || draft.batteryHealth < 85)) {
+  if (forSale && !hasVariants && isApplePhone && (draft.batteryHealth === undefined || draft.batteryHealth === null || draft.batteryHealth < 85)) {
     errors.batteryHealth = 'Apple phones require a verified battery health of at least 85%.';
   }
 
@@ -299,12 +332,20 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
       if (!v.id) errors[`variant-${index}-id`] = 'Each variant needs an ID.';
       if (seen.has(key)) errors[`variant-${index}-duplicate`] = 'This configuration is already listed; increase its stock instead.';
       seen.add(key);
-      if (!Number.isFinite(v.price) || v.price <= 0) errors[`variant-${index}-price`] = 'Each variant needs a selling price above £0.';
-      if (!Number.isFinite(v.originalPrice) || v.originalPrice < v.price) errors[`variant-${index}-originalPrice`] = 'Was price must be at least the selling price.';
+      // An unpriced row is not on offer: it is hidden from shoppers and needs
+      // nothing more. It may not hold stock, though — that would be a phone
+      // in the building nobody can buy.
+      const hasUnits = (v.inventoryUnits ?? []).some(unit => unit.status === 'available');
+      if (!isOffered(v)) {
+        if (forSale && (v.stock > 0 || hasUnits)) errors[`variant-${index}-price`] = 'This configuration has stock. Give it a price, or remove the stock.';
+        continue;
+      }
+      if (forSale && (!Number.isFinite(v.price) || v.price <= 0)) errors[`variant-${index}-price`] = 'Each variant needs a selling price above £0.';
+      if (forSale && (!Number.isFinite(v.originalPrice) || v.originalPrice < v.price)) errors[`variant-${index}-originalPrice`] = 'Was price must be at least the selling price.';
       if (!Number.isInteger(v.stock) || v.stock < 0) errors[`variant-${index}-stock`] = 'Stock must be a whole number of 0 or more.';
-      if (!v.condition || !GRADES.includes(v.condition)) errors[`variant-${index}-condition`] = 'Choose a condition.';
+      if (forSale && (!v.condition || !GRADES.includes(v.condition))) errors[`variant-${index}-condition`] = 'Choose a condition.';
       if (v.batteryHealth != null && (!Number.isInteger(v.batteryHealth) || v.batteryHealth < 0 || v.batteryHealth > 100)) errors[`variant-${index}-batteryHealth`] = 'Battery health must be 0–100.';
-      if (isApplePhone && (v.batteryHealth == null || v.batteryHealth < 85)) errors[`variant-${index}-batteryHealth`] = 'Apple phone variants require verified battery health of at least 85%.';
+      if (forSale && isApplePhone && (v.batteryHealth == null || v.batteryHealth < 85)) errors[`variant-${index}-batteryHealth`] = 'Apple phone variants require verified battery health of at least 85%.';
       for (const [unitIndex, rawUnit] of (v.inventoryUnits ?? []).entries()) {
         const unit = cleanInventoryUnit(rawUnit);
         const prefix = `variant-${index}-unit-${unitIndex}`;
@@ -331,6 +372,16 @@ export function validateDraft(draft: ProductDraft): ValidationErrors {
   if (!Number.isInteger(draft.returnDays) || draft.returnDays < 0) {
     errors.returnDays = 'Must be 0 or more.';
   }
+
+  if (forSale && hasVariants && !(draft.variants ?? []).some(isOffered)) {
+    errors.listed = 'Price at least one configuration before listing, or keep this as a draft.';
+  }
+
+  // Nothing goes on sale as an illustration: the shop sells specific used
+  // devices, and the photo is part of the description.
+  const hasPhoto = Boolean(draft.imageUrl || draft.galleryImages?.length
+    || draft.variants?.some(v => v.imageUrl || v.galleryImages?.length));
+  if (forSale && !hasPhoto && !errors.listed) errors.listed = 'Add at least one photo before listing, or keep this as a draft.';
 
   return errors;
 }
@@ -370,6 +421,8 @@ export interface InventoryQuery {
   search?: string;
   brand?: string;
   stockFilter?: 'all' | 'in' | 'low' | 'out';
+  /** Listed products, drafts, or both. */
+  listing?: 'all' | 'listed' | 'draft';
   sort?: 'newest' | 'stock_asc' | 'price_desc' | 'model_asc';
   page?: number;
   pageSize?: number;
@@ -378,7 +431,7 @@ export interface InventoryQuery {
 export const LOW_STOCK_THRESHOLD = 5;
 
 export async function listInventory(q: InventoryQuery = {}): Promise<{ products: Product[]; total: number; brands: string[] }> {
-  const { search, brand, stockFilter = 'all', sort = 'newest', page = 1, pageSize = 25 } = q;
+  const { search, brand, stockFilter = 'all', listing = 'all', sort = 'newest', page = 1, pageSize = 25 } = q;
 
   // One indexed query (brand, when given) then narrowing in memory.
   //
@@ -400,6 +453,8 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
       p.id.toLowerCase().includes(term));
   }
 
+  if (listing === 'listed') rows = rows.filter(p => p.listed !== false);
+  else if (listing === 'draft') rows = rows.filter(p => p.listed === false);
   if (stockFilter === 'in') rows = rows.filter(p => p.stock > 0);
   else if (stockFilter === 'out') rows = rows.filter(p => p.stock === 0);
   else if (stockFilter === 'low') rows = rows.filter(p => p.stock > 0 && p.stock <= LOW_STOCK_THRESHOLD);

@@ -1,5 +1,6 @@
 import { adminDb } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
+import { isListed, isOffered } from '../../src/lib/productMapper.js';
 
 const VALID_SORTS = ['price_asc', 'price_desc', 'newest', 'discount'] as const;
 type SortMode = (typeof VALID_SORTS)[number];
@@ -57,7 +58,9 @@ export default async function handler(req: any, res: any) {
     ).get();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+    let rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).filter(r => isListed(r))
+      // Unpriced configurations are not on offer; shoppers never see them.
+      .map(r => (Array.isArray(r.variants) ? { ...r, variants: r.variants.filter(isOffered) } : r));
 
     const csv = (v?: string) => (v ? v.split(',').map(s => s.trim()).filter(Boolean) : []);
 

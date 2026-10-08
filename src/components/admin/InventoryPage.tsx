@@ -33,6 +33,7 @@ export default function InventoryPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [brand, setBrand] = useState('');
   const [stockFilter, setStockFilter] = useState<InventoryQuery['stockFilter']>('all');
+  const [listing, setListing] = useState<InventoryQuery['listing']>('all');
   const [sort, setSort] = useState<InventoryQuery['sort']>('newest');
   const [page, setPage] = useState(1);
 
@@ -49,7 +50,7 @@ export default function InventoryPage() {
     setError(null);
     try {
       const { products: rows, total: count, brands: availableBrands } = await listInventory({
-        search: debouncedSearch, brand, stockFilter, sort, page, pageSize: PAGE_SIZE,
+        search: debouncedSearch, brand, stockFilter, listing, sort, page, pageSize: PAGE_SIZE,
       });
       setProducts(rows);
       setTotal(count);
@@ -129,6 +130,13 @@ export default function InventoryPage() {
           onChange={e => { setBrand(e.target.value); setPage(1); }} style={controlStyle}>
           <option value="">All brands</option>
           {brands.map(b => <option key={b} value={b}>{b}</option>)}
+        </select>
+
+        <select aria-label="Filter by listing" value={listing}
+          onChange={e => { setListing(e.target.value as InventoryQuery['listing']); setPage(1); }} style={controlStyle}>
+          <option value="all">Listed and drafts</option>
+          <option value="listed">Listed on shop</option>
+          <option value="draft">Drafts only</option>
         </select>
 
         <select aria-label="Filter by stock" value={stockFilter}
@@ -308,10 +316,11 @@ function InventoryRow({
              the natural ~19px one would not. */
           style={{ fontFamily: 'var(--font-sans)', fontSize: '14.5px', fontWeight: 700, color: 'var(--black)', textDecoration: 'none', display: 'block', lineHeight: '24px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
         >
+          {product.listed === false && <span style={draftBadgeStyle}>Draft</span>}
           {product.brand} {product.model}
         </Link>
         <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {product.grade}{product.storage ? ` · ${product.storage}` : ''} · {product.id}
+          {product.listed === false ? 'Not on the shop' : product.grade}{product.storage ? ` · ${product.storage}` : ''} · {product.id}
         </div>
       </div>
 
@@ -466,4 +475,10 @@ const stockDotColor: Record<string, string> = {
 const emptyStyle: React.CSSProperties = {
   fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)',
   textAlign: 'center', padding: 'var(--spacing-48) 0',
+};
+
+const draftBadgeStyle: React.CSSProperties = {
+  display: 'inline-block', marginRight: 8, padding: '1px 7px', borderRadius: 999,
+  background: 'var(--grey-10)', color: 'var(--grey-70)', fontSize: 11, fontWeight: 800,
+  letterSpacing: '0.04em', textTransform: 'uppercase', verticalAlign: '1px',
 };

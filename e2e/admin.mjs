@@ -263,10 +263,10 @@ async function run(view, contextOpts) {
   // ── 6. Create a product ──
   await page.goto(`${BASE}/admin/inventory/new`, { waitUntil: 'domcontentloaded' });
   await settled(page, '#field-brand');
-  rec(view, 'Add-product form opens', /Add a product/i.test(await txt()));
+  rec(view, 'Add-product form opens', /Add a product|Create a model/i.test(await txt()));
 
   // Empty submit must surface validation, not silently do nothing.
-  await page.getByRole('button', { name: /Create product/i }).first().click();
+  await page.getByRole('button', { name: /Create (product|model)/i }).first().click();
   await page.waitForTimeout(400);
   rec(view, 'Empty form is rejected with field errors', /Required/i.test(await txt()));
   await shot(page, `${view}-editor-validation`);
@@ -279,17 +279,25 @@ async function run(view, contextOpts) {
 
   await page.locator('#field-price').fill('649');
   await page.locator('#field-originalPrice').fill('399');
-  await page.getByRole('button', { name: /Create product/i }).first().click();
+  await page.getByRole('button', { name: /Create (product|model)/i }).first().click();
   await page.waitForTimeout(400);
   rec(view, 'Was-price below sale price is rejected', /below the selling price/i.test(await txt()));
 
   await page.locator('#field-originalPrice').fill('1099');
   await page.locator('#field-stock').fill('6');
-  await page.getByRole('button', { name: /Create product/i }).first().click();
+  // Listing needs a photo; with none, the save is refused with the reason.
+  await page.getByRole('button', { name: /Create (product|model)/i }).first().click();
+  await page.waitForTimeout(400);
+  rec(view, 'Listing without a photo is refused', /Add at least one photo before listing/i.test(await txt()));
+
+  // Saved as a draft instead, which needs no photo.
+  await page.locator('#field-listed').uncheck();
+  await page.getByRole('button', { name: /Create (product|model)/i }).first().click();
   await page.waitForTimeout(1000);
 
   const created = await getProduct('google-pixel-9-pro');
   rec(view, 'Product is created in Firestore', Boolean(created), created ? '' : 'not found in Firestore');
+  rec(view, 'Created product is a draft until it has a photo', created?.listed === false);
   rec(view, 'Created product carries the right price',
     created?.price === 649 && created?.originalPrice === 1099,
     `price=${created?.price} was=${created?.originalPrice}`);

@@ -1,5 +1,6 @@
 import { adminDb } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
+import { isListed } from '../../src/lib/productMapper.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
@@ -37,7 +38,7 @@ export default async function handler(req: any, res: any) {
       .limit(limit)
       .get();
 
-    const data = snap.docs.map(d => {
+    const data = snap.docs.filter(d => isListed(d.data())).map(d => {
       const v = d.data();
       return {
         id: d.id,

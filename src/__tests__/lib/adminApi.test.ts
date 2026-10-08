@@ -5,7 +5,7 @@ import {
   MAX_IMAGE_BYTES, IMAGE_BUCKET,
   type ProductDraft,
 } from '../../lib/adminApi';
-import { MOCK_PHONES } from '../../data/mockPhones';
+import { MOCK_PHONES } from '../../test/fixtures/mockPhones';
 
 function draft(overrides: Partial<ProductDraft> = {}): ProductDraft {
   return {
@@ -13,6 +13,7 @@ function draft(overrides: Partial<ProductDraft> = {}): ProductDraft {
     id: 'apple-iphone-17',
     brand: 'Apple',
     model: 'iPhone 17',
+    imageUrl: 'https://example.test/iphone-17.jpg',
     price: 759,
     originalPrice: 1099,
     ...overrides,
@@ -42,6 +43,51 @@ describe('slugify', () => {
 describe('validateDraft', () => {
   it('accepts a well-formed draft', () => {
     expect(validateDraft(draft({ batteryHealth: 85 }))).toEqual({});
+  });
+
+  it('refuses to list a product with no photo', () => {
+    expect(validateDraft(draft({ batteryHealth: 85, imageUrl: undefined }))).toHaveProperty('listed');
+  });
+
+  it('accepts a photo uploaded only for one colour', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', condition: 'Pristine' as const, price: 700, originalPrice: 799, stock: 1, batteryHealth: 90, galleryImages: ['https://example.test/black.jpg'] }];
+    expect(validateDraft(draft({ imageUrl: undefined, variantMode: true, variants }))).toEqual({});
+  });
+
+  it('saves an unlisted draft without prices, conditions or photos', () => {
+    const variants = [
+      { id: 'v1', color: 'Black', storage: '256GB', price: 0, originalPrice: 0, stock: 0 },
+      { id: 'v2', color: 'White', storage: '256GB', price: 0, originalPrice: 0, stock: 0 },
+    ];
+    expect(validateDraft(draft({ listed: false, imageUrl: undefined, price: 0, originalPrice: 0, variantMode: true, variants }))).toEqual({});
+  });
+
+  it('will not list a model with no priced configuration', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', price: 0, originalPrice: 0, stock: 0, galleryImages: ['https://example.test/black.jpg'] }];
+    expect(validateDraft(draft({ listed: true, variantMode: true, variants }))).toHaveProperty('listed');
+  });
+
+  it('lists a model with one priced configuration and the rest left unpriced', () => {
+    const variants = [
+      { id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 650, originalPrice: 799, stock: 1, batteryHealth: 92, galleryImages: ['https://example.test/black.jpg'] },
+      { id: 'v2', color: 'White', storage: '256GB', price: 0, originalPrice: 0, stock: 0 },
+    ];
+    expect(validateDraft(draft({ listed: true, variantMode: true, variants }))).toEqual({});
+  });
+
+  it('still requires a condition and battery on every priced configuration', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', price: 650, originalPrice: 799, stock: 1, galleryImages: ['https://example.test/black.jpg'] }];
+    const errors = validateDraft(draft({ listed: true, variantMode: true, variants }));
+    expect(errors).toHaveProperty('variant-0-condition');
+    expect(errors).toHaveProperty('variant-0-batteryHealth');
+  });
+
+  it('refuses stock on a configuration with no price', () => {
+    const variants = [
+      { id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 650, originalPrice: 799, stock: 1, batteryHealth: 92, galleryImages: ['https://example.test/black.jpg'] },
+      { id: 'v2', color: 'White', storage: '256GB', price: 0, originalPrice: 0, stock: 2 },
+    ];
+    expect(validateDraft(draft({ listed: true, variantMode: true, variants }))).toHaveProperty('variant-1-price');
   });
 
   it.each([
@@ -78,6 +124,40 @@ describe('validateDraft', () => {
 });
 
 describe('draftToRow', () => {
+  it('keeps configurations on a product saved without opening its matrix', () => {
+    // Regression: outside matrix mode the rows were written back as null, so
+    // opening a product and saving any other field erased every configuration.
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', price: 700, originalPrice: 799, stock: 2 }];
+    const row = draftToRow(draft({ variantMode: false, variants }));
+    expect(row.variants).toEqual(variants);
+  });
+
+  it('records draft status and matrix mode so the editor reopens the same way', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', price: 0, originalPrice: 0, stock: 0 }];
+    const row = draftToRow(draft({ listed: false, variantMode: true, variants }));
+    expect(row.listed).toBe(false);
+    expect(row.variantMode).toBe(true);
+  });
+
+  it('prices the card from offered configurations, not the unpriced rest of the matrix', () => {
+    const variants = [
+      { id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 650, originalPrice: 799, stock: 1 },
+      { id: 'v2', color: 'White', storage: '512GB', price: 0, originalPrice: 0, stock: 0 },
+    ];
+    const row = draftToRow(draft({ variantMode: true, variants }));
+    expect(row.price).toBe(650);
+    expect(row.colorOptions).toEqual(['Black']);
+    expect(row.storageOptions).toEqual(['256GB']);
+    // The unpriced row is still stored, for staff to price later.
+    expect(row.variants).toHaveLength(2);
+  });
+
+  it('uses the first colour photo as the card image when no shared photo exists', () => {
+    const variants = [{ id: 'v1', color: 'Black', storage: '256GB', price: 700, originalPrice: 799, stock: 1, galleryImages: ['https://example.test/black-1.jpg'] }];
+    const row = draftToRow(draft({ imageUrl: undefined, variantMode: true, variants }));
+    expect(row.imageUrl).toBe('https://example.test/black-1.jpg');
+  });
+
   it('maps the draft onto the Firestore document fields', () => {
     const row = draftToRow(draft({ batteryHealth: 90, storage: '256GB' }));
     expect(row).toMatchObject({

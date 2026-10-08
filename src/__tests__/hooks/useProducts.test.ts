@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useProducts, fetchCatalogue } from '../../hooks/useProducts';
-import { MOCK_PHONES } from '../../data/mockPhones';
+import { MOCK_PHONES } from '../../test/fixtures/mockPhones';
 import { getDocs } from 'firebase/firestore';
 
 // firebase/firestore is globally mocked in src/test/setup.ts. The default
-// getDocs resolves to an empty snapshot, which is the "empty" branch and
-// forces useProducts to fall back to MOCK_PHONES.
+// getDocs resolves to an empty snapshot; tests below serve the fixture
+// catalogue through it instead.
 
 /** A Firestore QuerySnapshot carrying the given documents. */
 function snapshot(docs: { id: string; data: Record<string, unknown> }[]) {
@@ -94,44 +94,48 @@ describe('fetchCatalogue', () => {
 });
 
 describe('useProducts', () => {
+  // The fixture catalogue, served as if it were the live database. There is
+  // no bundled fallback any more, so every filter and sort test runs against
+  // documents read from (mocked) Firestore, exactly as the shop does.
+  const liveCatalogue = () => snapshot(MOCK_PHONES.map(({ id, ...data }) => ({ id, data: data as Record<string, unknown> })));
+
   beforeEach(() => {
     vi.restoreAllMocks();
+    vi.mocked(getDocs).mockResolvedValue(liveCatalogue() as never);
   });
 
-  // ── Fallback behaviour ──────────────────────────────────────────────────
-  it('returns MOCK_PHONES fallback when Firestore returns no documents', async () => {
-    // The default global mock resolves to an empty snapshot, so no extra
-    // stubbing is needed here.
+  // ── No sample data ──────────────────────────────────────────────────────
+  it('shows no products when the database is empty', async () => {
+    vi.mocked(getDocs).mockResolvedValue(snapshot([]) as never);
     const { result } = renderHook(() => useProducts());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.products.length).toBeGreaterThan(0);
-    // Every returned product must be present in MOCK_PHONES
-    result.current.products.forEach(p => {
-      expect(MOCK_PHONES.some(m => m.id === p.id)).toBe(true);
-    });
+    expect(result.current.products).toEqual([]);
+    expect(result.current.fromSupabase).toBe(true);
   });
 
-  it('returns MOCK_PHONES fallback when Firestore rejects', async () => {
-    vi.mocked(getDocs).mockRejectedValueOnce(new Error('unavailable'));
-
+  it('shows no products, and says why, when Firestore rejects', async () => {
+    vi.mocked(getDocs).mockRejectedValue(new Error('unavailable'));
     const { result } = renderHook(() => useProducts());
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.products.length).toBeGreaterThan(0);
-    result.current.products.forEach(p => {
-      expect(MOCK_PHONES.some(m => m.id === p.id)).toBe(true);
-    });
-  });
-
-  it('sets fromSupabase to false when using mock fallback', async () => {
-    const { result } = renderHook(() => useProducts());
-
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
-
+    expect(result.current.products).toEqual([]);
     expect(result.current.fromSupabase).toBe(false);
+    expect(result.current.error).toBeTruthy();
+  });
+
+  it('never lists a draft', async () => {
+    vi.mocked(getDocs).mockResolvedValue(snapshot([
+      { id: 'listed', data: { model: 'iPhone 15', brand: 'Apple', price: 400 } },
+      { id: 'draft', data: { model: 'iPhone 17', brand: 'Apple', price: 0, listed: false } },
+    ]) as never);
+    const { result } = renderHook(() => useProducts());
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.products.map(p => p.id)).toEqual(['listed']);
   });
 
   it('sets fromSupabase to true when Firestore returns real data', async () => {
@@ -180,7 +184,7 @@ describe('useProducts', () => {
   });
 
   // ── Brand filter ────────────────────────────────────────────────────────
-  it('filters by brand correctly using mock fallback', async () => {
+  it('filters by brand correctly from the live catalogue', async () => {
     const { result } = renderHook(() =>
       useProducts({ filters: { brand: ['Samsung'] } })
     );
@@ -220,7 +224,7 @@ describe('useProducts', () => {
   });
 
   // ── Grade filter ────────────────────────────────────────────────────────
-  it('filters by grade correctly using mock fallback', async () => {
+  it('filters by grade correctly from the live catalogue', async () => {
     const { result } = renderHook(() =>
       useProducts({ filters: { grade: ['Good'] } })
     );

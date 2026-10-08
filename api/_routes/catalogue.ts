@@ -1,6 +1,6 @@
 import { adminDb } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
-import { docToProduct } from '../../src/lib/productMapper.js';
+import { docToProduct, forShop, isListed } from '../../src/lib/productMapper.js';
 
 const FETCH_CAP = 500;
 
@@ -39,9 +39,11 @@ export default async function handler(req: any, res: any) {
     // query itself would silently drop any document missing that field.
     const products = snap.docs
       .map(d => ({ id: d.id, data: d.data() as Record<string, unknown> }))
+      // Drafts (imported models without prices or photos yet) stay in admin.
+      .filter(r => isListed(r.data))
       .sort((a, b) => String(b.data.createdAt ?? b.data.updatedAt ?? '')
         .localeCompare(String(a.data.createdAt ?? a.data.updatedAt ?? '')))
-      .map(r => docToProduct(r.id, r.data));
+      .map(r => forShop(docToProduct(r.id, r.data)));
 
     res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     return res.status(200).json({ products });

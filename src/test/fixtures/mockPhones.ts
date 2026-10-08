@@ -1,4 +1,9 @@
-import { Product, Category } from '../types';
+/**
+ * Test fixture only. The old demo catalogue, kept so unit tests have a large,
+ * realistic set of products to run filters, the wishlist and the admin
+ * mappers against. Nothing in the shop, the API or the build imports it.
+ */
+import { Product } from '../../types';
 
 export const MOCK_PHONES: Product[] = [
   {
@@ -18219,64 +18224,5 @@ export const MOCK_PHONES: Product[] = [
         stock: 10,
       }
     ],
-  },
-];
-
-export const MOCK_CATEGORIES: Category[] = [
-  {
-    id: 'apple',
-    name: 'Apple',
-    imageUrl: '/assets/apple.png',
-    description: 'Latest iPhones and refurbished Apple devices',
-    productCount: 53,
-  },
-  {
-    id: 'samsung',
-    name: 'Samsung',
-    imageUrl: '/assets/samsung.png',
-    description: 'Samsung Galaxy smartphones and accessories',
-    productCount: 53,
-  },
-  {
-    id: 'google',
-    name: 'Google',
-    imageUrl: '/assets/google.png',
-    description: 'Google Pixel phones and smart technology',
-    productCount: 53,
-  },
-  {
-    id: 'tablets',
-    name: 'Ipads & Tabs',
-    imageUrl: '/assets/tablets.svg',
-    description: 'iPads and Android tablets for work and play',
-    productCount: 0,
-  },
-  {
-    id: 'accessories',
-    name: 'Accessories',
-    imageUrl: '/assets/accessories.svg',
-    description: 'Cases, chargers, and essential mobile add-ons',
-    productCount: 65,
-  },
-  {
-    id: 'speakers',
-    name: 'Speakers',
-    imageUrl: '/assets/speakers.svg',
-    description: 'Bluetooth and portable speakers for every occasion',
-    productCount: 7,
-  },
-  {
-    id: 'hearables',
-    name: 'Hearables',
-    imageUrl: '/assets/hearables.svg',
-    description: 'High-quality headphones and wireless earbuds',
-    productCount: 3,
-  },
-  {
-    id: 'playables',
-    name: 'Playables',
-    imageUrl: '/assets/playables.svg',
-    description: 'Gaming consoles, VR headsets, and interactive gear',
-    productCount: 5,
   },
 ];

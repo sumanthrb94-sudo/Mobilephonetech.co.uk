@@ -1,28 +1,25 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Product } from '../types';
-import { MOCK_PHONES } from '../data/mockPhones';
 import { fetchCatalogue } from '../hooks/useProducts';
 
 interface CatalogueValue {
-  /** Live inventory when the database is reachable, bundled sample data otherwise. */
+  /** Listed products from the live database. Empty until it answers, or if it cannot be reached. */
   products: Product[];
   isLoading: boolean;
   /**
-   * False means `products` is the MOCK_PHONES fallback, not live stock.
-   * Named for Supabase originally; the question it answers — live or bundled —
-   * is unchanged after the move to Firestore, so the name stayed.
+   * True once `products` came from the live database. False while loading or
+   * when it could not be reached — the shop then shows no products rather
+   * than sample ones. Named for Supabase originally; kept for its callers.
    */
   fromSupabase: boolean;
 }
 
 /**
- * Default value is the bundled catalogue rather than an empty array so that
- * components rendered outside the provider — unit tests, Storybook-style
- * one-offs — still get something sensible instead of throwing or rendering
- * empty grids.
+ * No bundled catalogue: a shop that cannot reach its database shows nothing
+ * for sale rather than products that do not exist and cannot be ordered.
  */
 const CatalogueContext = createContext<CatalogueValue>({
-  products: MOCK_PHONES,
+  products: [],
   isLoading: false,
   fromSupabase: false,
 });
@@ -32,7 +29,7 @@ const CatalogueContext = createContext<CatalogueValue>({
 const CATALOGUE_LIMIT = 500;
 
 export function CatalogueProvider({ children }: { children: React.ReactNode }) {
-  const [products, setProducts]         = useState<Product[]>(MOCK_PHONES);
+  const [products, setProducts]         = useState<Product[]>([]);
   const [isLoading, setIsLoading]       = useState(true);
   const [fromSupabase, setFromSupabase] = useState(false);
 
@@ -42,14 +39,12 @@ export function CatalogueProvider({ children }: { children: React.ReactNode }) {
     (async () => {
       try {
         const rows = await fetchCatalogue(CATALOGUE_LIMIT);
-        if (rows.length === 0) throw new Error('empty');
         if (cancelled) return;
 
         setProducts(rows);
         setFromSupabase(true);
       } catch {
-        // Keep the bundled catalogue already in state — the storefront stays
-        // browsable, and consumers can read fromSupabase to say so.
+        // Nothing to show. Consumers read fromSupabase to explain why.
         if (!cancelled) setFromSupabase(false);
       } finally {
         if (!cancelled) setIsLoading(false);

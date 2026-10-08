@@ -28,7 +28,7 @@ import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, COL } from '../lib/firebase';
-import { docToProduct } from '../lib/productMapper';
+import { docToProduct, forShop, isListed } from '../lib/productMapper';
 import { useSeo } from '../hooks/useSeo';
 import { submitReview, listReviews } from '../lib/reviews';
 import { useBreakpoint } from '../hooks/useBreakpoint';
@@ -259,8 +259,13 @@ export default function ProductDetail() {
     (async () => {
       try {
         const snap = await getDoc(doc(db, COL.products, id));
+        if (snap.exists() && isListed(snap.data())) {
+          setPhone(forShop(docToProduct(snap.id, snap.data())));
+          return;
+        }
         if (snap.exists()) {
-          setPhone(docToProduct(snap.id, snap.data()));
+          // A draft: not for sale yet, so it reads as not found.
+          setPhone(null);
           return;
         }
       } catch {

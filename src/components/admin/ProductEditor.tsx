@@ -8,8 +8,9 @@ import {
 } from '../../lib/adminApi';
 import ImageManager from './ImageManager';
 import VariantMatrixEditor from './VariantMatrixEditor';
+import { colourHex } from '../../utils/deviceColors';
 
-const CATEGORIES = ['Phones', 'Tablets', 'Accessories', 'Speakers', 'Hearables', 'Playables'];
+const CATEGORIES = ['Phones', 'Tablets', 'Smartwatches', 'Accessories', 'Speakers', 'Hearables', 'Playables'];
 
 /**
  * Create / edit a product.
@@ -68,6 +69,10 @@ export default function ProductEditor() {
   }, [draft.price, draft.originalPrice]);
   const isApplePhone = draft.category === 'Phones' && draft.brand.trim().toLowerCase() === 'apple';
   const hasVariantMatrix = Boolean(draft.variantMode && draft.variants?.length);
+  const colourGroups = useMemo(
+    () => [...new Set((draft.variants ?? []).map(v => (v.color ?? '').trim()).filter(Boolean))],
+    [draft.variants],
+  );
   // Keep legacy grades editable, while every new listing starts with one of
   // the two launch grades selected by the business.
   const gradeChoices = isNew || SELLABLE_GRADES.includes(draft.grade)
@@ -135,6 +140,26 @@ export default function ProductEditor() {
             <span>{saveError}</span>
           </div>
         )}
+
+        <Section title="Listing">
+          <label style={checkboxRowStyle}>
+            <input
+              id="field-listed"
+              type="checkbox"
+              checked={draft.listed}
+              onChange={e => set('listed', e.target.checked)}
+              style={{ width: 18, height: 18, accentColor: 'var(--brand-cyan)' }}
+            />
+            <span>
+              <strong>{draft.listed ? 'Listed on the shop' : 'Draft — hidden from the shop'}</strong>
+              {' · '}
+              {draft.listed
+                ? 'Shoppers can find and buy this product.'
+                : 'Save as often as you like. Listing needs a price and condition on every configuration and at least one photo.'}
+            </span>
+          </label>
+          {errors.listed && <p role="alert" style={listedErrorStyle}>{errors.listed}</p>}
+        </Section>
 
         <Section title="Identity">
           <Row>
@@ -276,7 +301,36 @@ export default function ProductEditor() {
           </Row>}
         </Section>
 
-        <Section title="Imagery">
+        {colourGroups.length > 0 && (
+          <Section title="Photos by colour">
+            <p style={bodyStyle}>
+              Upload photos of the actual stock for each finish. They are compressed in the browser before upload,
+              and the product page switches to them when a shopper picks that colour.
+            </p>
+            {colourGroups.map(colour => (
+              <div key={colour} style={colourBlockStyle}>
+                <h3 style={colourTitleStyle}>
+                  <span aria-hidden="true" style={{ ...swatchStyle, background: colourSwatch(draft, colour) }} />
+                  {colour}
+                  <span style={colourCountStyle}>{configsForColour(draft, colour)} configurations</span>
+                </h3>
+                <ImageManager
+                  productId={draft.id}
+                  images={colourGallery(draft, colour)}
+                  onChange={next => setDraft(d => ({
+                    ...d,
+                    variants: (d.variants ?? []).map(v => (v.color ?? '').trim() === colour
+                      ? { ...v, galleryImages: next, imageUrl: next[0] || undefined }
+                      : v),
+                  }))}
+                  disabled={saving || !draft.id}
+                />
+              </div>
+            ))}
+          </Section>
+        )}
+
+        <Section title={colourGroups.length > 0 ? 'Shared photos (all colours)' : 'Imagery'}>
           <ImageManager
             productId={draft.id}
             images={galleryOf(draft)}
@@ -302,6 +356,22 @@ export default function ProductEditor() {
 function galleryOf(draft: ProductDraft): string[] {
   if (draft.galleryImages?.length) return draft.galleryImages;
   return draft.imageUrl ? [draft.imageUrl] : [];
+}
+
+/** Photos uploaded for one finish; every configuration of that colour shares them. */
+function colourGallery(draft: ProductDraft, colour: string): string[] {
+  const withPhotos = (draft.variants ?? []).find(v => (v.color ?? '').trim() === colour && (v.galleryImages?.length || v.imageUrl));
+  if (!withPhotos) return [];
+  return withPhotos.galleryImages?.length ? withPhotos.galleryImages : [withPhotos.imageUrl!];
+}
+
+function configsForColour(draft: ProductDraft, colour: string): number {
+  return (draft.variants ?? []).filter(v => (v.color ?? '').trim() === colour).length;
+}
+
+function colourSwatch(draft: ProductDraft, colour: string): string {
+  return (draft.variants ?? []).find(v => (v.color ?? '').trim() === colour && v.colorHex)?.colorHex
+    ?? colourHex(colour, draft.brand);
 }
 
 function splitList(value: string): string[] {
@@ -392,6 +462,23 @@ const legendStyle: React.CSSProperties = {
   padding: '0 8px',
   fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 800,
   letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--grey-50)',
+};
+
+const listedErrorStyle: React.CSSProperties = {
+  margin: '8px 0 0', fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 600, color: 'var(--color-sale)',
+};
+const colourBlockStyle: React.CSSProperties = {
+  padding: '14px 0', borderTop: '1px solid var(--grey-10)',
+};
+const colourTitleStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 10px',
+  fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)',
+};
+const colourCountStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 500, color: 'var(--grey-50)',
+};
+const swatchStyle: React.CSSProperties = {
+  width: 16, height: 16, borderRadius: '50%', border: '1px solid var(--grey-20)', flexShrink: 0,
 };
 
 const checkboxRowStyle: React.CSSProperties = {

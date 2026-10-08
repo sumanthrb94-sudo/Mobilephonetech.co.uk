@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import { FilterState } from '../types';
-import { MOCK_PHONES } from '../data/mockPhones';
+import { useCatalogue } from './CatalogueContext';
 
 interface SearchContextType {
   searchQuery: string;
@@ -8,7 +8,7 @@ interface SearchContextType {
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   resetFilters: () => void;
-  /** The catalogue-wide price ceiling, derived once from MOCK_PHONES. */
+  /** The catalogue-wide price ceiling, derived from the live catalogue. */
   priceCap: number;
 }
 
@@ -16,8 +16,8 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 /** Round up to the next £100 so the slider's upper handle lands on a
  *  round number rather than a messy £1709. */
-function computePriceCap(): number {
-  const max = MOCK_PHONES.reduce(
+function computePriceCap(products: { price: number; originalPrice?: number }[]): number {
+  const max = products.reduce(
     (m, p) => Math.max(m, p.originalPrice ?? p.price, p.price),
     0,
   );
@@ -25,7 +25,8 @@ function computePriceCap(): number {
 }
 
 export function SearchProvider({ children }: { children: React.ReactNode }) {
-  const priceCap = useMemo(computePriceCap, []);
+  const { products } = useCatalogue();
+  const priceCap = useMemo(() => computePriceCap(products), [products]);
   const defaultFilters: FilterState = useMemo(
     () => ({
       brand: [],

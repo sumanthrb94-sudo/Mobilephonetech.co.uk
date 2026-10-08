@@ -202,9 +202,17 @@ export async function getProduct(id) {
 }
 
 export async function countProducts() {
-  const res = await fetch(`${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products`, { headers: authHeaders });
-  const body = await res.json();
-  return (body.documents ?? []).length;
+  // The list endpoint pages; follow every page, or anything past the first
+  // (a catalogue import writes ~100 products) is silently not counted.
+  let count = 0;
+  let pageToken = '';
+  do {
+    const url = `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/products?pageSize=300&mask.fieldPaths=model${pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : ''}`;
+    const body = await (await fetch(url, { headers: authHeaders })).json();
+    count += (body.documents ?? []).length;
+    pageToken = body.nextPageToken ?? '';
+  } while (pageToken);
+  return count;
 }
 
 /**

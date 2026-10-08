@@ -25,6 +25,13 @@ const physicalUnit = (variant: ProductVariant, number: number): InventoryUnit =>
   stockInDate: new Date().toISOString().slice(0, 10),
 });
 
+/** Photos come from "Photos by colour" in the editor, shared by every row of that finish. */
+const photoCount = (variant: ProductVariant) => variant.galleryImages?.length || (variant.imageUrl ? 1 : 0);
+const photoCountStyle = (count: number): React.CSSProperties => ({
+  fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap',
+  color: count ? 'var(--color-trust-text)' : 'var(--grey-50)',
+});
+
 const availableUnits = (units: InventoryUnit[]) => units.filter(unit => unit.status === 'available').length;
 
 /**
@@ -63,7 +70,7 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
           <p style={summaryStyle}>{variants.length} configurations · <strong>{total} units available</strong> · public price and stock are calculated from these rows.</p>
           <div style={tableWrapStyle}>
             <table style={tableStyle}>
-              <thead><tr>{['Storage', 'Colour', 'Connection', 'Condition', 'Battery', 'Image URL', 'Sell £', 'Was £', 'Available', 'Physical units', ''].map(label => <th key={label} style={thStyle}>{label}</th>)}</tr></thead>
+              <thead><tr>{['Storage', 'Colour', 'Connection', 'Condition', 'Battery', 'Photos', 'Sell £', 'Was £', 'Available', 'Physical units', ''].map(label => <th key={label} style={thStyle}>{label}</th>)}</tr></thead>
               <tbody>
                 {variants.map((variant, index) => {
                   const units = variant.inventoryUnits ?? [];
@@ -75,9 +82,9 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} storage`} style={inputStyle} value={variant.storage ?? ''} placeholder="128GB" onChange={e => patch(index, { storage: e.target.value })} /></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} colour`} style={inputStyle} value={variant.color ?? ''} placeholder="Black" onChange={e => patch(index, { color: e.target.value })} /></td>
                         <td style={tdStyle}><select aria-label={`Configuration ${index + 1} connection`} style={inputStyle} value={variant.connectivity ?? ''} onChange={e => patch(index, { connectivity: e.target.value })}><option value="">—</option><option value="Wi-Fi">Wi-Fi</option><option value="Cellular">Cellular</option></select></td>
-                        <td style={tdStyle}><select aria-label={`Configuration ${index + 1} condition`} style={inputStyle} value={variant.condition ?? 'Pristine'} onChange={e => patch(index, { condition: e.target.value as ProductGrade })}>{gradeChoices.map(g => <option key={g} value={g}>{g}</option>)}</select></td>
+                        <td style={tdStyle}><select aria-label={`Configuration ${index + 1} condition`} style={inputStyle} value={variant.condition ?? ''} onChange={e => patch(index, { condition: (e.target.value || undefined) as ProductGrade | undefined })}>{!variant.condition && <option value="">Choose…</option>}{gradeChoices.map(g => <option key={g} value={g}>{g}</option>)}</select></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} battery health`} style={inputStyle} type="number" min={isApplePhone ? 85 : 0} max="100" value={variant.batteryHealth ?? ''} placeholder={isApplePhone ? '85+' : '—'} onChange={e => patch(index, { batteryHealth: e.target.value === '' ? undefined : Number(e.target.value) })} /></td>
-                        <td style={tdStyle}><input aria-label={`Configuration ${index + 1} image URL`} style={inputStyle} value={variant.imageUrl ?? ''} placeholder="https://…" onChange={e => patch(index, { imageUrl: e.target.value })} /></td>
+                        <td style={tdStyle}><span aria-label={`Configuration ${index + 1} photos`} style={photoCountStyle(photoCount(variant))}>{photoCount(variant) ? `${photoCount(variant)} photo${photoCount(variant) === 1 ? '' : 's'}` : 'None yet'}</span></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} selling price`} style={inputStyle} type="number" min="0" step="0.01" value={variant.price || ''} onChange={e => patch(index, { price: Number(e.target.value) || 0 })} /></td>
                         <td style={tdStyle}><input aria-label={`Configuration ${index + 1} was price`} style={inputStyle} type="number" min="0" step="0.01" value={variant.originalPrice || ''} onChange={e => patch(index, { originalPrice: Number(e.target.value) || 0 })} /></td>
                         <td style={tdStyle}>

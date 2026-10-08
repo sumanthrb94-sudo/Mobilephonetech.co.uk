@@ -37,6 +37,8 @@ export interface ProductVariant {
   batteryHealth?: number;
   imageUrl?: string;
   galleryImages?: string[];
+  /** Swatch colour for this finish. Falls back to the shared palette by name. */
+  colorHex?: string;
   // ── Inventory / warehouse fields (admin-only, not shown on storefront) ────
   /** IMEI number. Undefined for non-IMEI accessories. */
   imei?: string;
@@ -168,6 +170,14 @@ export interface Product {
   imei?: string;
   sku?: string;
   stockLocation?: 'OFFICE' | 'SHS' | 'FBA' | 'WAREHOUSE';
+  /**
+   * Whether shoppers can see and buy this product. Absent means listed, so
+   * every product saved before drafts existed stays on the shop. Imported
+   * catalogue models start as false until staff add prices and photos.
+   */
+  listed?: boolean;
+  /** Saved by the admin editor when the product is managed as a configuration matrix. */
+  variantMode?: boolean;
 }
 
 export type Phone = Product; 
