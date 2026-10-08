@@ -686,7 +686,7 @@ export default function ProductDetail() {
                 >
                   <Play size={10} fill="white" color="white" style={{ marginLeft: '1px' }} />
                 </span>
-                <span>Watch 6s Lab Inspection</span>
+                <span>Watch 12s Lab Inspection</span>
               </button>
 
               {activeGallery.length > 0 && (<>
@@ -739,7 +739,7 @@ export default function ProductDetail() {
               aria-label="Watch 6-second Lab Inspection"
             >
               <span className="pdp-mobile-inspection__play"><Play size={15} fill="currentColor" aria-hidden="true" /></span>
-              <span>Watch 6s Lab Inspection</span>
+              <span>Watch 12s Lab Inspection</span>
               <ChevronRight size={20} aria-hidden="true" />
             </button>
 
@@ -1035,13 +1035,7 @@ export default function ProductDetail() {
 
       <GradeExplainer isOpen={gradeExplainerOpen} onClose={() => setGradeExplainerOpen(false)} />
 
-      <PdpLabInspectionReel
-        isOpen={labReelOpen}
-        onClose={() => setLabReelOpen(false)}
-        brand={phone.brand}
-        model={phone.model}
-        batteryHealth={displayBatteryHealth}
-      />
+      <PdpLabInspectionReel isOpen={labReelOpen} onClose={() => setLabReelOpen(false)} />
 
       <AnimatePresence>
         {lightboxOpen && (

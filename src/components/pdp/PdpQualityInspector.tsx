@@ -155,7 +155,7 @@ export default function PdpQualityInspector({ brand, model, batteryHealth = 85, 
               }}
             >
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--brand-cyan)' }} />
-              Watch 6s lab video
+              Watch 12s lab video
             </button>
           )}
         </div>

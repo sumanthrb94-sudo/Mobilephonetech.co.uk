@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en" data-resolution="square">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1080" />
+    <!--
+      LeHart 70-point inspection — HyperFrames composition (1080×1080, 12.5s).
+      Render: npm run video:lab  (writes public/videos/lab-inspection.mp4)
+      Sound effects are synthesised by make-sfx.sh; fonts and GSAP are vendored
+      so the render needs no network.
+    -->
+    <script src="assets/js/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: Rubik; font-weight: 700; src: url(assets/fonts/rubik-latin-700-normal.woff2) format('woff2'); }
+      @font-face { font-family: Rubik; font-weight: 800; src: url(assets/fonts/rubik-latin-800-normal.woff2) format('woff2'); }
+      @font-face { font-family: Rubik; font-weight: 900; src: url(assets/fonts/rubik-latin-900-normal.woff2) format('woff2'); }
+      @font-face { font-family: 'Nunito Sans'; font-weight: 400; src: url(assets/fonts/nunito-sans-latin-400-normal.woff2) format('woff2'); }
+      @font-face { font-family: 'Nunito Sans'; font-weight: 600; src: url(assets/fonts/nunito-sans-latin-600-normal.woff2) format('woff2'); }
+      @font-face { font-family: 'Nunito Sans'; font-weight: 700; src: url(assets/fonts/nunito-sans-latin-700-normal.woff2) format('woff2'); }
+
+      :root {
+        --ink: #0c0a09; --panel: #1c1917; --line: #2e2a27;
+        --gold: #eab308; --gold-deep: #a16207; --green: #22c55e;
+        --text: #fafaf9; --muted: #a8a29e;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1080px; overflow: hidden; background: var(--ink); }
+      #root {
+        position: relative; width: 1080px; height: 1080px; overflow: hidden;
+        font-family: 'Nunito Sans', sans-serif; color: var(--text);
+        background:
+          radial-gradient(circle at 30% 45%, rgba(234,179,8,0.10), transparent 55%),
+          linear-gradient(160deg, #171412 0%, #0c0a09 70%);
+      }
+      .clip { position: absolute; inset: 0; }
+      .abs { position: absolute; }
+      .grid-bg {
+        position: absolute; inset: 0; opacity: 0.35;
+        background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 54px 54px;
+      }
+
+      /* Header */
+      #brand { left: 64px; top: 56px; display: flex; align-items: center; gap: 14px; }
+      #brand .mark { width: 46px; height: 46px; border-radius: 12px; background: var(--gold-deep); display: grid; place-items: center; }
+      #brand .name { font-family: Rubik; font-weight: 900; font-size: 30px; letter-spacing: -0.5px; }
+      #brand .name b { color: var(--gold); font-weight: 900; }
+      #brand .where { font-size: 18px; color: var(--muted); font-weight: 600; margin-left: 6px; }
+      #counter { right: 64px; top: 48px; text-align: right; }
+      #counter .label { font-size: 15px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+      #counter .value { font-family: Rubik; font-weight: 900; font-size: 54px; line-height: 1.05; }
+      #counter .value .of { color: var(--muted); font-size: 34px; }
+      #count { display: inline-block; min-width: 62px; text-align: right; }
+
+      /* Phone */
+      #phone { left: 120px; top: 225px; width: 340px; height: 690px; border-radius: 56px;
+               background: linear-gradient(180deg, #46484e, #2c2e33); padding: 14px;
+               box-shadow: 0 40px 90px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(255,255,255,0.06); }
+      #phone .btn { position: absolute; width: 6px; border-radius: 3px; background: var(--gold); }
+      #screen { position: relative; width: 100%; height: 100%; border-radius: 44px; overflow: hidden;
+                background: linear-gradient(180deg, #14161a, #07080a); }
+      #island { left: 50%; top: 18px; width: 104px; height: 30px; margin-left: -52px; border-radius: 15px; background: #000; z-index: 5; }
+      #beam { left: -10%; width: 120%; height: 90px; top: -90px; z-index: 4;
+              background: linear-gradient(180deg, transparent, rgba(234,179,8,0.55) 70%, rgba(250,250,249,0.95) 72%, transparent 74%); }
+      .scr { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; }
+
+      /* Battery screen */
+      #batt { width: 120px; height: 220px; border: 6px solid #e7e5e4; border-radius: 22px; position: relative; padding: 8px; }
+      #batt::before { content: ''; position: absolute; top: -20px; left: 36px; width: 36px; height: 12px; border-radius: 4px 4px 0 0; background: #e7e5e4; }
+      #battFill { position: absolute; left: 8px; right: 8px; bottom: 8px; height: 0; border-radius: 12px; background: linear-gradient(0deg, var(--green), #86efac); }
+      #battPct { font-family: Rubik; font-weight: 900; font-size: 64px; margin-top: 34px; }
+      .scr .cap { font-size: 18px; color: var(--muted); font-weight: 700; letter-spacing: 1px; }
+
+      /* Touch grid */
+      #touch { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; width: 260px; }
+      #touch i { display: block; height: 44px; border-radius: 8px; background: rgba(255,255,255,0.06); }
+
+      /* Cameras */
+      #lenses { position: relative; width: 210px; height: 210px; border-radius: 48px; background: #26282d; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.06); }
+      .lens { position: absolute; width: 84px; height: 84px; border-radius: 50%; background: radial-gradient(circle, #1e3a5f 0 18%, #0b0d10 20% 60%, #33363c 62%); }
+      .ring { position: absolute; width: 104px; height: 104px; border-radius: 50%; border: 3px solid var(--gold); opacity: 0; }
+
+      /* Connectivity */
+      #bars { display: flex; align-items: flex-end; gap: 14px; height: 170px; }
+      #bars i { display: block; width: 34px; border-radius: 8px; background: rgba(255,255,255,0.10); }
+      #bars i b { display: block; width: 100%; height: 100%; border-radius: 8px; background: var(--gold); transform-origin: bottom; transform: scaleY(0); }
+      .chip { margin-top: 30px; padding: 10px 20px; border-radius: 999px; background: rgba(34,197,94,0.15); color: #86efac; font-weight: 700; font-size: 20px; }
+
+      /* Wipe */
+      #wipeBar { width: 250px; height: 18px; border-radius: 9px; background: rgba(255,255,255,0.08); overflow: hidden; margin-top: 28px; }
+      #wipeFill { width: 100%; height: 100%; background: linear-gradient(90deg, var(--gold-deep), var(--gold)); transform-origin: left; transform: scaleX(0); }
+      #lock { width: 110px; height: 110px; border-radius: 28px; background: rgba(234,179,8,0.14); display: grid; place-items: center; }
+
+      /* Right panel: step text + checklist */
+      #step { left: 540px; top: 280px; width: 480px; }
+      .stage { position: absolute; left: 0; top: 0; width: 480px; opacity: 0; }
+      .stage .k { font-size: 17px; letter-spacing: 4px; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+      .stage h2 { font-family: Rubik; font-weight: 900; font-size: 58px; line-height: 1.02; letter-spacing: -1.5px; margin: 14px 0 22px; }
+      .stage ul { list-style: none; }
+      .stage li { display: flex; align-items: center; gap: 14px; font-size: 25px; font-weight: 600; color: #e7e5e4; margin: 0 0 14px; opacity: 0; }
+      .stage li .ok { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--green); display: grid; place-items: center; }
+
+      /* Progress rail */
+      #rail { left: 540px; top: 868px; width: 476px; display: flex; gap: 10px; }
+      #rail i { flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.10); overflow: hidden; }
+      #rail i b { display: block; width: 100%; height: 100%; background: var(--gold); transform-origin: left; transform: scaleX(0); }
+      #railLabels { left: 540px; top: 890px; width: 476px; display: flex; gap: 10px; font-size: 14px; color: var(--muted); font-weight: 700; }
+      #railLabels span { flex: 1; }
+
+      /* Intro + finale */
+      #intro { left: 540px; top: 340px; width: 480px; }
+      #intro .k { font-size: 18px; letter-spacing: 4px; color: var(--gold); font-weight: 700; text-transform: uppercase; }
+      #intro h1 { font-family: Rubik; font-weight: 900; font-size: 92px; line-height: 0.95; letter-spacing: -3px; margin-top: 16px; }
+      #intro p { font-size: 26px; color: var(--muted); margin-top: 22px; font-weight: 600; }
+      #finale { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; opacity: 0;
+                background: radial-gradient(circle at 50% 42%, rgba(234,179,8,0.18), transparent 60%), #0c0a09; }
+      #seal { width: 300px; height: 300px; border-radius: 50%; border: 8px solid var(--gold); display: grid; place-items: center; position: relative; }
+      #seal::after { content: ''; position: absolute; inset: 14px; border-radius: 50%; border: 2px dashed rgba(234,179,8,0.6); }
+      #seal .n { font-family: Rubik; font-weight: 900; font-size: 104px; line-height: 0.9; }
+      #seal .t { font-size: 20px; letter-spacing: 4px; color: var(--gold); font-weight: 700; text-transform: uppercase; margin-top: 6px; }
+      #finale h3 { font-family: Rubik; font-weight: 900; font-size: 62px; letter-spacing: -1.5px; margin-top: 48px; }
+      #finale h3 b { color: var(--gold); }
+      #finale p { font-size: 26px; color: var(--muted); font-weight: 600; margin-top: 14px; }
+      #finale .pass { margin-top: 30px; padding: 12px 26px; border-radius: 999px; background: rgba(34,197,94,0.16); color: #86efac; font-size: 24px; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="12.5" data-width="1080" data-height="1080">
+      <div id="scene" class="clip" data-start="0" data-duration="12.5" data-track-index="0">
+        <div class="grid-bg"></div>
+
+        <div id="brand" class="abs">
+          <div class="mark">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+          </div>
+          <div class="name">Le<b>Hart</b></div>
+          <div class="where">Lab · Ilford, Essex</div>
+        </div>
+
+        <div id="counter" class="abs">
+          <div class="label">Checks passed</div>
+          <div class="value"><span id="count">0</span><span class="of"> / 70</span></div>
+        </div>
+
+        <div id="phone" class="abs">
+          <i class="btn" style="left:-6px;top:150px;height:44px"></i>
+          <i class="btn" style="left:-6px;top:210px;height:70px"></i>
+          <i class="btn" style="right:-6px;top:190px;height:90px"></i>
+          <div id="screen">
+            <div id="island" class="abs"></div>
+            <div id="beam" class="abs" data-layout-allow-overflow></div>
+            <div id="s-batt" class="scr">
+              <div id="batt"><div id="battFill"></div></div>
+              <div id="battPct"><span id="pct">0</span>%</div>
+              <div class="cap">BATTERY HEALTH</div>
+            </div>
+            <div id="s-touch" class="scr">
+              <div id="touch"></div>
+              <div class="cap" style="margin-top:22px">TOUCH · EVERY ZONE</div>
+            </div>
+            <div id="s-cam" class="scr">
+              <div id="lenses">
+                <div class="lens" style="left:16px;top:16px"></div>
+                <div class="lens" style="left:16px;top:110px"></div>
+                <div class="lens" style="left:110px;top:63px"></div>
+                <div class="ring" id="ring1" style="left:6px;top:6px"></div>
+                <div class="ring" id="ring2" style="left:6px;top:100px"></div>
+                <div class="ring" id="ring3" style="left:100px;top:53px"></div>
+              </div>
+              <div class="cap" style="margin-top:30px">FOCUS · OIS · FACE ID</div>
+            </div>
+            <div id="s-net" class="scr">
+              <div id="bars"><i style="height:30%"><b></b></i><i style="height:55%"><b></b></i><i style="height:78%"><b></b></i><i style="height:100%"><b></b></i></div>
+              <div class="chip">Network unlocked</div>
+            </div>
+            <div id="s-wipe" class="scr">
+              <div id="lock">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+              </div>
+              <div id="wipeBar"><div id="wipeFill"></div></div>
+              <div class="cap" style="margin-top:16px">ERASING ALL USER DATA</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="intro" class="abs">
+          <div class="k">Inside our lab</div>
+          <h1>70-point<br />inspection</h1>
+          <p>Every device. Every time.<br />Before it ships.</p>
+        </div>
+
+        <div id="step" class="abs">
+          <div class="stage" id="st1"><div class="k">01 · 12 checks</div><h2>Battery<br />&amp; power</h2>
+            <ul><li><span class="ok">✓</span>Capacity measured</li><li><span class="ok">✓</span>Charging circuit tested</li><li><span class="ok">✓</span>Peak load under stress</li></ul></div>
+          <div class="stage" id="st2"><div class="k">02 · 14 checks</div><h2>Display<br />&amp; touch</h2>
+            <ul><li><span class="ok">✓</span>Multi-touch, every zone</li><li><span class="ok">✓</span>No dead or stuck pixels</li><li><span class="ok">✓</span>Brightness &amp; colour</li></ul></div>
+          <div class="stage" id="st3"><div class="k">03 · 16 checks</div><h2>Cameras<br />&amp; sensors</h2>
+            <ul><li><span class="ok">✓</span>Every lens in focus</li><li><span class="ok">✓</span>Face ID / fingerprint</li><li><span class="ok">✓</span>Speakers &amp; microphones</li></ul></div>
+          <div class="stage" id="st4"><div class="k">04 · 10 checks</div><h2>Connectivity<br />&amp; SIM</h2>
+            <ul><li><span class="ok">✓</span>5G, 4G, Wi-Fi, Bluetooth</li><li><span class="ok">✓</span>Network unlocked</li><li><span class="ok">✓</span>IMEI checked clean</li></ul></div>
+          <div class="stage" id="st5"><div class="k">05 · 18 checks</div><h2>Data<br />&amp; cleaning</h2>
+            <ul><li><span class="ok">✓</span>Previous data erased</li><li><span class="ok">✓</span>Account locks removed</li><li><span class="ok">✓</span>Cleaned &amp; graded</li></ul></div>
+        </div>
+
+        <div id="rail" class="abs"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+        <div id="railLabels" class="abs"><span>Battery</span><span>Display</span><span>Cameras</span><span>Network</span><span>Data</span></div>
+
+        <div id="finale" class="abs">
+          <div id="seal"><div><div class="n">70</div><div class="t">of 70 passed</div></div></div>
+          <h3>Le<b>Hart</b> Certified</h3>
+          <p>12-month warranty · 30-day free returns</p>
+          <div class="pass">✓ Ready to ship</div>
+        </div>
+      </div>
+
+      <!-- Sound -->
+      <audio id="a-bed" class="clip" data-start="0" data-duration="12.5" data-volume="0.9" src="assets/sfx/bed.wav"></audio>
+      <audio id="a-w1" class="clip" data-start="0.05" data-duration="0.6" data-volume="0.8" src="assets/sfx/whoosh.wav"></audio>
+      <audio id="a-scan" class="clip" data-start="0.75" data-duration="0.9" data-volume="0.7" src="assets/sfx/scan.wav"></audio>
+      <audio id="a-w2" class="clip" data-start="1.55" data-duration="0.6" data-volume="0.6" src="assets/sfx/whoosh.wav"></audio>
+      <audio id="a-charge" class="clip" data-start="1.8" data-duration="1.4" data-volume="0.7" src="assets/sfx/charge.wav"></audio>
+      <audio id="a-t1" class="clip" data-start="2.35" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-t2" class="clip" data-start="2.7" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-t3" class="clip" data-start="3.05" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-w3" class="clip" data-start="3.55" data-duration="0.6" data-volume="0.6" src="assets/sfx/whoosh.wav"></audio>
+      <audio id="a-b1" class="clip" data-start="3.85" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-b2" class="clip" data-start="4.15" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-b3" class="clip" data-start="4.45" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-b4" class="clip" data-start="4.75" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-t4" class="clip" data-start="5.05" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-w4" class="clip" data-start="5.55" data-duration="0.6" data-volume="0.6" src="assets/sfx/whoosh.wav"></audio>
+      <audio id="a-t5" class="clip" data-start="6.0" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-t6" class="clip" data-start="6.35" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-t7" class="clip" data-start="6.7" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-w5" class="clip" data-start="7.55" data-duration="0.6" data-volume="0.6" src="assets/sfx/whoosh.wav"></audio>
+      <audio id="a-b5" class="clip" data-start="7.85" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-b6" class="clip" data-start="8.05" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-b7" class="clip" data-start="8.25" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-b8" class="clip" data-start="8.45" data-duration="0.2" src="assets/sfx/blip.wav"></audio>
+      <audio id="a-w6" class="clip" data-start="8.95" data-duration="0.6" data-volume="0.6" src="assets/sfx/whoosh.wav"></audio>
+      <audio id="a-wipe" class="clip" data-start="9.2" data-duration="1.4" data-volume="0.7" src="assets/sfx/wipe.wav"></audio>
+      <audio id="a-t8" class="clip" data-start="10.0" data-duration="0.12" src="assets/sfx/tick.wav"></audio>
+      <audio id="a-chime" class="clip" data-start="10.65" data-duration="1.6" data-volume="0.8" src="assets/sfx/chime.wav"></audio>
+      <audio id="a-stamp" class="clip" data-start="10.95" data-duration="0.4" src="assets/sfx/stamp.wav"></audio>
+    </div>
+
+    <script>
+      // 60 touch cells, built once (deterministic).
+      const touch = document.getElementById('touch');
+      for (let i = 0; i < 60; i++) touch.appendChild(document.createElement('i'));
+
+      const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+
+      // Intro: phone rises in, title, scanner sweep.
+      tl.from('#phone', { y: 140, opacity: 0, duration: 0.8 }, 0.05)
+        .from('#brand, #counter', { y: -30, opacity: 0, duration: 0.6, stagger: 0.08 }, 0.1)
+        .from('#intro > *', { x: 50, opacity: 0, duration: 0.6, stagger: 0.1 }, 0.2)
+        .fromTo('#beam', { y: 0 }, { y: 780, duration: 0.85, ease: 'power1.inOut' }, 0.75)
+        .to('#intro', { opacity: 0, x: -40, duration: 0.35, ease: 'power2.in' }, 1.35);
+
+      // Five stages: screen, panel text, ticks, rail, counter.
+      const stages = [
+        { s: 's-batt', t: 'st1', at: 1.6, to: 12 },
+        { s: 's-touch', t: 'st2', at: 3.6, to: 26 },
+        { s: 's-cam', t: 'st3', at: 5.6, to: 42 },
+        { s: 's-net', t: 'st4', at: 7.6, to: 52 },
+        { s: 's-wipe', t: 'st5', at: 9.0, to: 70 },
+      ];
+      const ends = [3.6, 5.6, 7.6, 9.0, 10.6];
+      stages.forEach((st, i) => {
+        const len = ends[i] - st.at;
+        tl.fromTo('#' + st.s, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.4 }, st.at)
+          .fromTo('#' + st.t, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45 }, st.at)
+          .fromTo('#' + st.t + ' li', { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 0.3, stagger: len * 0.22 }, st.at + 0.35)
+          .fromTo('#rail i:nth-child(' + (i + 1) + ') b', { scaleX: 0 }, { scaleX: 1, duration: len, ease: 'none' }, st.at)
+          .to('#count', { textContent: st.to, snap: { textContent: 1 }, duration: len * 0.9, ease: 'none' }, st.at);
+        if (i < stages.length - 1) {
+          tl.to('#' + st.s, { opacity: 0, scale: 1.04, duration: 0.3, ease: 'power2.in' }, ends[i] - 0.25)
+            .to('#' + st.t, { opacity: 0, x: -30, duration: 0.3, ease: 'power2.in' }, ends[i] - 0.25);
+        }
+      });
+
+      // Stage details on the phone screen.
+      tl.fromTo('#battFill', { height: 0 }, { height: 180, duration: 1.3, ease: 'power2.out' }, 1.8)
+        .to('#pct', { textContent: 90, snap: { textContent: 1 }, duration: 1.3, ease: 'power2.out' }, 1.8)
+        .fromTo('#touch i', { backgroundColor: 'rgba(255,255,255,0.06)' },
+          { backgroundColor: '#eab308', duration: 0.2, stagger: { each: 0.022, grid: [10, 6], from: 'start' }, ease: 'none' }, 3.8)
+        .to('#touch i', { backgroundColor: 'rgba(34,197,94,0.55)', duration: 0.3, ease: 'none' }, 5.15)
+        .fromTo('#ring1', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.35 }, 5.95)
+        .fromTo('#ring2', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.35 }, 6.3)
+        .fromTo('#ring3', { opacity: 0, scale: 1.5 }, { opacity: 1, scale: 1, duration: 0.35 }, 6.65)
+        .fromTo('#bars b', { scaleY: 0 }, { scaleY: 1, duration: 0.25, stagger: 0.2 }, 7.85)
+        .fromTo('#s-net .chip', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3 }, 8.45)
+        .fromTo('#wipeFill', { scaleX: 0 }, { scaleX: 1, duration: 1.2, ease: 'power1.inOut' }, 9.2);
+
+      // Finale: clear the stage, then the certified seal.
+      tl.to('#phone, #step, #rail, #railLabels', { opacity: 0, duration: 0.3, ease: 'power2.in' }, 10.45)
+        .to('#finale', { opacity: 1, duration: 0.35, ease: 'power2.out' }, 10.6)
+        .fromTo('#seal', { scale: 1.8, opacity: 0, rotation: -12 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.35, ease: 'back.out(2)' }, 10.85)
+        .from('#finale h3, #finale p, #finale .pass', { y: 24, opacity: 0, duration: 0.45, stagger: 0.12 }, 11.15);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
