@@ -66,12 +66,12 @@ describe('resolveLayout', () => {
 
   it('keeps an unknown section beside its neighbours, not at the end', () => {
     // A layout that names everything except the blog, which sits between the
-    // FAQ and the quality strip in the shipped order.
+    // FAQ and the newsletter in the shipped order.
     const order = SECTIONS.map(s => s.id).filter(id => id !== 'blog');
     const out = ids(resolveLayout({ order, hidden: [], updatedAt: '' }));
 
     expect(out.indexOf('blog')).toBeGreaterThan(out.indexOf('faq'));
-    expect(out.indexOf('blog')).toBeLessThan(out.indexOf('qualityPromise'));
+    expect(out.indexOf('blog')).toBeLessThan(out.indexOf('newsletter'));
     expect(out[out.length - 1]).not.toBe('blog');
   });
 

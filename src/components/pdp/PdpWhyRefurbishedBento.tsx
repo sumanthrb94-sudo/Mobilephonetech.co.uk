@@ -209,7 +209,7 @@ export default function PdpWhyRefurbishedBento({ brand, model }: PdpWhyRefurbish
             Planet Friendly
           </h3>
           <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.65 }}>
-            Manufacturing one brand new smartphone emits up to 80kg of carbon and extracts 250kg of raw mineral ore. Choosing refurbished extends the circular economy and eliminates 80%+ of that footprint.
+            Manufacturing one brand new smartphone emits around 70kg of carbon and extracts 250kg of raw mineral ore. Choosing refurbished extends the circular economy and eliminates 80%+ of that footprint.
           </p>
           <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--color-trust-text)' }}>
             <CheckCircle2 size={15} /> 100% recyclable, plastic-free packaging

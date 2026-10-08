@@ -96,8 +96,8 @@ const POSTS: Post[] = [
     accent: { from: '#1f3a5b', to: '#3a5a8e', ink: '#e0eaf8' },
   },
   {
-    slug: 'manchester-floor-4pm',
-    title: 'Inside our Manchester refurb floor at 4 PM',
+    slug: 'refurb-floor-4pm',
+    title: 'Inside our refurb workshop at 4 PM',
     excerpt:
       'Two technicians, fourteen iPhones, one suspicious smell of soldering paste. A walk through the workshop in the hour before today\'s stock ships out.',
     category: 'Behind the Scenes',

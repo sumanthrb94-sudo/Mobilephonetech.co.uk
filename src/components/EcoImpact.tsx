@@ -4,14 +4,16 @@ import { Leaf, Droplet, Factory } from 'lucide-react';
 /**
  * EcoImpact — per-product "buying refurbished saves..." panel. Numbers come
  * from widely-cited refurb industry figures (Back Market, Fraunhofer IZM).
- * Deterministic per-product variation via the id so values feel tangible
- * rather than copy-paste.
+ * Carbon is the shop-wide 70kg CO₂e per device used everywhere else on the
+ * site; it used to vary per product (52-80kg), so the same claim appeared as
+ * three different numbers. Raw materials and water still vary per product
+ * via the id.
  */
 export default function EcoImpact({ productId }: { productId: string }) {
   const seed = hash(productId);
-  // Smartphone refurb saves roughly 50-80kg CO2, 75-85kg of raw materials,
-  // and 100-180L water vs producing a new unit. Clamp to plausible ranges.
-  const co2    = 52 + (seed % 28);      // 52 - 80 kg
+  // Smartphone refurb saves roughly 75-85kg of raw materials and 100-180L
+  // water vs producing a new unit. Clamp to plausible ranges.
+  const co2    = 70;                    // site-wide figure, see EcoImpactBlock
   const raw    = 76 + ((seed >> 3) % 14); // 76 - 90 kg
   const water  = 108 + ((seed >> 7) % 74); // 108 - 182 L
 

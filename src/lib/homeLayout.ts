@@ -53,7 +53,6 @@ export const SECTIONS: SectionSpec[] = [
   { id: 'warranty', label: 'Warranty & returns', blurb: 'The warranty and returns explainer.' },
   { id: 'faq', label: 'FAQ', blurb: 'The accordion of common questions.' },
   { id: 'blog', label: 'Workshop journal', blurb: 'The refurbishment articles.' },
-  { id: 'qualityPromise', label: 'Inspected · Tested · Cleaned', blurb: 'The three-step quality badge strip.' },
   { id: 'newsletter', label: 'Newsletter signup', blurb: 'The email capture form above the footer.' },
 ];
 
