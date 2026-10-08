@@ -55,4 +55,13 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci
-      - run: npx firebase emulators:exec --project demo-lehart --only auth,firestore,storage "npm run audit:security"
+      # The audit's API checks need the order route running against the
+      # emulators. Without it they were skipped and the "API server
+      # reachable" control failed on every run. ALLOW_UNPAID_ORDERS opens the
+      # unpaid order route for this emulator-only server so the pricing and
+      # validation code behind it can be attacked; it is never set in prod.
+      - run: >-
+          npx firebase emulators:exec --project demo-lehart --only auth,firestore,storage
+          "sh -c 'ALLOW_UNPAID_ORDERS=true node e2e/api-server.mjs & API=$!;
+          for i in $(seq 90); do curl -s -o /dev/null http://127.0.0.1:4174/ && break; sleep 1; done;
+          npm run audit:security; s=$?; kill $API; exit $s'"

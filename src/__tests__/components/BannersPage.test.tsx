@@ -133,7 +133,9 @@ describe('BannersPage', () => {
     // from what the home page renders.
     const frame = document.querySelector('.bn-preview__frame2');
     expect(frame).toBeTruthy();
-    expect(frame!.querySelector('img')?.getAttribute('src')).toBe('https://example.test/m.jpg');
+    // The carousel is a <picture>: the phone artwork is the source for
+    // narrow screens, and the <img> itself carries the desktop image.
+    expect(frame!.querySelector('source[media="(max-width: 1023px)"]')?.getAttribute('srcset')).toBe('https://example.test/m.jpg');
     expect(frame!.textContent).toContain('Up to 40% off');
     expect(frame!.textContent).toContain('Shop deals');
   });
@@ -153,7 +155,7 @@ describe('BannersPage', () => {
     renderPage();
 
     expect(await screen.findByText(/Live home-page carousel/i)).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Make live banners editable/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Make \d+ campaign banners editable/i })).toBeTruthy();
   });
 });
 
