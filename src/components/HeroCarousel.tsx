@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import CountUp from './ui/CountUp';
 import RevealText from './ui/RevealText';
+import { RESPONSIVE_IMAGES } from '../data/responsiveImages';
 
 /**
  * One banner. Named so the built-in set and the staff-managed set are the
@@ -162,6 +163,36 @@ function renderSavings(label: string, slideIndex: number) {
       {before}
       <CountUp key={`savings-${slideIndex}`} to={value} prefix="£" duration={1100} />
       {after}
+    </>
+  );
+}
+
+/*
+ * How wide each artwork is actually drawn on the home page, for `sizes`.
+ * The desktop canvas is 368px tall and the art is contained, so a 3:1 frame
+ * tops out at 1104px and the 4.16:1 frame at ~1530px; the phone art fills
+ * the viewport width. index.html preloads slide one with these same values —
+ * change them together or the preload fetches a file the page never uses.
+ */
+const SIZES_WIDE = '1530px';
+const SIZES_DESKTOP = '(max-width: 1104px) 100vw, 1104px';
+const SIZES_MOBILE = '100vw';
+
+/**
+ * AVIF and WebP candidates for one artwork, ahead of the original. Built-in
+ * campaign art has generated renditions (see RESPONSIVE_IMAGES); anything
+ * else — a staff upload, a Cloudinary URL — falls through to the original,
+ * exactly as before. `withOriginal` emits the original as a media-matched
+ * source too, which the art-directed (media) slots need and the default
+ * slot does not, because the <img> itself is that fallback.
+ */
+function artworkSources(src: string, media: string | undefined, sizes: string, withOriginal: boolean) {
+  const r = RESPONSIVE_IMAGES[src];
+  return (
+    <>
+      {r && <source type="image/avif" media={media} srcSet={r.avif} sizes={sizes} />}
+      {r && <source type="image/webp" media={media} srcSet={r.webp} sizes={sizes} />}
+      {withOriginal && <source media={media} srcSet={src} />}
     </>
   );
 }
@@ -333,10 +364,13 @@ export default function HeroCarousel({
                   screen is wide enough to use it. Standard desktops retain
                   the 3:1 composition; phones retain their dedicated 4:5
                   artwork. No ratio ever has to crop a device to fill a box. */}
-              {slide.imageWide && <source media="(min-width: 1600px)" srcSet={slide.imageWide} />}
-              <source media="(max-width: 1023px)" srcSet={slide.imageMobile || slide.image} />
+              {slide.imageWide && artworkSources(slide.imageWide, '(min-width: 1600px)', SIZES_WIDE, true)}
+              {artworkSources(slide.imageMobile || slide.image, '(max-width: 1023px)', SIZES_MOBILE, true)}
+              {artworkSources(slide.image || slide.imageMobile, undefined, SIZES_DESKTOP, false)}
               <img
                 src={slide.image || slide.imageMobile}
+                width={RESPONSIVE_IMAGES[slide.image || slide.imageMobile]?.width}
+                height={RESPONSIVE_IMAGES[slide.image || slide.imageMobile]?.height}
                 alt={slide.imageAlt}
                 loading={current === 0 ? 'eager' : 'lazy'}
                 fetchPriority={current === 0 ? 'high' : 'auto'}

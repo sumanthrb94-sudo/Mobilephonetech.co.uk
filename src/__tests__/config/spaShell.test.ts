@@ -38,6 +38,8 @@ describe('SPA shell recovery', () => {
     // These must fall through to a real 404, not the shell.
     expect(pattern.test('/assets/index-DEADBEEF.js')).toBe(false);
     expect(pattern.test('/assets/react-DXoTT26f.js')).toBe(false);
+    expect(pattern.test('/static/index-DEADBEEF.js')).toBe(false);
+    expect(pattern.test('/static/react-DXoTT26f.js')).toBe(false);
     expect(pattern.test('/boot-check.js')).toBe(false);
     expect(pattern.test('/api/orders')).toBe(false);
 
@@ -46,6 +48,22 @@ describe('SPA shell recovery', () => {
     expect(pattern.test('/products')).toBe(true);
     expect(pattern.test('/checkout')).toBe(true);
     expect(pattern.test('/products/apple-iphone-13-128gb')).toBe(true);
+  });
+
+  it('caches only the hashed build output as immutable', () => {
+    const cacheFor = (path: string) => (vercel.headers ?? [])
+      .filter((b: { source: string }) => new RegExp(`^${b.source}$`).test(path))
+      .flatMap((b: { headers: { key: string; value: string }[] }) => b.headers)
+      .filter((h: { key: string }) => h.key === 'Cache-Control')
+      .map((h: { value: string }) => h.value)
+      .pop();
+
+    expect(cacheFor('/static/index-DEADBEEF.js')).toContain('immutable');
+    // Hand-named public files are replaced in place under the same URL.
+    for (const path of ['/assets/hero-campaign-apple-desktop-20261004.png', '/videos/lab-inspection.mp4', '/icons/apple-touch-icon.png']) {
+      expect(cacheFor(path)).toBeDefined();
+      expect(cacheFor(path)).not.toContain('immutable');
+    }
   });
 
   it('loads the recovery script before the bundle, and without defer', () => {

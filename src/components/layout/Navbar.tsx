@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useMotionValue, useTransform, useSpring, motion, AnimatePresence } from 'motion/react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -10,12 +10,17 @@ import {
 import { useSearch } from '../../context/SearchContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
-import AuthModal from '../AuthModal';
 import SearchAutocomplete from '../SearchAutocomplete';
 import { useBreakpoint } from '../../hooks/useBreakpoint';
 import BrandMegaMenu from '../BrandMegaMenu';
 import TabletMegaMenu from '../TabletMegaMenu';
 import { useAdmin } from '../../hooks/useAdmin';
+import { useLatch } from '../../hooks/useLatch';
+import { lazyRoute } from '../../lib/lazyRoute';
+
+// Only signed-out shoppers who tap "Sign in" ever see it, so it is fetched
+// on that first tap rather than with every page.
+const AuthModal = lazyRoute(() => import('../AuthModal'));
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -39,6 +44,7 @@ export default function Navbar(_: NavbarProps) {
   const { isDesktop } = useBreakpoint();
   const [isMobileOpen, setIsMobileOpen]           = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen]     = useState(false);
+  const authModalNeeded = useLatch(isAuthModalOpen);
   const [isAccountOpen, setIsAccountOpen]         = useState(false);
 
   const [activeCategory, setActiveCategory]       = useState('');
@@ -822,7 +828,11 @@ export default function Navbar(_: NavbarProps) {
         )}
       </AnimatePresence>
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      {authModalNeeded && (
+        <Suspense fallback={null}>
+          <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 }

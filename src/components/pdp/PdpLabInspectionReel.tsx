@@ -39,7 +39,9 @@ export default function PdpLabInspectionReel({ isOpen, onClose }: PdpLabInspecti
         poster={LAB_VIDEO_POSTER}
         controls
         playsInline
-        preload="metadata"
+        // Nothing until the tap that opens it: play() fetches what it needs,
+        // and the poster covers the frame meanwhile.
+        preload="none"
         aria-label="LeHart lab: the 70-point inspection, step by step"
         style={{ display: 'block', width: '100%', aspectRatio: '1 / 1', borderRadius: 'var(--radius-lg)', background: '#0c0a09' }}
       />
