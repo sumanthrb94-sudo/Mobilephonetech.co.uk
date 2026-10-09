@@ -102,8 +102,8 @@ async function checkoutWith(browser, mode, { tiles = 'ok' } = {}) {
     await card.click();
     break;
   }
-  await page.getByRole('button', { name: /^add to cart$/i }).first().waitFor({ timeout: 25000 });
-  await page.getByRole('button', { name: /^add to cart$/i }).first().click();
+  await page.getByRole('button', { name: /^add to cart\b/i }).first().waitFor({ timeout: 25000 });
+  await page.getByRole('button', { name: /^add to cart\b/i }).first().click();
   await page.waitForTimeout(1200);
   const keep = page.getByRole('button', { name: /continue shopping|close/i }).first();
   if (await keep.count()) await keep.click().catch(() => {});

@@ -4,6 +4,8 @@ import { useCart, type CartItem } from '../context/CartContext';
 import { useCheckout } from '../context/CheckoutContext';
 import ProductImage from './ProductImage';
 import { gbp, type CheckoutTotals } from '../lib/checkoutTotals';
+import AnimatedPrice from './ui/AnimatedPrice';
+
 
 /**
  * The checkout's order summary: compact lines, the promo code, the totals.
@@ -114,7 +116,7 @@ function PromoCode({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-function TotalRow({ label, value, tone }: { label: string; value: string; tone?: 'saving' }) {
+function TotalRow({ label, value, tone }: { label: string; value: React.ReactNode; tone?: 'saving' }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', fontFamily: 'var(--font-body)', fontSize: '13px', lineHeight: 1.4, color: tone ? 'var(--color-trust-text)' : 'var(--grey-60)' }}>
       <span>{label}</span>
@@ -131,14 +133,14 @@ function TotalRow({ label, value, tone }: { label: string; value: string; tone?:
 export function TotalsRows({ totals, couponCode }: { totals: CheckoutTotals; couponCode?: string | null }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <TotalRow label="Subtotal" value={gbp(totals.subtotal)} />
+      <TotalRow label="Subtotal" value={<AnimatedPrice value={totals.subtotal} decimals={2} />} />
       {totals.discount > 0 && (
         <TotalRow label={couponCode ? `Discount (${couponCode})` : 'Discount'} value={`−${gbp(totals.discount)}`} tone="saving" />
       )}
       <TotalRow label="Shipping" value={totals.shippingCost === 0 ? 'FREE' : gbp(totals.shippingCost)} />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderTop: '1px solid var(--grey-10)', paddingTop: '10px', marginTop: '4px' }}>
         <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)' }}>Total</span>
-        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', letterSpacing: '-0.01em' }}>{gbp(totals.total)}</span>
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', letterSpacing: '-0.01em' }}><AnimatedPrice value={totals.total} decimals={2} /></span>
       </div>
       <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', textAlign: 'right' }}>
         All prices include VAT
@@ -196,7 +198,7 @@ export function OrderSummaryToggle({ totals }: { totals: CheckoutTotals }) {
           {open ? 'Hide' : 'Show'} order summary ({count} {count === 1 ? 'item' : 'items'})
         </span>
         <ChevronDown size={16} aria-hidden="true" style={{ color: 'var(--brand-cyan-hover)', transform: open ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s', flexShrink: 0 }} />
-        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)', whiteSpace: 'nowrap' }}>{gbp(totals.total)}</span>
+        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)', whiteSpace: 'nowrap' }}><AnimatedPrice value={totals.total} decimals={2} /></span>
       </button>
       {open && (
         <div id="checkout-summary-mobile" style={{ borderTop: '1px solid var(--grey-10)', padding: '12px 14px 14px' }}>

@@ -46,8 +46,8 @@ for (let i = 0, n = await cards.count(); i < n && !opened; i++) {
   opened = true;
 }
 if (!opened) throw new Error('no in-stock product on /products');
-await page.getByRole('button', { name: /^add to cart$/i }).first().waitFor({ timeout: 25000 });
-await page.getByRole('button', { name: /^add to cart$/i }).first().click();
+await page.getByRole('button', { name: /^add to cart\b/i }).first().waitFor({ timeout: 25000 });
+await page.getByRole('button', { name: /^add to cart\b/i }).first().click();
 await page.waitForTimeout(1400);
 const keepShopping = page.getByRole('button', { name: /continue shopping|close/i }).first();
 if (await keepShopping.count()) await keepShopping.click().catch(() => {});

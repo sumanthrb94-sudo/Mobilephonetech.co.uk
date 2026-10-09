@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import ProductImage from './ProductImage';
+import AnimatedPrice from './ui/AnimatedPrice';
+
 
 /**
  * CartPage — Amazon-style full-page shopping cart.
@@ -252,7 +254,7 @@ export default function CartPage() {
                           whiteSpace: 'nowrap',
                         }}
                       >
-                        £{(item.price * item.quantity).toFixed(2)}
+                        <AnimatedPrice value={item.price * item.quantity} decimals={2} />
                       </p>
                     </div>
 
@@ -433,7 +435,7 @@ export default function CartPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: 'var(--spacing-20)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)' }}>
                   <span>Items ({itemCount})</span>
-                  <span style={{ fontWeight: 600, color: 'var(--black)' }}>£{cartTotal.toFixed(2)}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--black)' }}><AnimatedPrice value={cartTotal} decimals={2} /></span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)' }}>
                   <span>Shipping</span>
@@ -470,7 +472,7 @@ export default function CartPage() {
                     letterSpacing: '-0.02em',
                   }}
                 >
-                  £{cartTotal.toFixed(2)}
+                  <AnimatedPrice value={cartTotal} decimals={2} />
                 </span>
               </div>
 

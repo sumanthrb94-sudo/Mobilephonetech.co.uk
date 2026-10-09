@@ -33,7 +33,7 @@ export interface StickyBuyBarProps {
   watch: React.RefObject<HTMLElement | null>;
   /** Shown on desktop, where there is room to say what is being bought. */
   title?: string;
-  price: string;
+  price: React.ReactNode;
   originalPrice?: string | null;
   label: string;
   disabled?: boolean;

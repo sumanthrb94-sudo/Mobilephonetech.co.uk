@@ -43,6 +43,7 @@ import PdpGradeVisualizer from './pdp/PdpGradeVisualizer';
 import PdpWhyRefurbishedBento from './pdp/PdpWhyRefurbishedBento';
 import PdpLabInspectionReel from './pdp/PdpLabInspectionReel';
 import { chargerUpsellFor } from '../lib/chargerUpsell';
+import AnimatedPrice from './ui/AnimatedPrice';
 
 function TabPanel({
   phone, reviews, setReviews,
@@ -337,6 +338,10 @@ export default function ProductDetail() {
   const displayStock = selectedVariant?.stock ?? phone?.stock ?? 0;
   const savings = displayOriginalPrice - displayPrice;
   const chargerUpsell = phone ? chargerUpsellFor(phone, catalogue) : null;
+  // What Add to cart will actually put in the basket: the phone at the chosen
+  // quantity, plus the charger when it is ticked. The button and the sticky
+  // bar show this, so ticking the charger visibly moves the figure.
+  const buyTotal = Math.round((displayPrice * quantity + (includeCharger && chargerUpsell ? chargerUpsell.product.price : 0)) * 100) / 100;
   useSeo(phone
     ? { ...productSeo({ ...phone, price: displayPrice, originalPrice: displayOriginalPrice, stock: displayStock, batteryHealth: displayBatteryHealth }),
         jsonLd: [
@@ -513,7 +518,7 @@ export default function ProductDetail() {
         <div className="pdp-price-block" style={{ paddingBottom: 'var(--spacing-16)', borderBottom: '1px solid var(--grey-10)' }}>
           <div className="pdp-price-block__line" style={{ display: 'flex', alignItems: 'baseline', gap: '16px', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '16px', minWidth: 0 }}>
-              <span style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }}>£{displayPrice}</span>
+              <AnimatedPrice value={displayPrice} style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 900, color: 'var(--brand-header)', letterSpacing: '-0.02em' }} />
               {savings > 0 && (
                 <span style={{ fontFamily: 'var(--font-body)', fontSize: 'clamp(16px, 2vw, 20px)', fontWeight: 600, color: 'var(--grey-40)' }}>
                   <span style={{ textDecoration: 'line-through' }}>£{displayOriginalPrice}</span>
@@ -917,7 +922,7 @@ export default function ProductDetail() {
                   className="btn btn-primary btn-lg"
                   style={{ flex: 1, minWidth: 0 }}
                 >
-                  Add to cart
+                  Add to cart · <AnimatedPrice value={buyTotal} />
                 </button>
                 )}
 
@@ -1001,7 +1006,7 @@ export default function ProductDetail() {
           <StickyBuyBar
             watch={addToCartRef}
             title={`${phone.brand} ${phone.model}`}
-            price={`£${displayPrice}`}
+            price={<AnimatedPrice value={buyTotal} />}
             originalPrice={savings > 0 ? `£${displayOriginalPrice}` : null}
             label="Add to cart"
             onAdd={handleAddToCart}

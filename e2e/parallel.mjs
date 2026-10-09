@@ -101,7 +101,7 @@ await Promise.all([
     await admin.waitForTimeout(1200);
   })(),
   (async () => {
-    await cust.getByRole('button', { name: /^add to cart$/i }).first().click();
+    await cust.getByRole('button', { name: /^add to cart\b/i }).first().click();
     await cust.waitForTimeout(1200);
     const close = cust.getByRole('button', { name: /continue shopping|close/i }).first();
     if (await close.count()) await close.click().catch(() => {});

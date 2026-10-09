@@ -151,7 +151,7 @@ if (products.length === 1) {
     'aggregateRating present — only real review data may put it back');
 }
 
-await page.getByRole('button', { name: /^add to cart$/i }).first().click().catch(() => {});
+await page.getByRole('button', { name: /^add to cart\b/i }).first().click().catch(() => {});
 await page.waitForTimeout(1200);
 
 // The auth modal's Google button is the flow that needs apis.google.com and
