@@ -33,3 +33,4 @@ deploy/listmonk/.env
 graphify-out/
 dist-reports/
 .vercel
+.claude/worktrees/

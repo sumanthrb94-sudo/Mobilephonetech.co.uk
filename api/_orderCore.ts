@@ -162,12 +162,20 @@ export async function priceAndValidate(
     // A draft has no real price yet; it must never be orderable, even by a
     // client that knows its id.
     if (product.listed === false) return fail(400, 'That product is no longer available');
+    const variants: any[] = Array.isArray(product.variants) ? product.variants.filter(Boolean) : [];
     const variantId = clean(line.variantId, 200);
-    const variant = variantId && Array.isArray(product.variants)
-      ? product.variants.find((v: any) => v?.id === variantId) ?? null
-      : null;
-    if (variantId && Array.isArray(product.variants) && product.variants.length > 0 && !variant) {
-      return fail(400, 'That configuration is no longer available');
+    // A product with configurations is priced per configuration; its base
+    // price is only the cheapest one ("from £…"). Without a variant id the
+    // order would be charged that and labelled with whatever storage the
+    // request claimed, so a line must name its configuration — unless there
+    // is only one, which is then the one being bought.
+    const variant = variantId
+      ? variants.find((v) => v?.id === variantId) ?? null
+      : variants.length === 1 ? variants[0] : null;
+    if (variants.length > 0 && !variant) {
+      return fail(400, variantId
+        ? 'That configuration is no longer available'
+        : `Choose a configuration for ${product.brand ?? ''} ${product.model ?? ''}`.trim());
     }
 
     // An unpriced configuration is not on offer (see productMapper.isOffered),
@@ -197,9 +205,11 @@ export async function priceAndValidate(
       quantity,
       imageUrl: product.imageUrl ?? null,
       grade: product.grade ?? null,
-      selectedColor: clean(line.selectedColor, 60) || null,
-      selectedStorage: clean(line.selectedStorage, 60) || null,
-      selectedCondition: clean(line.selectedCondition, 60) || null,
+      // What staff pack comes from the configuration that was priced, never
+      // from labels the request supplied.
+      selectedColor: (variant ? clean(variant.color, 60) : clean(line.selectedColor, 60)) || null,
+      selectedStorage: (variant ? clean(variant.storage, 60) : clean(line.selectedStorage, 60)) || null,
+      selectedCondition: (variant ? clean(variant.condition, 60) : clean(line.selectedCondition, 60)) || null,
     });
   }
 

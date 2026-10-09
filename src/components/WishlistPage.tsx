@@ -48,9 +48,14 @@ export default function WishlistPage() {
 
   const moveAllToCart = () => {
     if (items.length === 0) return;
-    items.forEach((p) => addToCart(p, 1));
-    items.forEach((p) => removeFromWishlist(p.id));
-    showToast(`${items.length} item${items.length === 1 ? '' : 's'} moved to cart`, 'success');
+    // A phone sold in several configurations needs one chosen on its page;
+    // checkout refuses a line that does not name it.
+    const ready = items.filter((p) => (p.variants?.length ?? 0) <= 1);
+    const choose = items.length - ready.length;
+    ready.forEach((p) => addToCart(p, 1));
+    ready.forEach((p) => removeFromWishlist(p.id));
+    if (ready.length) showToast(`${ready.length} item${ready.length === 1 ? '' : 's'} moved to cart`, 'success');
+    if (choose) showToast(`Choose storage and colour for ${choose} item${choose === 1 ? '' : 's'} on ${choose === 1 ? 'its' : 'their'} page`, 'info');
   };
 
   return (
