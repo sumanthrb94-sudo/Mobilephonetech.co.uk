@@ -6,10 +6,18 @@ import { defineConfig } from 'vite';
 /**
  * vite.config — vendor chunks for cache longevity.
  *
- * motion/framer-motion is intentionally merged into vendor rather than
- * kept in its own chunk. A separate motion chunk causes a circular
- * dependency (motion → vendor → motion) that triggers a Temporal Dead
- * Zone ReferenceError at runtime and crashes the app on load.
+ * Only libraries the first paint genuinely needs get a named chunk (react,
+ * router, lucide, firebase). Everything else is left to Rollup, which keeps
+ * a dependency beside the code that imports it — so a library reached only
+ * through a dynamic import (firebase/analytics after consent, animejs in the
+ * hero's lazy chunk, leaflet, xlsx) stays out of the startup download. The
+ * old catch-all `vendor` chunk was modulepreloaded on every page and pulled
+ * all of those back in, defeating every lazy import in the app.
+ *
+ * motion is deliberately NOT given a chunk of its own. A separate motion
+ * chunk caused a circular dependency (motion → vendor → motion) that
+ * triggered a Temporal Dead Zone ReferenceError at runtime and crashed the
+ * app on load. Left unassigned it travels with its importers instead.
  */
 
 const apiProxy = {
@@ -28,6 +36,11 @@ export default defineConfig(() => {
       },
     },
     build: {
+      // Hashed output gets a directory of its own so vercel.json can mark
+      // exactly these files immutable. public/assets holds hand-named files
+      // (campaign art, product photos) that change in place under the same
+      // URL; a year-long immutable cache there kept serving the old picture.
+      assetsDir: 'static',
       cssCodeSplit: true,
       sourcemap: false,
       target: 'es2020',
@@ -55,7 +68,15 @@ export default defineConfig(() => {
               id.includes('react-dom') ||
               id.includes('scheduler')
             ) return 'react';
-            return 'vendor';
+            // Analytics (and the installations service it alone uses) is
+            // imported dynamically, after cookie consent. Naming it here would
+            // put it straight back on the critical path.
+            if (/\/(@firebase\/|firebase\/)(analytics|installations)\//.test(id)) return undefined;
+            // The SDK pieces src/lib/firebase.ts initialises at startup, plus
+            // the small packages they bring with them. A chunk of their own
+            // survives app deploys in the browser cache.
+            if (/\/(@firebase|firebase|idb|tslib|re2js)\//.test(id)) return 'firebase';
+            return undefined;
           },
         },
       },
