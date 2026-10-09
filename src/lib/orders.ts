@@ -1,5 +1,6 @@
 import { collection, getDocs, query, limit as fsLimit } from 'firebase/firestore';
 import { auth, db, COL } from './firebase';
+import { sanitiseLocation } from '../utils/address';
 
 /**
  * Order management, staff side.
@@ -20,6 +21,8 @@ export interface AdminOrder {
   contactEmail: string;
   customer: string;
   address: string[];
+  /** The customer's map pin, when they moved it to their door. */
+  pin?: { lat: number; lng: number };
   items: Array<{ productId?: string; name: string; quantity: number; price: number; buyPrice?: number; sku?: string; imei?: string; color?: string; storage?: string; grade?: string }>;
   paypalOrderId?: string;
   courier?: string | null;
@@ -104,6 +107,12 @@ export function gbp(value: number): string {
   return `£${Number(value ?? 0).toFixed(2)}`;
 }
 
+/** Only a pin the customer actually placed; the postcode centre adds nothing. */
+function pinOf(raw: unknown): { lat: number; lng: number } | undefined {
+  const pin = sanitiseLocation(raw);
+  return pin?.pinned ? { lat: pin.lat, lng: pin.lng } : undefined;
+}
+
 function line(value: unknown): string {
   return String(value ?? '').trim();
 }
@@ -127,6 +136,7 @@ export async function listOrders(): Promise<AdminOrder[]> {
           line(addr.addressLine1), line(addr.addressLine2),
           line(addr.city), line(addr.postalCode), line(addr.country),
         ].filter(Boolean),
+        pin: pinOf(addr.location),
         items: (Array.isArray(o.items) ? o.items : []).map((i: Record<string, any>) => ({
           productId: String(i.productId ?? i.id ?? ''),
           name: [i.brand, i.model].filter(Boolean).join(' ') || String(i.name ?? i.productId ?? 'Item'),

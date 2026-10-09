@@ -26,8 +26,17 @@
 //  2. A CHECKOUT MUST SURVIVE ITS DEPENDENCIES. Every failure has to leave
 //     the form exactly as usable as it was, with a message saying so.
 //
-//  3. NOBODY PAYS FOR THE MAP UNLESS THEY ASK. Leaflet is ~148KB and must
-//     only be fetched once a lookup has actually succeeded.
+//  3. NOBODY PAYS FOR THE MAP UNTIL THERE IS A PLACE TO SHOW. Leaflet is
+//     ~148KB and must only be fetched once a lookup has actually succeeded.
+//
+//  4. THE PIN IS THE POINT. The map's pin is draggable (or tap to place) and
+//     where the customer leaves it travels with the address, so staff can
+//     see the door. And when the tiles cannot load, the map steps aside and
+//     the form carries on without it.
+//
+// There is one postcode box now — the lookup runs from the Postcode field
+// itself once it holds a whole postcode — so the separate "Postcode lookup"
+// box and Find address button this suite used to drive are gone.
 import { chromium } from 'playwright';
 import { resolveChromium } from './chromium-path.mjs';
 
@@ -56,8 +65,11 @@ const HIT = {
   },
 };
 
+/** A 1x1 PNG, standing in for an OpenStreetMap tile. */
+const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+
 /** A browser sitting on the checkout's shipping step, with the API stubbed. */
-async function checkoutWith(browser, mode) {
+async function checkoutWith(browser, mode, { tiles = 'ok' } = {}) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await ctx.newPage();
   const calls = [];
@@ -73,6 +85,10 @@ async function checkoutWith(browser, mode) {
     if (mode === 'down') return route.abort('failed');
     return route.continue();
   });
+  // Tiles stubbed too: this machine may have no egress, and "the tiles did
+  // not come" is a case worth asserting on purpose rather than by accident.
+  await page.route('**tile.openstreetmap.org/**', (route) =>
+    tiles === 'ok' ? route.fulfill({ status: 200, contentType: 'image/png', body: TILE }) : route.abort('failed'));
 
   await page.goto(`${BASE}/products`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2000);
@@ -101,15 +117,6 @@ async function checkoutWith(browser, mode) {
     await page.waitForTimeout(1500);
   }
 
-  // The form is seeded with a demo address; empty it so a fill is visible
-  // rather than indistinguishable from what was already there.
-  await page.evaluate(() => {
-    for (const n of ['city', 'postalCode', 'addressLine1', 'addressLine2']) {
-      const el = document.querySelector(`input[name="${n}"]`);
-      if (el) el.value = '';
-    }
-  });
-
   return { page, ctx, calls, leafletFetched };
 }
 
@@ -119,12 +126,14 @@ const readForm = (page) => page.evaluate(() => ({
   line1: document.querySelector('input[name="addressLine1"]')?.value ?? '',
   line2: document.querySelector('input[name="addressLine2"]')?.value ?? '',
   hasMap: !!document.querySelector('[data-testid="address-map"]'),
+  mapUnavailable: !!document.querySelector('[data-testid="address-map-unavailable"]'),
+  lookupBoxes: document.querySelectorAll('input[name="postcodeLookup"]').length,
   alert: document.querySelector('[role="alert"]')?.textContent?.trim() ?? null,
 }));
 
 async function lookup(page, value) {
-  await page.locator('#postcode-lookup').fill(value);
-  await page.getByRole('button', { name: /find address/i }).click();
+  await page.locator('input[name="postalCode"]').fill(value);
+  await page.locator('input[name="postalCode"]').press('Tab');
   await page.waitForTimeout(2200);
 }
 
@@ -138,11 +147,44 @@ async function run() {
     const f = await readForm(page);
     rec('a known postcode fills the town', 'Westminster', f.city, 'post_town was null; admin_district used');
     rec('and the postcode itself', 'NW1 6XE', f.postal);
-    rec('and puts the county on line 2', 'London', f.line2);
+    // Line 2 is for a flat or building now; the county is shown beside the
+    // postcode instead of being written into somebody's address.
+    rec('and leaves line 2 alone', '', f.line2);
     rec('but never invents a street', '', f.line1);
     rec('and shows the map', true, f.hasMap);
+    rec('with one postcode box, not two', 0, f.lookupBoxes);
     rec('having called the service once', 1, calls.length);
     rec('and only now fetched Leaflet', true, leafletFetched.length > 0, `${leafletFetched.length} request(s)`);
+
+    // Tap the map off-centre: the pin moves there and is saved as placed.
+    const box = await page.locator('[data-testid="address-map"]').boundingBox();
+    await page.mouse.click(box.x + box.width * 0.75, box.y + box.height * 0.7);
+    await page.waitForTimeout(400);
+    await page.locator('input[name="fullName"]').fill('Pin Tester');
+    await page.locator('input[name="phone"]').fill('07700 900123');
+    await page.locator('input[name="addressLine1"]').fill('1 Test Terrace');
+    await page.getByRole('button', { name: /continue to payment/i }).click();
+    await page.waitForTimeout(1200);
+    const saved = await page.evaluate(() => {
+      try { return JSON.parse(localStorage.getItem('mt_shipping_address')).address.location; } catch { return null; }
+    });
+    rec('a placed pin travels with the address',
+      true,
+      Boolean(saved && saved.pinned === true && Math.abs(saved.lat - 51.5237) > 1e-6),
+      JSON.stringify(saved));
+    await ctx.close();
+  }
+
+  // ── The tiles do not load ─────────────────────────────────────────
+  {
+    const { page, ctx } = await checkoutWith(browser, 'hit', { tiles: 'down' });
+    await lookup(page, 'NW1 6XE');
+    await page.waitForTimeout(1500);
+    const f = await readForm(page);
+    rec('dead tiles: the map steps aside and says so', [false, true], [f.hasMap, f.mapUnavailable]);
+    rec('and the lookup still filled the town', 'Westminster', f.city);
+    await page.locator('input[name="addressLine1"]').fill('221B Baker Street');
+    rec('and the form is still fillable', '221B Baker Street', (await readForm(page)).line1);
     await ctx.close();
   }
 
@@ -152,7 +194,8 @@ async function run() {
     await lookup(page, 'ZZ1 1ZZ');
     const f = await readForm(page);
     rec('an unknown postcode says so', true, /could not find/i.test(f.alert ?? ''), f.alert ?? 'no alert');
-    rec('and fills nothing', ['', '', ''], [f.city, f.postal, f.line1]);
+    // The box is the postcode field itself now, so what was typed stays put.
+    rec('and fills nothing', ['', 'ZZ1 1ZZ', ''], [f.city, f.postal, f.line1]);
     rec('and draws no map', false, f.hasMap);
     await ctx.close();
   }

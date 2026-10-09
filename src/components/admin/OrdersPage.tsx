@@ -9,6 +9,7 @@ import {
   type AdminOrder,
 } from '../../lib/orders';
 import { describeError } from '../../lib/adminApi';
+import { pinMapUrl } from '../../utils/address';
 
 type Filter = 'open' | 'dispatched' | 'out-for-delivery' | 'delivered' | 'refunded' | 'all';
 
@@ -407,7 +408,12 @@ export default function OrdersPage() {
                   <div className="ord-facts">
                     <span className="ord-fact">
                       <MapPin size={15} />
-                      <span>{order.address.join(', ') || 'No address recorded'}</span>
+                      <span>
+                        {order.address.join(', ') || 'No address recorded'}
+                        {order.pin && (
+                          <> · <a href={pinMapUrl(order.pin)} target="_blank" rel="noopener noreferrer">View pin on map</a></>
+                        )}
+                      </span>
                     </span>
                     <span className="ord-fact">
                       <Mail size={15} />

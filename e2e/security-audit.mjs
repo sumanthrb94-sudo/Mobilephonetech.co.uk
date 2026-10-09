@@ -200,6 +200,27 @@ check('EXPLOIT', 'Customer adds an unexpected field to a return',
 check('EXPLOIT', 'Customer re-arms their welcome email',
   await attemptUpdateAs(CUSTOMER_EMAIL, `users/${customerUid}`, { welcomeEmailSentAt: null }));
 
+// The saved delivery address is written by checkout and My Account, and
+// staff open its pin before booking a courier — so its shape is checked.
+// The control proves the exact shape the app writes is accepted.
+const ownAddress = {
+  line1: '1 Test Terrace', line2: '', city: 'London', postcode: 'NW1 6XE', country: 'United Kingdom',
+  location: { lat: 51.5237, lng: -0.1585, pinned: true },
+};
+check('CONTROL', 'Customer saves their own delivery address with a map pin',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `users/${customerUid}`, { address: ownAddress }));
+
+check('EXPLOIT', 'Customer smuggles an extra field into their saved address',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `users/${customerUid}`, { address: { ...ownAddress, verifiedBy: 'staff' } }));
+
+check('EXPLOIT', 'Customer saves a map pin that is not a place on Earth',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `users/${customerUid}`, {
+    address: { ...ownAddress, location: { lat: 999.5, lng: -0.1585, pinned: true } },
+  }));
+
+check('EXPLOIT', 'Customer stores an oversized address line',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `users/${customerUid}`, { address: { ...ownAddress, line1: 'x'.repeat(5000) } }));
+
 // PATCH, not POST-with-id. The first version of this check used POST and
 // "passed" on a 409 ALREADY_EXISTS — a conflict, not a refusal. It proved
 // nothing about the rules while reporting a clean result.
