@@ -72,8 +72,27 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="dns-prefetch" href="https://placehold.co" />
+    <!-- Both families are variable fonts: Google serves the same files for a
+         weight range as for a list of weights, but the list version spells
+         out a separate @font-face per weight per subset — 27KB of render-
+         blocking CSS against 5KB. Nothing on the site uses Nunito Sans 300. -->
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400..900&family=Nunito+Sans:wght@400..700&display=swap" rel="stylesheet" />
+    <!-- The first hero slide is the largest paint on the home page, but the
+         <img> for it lives in a lazily loaded chunk three imports deep, so
+         the browser would not hear of it until most of the JavaScript had
+         run. These hand it over at parse time, one per art-directed frame
+         (only the matching media query fetches). They must stay in step with
+         BUILT_IN_SLIDES[0] and the SIZES_* values in HeroCarousel.tsx;
+         managed banners are seeded from that same set. -->
+    <link rel="preload" as="image" type="image/avif" fetchpriority="high" media="(max-width: 1023px)"
+          imagesrcset="/assets/responsive/hero-campaign-apple-mobile-safe-20261004-640w.avif 640w, /assets/responsive/hero-campaign-apple-mobile-safe-20261004-828w.avif 828w, /assets/responsive/hero-campaign-apple-mobile-safe-20261004-1122w.avif 1122w"
+          imagesizes="100vw" />
+    <link rel="preload" as="image" type="image/avif" fetchpriority="high" media="(min-width: 1024px) and (max-width: 1599px)"
+          imagesrcset="/assets/responsive/hero-campaign-apple-desktop-20261004-828w.avif 828w, /assets/responsive/hero-campaign-apple-desktop-20261004-1280w.avif 1280w, /assets/responsive/hero-campaign-apple-desktop-20261004-1600w.avif 1600w, /assets/responsive/hero-campaign-apple-desktop-20261004-2172w.avif 2172w"
+          imagesizes="(max-width: 1104px) 100vw, 1104px" />
+    <link rel="preload" as="image" type="image/avif" fetchpriority="high" media="(min-width: 1600px)"
+          imagesrcset="/assets/responsive/hero-campaign-apple-desktop-4x16-20261004-1600w.avif 1600w, /assets/responsive/hero-campaign-apple-desktop-4x16-20261004-1920w.avif 1920w"
+          imagesizes="1530px" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="canonical" href="https://lehart.co.uk/" />

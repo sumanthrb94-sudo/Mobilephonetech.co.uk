@@ -1,5 +1,6 @@
 import { ShieldCheck, RefreshCw, Truck, Users, BadgeCheck } from 'lucide-react';
 import { motion } from 'motion/react';
+import { RESPONSIVE_IMAGES } from '../data/responsiveImages';
 
 /**
  * TrustSection — BM spec Section 5 "Value Proposition"
@@ -52,6 +53,11 @@ const STATS = [
   { value: '16K+', label: 'Devices sold' },
   { value: '70pt',  label: 'Inspection standard' },
 ];
+
+const INSPECTION_SRC = '/assets/quality-inspection.png';
+const INSPECTION = RESPONSIVE_IMAGES[INSPECTION_SRC];
+// Half the content column from lg up, full width beneath it.
+const INSPECTION_SIZES = '(min-width: 1024px) 600px, 100vw';
 
 export default function TrustSection() {
   return (
@@ -214,12 +220,22 @@ export default function TrustSection() {
                 position: 'relative',
               }}
             >
-              <img
-                src="/assets/quality-inspection.png"
-                alt="Our quality inspection process"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                referrerPolicy="no-referrer"
-              />
+              {/* Below the fold, so it waits its turn; the original 692KB
+                  file stays as the fallback for anything without AVIF/WebP. */}
+              <picture>
+                <source type="image/avif" srcSet={INSPECTION.avif} sizes={INSPECTION_SIZES} />
+                <source type="image/webp" srcSet={INSPECTION.webp} sizes={INSPECTION_SIZES} />
+                <img
+                  src={INSPECTION_SRC}
+                  alt="Our quality inspection process"
+                  width={INSPECTION.width}
+                  height={INSPECTION.height}
+                  loading="lazy"
+                  decoding="async"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  referrerPolicy="no-referrer"
+                />
+              </picture>
               {/* Gradient overlay */}
               <div
                 style={{
