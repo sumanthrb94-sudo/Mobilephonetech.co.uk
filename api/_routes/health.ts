@@ -1,4 +1,4 @@
-import { adminAuth, adminDb, getAdminInitError } from '../_firebaseAdmin.js';
+import { adminAuth, adminDb, callerIsAdmin, getAdminInitError } from '../_firebaseAdmin.js';
 import { emailConfigured, emailProvider, senderDomainWarning } from '../_email.js';
 import { previewModeFrom } from '../../src/config/preview.js';
 import { paypalConfigured, paypalEnv } from '../_paypal.js';
@@ -16,6 +16,11 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  // The full report names sender addresses, the payment environment and raw
+  // errors: useful to staff (the dashboard reads it), a map for anyone else.
+  // The public get only the verdict.
+  const staff = await callerIsAdmin(req).catch(() => false);
 
   // Never cache: a stale "ok" is worse than no health check at all.
   res.setHeader('Cache-Control', 'no-store, max-age=0');
@@ -64,7 +69,7 @@ export default async function handler(req: any, res: any) {
   if (!db) {
     checks.database = 'unconfigured';
     checks.detail = getAdminInitError() ?? 'FIREBASE_SERVICE_ACCOUNT missing from the environment';
-    return res.status(503).json({ status: 'degraded', checks });
+    return send(res, 503, 'degraded', checks, staff);
   }
 
   const started = Date.now();
@@ -95,14 +100,19 @@ export default async function handler(req: any, res: any) {
 
     if (!products) {
       checks.detail = 'products collection is empty — run scripts/seed-firestore.mjs';
-      return res.status(503).json({ status: 'degraded', checks });
+      return send(res, 503, 'degraded', checks, staff);
     }
 
-    return res.status(200).json({ status: 'ok', checks });
+    return send(res, 200, 'ok', checks, staff);
   } catch (err) {
     checks.database  = 'unreachable';
     checks.latencyMs = Date.now() - started;
     checks.detail    = err instanceof Error ? err.message : String(err);
-    return res.status(503).json({ status: 'degraded', checks });
+    return send(res, 503, 'degraded', checks, staff);
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function send(res: any, code: number, status: string, checks: Record<string, unknown>, staff: boolean) {
+  return res.status(code).json(staff ? { status, checks } : { status, checks: { database: checks.database ?? null } });
 }

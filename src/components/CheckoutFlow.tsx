@@ -10,6 +10,7 @@ import PayPalCheckout, { PayPalPayload, isPayPalConfigured } from './PayPalCheck
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
 import { estimateArrival } from '../../api/_deliveryEstimate';
+import { auth } from '../lib/firebase';
 
 // PayPal is the only payment gateway. This form NEVER collects card details.
 //
@@ -154,9 +155,10 @@ export default function CheckoutFlow() {
     if (!email || currentStep === 'cart' || currentStep === 'confirmation' || items.length === 0) return;
     if (cartEventSentFor.current === email) return;
     cartEventSentFor.current = email;
-    fetch('/api/cart-events', {
+    // The server records a basket only for the signed-in owner of the address.
+    void auth.currentUser?.getIdToken().then(token => fetch('/api/cart-events', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
       body: JSON.stringify({
         email,
         name: user?.fullName ?? null,
@@ -168,7 +170,7 @@ export default function CheckoutFlow() {
           selectedColor: i.selectedColor ?? null, selectedCondition: i.selectedCondition ?? null,
         })),
       }),
-    }).catch(() => { /* best-effort — a missed reminder is not a checkout error */ });
+    })).catch(() => { /* best-effort — a missed reminder is not a checkout error */ });
   }, [user?.email, user?.fullName, currentStep, items, cartTotal]);
 
   const [couponCode, setCouponCode] = useState('');

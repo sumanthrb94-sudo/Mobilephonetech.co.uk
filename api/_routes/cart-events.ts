@@ -1,4 +1,4 @@
-import { adminDb } from '../_firebaseAdmin.js';
+import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
 import { looksLikeEmail } from '../_email.js';
 import { upsertContact } from '../_brevoContacts.js';
@@ -59,6 +59,14 @@ export default async function handler(req: any, res: any) {
       console.error('[api/cart-events]', (err as Error).message);
     }
     return res.status(200).json({ ok: true, status: 'completed' });
+  }
+
+  // A reminder goes to this address in the shop's name, with the name, items
+  // and picture in the request. Unauthenticated, that let anyone have the
+  // shop mail a stranger — so only a signed-in shopper's own address counts.
+  const caller = await verifyCaller(req);
+  if (!caller?.email || caller.email.toLowerCase() !== email) {
+    return res.status(401).json({ error: 'Sign in to save your basket' });
   }
 
   const rawItems = Array.isArray(body.items) ? body.items.slice(0, MAX_LINES) : [];

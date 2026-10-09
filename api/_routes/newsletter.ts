@@ -1,4 +1,4 @@
-import { adminDb } from '../_firebaseAdmin.js';
+import { adminDb, verifyCaller } from '../_firebaseAdmin.js';
 import { enforceRateLimit, clientIp } from '../_rateLimit.js';
 import { sendEmail } from '../_email.js';
 import { upsertSubscriber } from '../_listmonk.js';
@@ -50,6 +50,21 @@ export default async function handler(req: any, res: any) {
     // and against which policy wording. An address with none of that attached
     // cannot be defended, which is why the pre-existing rows must be
     // re-permissioned rather than imported.
+    // An address that unsubscribed, or whose mail bounced or complained, is
+    // never switched back on by a form anyone can submit for it: that would
+    // let a stranger re-subscribe someone who opted out. Its owner can, signed
+    // in as that address.
+    const existing = await db.collection('newsletterSubscribers').doc(normalised).get();
+    const prior = existing.exists ? existing.data() ?? {} : null;
+    if (prior && prior.isActive === false && (prior.unsubscribedAt || prior.suppression)) {
+      const caller = await verifyCaller(req);
+      if (caller?.email?.toLowerCase() !== normalised) {
+        return res.status(409).json({
+          error: 'This address unsubscribed earlier. Sign in with it to subscribe again.',
+        });
+      }
+    }
+
     await db.collection('newsletterSubscribers').doc(normalised).set({
       email: normalised,
       name: name?.trim() ?? null,

@@ -6,6 +6,9 @@ import { resetRateLimits } from '../../../api/_rateLimit.js';
 // route actually uses.
 const added: Record<string, unknown>[] = [];
 const setDocs: Record<string, unknown>[] = [];
+/** The stored subscriber document, if any, that the route reads first. */
+let stored: Record<string, unknown> | null = null;
+let callerEmail: string | null = null;
 
 vi.mock('../../../api/_firebaseAdmin.js', () => ({
   adminDb: () => ({
@@ -15,6 +18,7 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
         return Promise.resolve({ id: 'mock-id' });
       },
       doc: () => ({
+        get: () => Promise.resolve({ exists: stored !== null, data: () => stored }),
         set: (data: Record<string, unknown>) => {
           setDocs.push(data);
           return Promise.resolve();
@@ -24,7 +28,7 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
   }),
   adminAuth: () => null,
   getAdminInitError: () => null,
-  verifyCaller: () => Promise.resolve(null),
+  verifyCaller: () => Promise.resolve(callerEmail ? { uid: 'u', email: callerEmail } : null),
   callerIsAdmin: () => Promise.resolve(false),
 }));
 
@@ -152,5 +156,36 @@ describe('POST /api/newsletter', () => {
       lastStatus = r.statusCode;
     }
     expect(lastStatus).toBe(429);
+  });
+});
+
+describe('an address that opted out', () => {
+  beforeEach(() => {
+    resetRateLimits();
+    setDocs.length = 0;
+    stored = { email: 'gone@example.com', isActive: false, unsubscribedAt: '2026-09-01T00:00:00Z' };
+    callerEmail = null;
+  });
+
+  it('is not re-subscribed by a form anyone can submit for it', async () => {
+    const r = res();
+    await handler(req('POST', { email: 'gone@example.com' }), r);
+    expect(r.statusCode).toBe(409);
+    expect(setDocs).toHaveLength(0);
+  });
+
+  it('can be re-subscribed by its owner, signed in as that address', async () => {
+    callerEmail = 'gone@example.com';
+    const r = res();
+    await handler(req('POST', { email: 'gone@example.com' }), r);
+    expect(r.statusCode).toBe(200);
+    expect(setDocs[0]).toMatchObject({ isActive: true });
+  });
+
+  it('a different signed-in account cannot re-subscribe it', async () => {
+    callerEmail = 'someone@example.com';
+    const r = res();
+    await handler(req('POST', { email: 'gone@example.com' }), r);
+    expect(r.statusCode).toBe(409);
   });
 });

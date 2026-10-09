@@ -45,6 +45,11 @@ function collection(name: string) {
       set: async (value: Doc, opts?: { merge?: boolean }) => {
         store[name][id] = opts?.merge ? { ...(store[name][id] ?? {}), ...value } : value;
       },
+      // Firestore's create(): refuses (code 6, ALREADY_EXISTS) if the doc exists.
+      create: async (value: Doc) => {
+        if (id in store[name]) throw Object.assign(new Error('already exists'), { code: 6 });
+        store[name][id] = value;
+      },
     }),
   };
 }

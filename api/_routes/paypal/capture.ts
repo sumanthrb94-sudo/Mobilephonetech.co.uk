@@ -61,13 +61,16 @@ async function recordIncident(db: any, kind: string, detail: Record<string, unkn
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function openCaptureAttempt(db: any, paypalOrderId: string, detail: Record<string, unknown>): Promise<void> {
   try {
-    await db.collection('payment_incidents').doc(paypalOrderId).set({
+    // create(), not set(): replaying a PayPal order id must never overwrite
+    // the record of an earlier attempt, resolved or not.
+    await db.collection('payment_incidents').doc(paypalOrderId).create({
       kind: 'capture-attempt',
       resolved: false,
       createdAt: new Date().toISOString(),
       ...detail,
     });
   } catch (err) {
+    if ((err as { code?: number }).code === 6) return; // ALREADY_EXISTS: keep the first record
     console.error(`[paypal/capture] could not open attempt ${paypalOrderId}:`, (err as Error).message);
   }
 }

@@ -40,7 +40,9 @@ function secretMatches(provided: string, expected: string): boolean {
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store, max-age=0');
 
-  if (req.method !== 'GET' && req.method !== 'POST') {
+  // POST only: a secret in a GET query string lands in access logs, browser
+  // history and any proxy along the way.
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -57,7 +59,7 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  const provided = String(req.query?.secret ?? req.body?.secret ?? '');
+  const provided = String(req.body?.secret ?? '');
   if (!provided || !secretMatches(provided, expected)) {
     // Deliberately identical to the disabled case, so probing cannot tell
     // "wrong secret" from "route off".
@@ -91,9 +93,20 @@ export default async function handler(req: any, res: any) {
     try {
       const user = await auth.getUserByEmail(email);
 
-      // setCustomUserClaims replaces the whole claims object, so send the full
-      // set rather than only the flag being changed.
-      await auth.setCustomUserClaims(user.uid, { admin: true });
+      // Whoever registers an address first owns that account. If an address
+      // on the list had no account yet, anyone could sign up with it and be
+      // promoted on the next run — so only a verified owner is.
+      if (!user.emailVerified) {
+        results.push({
+          email, status: 'not verified', uid: user.uid,
+          detail: 'Verify this address (the link in the sign-up email) and run again.',
+        });
+        continue;
+      }
+
+      // setCustomUserClaims replaces the whole claims object, so keep any
+      // others (an owner role) and add the flag.
+      await auth.setCustomUserClaims(user.uid, { ...(user.customClaims ?? {}), admin: true });
 
       // Mirror into the profile for display. The rules never read this — they
       // read the claim — but the console shows it.

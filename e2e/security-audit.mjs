@@ -57,6 +57,11 @@ await seedDoc('orders', 'ORD-MINE', {
   userId: customerUid, total: 759, subtotal: 759, status: 'confirmed',
   createdAt: new Date().toISOString(), items: [],
 });
+await seedDoc('conversations', customerUid, {
+  id: customerUid, userId: customerUid, customerName: 'Demo Customer', customerEmail: CUSTOMER_EMAIL,
+  lastMessage: 'Hi', lastMessageAt: new Date().toISOString(), lastSender: 'admin',
+  unreadForAdmin: 0, unreadForCustomer: 1, status: 'open',
+});
 await seedDoc('reviews', 'REV-1', {
   userId: customerUid, productId: 'apple-iphone-17', rating: 5,
   isVerified: false, body: 'Great', createdAt: new Date().toISOString(),
@@ -158,6 +163,43 @@ check('EXPLOIT', 'Customer awards their own review the Verified badge',
   await attemptUpdateAs(CUSTOMER_EMAIL, 'reviews/REV-1', { isVerified: true }),
   'create forces isVerified false, but update does not');
 
+check('EXPLOIT', 'Customer moves their verified review to another product',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'reviews/REV-1', { productId: 'samsung-galaxy-s23' }),
+  'then reviews the first product again: unlimited Verified reviews from one order');
+
+// A return exactly as the shop's own form builds it (src/lib/returns.ts).
+const ownReturn = (over = {}) => ({
+  id: 'RMA-X', orderId: 'ORD-MINE', userId: customerUid, customerName: 'Demo Customer',
+  customerEmail: CUSTOMER_EMAIL, items: [{ productId: 'apple-iphone-17', quantity: 1, price: 759 }],
+  reason: 'faulty', outcome: 'refund', legalBasis: 'short-term-right-to-reject', note: '',
+  photoUrls: [], status: 'requested',
+  history: [{ status: 'requested', at: new Date().toISOString(), by: 'customer' }],
+  refundAmount: 759, replacementOrderId: null, staffNote: null,
+  createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...over,
+});
+
+check('CONTROL', 'Customer raises a return on their own order, as the form does',
+  await attemptCreateAs(CUSTOMER_EMAIL, 'returns', ownReturn(), 'RMA-OWN'));
+
+check('EXPLOIT', 'Customer sends the return emails to someone else',
+  await attemptCreateAs(CUSTOMER_EMAIL, 'returns', ownReturn({ customerEmail: 'stranger@example.com' }), 'RMA-MAIL'),
+  'the shop would email a stranger in its own name');
+
+check('EXPLOIT', "Customer pre-writes the staff note quoted in the 'rejected' email",
+  await attemptCreateAs(CUSTOMER_EMAIL, 'returns', ownReturn({ staffNote: 'Your account is suspended, call 0900…' }), 'RMA-NOTE'));
+
+check('EXPLOIT', 'Customer plants a fake staff entry in the return history',
+  await attemptCreateAs(CUSTOMER_EMAIL, 'returns', ownReturn({
+    history: [{ status: 'requested', at: new Date().toISOString(), by: 'customer' },
+              { status: 'approved', at: new Date().toISOString(), by: 'staff' }],
+  }), 'RMA-HIST'));
+
+check('EXPLOIT', 'Customer adds an unexpected field to a return',
+  await attemptCreateAs(CUSTOMER_EMAIL, 'returns', ownReturn({ approvedBy: 'manager' }), 'RMA-EXTRA'));
+
+check('EXPLOIT', 'Customer re-arms their welcome email',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `users/${customerUid}`, { welcomeEmailSentAt: null }));
+
 // PATCH, not POST-with-id. The first version of this check used POST and
 // "passed" on a 409 ALREADY_EXISTS — a conflict, not a refusal. It proved
 // nothing about the rules while reporting a clean result.
@@ -186,6 +228,18 @@ check('EXPLOIT', 'Customer edits a message after the fact',
   await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}/messages/anything`, {
     body: 'edited',
   }));
+
+check('CONTROL', 'Customer marks their own support thread read',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, { unreadForCustomer: 0 }));
+
+check('EXPLOIT', 'Customer closes their own support thread (a staff decision)',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, { status: 'closed' }));
+
+check('EXPLOIT', 'Customer marks a message as the last word from staff',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, { lastSender: 'staff', lastMessage: 'Refund approved' }));
+
+check('EXPLOIT', 'Customer changes the email address on their support thread',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, { customerEmail: 'stranger@example.com' }));
 
 // ── API-level attacks ─────────────────────────────────────────
 // The rules stop the browser writing orders at all, so the attack surface

@@ -87,7 +87,7 @@ service cloud.firestore {
                     && (!request.resource.data.keys().hasAny(['role'])
                         || request.resource.data.role == 'customer');
       allow update: if isSelf(uid)
-                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'welcomeEmailSentAt']));
       allow delete: if false;
 
       // Cart and wishlist are private to their owner. Admins are deliberately
@@ -136,13 +136,11 @@ service cloud.firestore {
       // talking to Firestore instead of the API. The Admin SDK bypasses rules,
       // so the route still works.
       allow create: if false;
-      // The create rule forces isVerified false, but an update that could set
-      // it true would hand every reviewer the Verified Purchase badge — the
-      // exact trust signal the badge exists to provide. Only staff may move it.
-      allow update: if isAdmin()
-                    || (signedIn()
-                        && resource.data.userId == request.auth.uid
-                        && request.resource.data.isVerified == resource.data.isVerified);
+      // Only staff edit a review. A reviewer who could edit their own could
+      // move it to another product (productId) and then review the first one
+      // again, minting any number of Verified Purchase reviews from a single
+      // order — or attach any image. The shop has no edit-your-review screen.
+      allow update: if isAdmin();
       allow delete: if isAdmin();
     }
 
@@ -174,7 +172,24 @@ service cloud.firestore {
       // not taken on trust from the request: without this, anyone could raise a
       // return — and claim a refund — against a stranger's order number.
       // refundAmount is capped by what that order was actually worth.
+      // Only the fields a new request has (src/lib/returns.ts buildReturn),
+      // nothing staff-owned pre-filled, and replies go to the customer's own
+      // sign-in address: the return emails quote the stored address and staff
+      // note, so a forged pair would send official mail, in the shop's name,
+      // with the attacker's words, to anyone.
       allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly([
+                         'id', 'orderId', 'userId', 'customerName', 'customerEmail', 'items',
+                         'reason', 'outcome', 'legalBasis', 'note', 'photoUrls', 'status',
+                         'history', 'refundAmount', 'replacementOrderId', 'staffNote',
+                         'createdAt', 'updatedAt'])
+                    && request.resource.data.customerEmail == request.auth.token.email
+                    && request.resource.data.staffNote == null
+                    && request.resource.data.replacementOrderId == null
+                    && request.resource.data.history.size() == 1
+                    && request.resource.data.history[0].by == 'customer'
+                    && request.resource.data.photoUrls.size() <= 6
+                    && request.resource.data.note.size() <= 2000
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.status == 'requested'
                     && request.resource.data.outcome in ['refund', 'replacement', 'repair']
@@ -208,7 +223,17 @@ service cloud.firestore {
       allow create: if signedIn()
                     && convId == request.auth.uid
                     && request.resource.data.userId == request.auth.uid;
-      allow update: if isAdmin() || (signedIn() && convId == request.auth.uid);
+      // A customer's own edits are the ones sending a message or reading the
+      // thread makes (src/lib/support.ts); the rest of the thread is staff's.
+      allow update: if isAdmin()
+                    || (signedIn() && convId == request.auth.uid
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                             'lastMessage', 'lastMessageAt', 'lastSender', 'status',
+                             'unreadForAdmin', 'unreadForCustomer'])
+                        && (request.resource.data.lastSender == resource.data.lastSender
+                            || request.resource.data.lastSender == 'customer')
+                        && (request.resource.data.status == resource.data.status
+                            || request.resource.data.status == 'open'));
       allow delete: if isAdmin();
 
       match /messages/{messageId} {
