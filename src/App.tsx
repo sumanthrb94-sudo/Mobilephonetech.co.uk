@@ -4,10 +4,6 @@ import { lazyRoute } from './lib/lazyRoute';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Sidebar from './components/Sidebar';
-import ComparisonTool from './components/ComparisonTool';
-import CartDrawer from './components/CartDrawer';
-import AddedToCartModal from './components/AddedToCartModal';
-import CartPage from './components/CartPage';
 import CookieBanner from './components/layout/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import MobileBottomNav from './components/layout/MobileBottomNav';
@@ -30,6 +26,7 @@ import Toast from './components/Toast';
 import { PageLoading } from './components/ui/Loading';
 import { useSeo } from './hooks/useSeo';
 import { homeSeo } from './utils/seo';
+import { useLatch } from './hooks/useLatch';
 
 // Lazy load pages for performance
 const ProductDetail = lazyRoute(() => import('./components/ProductDetail'));
@@ -37,6 +34,11 @@ const ProductDetail = lazyRoute(() => import('./components/ProductDetail'));
 // shell means customers on checkout, account and admin routes never download
 // the home-page imagery, FAQ and editorial code.
 const HomeSections = lazyRoute(() => import('./components/HomeSections'));
+const ComparisonTool = lazyRoute(() => import('./components/ComparisonTool'));
+const CartPage = lazyRoute(() => import('./components/CartPage'));
+const loadAddedToCartModal = () => import('./components/AddedToCartModal');
+const CartDrawer = lazyRoute(() => import('./components/CartDrawer'));
+const AddedToCartModal = lazyRoute(loadAddedToCartModal);
 const ProductsPage = lazyRoute(() => import('./components/ProductsPage'));
 const CheckoutFlow = lazyRoute(() => import('./components/CheckoutFlow'));
 const WishlistPage = lazyRoute(() => import('./components/WishlistPage'));
@@ -108,7 +110,25 @@ function AnimatedPage({ children, paddingTop }: { children: React.ReactNode; pad
 }
 
 function AppContent() {
-  const { isCartOpen, setIsCartOpen, cartCount } = useCart();
+  const { isCartOpen, setIsCartOpen, cartCount, lastAddedItem } = useCart();
+  // Neither overlay is part of the first paint, so neither is in the entry
+  // bundle: each mounts the first time it is needed and stays mounted after.
+  const cartDrawerNeeded = useLatch(isCartOpen);
+  const addedModalNeeded = useLatch(Boolean(lastAddedItem));
+
+  // Fetch the basket confirmation once the page has settled, so the first
+  // "Add to cart" confirms as instantly as it did when it shipped in the
+  // entry bundle. (Nothing opens the drawer today, so it is left to load on
+  // demand.)
+  useEffect(() => {
+    const warm = () => { void loadAddedToCartModal(); };
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(warm, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = window.setTimeout(warm, 2500);
+    return () => window.clearTimeout(t);
+  }, []);
   const location = useLocation();
   const isCheckoutRoute = location.pathname.startsWith('/checkout');
   // The admin console keeps the navbar (admins still browse the shop) but drops
@@ -360,8 +380,16 @@ function AppContent() {
         </ErrorBoundary>
       </main>
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      <AddedToCartModal />
+      {cartDrawerNeeded && (
+        <Suspense fallback={null}>
+          <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        </Suspense>
+      )}
+      {addedModalNeeded && (
+        <Suspense fallback={null}>
+          <AddedToCartModal />
+        </Suspense>
+      )}
       {/* The shopping assistant is for shoppers. In the console it is not just
           irrelevant — its floating bubble sits over the row action buttons.
 
