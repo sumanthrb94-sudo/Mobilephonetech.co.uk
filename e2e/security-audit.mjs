@@ -15,7 +15,7 @@
 //             and the transport works, so a denial is a real denial.
 import {
   seed, waitForEmulators, seedDoc,
-  attemptCreateAs, attemptUpdateAs, attemptReadAs,
+  attemptCreateAs, attemptUpdateAs, attemptReadAs, readAs, tokenFor,
   ADMIN_EMAIL, CUSTOMER_EMAIL,
 } from './emulator-seed.mjs';
 
@@ -57,6 +57,30 @@ await seedDoc('orders', 'ORD-MINE', {
   userId: customerUid, total: 759, subtotal: 759, status: 'confirmed',
   createdAt: new Date().toISOString(), items: [],
 });
+// What a handset cost us, who sold it and its IMEI: staff data kept in
+// productPrivate because every product document is public.
+await seedDoc('productPrivate', 'apple-iphone-17', {
+  buyPrice: 480, supplier: 'MHL', imei: '356789012345678', sku: 'IP17-256', variants: {},
+});
+// One for the customer's own order below: the probes above use up the
+// iPhone's stock.
+await seedDoc('products', 'cost-probe-phone', {
+  model: 'Cost Probe', brand: 'Apple', category: 'Phones', price: 650, originalPrice: 700,
+  grade: 'Good', stock: 2, createdAt: '2025-01-02T00:00:00Z', specs: {},
+});
+await seedDoc('productPrivate', 'cost-probe-phone', { buyPrice: 480, variants: {} });
+// A product written before that split, still carrying its cost on the public
+// document. The catalogue routes must not serve it.
+await seedDoc('products', 'legacy-cost-phone', {
+  model: 'Legacy Phone', brand: 'Apple', category: 'Phones', price: 300, originalPrice: 400,
+  grade: 'Good', stock: 1, createdAt: '2025-01-01T00:00:00Z', specs: {},
+  buyPrice: 211, supplier: 'LEGACY-SUPPLIER', imei: '351111111111111', sku: 'LEGACY-SKU',
+  variants: [{
+    id: 'v1', price: 300, originalPrice: 400, stock: 1, condition: 'Good',
+    buyPrice: 211, supplier: 'LEGACY-SUPPLIER', notes: 'legacy note',
+    inventoryUnits: [{ id: 'u1', imei: '351111111111111', buyPrice: 211, status: 'available' }],
+  }],
+});
 await seedDoc('reviews', 'REV-1', {
   userId: customerUid, productId: 'apple-iphone-17', rating: 5,
   isVerified: false, body: 'Great', createdAt: new Date().toISOString(),
@@ -76,6 +100,12 @@ check('CONTROL', 'Anyone can read the public catalogue',
 check('CONTROL', 'Admin can write a product',
   await attemptUpdateAs(ADMIN_EMAIL, 'products/apple-iphone-17', { price: 700 }));
 
+check('CONTROL', 'Admin can read a product\'s costs',
+  await attemptReadAs(ADMIN_EMAIL, 'productPrivate/apple-iphone-17'));
+
+check('CONTROL', 'Admin can write a product\'s costs',
+  await attemptUpdateAs(ADMIN_EMAIL, 'productPrivate/apple-iphone-17', { buyPrice: 480 }));
+
 console.log('\n─── EXPLOITS: privilege and identity ───');
 
 check('EXPLOIT', 'Customer escalates their own role to admin',
@@ -87,6 +117,27 @@ check('EXPLOIT', 'Customer writes to the product catalogue',
 
 check('EXPLOIT', 'Customer reads the newsletter subscriber list',
   await attemptReadAs(CUSTOMER_EMAIL, 'newsletterSubscribers/victim@example.com'));
+
+console.log('\n─── EXPLOITS: the shop\'s costs and stock ledger ───');
+
+check('EXPLOIT', 'Anonymous visitor reads what a product cost',
+  await attemptReadAs(null, 'productPrivate/apple-iphone-17'));
+
+check('EXPLOIT', 'Customer reads what a product cost',
+  await attemptReadAs(CUSTOMER_EMAIL, 'productPrivate/apple-iphone-17'));
+
+check('EXPLOIT', 'Customer lists every product\'s cost',
+  await attemptReadAs(CUSTOMER_EMAIL, 'productPrivate'));
+
+check('EXPLOIT', 'Customer rewrites a product\'s cost',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'productPrivate/apple-iphone-17', { buyPrice: 1 }));
+
+{
+  const pub = (await readAs(null, 'products/apple-iphone-17')).data ?? {};
+  const leaked = ['buyPrice', 'supplier', 'imei', 'sku'].filter(k => k in pub);
+  check('EXPLOIT', 'Public product document carries a cost, supplier, IMEI or SKU',
+    leaked.length ? `ALLOWED:${leaked.join(',')}` : 'DENIED:not-on-public-doc');
+}
 
 console.log('\n─── EXPLOITS: reading other people\'s data (IDOR) ───');
 
@@ -275,6 +326,49 @@ if (!apiReachable) {
   check('CONTROL', 'A legitimate order still succeeds',
     (await postOrder({ items: [{ productId: 'apple-iphone-17', quantity: 1 }] })).status === 201
       ? 'ALLOWED' : 'DENIED');
+
+  console.log('\n─── API ATTACKS: costs on the shopper\'s side ───');
+
+  // A signed-in customer's order, so it is one they can read back directly.
+  probe += 1;
+  const mine = await fetch(`${API}/api/orders`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json', 'x-forwarded-for': `198.51.100.${probe}`,
+      authorization: `Bearer ${await tokenFor(CUSTOMER_EMAIL)}`,
+    },
+    body: JSON.stringify({
+      shippingAddress: ADDRESS, shippingOptionId: 'standard',
+      items: [{ productId: 'cost-probe-phone', quantity: 1 }],
+    }),
+  }).then(async r => ({ status: r.status, body: await r.json().catch(() => ({})) }), () => ({ status: 0, body: {} }));
+  const myOrderId = mine.body?.order?.id;
+  check('CONTROL', 'Customer places an order of their own', mine.status === 201 && myOrderId ? 'ALLOWED' : `DENIED:${mine.status}`);
+
+  check('EXPLOIT', 'Order confirmation sent to the browser includes the cost',
+    JSON.stringify(mine.body).includes('buyPrice') ? 'ALLOWED' : 'DENIED:stripped');
+
+  if (myOrderId) {
+    const own = await readAs(CUSTOMER_EMAIL, `orders/${myOrderId}`);
+    check('CONTROL', 'Customer can read that order back', own.status === 200 ? 'ALLOWED' : `DENIED:${own.status}`);
+    check('EXPLOIT', 'Customer reads what their order cost the shop',
+      JSON.stringify(own.data ?? {}).includes('buyPrice') ? 'ALLOWED' : 'DENIED:not-on-order');
+    check('EXPLOIT', 'Customer reads their order\'s private cost record',
+      await attemptReadAs(CUSTOMER_EMAIL, `orderPrivate/${myOrderId}`));
+    const costs = await readAs(ADMIN_EMAIL, `orderPrivate/${myOrderId}`);
+    check('CONTROL', 'Staff still see the cost the order was sold against',
+      costs.data?.items?.[0]?.buyPrice === 480 ? 'ALLOWED' : `DENIED:${JSON.stringify(costs.data)}`);
+  }
+
+  for (const path of ['/api/catalogue', '/api/products?limit=100']) {
+    const text = await fetch(`${API}${path}`, { headers: { 'x-forwarded-for': `198.51.100.${++probe}` } })
+      .then(r => r.text(), () => '');
+    const leaked = ['buyPrice', 'LEGACY-SUPPLIER', '351111111111111', 'LEGACY-SKU', 'legacy note', 'inventoryUnits']
+      .filter(s => text.includes(s));
+    check('CONTROL', `${path} serves the legacy product`, text.includes('Legacy Phone') ? 'ALLOWED' : 'DENIED');
+    check('EXPLOIT', `${path} serves a legacy document's cost, supplier or IMEI`,
+      leaked.length ? `ALLOWED:${leaked.join(',')}` : 'DENIED:stripped');
+  }
 }
 
 // ── Report ────────────────────────────────────────────────────

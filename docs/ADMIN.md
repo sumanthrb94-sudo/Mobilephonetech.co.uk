@@ -193,6 +193,14 @@ destroy order history is a footgun with no safety on it.
 | `products/{id}` | what a customer chooses between: model + capacity, with a variant per condition and colour carrying its own price and stock count |
 | `stockUnits/{imei}` | one document per physical handset — cost, supplier, arrival date, grade, and which listing it belongs to |
 
+Anyone can read `products/{id}`, so nothing on it may be private. Buy prices,
+suppliers, IMEIs, SKUs, notes and the per-unit ledger the product editor keeps
+live in `productPrivate/{id}` (staff-only), and the cost each order line was
+sold against lives in `orderPrivate/{orderId}` rather than on the order the
+buyer can read. The console and the order route merge the two halves; see
+`src/lib/productPrivate.ts`. Deploy `firestore.rules` before (or with) the code
+that reads these collections, or the console is refused.
+
 The second is the thing the shop could not do before. Until stock is per-unit
 you cannot run the VAT margin scheme, cannot answer "which handset did we send
 them" against a warranty claim, and cannot price by real condition.

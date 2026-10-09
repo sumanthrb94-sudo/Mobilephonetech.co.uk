@@ -1,6 +1,7 @@
 import { adminDb } from '../_firebaseAdmin.js';
 import { enforceRateLimit } from '../_rateLimit.js';
 import { isListed, isOffered } from '../../src/lib/productMapper.js';
+import { stripPrivate } from '../../src/lib/productPrivate.js';
 
 const VALID_SORTS = ['price_asc', 'price_desc', 'newest', 'discount'] as const;
 type SortMode = (typeof VALID_SORTS)[number];
@@ -59,6 +60,9 @@ export default async function handler(req: any, res: any) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let rows = snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).filter(r => isListed(r))
+      // Costs, suppliers and IMEIs are staff data. They live in productPrivate,
+      // but a document written before that split may still carry them.
+      .map(r => stripPrivate(r))
       // Unpriced configurations are not on offer; shoppers never see them.
       .map(r => (Array.isArray(r.variants) ? { ...r, variants: r.variants.filter(isOffered) } : r));
 

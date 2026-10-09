@@ -114,8 +114,12 @@ export async function withAdminRetry<T>(fn: () => Promise<T>): Promise<T> {
 /** Collection names, in one place so a rename cannot drift between callers. */
 export const COL = {
   products: 'products',
+  // Staff-only halves of products and orders: costs, suppliers, IMEIs and the
+  // unit ledger. See src/lib/productPrivate.ts.
+  productPrivate: 'productPrivate',
   users: 'users',
   orders: 'orders',
+  orderPrivate: 'orderPrivate',
   reviews: 'reviews',
   newsletter: 'newsletterSubscribers',
   returns: 'returns',

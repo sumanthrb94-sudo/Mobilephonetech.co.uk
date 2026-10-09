@@ -1,6 +1,10 @@
 import { sendEmail, looksLikeEmail } from './_email.js';
 import { orderConfirmationEmail, newOrderAlertEmail } from './_templates.js';
 import { COMPANY } from '../src/config/company.js';
+import {
+  legacyPrivateKeys, mergePrivate, splitOrderCost, splitPrivate,
+  PRIVATE_PRODUCT_KEYS, type ProductPrivateDoc,
+} from '../src/lib/productPrivate.js';
 
 /**
  * The shared heart of ordering: price a basket, reserve its stock, write it,
@@ -155,10 +159,15 @@ export async function priceAndValidate(
       return fail(400, 'Item quantities must be between 1 and 5');
     }
 
-    const snap = await db.collection('products').doc(productId).get();
+    const [snap, own] = await Promise.all([
+      db.collection('products').doc(productId).get(),
+      db.collection('productPrivate').doc(productId).get(),
+    ]);
     if (!snap.exists) return fail(400, 'That product is no longer available');
 
-    const product = snap.data() as Record<string, any>;
+    // The cost a line is sold against is staff data, kept apart from the
+    // public catalogue (see src/lib/productPrivate.ts).
+    const product = mergePrivate(snap.data(), own.exists ? own.data() : null) as Record<string, any>;
     // A draft has no real price yet; it must never be orderable, even by a
     // client that knows its id.
     if (product.listed === false) return fail(400, 'That product is no longer available');
@@ -283,13 +292,7 @@ export async function commitOrder(db: any, order: PricedOrder): Promise<void> {
 
   await db.runTransaction(async (tx: any) => {
     const ids = [...new Set(priced.map(i => String(i.productId)))];
-    const refs = ids.map(id => db.collection('products').doc(id));
-    const snaps = await Promise.all(refs.map((ref: any) => tx.get(ref)));
-
-    const docs = new Map(refs.map((ref: any, i: number) => [
-      ref.id,
-      { ref, exists: snaps[i].exists, data: (snaps[i].data() ?? {}) as Record<string, any> },
-    ]));
+    const docs = await readProducts(db, tx, ids);
 
     for (const item of priced) {
       const entry = docs.get(String(item.productId));
@@ -335,16 +338,77 @@ export async function commitOrder(db: any, order: PricedOrder): Promise<void> {
       } else product.stock = available - wanted;
     }
 
-    for (const entry of docs.values()) {
-      const { ref, data } = entry as { ref: any; data: Record<string, any> };
-      const patch: Record<string, any> = { updatedAt: now };
-      if (Array.isArray(data.variants)) patch.variants = data.variants;
-      if (typeof data.stock === 'number') patch.stock = data.stock;
-      tx.update(ref, patch);
-    }
+    for (const entry of docs.values()) await writeProduct(tx, entry, now);
 
-    tx.set(db.collection('orders').doc(order.id), order);
+    // A buyer can read their own order, so what each line cost us is written
+    // where only staff can: orderPrivate, one entry per line.
+    const { publicItems, privateDoc } = splitOrderCost(priced);
+    tx.set(db.collection('orders').doc(order.id), { ...order, items: publicItems });
+    tx.set(db.collection('orderPrivate').doc(order.id), { ...privateDoc, createdAt: order.createdAt });
   });
+
+  // The caller hands this order back to the browser, so it leaves without its
+  // costs. Only after the transaction: a retried attempt still needs them.
+  order.items = splitOrderCost(order.items).publicItems;
+}
+
+interface ProductEntry {
+  ref: any;
+  ownRef: any;
+  exists: boolean;
+  ownExists: boolean;
+  /** The public document as read, to spot legacy private fields still on it. */
+  publicData: Record<string, any>;
+  /** Public and private halves merged: what the stock logic works on. */
+  data: Record<string, any>;
+}
+
+/**
+ * Read products and their private halves inside a transaction. Units and
+ * costs live in productPrivate; a product written before that split may still
+ * hold them on the public document, which mergePrivate falls back to.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function readProducts(db: any, tx: any, ids: string[]): Promise<Map<string, ProductEntry>> {
+  const refs = ids.map(id => db.collection('products').doc(id));
+  const ownRefs = ids.map(id => db.collection('productPrivate').doc(id));
+  const [snaps, ownSnaps] = await Promise.all([
+    Promise.all(refs.map((ref: any) => tx.get(ref))),
+    Promise.all(ownRefs.map((ref: any) => tx.get(ref))),
+  ]);
+  return new Map(refs.map((ref: any, i: number) => {
+    const publicData = (snaps[i].data() ?? {}) as Record<string, any>;
+    const own = ownSnaps[i].exists ? ownSnaps[i].data() as ProductPrivateDoc : null;
+    return [ref.id, {
+      ref, ownRef: ownRefs[i], exists: snaps[i].exists, ownExists: ownSnaps[i].exists,
+      publicData, data: mergePrivate(publicData, own) as Record<string, any>,
+    }];
+  }));
+}
+
+/**
+ * Write a product back as two halves: stock and the public configurations to
+ * the catalogue, the unit ledger and costs to productPrivate. A legacy
+ * document's private fields move across on this write.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function writeProduct(tx: any, entry: ProductEntry, now: string): Promise<void> {
+  if (!entry.exists) return;
+  const { publicRow, privateDoc } = splitPrivate(entry.data);
+  const patch: Record<string, any> = { updatedAt: now };
+  if (Array.isArray(publicRow.variants)) patch.variants = publicRow.variants;
+  if (typeof entry.data.stock === 'number') patch.stock = entry.data.stock;
+  const legacy = legacyPrivateKeys(entry.publicData);
+  if (legacy.length) {
+    const { FieldValue } = await import('firebase-admin/firestore');
+    for (const k of legacy) patch[k] = FieldValue.delete();
+  }
+  tx.update(entry.ref, patch);
+
+  const hasPrivate = Object.keys(privateDoc.variants ?? {}).length > 0
+    || legacy.length > 0
+    || PRIVATE_PRODUCT_KEYS.some(k => privateDoc[k] != null);
+  if (entry.ownExists || hasPrivate) tx.set(entry.ownRef, { ...privateDoc, updatedAt: now });
 }
 
 
@@ -371,13 +435,7 @@ export async function restockOrder(db: any, orderId: string, patch: Record<strin
     const items = Array.isArray(order.items) ? order.items : [];
 
     const ids = [...new Set(items.map(i => String(i.productId)))];
-    const refs = ids.map(id => db.collection('products').doc(id));
-    const snaps = await Promise.all(refs.map((ref: any) => tx.get(ref)));
-
-    const docs = new Map(refs.map((ref: any, i: number) => [
-      ref.id,
-      { ref, exists: snaps[i].exists, data: (snaps[i].data() ?? {}) as Record<string, any> },
-    ]));
+    const docs = await readProducts(db, tx, ids);
 
     for (const item of items) {
       const entry = docs.get(String(item.productId));
@@ -408,14 +466,7 @@ export async function restockOrder(db: any, orderId: string, patch: Record<strin
     }
 
     const now = new Date().toISOString();
-    for (const entry of docs.values()) {
-      const { ref, exists, data } = entry as { ref: any; exists: boolean; data: Record<string, any> };
-      if (!exists) continue;
-      const update: Record<string, any> = { updatedAt: now };
-      if (Array.isArray(data.variants)) update.variants = data.variants;
-      if (typeof data.stock === 'number') update.stock = data.stock;
-      tx.update(ref, update);
-    }
+    for (const entry of docs.values()) await writeProduct(tx, entry, now);
 
     tx.set(orderRef, { ...patch, updatedAt: now }, { merge: true });
   });

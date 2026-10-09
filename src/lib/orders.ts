@@ -1,5 +1,6 @@
 import { collection, getDocs, query, limit as fsLimit } from 'firebase/firestore';
 import { auth, db, COL } from './firebase';
+import { mergeOrderCost, type OrderPrivateDoc } from './productPrivate';
 
 /**
  * Order management, staff side.
@@ -108,8 +109,20 @@ function line(value: unknown): string {
   return String(value ?? '').trim();
 }
 
+/**
+ * Each order's line costs, keyed by order id. They sit in orderPrivate rather
+ * than on the order because a buyer can read their own order; staff read both.
+ */
+export async function loadOrderCosts(): Promise<Map<string, OrderPrivateDoc>> {
+  const snap = await getDocs(query(collection(db, COL.orderPrivate), fsLimit(1000)));
+  return new Map(snap.docs.map(d => [d.id, d.data() as OrderPrivateDoc]));
+}
+
 export async function listOrders(): Promise<AdminOrder[]> {
-  const snap = await getDocs(query(collection(db, COL.orders), fsLimit(500)));
+  const [snap, costs] = await Promise.all([
+    getDocs(query(collection(db, COL.orders), fsLimit(500))),
+    loadOrderCosts(),
+  ]);
 
   return snap.docs
     .map(d => {
@@ -127,7 +140,7 @@ export async function listOrders(): Promise<AdminOrder[]> {
           line(addr.addressLine1), line(addr.addressLine2),
           line(addr.city), line(addr.postalCode), line(addr.country),
         ].filter(Boolean),
-        items: (Array.isArray(o.items) ? o.items : []).map((i: Record<string, any>) => ({
+        items: mergeOrderCost(Array.isArray(o.items) ? o.items : [], costs.get(d.id)).map((i: Record<string, any>) => ({
           productId: String(i.productId ?? i.id ?? ''),
           name: [i.brand, i.model].filter(Boolean).join(' ') || String(i.name ?? i.productId ?? 'Item'),
           quantity: Number(i.quantity ?? 1),

@@ -36,6 +36,15 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // The staff half of each product: buy prices, suppliers, IMEIs, SKUs and
+    // the per-unit ledger. Rules grant whole documents, never single fields,
+    // so anything on a product document is public; this is where the fields
+    // that must not be go (src/lib/productPrivate.ts). The console writes it
+    // alongside the product; the order route updates it through the Admin SDK.
+    match /productPrivate/{productId} {
+      allow read, write: if isAdmin();
+    }
+
     // ── Home-page banners ───────────────────────────────────
     // Public to read, because they are the first thing on the shop front.
     // Writable only by staff: a banner is a headline and a link shown to
@@ -116,6 +125,14 @@ service cloud.firestore {
       allow create: if false;
       allow update: if isAdmin();
       allow delete: if false;
+    }
+
+    // What each line of an order cost us. Kept off the order itself because
+    // the buyer can read that. Written only by the order route through the
+    // Admin SDK, read by staff for margin and the books.
+    match /orderPrivate/{orderId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // ── Reviews ─────────────────────────────────────────────

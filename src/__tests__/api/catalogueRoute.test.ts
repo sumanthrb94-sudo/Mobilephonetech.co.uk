@@ -23,6 +23,19 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
 vi.mock('../../../api/_rateLimit.js', () => ({ enforceRateLimit: () => true }));
 
 const { default: handler } = await import('../../../api/_routes/catalogue.js');
+const { default: productsHandler } = await import('../../../api/_routes/products.js');
+
+/** GET /api/products, the paginated list, which serves the same documents. */
+async function getProducts() {
+  const out: { code: number; body: any } = { code: 0, body: null };
+  const res: any = {
+    setHeader: () => res,
+    status: (c: number) => { out.code = c; return res; },
+    json: (b: unknown) => { out.body = b; return res; },
+  };
+  await productsHandler({ method: 'GET', headers: {}, query: {} }, res);
+  return out;
+}
 
 async function get() {
   const out: { code: number; body: any; headers: Record<string, string> } = { code: 0, body: null, headers: {} };
@@ -61,6 +74,26 @@ describe('GET /api/catalogue', () => {
     expect(Number(edge.match(/s-maxage=(\d+)/)?.[1])).toBeLessThanOrEqual(30);
     expect(Number(edge.match(/stale-while-revalidate=(\d+)/)?.[1] ?? 0)).toBeLessThanOrEqual(60);
     expect(edge).toMatch(/stale-while-revalidate/);
+  });
+
+  it('never serves a cost, supplier, IMEI or unit ledger left on a legacy document', async () => {
+    docs = [{
+      id: 'legacy',
+      data: {
+        model: 'iPhone 15', brand: 'Apple', price: 400, buyPrice: 300, supplier: 'MHL', imei: '350000000000001', sku: 'IP15',
+        variants: [{
+          id: 'v1', price: 400, originalPrice: 500, stock: 1, buyPrice: 300, supplier: 'MHL', sku: 'S', notes: 'n',
+          stockInDate: '2026-09-01', unitHistory: [], inventoryUnits: [{ id: 'u1', imei: '350000000000001', buyPrice: 300, status: 'available' }],
+        }],
+      },
+    }];
+    for (const route of [get, getProducts]) {
+      const text = JSON.stringify((await route()).body);
+      for (const leak of ['buyPrice', 'supplier', 'imei', 'sku', 'notes', 'stockInDate', 'unitHistory', 'inventoryUnits', '350000000000001']) {
+        expect(text).not.toContain(leak);
+      }
+      expect(text).toContain('iPhone 15');
+    }
   });
 
   it('refuses non-GET', async () => {
