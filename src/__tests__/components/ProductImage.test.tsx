@@ -35,3 +35,28 @@ describe('ProductImage', () => {
     expect(screen.getByRole('img', { name: 'Apple iPhone 16' })).toBeTruthy();
   });
 });
+
+describe('ProductImage loading', () => {
+  it('offers width-limited Cloudinary renditions with sizes for the context', () => {
+    const { container } = render(<ProductImage brand="Apple" model="iPhone 16" imageUrl="https://res.cloudinary.com/x/image/upload/f_auto,q_auto/v1/iphone.jpg" context="card" />);
+    const img = container.querySelector('img')!;
+    expect(img.getAttribute('srcset')).toContain('https://res.cloudinary.com/x/image/upload/w_320,c_limit,f_auto,q_auto/v1/iphone.jpg 320w');
+    expect(img.getAttribute('sizes')).toBe('(min-width: 1024px) 25vw, 50vw');
+    expect(img.getAttribute('loading')).toBe('lazy');
+  });
+
+  it('loads the product page photo eagerly and first', () => {
+    const { container } = render(<ProductImage brand="Apple" model="iPhone 16" imageUrl="https://res.cloudinary.com/x/image/upload/v1/iphone.jpg" context="hero" />);
+    const img = container.querySelector('img')!;
+    expect(img.getAttribute('loading')).toBe('eager');
+    expect(img.getAttribute('fetchpriority')).toBe('high');
+  });
+
+  it('leaves a non-Cloudinary photo as a single source', () => {
+    const { container } = render(<ProductImage brand="Apple" model="iPhone 16" imageUrl="https://firebasestorage.googleapis.com/v0/b/x/o/p.jpg?alt=media" />);
+    const img = container.querySelector('img')!;
+    expect(img.getAttribute('src')).toBe('https://firebasestorage.googleapis.com/v0/b/x/o/p.jpg?alt=media');
+    expect(img.getAttribute('srcset')).toBeNull();
+    expect(img.getAttribute('sizes')).toBeNull();
+  });
+});

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isUploadedPhoto } from '../lib/productImages';
+import { cloudinarySrcSet } from '../lib/cloudinaryUrl';
 import DeviceMock from './DeviceMock';
 
 export interface ProductImageProps {
@@ -18,6 +19,18 @@ export interface ProductImageProps {
   context?: 'card' | 'hero' | 'thumb';
 }
 
+/*
+ * How wide the photo is drawn, per context, for `sizes`. Generous on purpose:
+ * too small a guess shows a soft photo, too large merely costs bytes. No
+ * context (cart rows, quick view, gallery frames) keeps the large default.
+ */
+const SIZES: Record<NonNullable<ProductImageProps['context']> | 'default', string> = {
+  hero: '(min-width: 1024px) 50vw, 100vw',
+  card: '(min-width: 1024px) 25vw, 50vw',
+  thumb: '96px',
+  default: '(min-width: 1024px) 50vw, 100vw',
+};
+
 /**
  * ProductImage — the product's uploaded photo, or a drawing of the device in
  * the chosen colour until one is uploaded.
@@ -33,11 +46,18 @@ export function ProductImage({ brand, model, imageUrl, color, category, alt, con
   useEffect(() => { setFailed(false); }, [imageUrl]);
 
   if (!failed && isUploadedPhoto(imageUrl)) {
+    // The product page's main photo is that page's largest paint: fetch it
+    // straight away and ahead of everything else, not when it scrolls in.
+    const isHero = context === 'hero';
+    const srcSet = cloudinarySrcSet(imageUrl);
     return (
       <img
         src={imageUrl}
+        srcSet={srcSet}
+        sizes={srcSet ? SIZES[context ?? 'default'] : undefined}
         alt={alt ?? ''}
-        loading="lazy"
+        loading={isHero ? 'eager' : 'lazy'}
+        fetchPriority={isHero ? 'high' : undefined}
         decoding="async"
         onError={() => setFailed(true)}
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
