@@ -359,6 +359,19 @@ export async function attemptReadAs(email, path) {
   return res.ok ? 'ALLOWED' : `DENIED:${res.status}`;
 }
 
+/**
+ * GET a document as a given user and decode it, so a check can look at what
+ * came back as well as whether anything did. `data` is null when refused.
+ */
+export async function readAs(email, path) {
+  const headers = {};
+  if (email) headers.Authorization = `Bearer ${await signInForToken(email)}`;
+  const res = await fetch(
+    `${FIRESTORE}/v1/projects/${PROJECT}/databases/(default)/documents/${path}`, { headers },
+  );
+  return { status: res.status, data: res.ok ? fromFields((await res.json()).fields) : null };
+}
+
 /** Write a document with privileged access, for setting up an attack target. */
 export async function seedDoc(collection, id, data) {
   return writeDoc(collection, id, data);

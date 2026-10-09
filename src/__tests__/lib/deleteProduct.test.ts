@@ -18,7 +18,7 @@ vi.mock('firebase/storage', async (orig) => ({
 }));
 vi.mock('../../lib/firebase', () => ({
   db: {}, storage: {}, auth: { currentUser: null },
-  COL: { products: 'products' },
+  COL: { products: 'products', productPrivate: 'productPrivate' },
   withAdminRetry: <T,>(fn: () => Promise<T>) => fn(),
 }));
 
@@ -32,6 +32,12 @@ describe('deleteProduct', () => {
     await deleteProduct('apple-ipad-10th-gen-64gb');
     expect(listAll).not.toHaveBeenCalled();
     expect(deleteDoc).toHaveBeenCalledWith({ path: 'products/apple-ipad-10th-gen-64gb' });
+  });
+
+  it('deletes the private half too, so no cost record outlives its product', async () => {
+    docData.mockReturnValue({ imageUrl: '/assets/x.jpg' });
+    await deleteProduct('p');
+    expect(deleteDoc).toHaveBeenCalledWith({ path: 'productPrivate/p' });
   });
 
   it('clears Firebase Storage files first when the product has them', async () => {

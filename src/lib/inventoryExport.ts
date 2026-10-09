@@ -1,6 +1,4 @@
-import { collection, getDocs, limit, query } from 'firebase/firestore';
-import { db, COL } from './firebase';
-import { docToProduct } from './productMapper';
+import { loadStaffProducts } from './adminApi';
 import type { InventoryUnit as ReportUnit } from './reports';
 import type { Product } from '../types';
 
@@ -46,6 +44,7 @@ export function productUnits(p: Product, { includeCost }: { includeCost: boolean
 }
 
 export async function liveInventoryUnits(opts: { includeCost: boolean }): Promise<ReportUnit[]> {
-  const snap = await getDocs(query(collection(db, COL.products), limit(1000)));
-  return snap.docs.flatMap(d => productUnits(docToProduct(d.id, d.data()), opts));
+  // Merged with productPrivate: the IMEIs, suppliers and costs are not on the
+  // public catalogue document.
+  return (await loadStaffProducts()).flatMap(p => productUnits(p, opts));
 }

@@ -1,6 +1,8 @@
 import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import { auth, db, COL } from './firebase';
 import { docToProduct } from './productMapper';
+import { mergePrivate } from './productPrivate';
+import { loadPrivateProducts } from './adminApi';
 import { isUploadedPhoto } from './productImages';
 import { listOrders } from './orders';
 import { listReturns } from './returns';
@@ -36,10 +38,13 @@ function hasPhoto(d: Record<string, unknown>): boolean {
 }
 
 async function loadProducts(): Promise<InsightProduct[]> {
-  const snap = await getDocs(query(collection(db, COL.products), limit(1000)));
+  const [snap, privates] = await Promise.all([
+    getDocs(query(collection(db, COL.products), limit(1000))),
+    loadPrivateProducts(),
+  ]);
   return snap.docs.map(doc => {
     const raw = doc.data() as Record<string, unknown>;
-    const p = docToProduct(doc.id, raw);
+    const p = docToProduct(doc.id, mergePrivate(raw, privates.get(doc.id)));
     return {
       id: p.id,
       brand: p.brand,

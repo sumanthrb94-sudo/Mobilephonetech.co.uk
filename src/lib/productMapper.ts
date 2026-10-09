@@ -1,4 +1,5 @@
 import type { Product, ProductGrade, ProductVariant } from '../types';
+import { stripPrivate } from './productPrivate.js';
 
 /**
  * Firestore <-> app-model mapping for products.
@@ -104,10 +105,15 @@ export function isOffered(v: { price?: unknown } | null | undefined): boolean {
   return Number(v?.price) > 0;
 }
 
-/** The product as shoppers see it: unpriced configurations removed. */
+/**
+ * The product as shoppers see it: unpriced configurations removed, and no
+ * cost, supplier, IMEI or unit ledger even if a legacy document still holds
+ * one (see productPrivate.ts).
+ */
 export function forShop(p: Product): Product {
-  if (!p.variants?.length) return p;
-  return { ...p, variants: p.variants.filter(isOffered) };
+  const shown = stripPrivate(p as unknown as Record<string, unknown>) as unknown as Product;
+  if (!shown.variants?.length) return shown;
+  return { ...shown, variants: shown.variants.filter(isOffered) };
 }
 
 /**

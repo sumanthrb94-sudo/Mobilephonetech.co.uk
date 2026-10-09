@@ -1,6 +1,6 @@
 import {
-  collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp,
-  setDoc, updateDoc, where, limit as fsLimit,
+  collection, deleteDoc, deleteField, doc, getDoc, getDocs, query, serverTimestamp,
+  updateDoc, where, writeBatch, limit as fsLimit,
 } from 'firebase/firestore';
 import {
   deleteObject, getDownloadURL, listAll, ref, uploadBytes,
@@ -8,6 +8,10 @@ import {
 import { db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, isOffered, stripUndefined } from './productMapper';
+import {
+  mergePrivate, mergeOrderCost, splitPrivate, PRIVATE_PRODUCT_KEYS, type ProductPrivateDoc,
+} from './productPrivate';
+import { loadOrderCosts } from './orders';
 import { capImages } from './productImages';
 import type { InventoryUnit, Product, ProductGrade, ProductVariant } from '../types';
 
@@ -157,7 +161,9 @@ function variantSummary(draft: ProductDraft) {
 }
 
 /**
- * Draft to Firestore document.
+ * Draft to Firestore document, private fields included. Writers split it with
+ * splitPrivate before it reaches the database: costs, suppliers, IMEIs and
+ * the unit ledger go to productPrivate, never the public catalogue.
  *
  * `id` is deliberately absent: it is the document key, not a field, so writing
  * it into the body too would let the two drift apart on a later edit.
@@ -437,6 +443,28 @@ export interface InventoryQuery {
 
 export const LOW_STOCK_THRESHOLD = 5;
 
+/**
+ * Every product's private half, keyed by product id. One read of the whole
+ * collection rather than one per product: the console always wants all of
+ * them, and a few hundred small documents is a single round trip.
+ *
+ * Deliberately not forgiving. If this read fails, the editor must not open a
+ * product without its costs, or saving it would write them back as blank.
+ */
+export async function loadPrivateProducts(): Promise<Map<string, ProductPrivateDoc>> {
+  const snap = await getDocs(query(collection(db, COL.productPrivate), fsLimit(1000)));
+  return new Map(snap.docs.map(d => [d.id, d.data() as ProductPrivateDoc]));
+}
+
+/** The catalogue as staff see it: public documents with their private halves merged in. */
+export async function loadStaffProducts(...constraints: ReturnType<typeof where>[]): Promise<Product[]> {
+  const [snap, privates] = await Promise.all([
+    getDocs(query(collection(db, COL.products), ...constraints, fsLimit(1000))),
+    loadPrivateProducts(),
+  ]);
+  return snap.docs.map(d => docToProduct(d.id, mergePrivate(d.data(), privates.get(d.id))));
+}
+
 export async function listInventory(q: InventoryQuery = {}): Promise<{ products: Product[]; total: number; brands: string[] }> {
   const { search, brand, stockFilter = 'all', listing = 'all', sort = 'newest', page = 1, pageSize = 25 } = q;
 
@@ -447,9 +475,7 @@ export async function listInventory(q: InventoryQuery = {}): Promise<{ products:
   // index per combination. The catalogue is a few hundred documents, so it is
   // cheaper — in latency and in index maintenance — to read once and filter here.
   const constraints = brand ? [where('brand', '==', brand)] : [];
-  const snap = await getDocs(query(collection(db, COL.products), ...constraints, fsLimit(1000)));
-
-  let rows = snap.docs.map(d => docToProduct(d.id, d.data()));
+  let rows = await loadStaffProducts(...constraints);
   const brands = [...new Set(rows.map(p => p.brand).filter(Boolean))].sort();
 
   if (search?.trim()) {
@@ -529,8 +555,7 @@ export interface DashboardStats {
  * hundred products that is more moving parts than it is worth.
  */
 export async function loadDashboardStats(): Promise<DashboardStats> {
-  const snap = await getDocs(query(collection(db, COL.products), fsLimit(1000)));
-  const products = snap.docs.map(d => docToProduct(d.id, d.data()));
+  const products = await loadStaffProducts();
 
   const brands = new Map<string, BrandStock>();
   let unitsInStock = 0;
@@ -572,7 +597,10 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
   let ordersUnavailable = false;
 
   try {
-    const orderSnap = await getDocs(query(collection(db, COL.orders), fsLimit(500)));
+    const [orderSnap, orderCosts] = await Promise.all([
+      getDocs(query(collection(db, COL.orders), fsLimit(500))),
+      loadOrderCosts(),
+    ]);
     const soldByProduct = new Map<string, number>();
     const today = new Date().toISOString().slice(0, 10);
     const sevenDaysAgo = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
@@ -580,7 +608,7 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
       const o = d.data() as Record<string, unknown>;
       const addr = (o.shippingAddress ?? {}) as { fullName?: string };
       const status = String(o.status ?? 'pending');
-      const items = Array.isArray(o.items) ? o.items as Array<Record<string, unknown>> : [];
+      const items = mergeOrderCost(Array.isArray(o.items) ? o.items as Array<Record<string, unknown>> : [], orderCosts.get(d.id));
       const hasCost = items.length > 0 && items.every(item => typeof item.buyPrice === 'number' && Number.isFinite(item.buyPrice));
       const productRevenue = Math.max(0, Number(o.subtotal ?? 0) - Number(o.discount ?? 0));
       if (status !== 'refunded') {
@@ -649,8 +677,12 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  const snap = await getDoc(doc(db, COL.products, id));
-  return snap.exists() ? docToProduct(snap.id, snap.data()) : null;
+  const [snap, own] = await Promise.all([
+    getDoc(doc(db, COL.products, id)),
+    getDoc(doc(db, COL.productPrivate, id)),
+  ]);
+  if (!snap.exists()) return null;
+  return docToProduct(snap.id, mergePrivate(snap.data(), own.exists() ? own.data() as ProductPrivateDoc : null));
 }
 
 export async function listBrands(): Promise<string[]> {
@@ -674,16 +706,34 @@ export async function createProduct(draft: ProductDraft): Promise<Product> {
   const existing = await getDoc(ref);
   if (existing.exists()) throw new AlreadyExistsError('A product with that slug already exists.');
 
-  const body = { ...draftToRow(draft), createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-  await withAdminRetry(() => setDoc(ref, body));
-  return { ...docToProduct(draft.id, body as Record<string, unknown>) };
+  const { publicRow, privateDoc } = splitPrivate(draftToRow(draft));
+  const body = { ...publicRow, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+  // One batch, so the catalogue entry never exists without its costs. Built
+  // inside the retried function: a WriteBatch cannot be committed twice.
+  await withAdminRetry(() => {
+    const batch = writeBatch(db);
+    batch.set(ref, body);
+    batch.set(doc(db, COL.productPrivate, draft.id), { ...privateDoc, updatedAt: serverTimestamp() });
+    return batch.commit();
+  });
+  return docToProduct(draft.id, mergePrivate(body, privateDoc));
 }
 
 export async function updateProduct(draft: ProductDraft): Promise<Product> {
   const ref = doc(db, COL.products, draft.id);
-  const body = { ...draftToRow(draft), updatedAt: serverTimestamp() };
-  await withAdminRetry(() => updateDoc(ref, body));
-  return { ...docToProduct(draft.id, body as Record<string, unknown>) };
+  const { publicRow, privateDoc } = splitPrivate(draftToRow(draft));
+  // A document written before the split may still hold these on the public
+  // side; deleting them here is what moves a legacy product across. Variants
+  // need no such step: the array is rewritten whole, already without them.
+  const legacy = Object.fromEntries(PRIVATE_PRODUCT_KEYS.map(k => [k, deleteField()]));
+  const body = { ...publicRow, ...legacy, updatedAt: serverTimestamp() };
+  await withAdminRetry(() => {
+    const batch = writeBatch(db);
+    batch.update(ref, body);
+    batch.set(doc(db, COL.productPrivate, draft.id), { ...privateDoc, updatedAt: serverTimestamp() });
+    return batch.commit();
+  });
+  return docToProduct(draft.id, mergePrivate(publicRow, privateDoc));
 }
 
 export async function setStock(id: string, stock: number): Promise<void> {
@@ -716,6 +766,7 @@ export async function deleteProduct(id: string): Promise<void> {
     ]).catch(() => { /* orphaned files are not fatal */ });
   }
   await withAdminRetry(() => deleteDoc(doc(db, COL.products, id)));
+  await withAdminRetry(() => deleteDoc(doc(db, COL.productPrivate, id)));
 }
 
 // ── Images ─────────────────────────────────────────────────────

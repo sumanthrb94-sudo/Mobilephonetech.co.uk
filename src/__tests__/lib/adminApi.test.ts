@@ -6,6 +6,7 @@ import {
   type ProductDraft,
 } from '../../lib/adminApi';
 import { MOCK_PHONES } from '../../test/fixtures/mockPhones';
+import { splitPrivate, mergePrivate } from '../../lib/productPrivate';
 
 function draft(overrides: Partial<ProductDraft> = {}): ProductDraft {
   return {
@@ -178,6 +179,31 @@ describe('draftToRow', () => {
       isCertified: true,
       storage: '256GB',
     });
+  });
+
+  it('splits into a public document with no costs and a private one that holds them', () => {
+    const variants = [{
+      id: 'v1', color: 'Black', storage: '256GB', condition: 'Excellent' as const, price: 650, originalPrice: 799, stock: 0,
+      buyPrice: 480, supplier: 'MHL', sku: 'IP17-256', notes: 'boxed', stockInDate: '2026-09-01',
+      inventoryUnits: [{ id: 'u1', imei: '356789012345678', buyPrice: 480, supplier: 'MHL', status: 'available' as const }],
+    }];
+    const row = draftToRow(draft({ variantMode: true, variants, imei: '356789012345670', sku: 'IP17' }));
+    // draftToRow still describes the whole product; the split decides where each half goes.
+    expect(row).toMatchObject({ buyPrice: 480, supplier: 'MHL', imei: '356789012345670', sku: 'IP17' });
+
+    const { publicRow, privateDoc } = splitPrivate(row);
+    for (const k of ['buyPrice', 'supplier', 'imei', 'sku']) expect(publicRow).not.toHaveProperty(k);
+    const shown = (publicRow.variants as Array<Record<string, unknown>>)[0];
+    for (const k of ['buyPrice', 'supplier', 'sku', 'notes', 'stockInDate', 'inventoryUnits']) expect(shown).not.toHaveProperty(k);
+    // Stock is still derived from the tracked units, and still public.
+    expect(shown.stock).toBe(1);
+    expect(publicRow.stock).toBe(1);
+
+    expect(privateDoc).toMatchObject({ buyPrice: 480, supplier: 'MHL', imei: '356789012345670', sku: 'IP17' });
+    expect(privateDoc.variants?.v1).toMatchObject({ buyPrice: 480, notes: 'boxed', stockInDate: '2026-09-01' });
+    expect((privateDoc.variants?.v1.inventoryUnits as unknown[])).toHaveLength(1);
+    // And the editor reopens with everything it saved.
+    expect(mergePrivate(publicRow, privateDoc)).toEqual(row);
   });
 
   it('omits id — it is the document key, not a field that could drift from it', () => {
