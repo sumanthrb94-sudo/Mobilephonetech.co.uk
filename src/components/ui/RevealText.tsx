@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { animate, stagger, text } from 'animejs';
+import { animate, stagger, splitText } from 'animejs';
 import { useReducedMotion } from 'motion/react';
 
 /**
@@ -34,10 +34,10 @@ export default function RevealText({
     const el = ref.current;
     if (!el || reduceMotion) return;
 
-    let splitter: ReturnType<typeof text.split> | null = null;
+    let splitter: ReturnType<typeof splitText> | null = null;
 
     try {
-      splitter = text.split(el, { words: true, chars: false });
+      splitter = splitText(el, { words: true, chars: false });
       const words = (splitter?.words ?? []) as Element[];
       if (!words.length) return;
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { normalisePostcode, lookupPostcode, hasCoordinates } from '../../utils/postcodeLookup';
+import { normalisePostcode, lookupPostcode, hasCoordinates, LOOKUP_TIMEOUT_MS } from '../../utils/postcodeLookup';
 
 /**
  * The lookup talks to postcodes.io, so every test here stubs fetch. That is
@@ -162,5 +162,21 @@ describe('lookupPostcode', () => {
     const res = await lookupPostcode('NW1 6XE');
     if (!res.ok) throw new Error('expected a hit');
     expect(hasCoordinates(res.place)).toBe(true);
+  });
+});
+
+describe('a postcode service that never answers', () => {
+  it('gives up after the timeout and asks for the address to be typed', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('fetch', vi.fn((_url: string, init?: { signal?: AbortSignal }) => new Promise((_resolve, reject) => {
+      init?.signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')));
+    })));
+    const pending = lookupPostcode('NW1 6XE');
+    await vi.advanceTimersByTimeAsync(LOOKUP_TIMEOUT_MS + 10);
+    const result = await pending;
+    vi.useRealTimers();
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe('unavailable');
   });
 });

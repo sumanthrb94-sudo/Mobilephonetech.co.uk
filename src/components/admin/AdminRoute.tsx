@@ -11,7 +11,7 @@ import { useAdmin } from '../../hooks/useAdmin';
  * The database is the real boundary: RLS rejects writes from non-admins even
  * if someone renders these components by hand.
  *
- * WHY THIS FORCES A TOKEN REFRESH ON MOUNT
+ * WHY THIS REFRESHES THE TOKEN (ONCE PER SESSION)
  *
  * The `admin` claim is read from the ID token cached in this tab, and
  * granting it happens entirely server-side (scripts/create-users.mjs) —
@@ -25,21 +25,42 @@ import { useAdmin } from '../../hooks/useAdmin';
  * for everyone else — one extra token fetch, already the cheapest call
  * Firebase Auth makes.
  */
+/**
+ * Once per browser session, not per page. The admin routes remount on every
+ * navigation (the route tree is keyed on the path), so refreshing on mount
+ * held each admin page on "Checking your access…" for a token round trip —
+ * several seconds on a slow connection, on every click.
+ */
+let refreshedThisSession = false;
+
+/** Longest the page waits for a fresh token before deciding with the one it has. */
+const REFRESH_WAIT_MS = 4000;
+
 export default function AdminRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading: authLoading, refreshClaims } = useAuth();
   const { isAdmin, isLoading: adminLoading } = useAdmin();
-  const [refreshing, setRefreshing] = useState(isAuthenticated);
+  const [refreshing, setRefreshing] = useState(isAuthenticated && !refreshedThisSession);
   const refreshedFor = useRef<boolean | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) { refreshedFor.current = null; setRefreshing(false); return; }
-    if (refreshedFor.current === isAuthenticated) return;
+    if (refreshedThisSession || refreshedFor.current === isAuthenticated) { setRefreshing(false); return; }
     refreshedFor.current = isAuthenticated;
     setRefreshing(true);
-    refreshClaims().finally(() => setRefreshing(false));
+    // Never wait on the network indefinitely: a refresh that stalls (a dropped
+    // connection, a slow token service) left the page on "Checking your
+    // access…" for good. After a few seconds the token already held decides;
+    // the database still judges every write by its own copy.
+    const giveUp = new Promise<void>(resolve => { window.setTimeout(resolve, REFRESH_WAIT_MS); });
+    Promise.race([refreshClaims().catch(() => {}), giveUp])
+      .finally(() => { refreshedThisSession = true; setRefreshing(false); });
   }, [isAuthenticated, refreshClaims]);
 
-  if (authLoading || adminLoading || refreshing) {
+  // A token that already says admin is enough to show the page: the refresh
+  // finishes in the background, and the database still checks every write.
+  // Only an account not yet seen as admin waits for it, so a role granted a
+  // minute ago is picked up before the "admin only" screen is shown.
+  if (authLoading || adminLoading || (refreshing && !isAdmin)) {
     return (
       <div style={{ minHeight: '60vh', display: 'grid', placeItems: 'center', paddingTop: 'var(--nav-total)' }}>
         <div

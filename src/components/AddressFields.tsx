@@ -100,7 +100,12 @@ export default function AddressFields({ value, onChange, errors = {} }: AddressF
     setLookup({ status: 'loading' });
     const result = await lookupPostcode(raw);
     // Typed on since; this answer is for a postcode no longer in the box.
-    if (compact(latest.current.postalCode) !== key) return;
+    // Clear the "checking" line too, or it stays up with nothing behind it.
+    if (compact(latest.current.postalCode) !== key) {
+      lookedUp.current = '';
+      setLookup(current => (current.status === 'loading' ? { status: 'idle' } : current));
+      return;
+    }
     if (!result.ok) {
       setLookup({ status: 'error', message: result.message });
       return;

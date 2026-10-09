@@ -386,7 +386,11 @@ async function run(view, contextOpts) {
   const page2 = await ctx2.newPage();
   await signInAs(page2, 'customer');
   await page2.goto(`${BASE}/admin/inventory`, { waitUntil: 'domcontentloaded' });
-  await page2.waitForTimeout(900);
+  // A non-admin waits for the token check before the verdict; wait for either
+  // outcome rather than a fixed delay, which was shorter than that check on a
+  // slow run and read "Checking your access…".
+  await page2.getByText(/Admin access only|Add product/i).first()
+    .waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
   const customerBody = (await page2.locator('body').innerText()).replace(/\s+/g, ' ');
   rec(view, 'Signed-in customer is refused', /Admin access only/i.test(customerBody), customerBody.slice(0, 90));
   rec(view, 'Customer sees no inventory data', !/Add product/i.test(customerBody));

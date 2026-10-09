@@ -33,6 +33,9 @@
  * exactly as usable as it was before anyone pressed the button.
  */
 
+/** How long to wait for postcodes.io before letting the customer type. */
+export const LOOKUP_TIMEOUT_MS = 8000;
+
 const ENDPOINT = 'https://api.postcodes.io/postcodes/';
 
 /** Loose enough to catch typing, strict enough to skip a pointless request. */
@@ -90,9 +93,14 @@ export async function lookupPostcode(raw: string): Promise<PostcodeLookupResult>
   }
 
   let res: Response;
+  // A lookup that never answers left the form on "Checking postcode…" for
+  // good. Eight seconds, then the customer is told to type the address.
+  const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), LOOKUP_TIMEOUT_MS) : null;
   try {
     res = await fetch(ENDPOINT + encodeURIComponent(trimmed), {
       headers: { accept: 'application/json' },
+      signal: controller?.signal,
     });
   } catch {
     // Offline, blocked, CSP, DNS — all the same to the shopper, and all
@@ -102,6 +110,10 @@ export async function lookupPostcode(raw: string): Promise<PostcodeLookupResult>
       reason: 'unavailable',
       message: 'Could not reach the postcode service. Please enter your address below.',
     };
+  }
+
+  finally {
+    if (timer) clearTimeout(timer);
   }
 
   if (res.status === 404) {
