@@ -57,22 +57,15 @@ describe('delivery pricing agrees between checkout screen and server', () => {
     },
   );
 
-  it('does not silently give an unknown service away for free', async () => {
-    // An id the screen never sends. Falling back to free standard delivery is
-    // how the next_day bug hid; an unknown service must be refused instead.
-    const priced = await priceAndValidate(db, basket('drone_delivery'), null);
-    expect(priced.ok).toBe(false);
-    if (priced.ok) return;
-    expect(priced.status).toBe(400);
-  });
-
-  it.each(['standard', 'express'])('refuses the withdrawn %s service rather than re-pricing it', async (id) => {
-    // A stale tab or an old client may still send these. Refused, never
-    // quietly mapped onto next-day or charged at an old price.
+  // One service, free next-day. Whatever id arrives (a stale tab from when
+  // standard and express existed, or a hand-made request) the order is the
+  // same: free next-day, never an error and never a charge for delivery.
+  it.each(['standard', 'express', 'drone_delivery', ''])('treats "%s" as free next-day', async (id) => {
     const priced = await priceAndValidate(db, basket(id), null);
-    expect(priced.ok).toBe(false);
-    if (priced.ok) return;
-    expect(priced.status).toBe(400);
+    expect(priced.ok).toBe(true);
+    if (!priced.ok) return;
+    expect(priced.order.shippingCost).toBe(0);
+    expect(priced.order.shippingMethod).toBe('Free Next-Day Delivery');
   });
 
   it('treats a basket with no service named as free next-day', async () => {

@@ -68,9 +68,8 @@ describe('POST /api/paypal/create-order', () => {
     expect(createPayPalOrder.mock.calls[0][0]).toBe(243);
   });
 
-  it('opens no PayPal order for a withdrawn delivery service', async () => {
-    const out = await post(basket('express'));
-    expect(out.code).toBe(400);
-    expect(createPayPalOrder).not.toHaveBeenCalled();
+  it('charges nothing for delivery whatever service a stale tab names', async () => {
+    await post(basket('express'));
+    expect(createPayPalOrder.mock.calls[0][0]).toBe(270);
   });
 });

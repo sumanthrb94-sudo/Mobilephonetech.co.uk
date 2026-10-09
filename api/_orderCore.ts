@@ -24,29 +24,17 @@ import { sanitiseLocation } from '../src/utils/address.js';
 export class StockConflict extends Error {}
 
 /**
- * The delivery services the checkout screen offers, priced as the screen
- * prices them. Keyed by the ids SHIPPING_OPTIONS in CheckoutContext sends —
- * `next_day` with the underscore, which is what the screen has always sent.
+ * LeHart has one delivery service: free next-day. Every order gets it, and
+ * whatever delivery id a request carries is ignored rather than looked up.
  *
- * This table used to know that service as `nextday`, at a different price,
- * and an unrecognised id quietly fell back to standard. So every Next Day
- * order was charged £0 for delivery and written as "Standard Delivery": the
- * customer paid for nothing they were promised, and the promise never reached
- * the warehouse. The screen, /api/delivery and this table must agree, and
- * src/__tests__/api/orderCoreShipping.test.ts drives this from the screen's
- * own list so they cannot drift apart again.
- *
- * One service now: free next-day, which is what the rest of the site has
- * always promised. Checkout used to offer free 3-5 day standard and charge
- * £19.99 for the next-day delivery the product page called free. Standard and
- * express are gone rather than mapped: an id this table does not know is
- * refused, never quietly re-priced. Orders written before keep the name and
- * cost they stored.
+ * There was once a table of services here (standard, express, next day), and
+ * an id it did not recognise either fell back to free standard or was refused.
+ * With one service there is nothing to choose and nothing to refuse: a stale
+ * checkout tab from before the change, or a tampered request, still gets an
+ * order at the one price, which is free. Orders written before keep the name
+ * and cost they stored.
  */
-const DEFAULT_SHIPPING = 'next_day';
-const SHIPPING: Record<string, { name: string; cost: number }> = {
-  next_day: { name: 'Free Next-Day Delivery', cost: 0 },
-};
+const DELIVERY = { name: 'Free Next-Day Delivery', cost: 0 } as const;
 
 const COUPONS: Record<string, { type: 'percentage' | 'fixed'; value: number; minOrder?: number }> = {
   SAVE10: { type: 'percentage', value: 10 },
@@ -145,9 +133,7 @@ export async function priceAndValidate(
 
   // Unknown is refused, not defaulted. Defaulting to free standard delivery is
   // how a mis-keyed Next Day went out free for as long as it did.
-  const shippingId = String(body.shippingOptionId ?? DEFAULT_SHIPPING);
-  const shipping = Object.prototype.hasOwnProperty.call(SHIPPING, shippingId) ? SHIPPING[shippingId] : null;
-  if (!shipping) return fail(400, 'That delivery option is not available');
+  const shipping = DELIVERY;
 
   const priced: Array<Record<string, unknown>> = [];
   let subtotal = 0;
