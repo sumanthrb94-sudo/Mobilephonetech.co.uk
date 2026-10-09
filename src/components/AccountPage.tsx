@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Package, MapPin, Lock, ChevronRight, ChevronLeft, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart, LifeBuoy, Truck, RotateCcw, FileText, ShieldCheck, Cookie } from 'lucide-react';
+import { User, Package, MapPin, Lock, ChevronRight, ChevronLeft, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart, LifeBuoy, Truck, RotateCcw, FileText, ShieldCheck, Cookie, BatteryCharging } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'motion/react';
 import { useAuth } from '../context/AuthContext';
 import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
@@ -9,7 +9,7 @@ import { auth, db, COL } from '../lib/firebase';
 import { useSeo } from '../hooks/useSeo';
 import ProductImage from './ProductImage';
 import AuthModal from './AuthModal';
-import BrandMark from './ui/BrandMark';
+import { setSignInScreen } from '../lib/signInScreen';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { COMPANY, companyDetailsComplete } from '../config/company';
 import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
@@ -46,10 +46,18 @@ const MORE_LINKS: { to: string; label: string; icon: React.ElementType }[] = [
  * these names something they get; none of them names something we keep.
  * Three, not six — a list long enough to scroll is a wall, not an argument.
  */
-const GATE_REASONS: { icon: React.ElementType; title: string; detail: string }[] = [
-  { icon: Package, title: 'Your orders in one place',   detail: 'Every order and where it has got to, without digging through your email.' },
-  { icon: MapPin,  title: 'Addresses already filled in', detail: 'Check out without typing the same postcode again.' },
-  { icon: Heart,   title: 'A wishlist that follows you', detail: 'Save it on your phone, find it on your laptop.' },
+/** Shown beside the sign-in form: the trading figures the business has
+ *  confirmed (about 200 phones a month for seven years) and the promises
+ *  every listing already makes. */
+const BRAND_FACTS: { value: string; label: string }[] = [
+  { value: '16,000+', label: 'phones sold' },
+  { value: '70-point', label: 'lab inspection' },
+  { value: '12-month', label: 'warranty' },
+];
+const BRAND_POINTS: { icon: React.ElementType; text: string }[] = [
+  { icon: ShieldCheck, text: 'Every phone tested and graded in our lab before it is listed' },
+  { icon: BatteryCharging, text: 'Battery health shown on every phone, never below 85% on iPhone' },
+  { icon: Package, text: 'Sold by LE HART LTD, a UK company trading for seven years' },
 ];
 
 /**
@@ -197,7 +205,15 @@ export default function AccountPage() {
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
   const [savingPw, setSavingPw] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
+  // True once a new account moves on to adding a mobile or confirming its
+  // email: a user exists by then, but the sign-in screen must stay up until
+  // that flow is done.
+  const [finishingAuth, setFinishingAuth] = useState(false);
+  const showSignIn = !user || user.isGuest || finishingAuth;
+  useEffect(() => {
+    setSignInScreen(showSignIn);
+    return () => setSignInScreen(false);
+  }, [showSignIn]);
 
   // Called here, above the signed-out early return, so the hook order is the
   // same on both branches of this component.
@@ -352,134 +368,65 @@ export default function AccountPage() {
     { id: 'security',  label: 'Security',      icon: <Lock size={16} /> },
   ];
 
-  // ── Signed out ──────────────────────────────────────────────
-  if (!user || user.isGuest) {
+  // ── Signed out: the sign-in screen ──────────────────────────
+  // The form itself, on the page. This used to be a pitch and a button that
+  // opened the same form in a dialog — one tap more to reach the thing the
+  // visitor came for, under the shop's search bar and chat bubble.
+  if (showSignIn) {
     return (
-      <div
-        className="account-gate"
-        style={{
-          background: 'var(--grey-5)',
-          display: 'flex', flexDirection: 'column',
-          paddingInline: 20, boxSizing: 'border-box',
-        }}
-      >
-        {/* flex:1 rather than a fixed height: the block sits in the optical
-            centre of whatever room is left, and the legal strip below keeps
-            its place at the bottom instead of being pushed off. */}
-        <motion.div
-          style={{ flex: 1, display: 'grid', placeItems: 'center', width: '100%' }}
-          variants={gateList}
-          initial="hidden"
-          animate="shown"
-        >
-          <div style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
-            {/* The brand, not a stock silhouette. This screen is the first
-                thing behind the Account tab and it was introducing the shop
-                with a generic Lucide user glyph — the one mark on it that
-                belongs to nobody. BrandMark is the same tile the navbar
-                draws, the installed icon uses and the boot splash paints, so
-                the thing they tapped to open the app is the thing greeting
-                them here. Still, not spinning: spinning is how this mark
-                says "working", and nothing is loading. */}
-            <motion.div variants={gateItem} style={{ marginBottom: 20 }}>
-              <BrandMark size="lg" />
-            </motion.div>
-
-            <motion.h1
-              variants={gateItem}
-              style={{ fontFamily: 'var(--font-sans)', fontSize: 24, fontWeight: 900, color: 'var(--black)', margin: '0 0 8px', letterSpacing: '-0.02em' }}
-            >
-              {user?.isGuest ? 'You are browsing as a guest' : 'Sign in to your account'}
-            </motion.h1>
-            <motion.p
-              variants={gateItem}
-              style={{ fontFamily: 'var(--font-body)', fontSize: 15, color: 'var(--grey-60)', lineHeight: 1.6, margin: '0 0 24px' }}
-            >
-              {user?.isGuest
-                ? 'Create an account to keep your orders, addresses and wishlist across devices.'
-                : 'See your orders, saved addresses and account details.'}
-            </motion.p>
-
-            {/* What the empty half of this screen is for. The old version
-                asked for a sign-in and gave no reason to want one, then left
-                126px of grey underneath the ask. Three lines, left-aligned
-                because a list is read rather than admired, each naming
-                something the visitor gets rather than something we store. */}
-            <motion.ul
-              variants={gateItem}
-              style={{
-                listStyle: 'none', margin: '0 0 26px', padding: 16,
-                display: 'grid', gap: 14, textAlign: 'left',
-                background: 'var(--grey-0)', borderRadius: 14,
-                border: '1px solid var(--grey-10)',
-              }}
-            >
-              {GATE_REASONS.map(({ icon: Icon, title, detail }) => (
-                <li key={title} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      flexShrink: 0, width: 34, height: 34, borderRadius: 10,
-                      display: 'grid', placeItems: 'center',
-                      background: 'var(--color-brand-subtle)', color: 'var(--brand-cyan-hover)',
-                    }}
-                  >
-                    <Icon size={17} />
-                  </span>
-                  <span style={{ minWidth: 0 }}>
-                    <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 14.5, fontWeight: 700, color: 'var(--black)' }}>
-                      {title}
-                    </span>
-                    <span style={{ display: 'block', fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-60)', lineHeight: 1.5 }}>
-                      {detail}
-                    </span>
-                  </span>
-                </li>
-              ))}
-            </motion.ul>
-
-            {/* btn-full below 1024px: a centred pill on a phone is a smaller
-                target than the thumb arriving at it. */}
-            <motion.div variants={gateItem}>
-              <button
-                type="button"
-                className={isDesktop ? 'btn btn-primary btn-md' : 'btn btn-primary btn-md btn-full'}
-                onClick={() => setAuthOpen(true)}
-              >
-                Sign in or create an account
-              </button>
-            </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Phones only: the footer that carries the legal links and the
-            registered identity is hidden below 1024px, and a visitor who
-            has not signed in never reaches the Help & legal list below.
-            Without this a phone visitor had no way to the terms or privacy
-            notice from here, and no page telling them who the company is.
-
-            A sibling of the centred block rather than a child of it, so it
-            settles at the bottom of the screen where a footer belongs
-            instead of riding up and down with the panel above it. */}
-        {!isDesktop && (
-          <div style={{ marginTop: 28 }}>
-            <nav aria-label="Legal" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '6px 14px' }}>
-              {MORE_LINKS.filter(l => /terms|privacy|cookies|returns|delivery/.test(l.to)).map(l => (
-                <Link key={l.to} to={l.to} style={{ fontFamily: 'var(--font-body)', fontSize: 12.5, color: 'var(--grey-60)' }}>
-                  {l.label}
-                </Link>
-              ))}
-            </nav>
-            {companyDetailsComplete() && (
-              <p className="app-legal" style={{ textAlign: 'center' }}>
-                {COMPANY.legalName} · Registered in England &amp; Wales, company no. {COMPANY.companyNumber}
-                {' '}· Registered office: {COMPANY.registeredOffice}
-                {COMPANY.vatNumber ? ` · VAT ${COMPANY.vatNumber}` : ''}
+      <div className="signin-page">
+        <motion.div className="signin-layout" variants={gateList} initial="hidden" animate="shown">
+          {isDesktop && (
+            <motion.aside className="signin-brand" variants={gateItem}>
+              {/* What LeHart is, not what an account stores: the one moment a
+                  visitor stops to look at the brand, it should sell the shop. */}
+              <picture className="signin-brand-photo">
+                <source type="image/avif" srcSet="/assets/responsive/quality-inspection-768w.avif 768w, /assets/responsive/quality-inspection-1024w.avif 1024w" sizes="520px" />
+                <source type="image/webp" srcSet="/assets/responsive/quality-inspection-768w.webp 768w, /assets/responsive/quality-inspection-1024w.webp 1024w" sizes="520px" />
+                <img src="/assets/quality-inspection.png" alt="A LeHart technician inspecting a phone in the lab" width={520} height={260} decoding="async" />
+              </picture>
+              <div className="signin-brand-body">
+                <span className="signin-brand-eyebrow">Certified refurbished phones</span>
+                <h2 className="signin-brand-title">Like new. Checked by hand. Guaranteed.</h2>
+                <dl className="signin-stats">
+                  {BRAND_FACTS.map(f => (
+                    <div key={f.label}><dt>{f.value}</dt><dd>{f.label}</dd></div>
+                  ))}
+                </dl>
+                <ul className="signin-reasons">
+                  {BRAND_POINTS.map(({ icon: Icon, text }) => (
+                    <li key={text}>
+                      <span className="signin-reason-icon" aria-hidden="true"><Icon size={16} /></span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.aside>
+          )}
+          <motion.div className="signin-form" variants={gateItem}>
+            {user?.isGuest && !finishingAuth && (
+              <p className="signin-guest-note">
+                You are shopping as a guest. Create an account to keep your orders, addresses and wishlist.
               </p>
             )}
-          </div>
-        )}
-        <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+            <AuthModal
+              variant="page"
+              isOpen
+              initialMode={user?.isGuest ? 'signup' : 'login'}
+              onFinishing={() => setFinishingAuth(true)}
+              onClose={() => setFinishingAuth(false)}
+            />
+            <p className="signin-help">
+              Trouble signing in? <Link to="/help">Get help</Link>
+            </p>
+            {!isDesktop && (
+              <ul className="signin-facts" aria-label="Why LeHart">
+                {BRAND_FACTS.map(f => <li key={f.label}><strong>{f.value}</strong> {f.label}</li>)}
+              </ul>
+            )}
+          </motion.div>
+        </motion.div>
       </div>
     );
   }

@@ -27,8 +27,9 @@ export { MAX_PRODUCT_IMAGES, capImages } from './productImages';
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
 export const GRADES: ProductGrade[] = ['New', 'Pristine', 'Excellent', 'Good', 'Fair'];
-/** The two grades staff can publish for newly-created stock. */
-export const SELLABLE_GRADES: ProductGrade[] = ['Pristine', 'Excellent'];
+/** The grades staff can publish: the three the shop explains to customers
+ *  (GradeExplainer). Good was missing, so a Good phone could not be listed. */
+export const SELLABLE_GRADES: ProductGrade[] = ['Pristine', 'Excellent', 'Good'];
 
 /**
  * Admin data layer for the back store.

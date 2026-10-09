@@ -76,6 +76,16 @@ interface AuthModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   initialMode?: 'login' | 'signup';
+  /**
+   * 'page' renders the same flow as the body of a sign-in page rather than
+   * a dialog over one: no backdrop, no close button, no Esc, and the title
+   * is the page's h1. onClose then means "the flow is finished".
+   */
+  variant?: 'modal' | 'page';
+  /** Page variant: told when the flow moves past signing in (adding a mobile,
+   *  confirming the email), so the page keeps it on screen though a user
+   *  now exists. */
+  onFinishing?: () => void;
 }
 
 /**
@@ -160,7 +170,9 @@ function phoneLivePreview(value: string, dial: string): React.ReactNode {
   );
 }
 
-export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'login', variant = 'modal', onFinishing }: AuthModalProps) {
+  const isPage = variant === 'page';
+  const HeadingTag = isPage ? 'h1' : 'h2';
   /**
    * 'reset' sends a password-reset email; 'link' is entered only when Google
    * sign-in hit an address that already has a password account, and asks for
@@ -184,7 +196,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   // Focus management: remember the trigger, focus the first field on
   // open, restore focus on close. Esc closes from anywhere in the modal.
   useEffect(() => {
-    if (!isOpen) return;
+    // A page owns its focus like any page: no trap, no Esc, no restore, and no
+    // focus jump that would pop a phone's keyboard over the screen on arrival.
+    if (!isOpen || isPage) return;
     lastFocusedRef.current = (document.activeElement as HTMLElement) ?? null;
     const t = window.setTimeout(() => firstFieldRef.current?.focus(), 30);
     const onKey = (e: KeyboardEvent) => {
@@ -201,7 +215,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
       // page. Fall back to any still-connected sign-in control, then to the
       // main landmark, so focus always lands somewhere navigable.
       const previous = lastFocusedRef.current;
-      const restore = previous?.isConnected
+      // <body> is not a place to return to: it is what activeElement reads
+      // when the dialog loaded after its trigger's menu had already closed.
+      const restore = previous?.isConnected && previous !== document.body
         ? previous
         : (document.querySelector('[data-auth-trigger]') as HTMLElement | null)
           ?? (document.getElementById('main-content') as HTMLElement | null);
@@ -215,7 +231,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
         restore.focus?.();
       }
     };
-  }, [isOpen]);
+  }, [isOpen, isPage]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
@@ -226,6 +242,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
     resendVerification, linkEmailPassword,
   } = useAuth();
   const [phone, setPhone] = useState('');
+  const onFinishingRef = useRef(onFinishing);
+  useEffect(() => { onFinishingRef.current = onFinishing; }, [onFinishing]);
+  useEffect(() => {
+    if (mode === 'verify' || mode === 'add-phone' || mode === 'add-email') onFinishingRef.current?.();
+  }, [mode]);
   const [countryIso, setCountryIso] = useState(DEFAULT_COUNTRY_ISO);
   const country = countryForIso(countryIso);
   const dialCode = country.dial;
@@ -439,37 +460,42 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
   return (
     <AnimatePresence>
       {isOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
-          />
+        <div style={isPage
+          ? { width: '100%', display: 'flex', justifyContent: 'center' }
+          : { position: 'fixed', inset: 0, zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          {!isPage && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={onClose}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
+            />
+          )}
 
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            role="dialog"
-            aria-modal="true"
+            role={isPage ? undefined : 'dialog'}
+            aria-modal={isPage ? undefined : true}
             aria-labelledby="auth-modal-title"
+            className={isPage ? 'auth-page-card' : undefined}
             style={{
-              position: 'relative', width: '100%', maxWidth: '400px',
+              position: 'relative', width: '100%', maxWidth: isPage ? '440px' : '400px',
               background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)',
-              overflow: 'hidden', boxShadow: 'var(--shadow-xl)'
+              overflow: 'hidden', boxShadow: isPage ? 'none' : 'var(--shadow-xl)',
             }}
           >
             {/* Header */}
-            <div style={{ padding: 'var(--spacing-32) var(--spacing-32) var(--spacing-24)', borderBottom: '1px solid var(--grey-10)', position: 'relative' }}>
-              <button
+            <div style={{ padding: isPage ? '28px 24px 20px' : 'var(--spacing-32) var(--spacing-32) var(--spacing-24)', borderBottom: '1px solid var(--grey-10)', position: 'relative' }}>
+              {!isPage && <button
                 onClick={onClose}
                 aria-label="Close dialog"
                 style={{ position: 'absolute', top: '24px', right: '24px', background: 'var(--grey-5)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--black)' }}
               >
                 <X size={16} />
-              </button>
-              <h2 id="auth-modal-title" style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: '0 0 8px 0', paddingRight: '32px' }}>
+              </button>}
+              <HeadingTag id="auth-modal-title" style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: '0 0 8px 0', paddingRight: isPage ? 0 : '32px' }}>
                 {mode === 'login' ? 'Welcome back'
                   : mode === 'signup' ? 'Create your account'
                   : mode === 'reset' ? 'Reset your password'
@@ -479,7 +505,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
                   : mode === 'verify' ? 'Check your email'
                   : mode === 'add-email' ? 'Add your details'
                   : 'Connect your Google account'}
-              </h2>
+              </HeadingTag>
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', margin: 0 }}>
                 {mode === 'login' ? 'Sign in to access your orders and wishlist.'
                   : mode === 'signup' ? 'Join lehart.co.uk for a certified experience.'
@@ -493,7 +519,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 'l
               </p>
             </div>
 
-            <div style={{ padding: 'var(--spacing-32)' }}>
+            <div style={{ padding: isPage ? '24px' : 'var(--spacing-32)' }}>
               {mode === 'verify' ? (
                 <div>
                   <p style={{ fontFamily: 'var(--font-body)', fontSize: '13.5px', lineHeight: 1.65, color: 'var(--grey-60)', margin: '0 0 4px' }}>

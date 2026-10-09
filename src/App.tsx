@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 import CookieBanner from './components/layout/CookieBanner';
 import ErrorBoundary from './components/ErrorBoundary';
 import MobileBottomNav from './components/layout/MobileBottomNav';
+import { useSignInScreen } from './lib/signInScreen';
 import CheckoutHeader from './components/layout/CheckoutHeader';
 import CheckoutFooter from './components/layout/CheckoutFooter';
 import AnnouncementBar from './components/layout/AnnouncementBar';
@@ -131,6 +132,10 @@ function AppContent() {
   }, []);
   const location = useLocation();
   const isCheckoutRoute = location.pathname.startsWith('/checkout');
+  // Signing in is a funnel too: the account page's sign-in screen gets the
+  // same focused chrome as checkout — no search, chat or tab bar.
+  const isSignInScreen = useSignInScreen() && location.pathname === '/account';
+  const focused = isCheckoutRoute || isSignInScreen;
   // The admin console keeps the navbar (admins still browse the shop) but drops
   // the marketing footer and the shopper tab bar, which are only noise there.
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -145,9 +150,10 @@ function AppContent() {
   // padding (which normally makes room for the fixed tab bar).
   useEffect(() => {
     if (typeof document === 'undefined') return;
-    document.documentElement.classList.toggle('is-checkout', isCheckoutRoute);
-    return () => { document.documentElement.classList.remove('is-checkout'); };
-  }, [isCheckoutRoute]);
+    document.documentElement.classList.toggle('is-checkout', focused);
+    document.documentElement.classList.toggle('is-signin', isSignInScreen);
+    return () => { document.documentElement.classList.remove('is-checkout', 'is-signin'); };
+  }, [focused, isSignInScreen]);
 
   // Below 1024px the trust strip is not fixed chrome (see APP SHELL in
   // index.css); it renders inline on Home only. CSS needs to know which
@@ -191,8 +197,10 @@ function AppContent() {
           flow is the one who most needs telling. */}
       <PreviewBanner />
 
-      {isCheckoutRoute ? (
-        <CheckoutHeader />
+      {focused ? (
+        isSignInScreen
+          ? <CheckoutHeader backTo="/" backLabel="Continue shopping" trustLabel="Secure sign-in" />
+          : <CheckoutHeader />
       ) : (
         <>
           {/* Fixed header (64px) + Category nav (48px) = 112px */}
@@ -236,7 +244,7 @@ function AppContent() {
           flow, directly under the app bar on Home. Mounted above <main> for
           exactly that reason — pinned chrome can sit anywhere, inline
           content cannot. */}
-      {!isAdminRoute && <AnnouncementBar />}
+      {!isAdminRoute && !isSignInScreen && <AnnouncementBar />}
 
       {/*
         Main content — offset by nav height.
@@ -398,22 +406,22 @@ function AppContent() {
           stays dark for launch and turns on with one Vercel env var — no code
           change — once the bill and the answers can be watched. Human support
           below is unaffected. */}
-      {!isAdminRoute && import.meta.env.VITE_AI_ASSISTANT === 'true' && (
+      {!isAdminRoute && !isSignInScreen && import.meta.env.VITE_AI_ASSISTANT === 'true' && (
         <Suspense fallback={null}>
           <AIAssistant />
         </Suspense>
       )}
       {/* Human support, separate from the AI advisor: the assistant answers
           product questions, this reaches a person about an order. */}
-      {!isAdminRoute && !isCheckoutRoute && (
+      {!isAdminRoute && !focused && (
         <Suspense fallback={null}>
           <SupportChat />
         </Suspense>
       )}
       <Toast />
       <CookieBanner />
-      {isCheckoutRoute ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
-      {!isCheckoutRoute && !isAdminRoute && !isProductRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
+      {focused ? <CheckoutFooter /> : isAdminRoute ? null : <Footer />}
+      {!focused && !isAdminRoute && !isProductRoute && <MobileBottomNav onCartClick={() => setIsCartOpen(true)} />}
       {/* Same again for the trust strip: delivery and returns promises are a
           shopper cue, and pinned to the bottom it covers the last table row. */}
     </div>

@@ -147,7 +147,9 @@ async function run(view, contextOpts) {
         onLoad.length === 1 ? 'PASS' : 'FAIL', JSON.stringify(onLoad));
 
       const duplicated = [];
-      for (const tab of ['Home', 'Cart', 'Account', 'Shop']) {
+      // Account last: signed out, it opens the sign-in screen, which drops
+      // the tab bar like checkout does.
+      for (const tab of ['Home', 'Cart', 'Shop', 'Account']) {
         await page.locator(`nav[aria-label="Primary"] >> text=${tab}`).first().click();
         await page.waitForTimeout(1200);
         const here = await visibleSearches();

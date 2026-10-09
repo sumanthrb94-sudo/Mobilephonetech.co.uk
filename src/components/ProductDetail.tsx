@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { trackProductView } from '../lib/analytics';
 import {
-  ShieldCheck, RotateCcw, Battery, CheckCircle2,
+  ShieldCheck, RotateCcw, Battery, CheckCircle2, Info,
   Heart, Share2, ChevronLeft, ChevronRight, Star, Expand, X, Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -12,7 +12,6 @@ import ReviewsSection from './ReviewsSection';
 import StockAlertForm from './StockAlertForm';
 import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
-import DeliveryPromiseComponent from './DeliveryPromise';
 import ProductImage from './ProductImage';
 import { galleryFrames, isUploadedPhoto } from '../lib/productImages';
 import TechnicalSpecs from './TechnicalSpecs';
@@ -23,7 +22,6 @@ import GradeExplainer from './GradeExplainer';
 import EcoImpact from './EcoImpact';
 import UrgencyCue from './UrgencyCue';
 import StickyBuyBar from './StickyBuyBar';
-import PriceMatchBadge from './PriceMatchBadge';
 import RecentlyViewed from './RecentlyViewed';
 import { useRecentlyViewed } from '../hooks/useRecentlyViewed';
 import { useWishlist } from '../context/WishlistContext';
@@ -460,76 +458,54 @@ export default function ProductDetail() {
    * the gallery on a phone, in the buy column on desktop. Two copies of this
    * markup would drift the moment either is touched.
    */
-  const identityBlock = (
-        <div className="pdp-identity">
-          <div className="pdp-identity__heading">
-            <div>
-              <p className="overline pdp-identity__brand" style={{ color: 'var(--grey-50)' }}>{phone.brand || 'Premium Device'}</p>
-              <h1 className="pdp-identity__title" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
-                {phone.model || 'Product Details'}
-              </h1>
-            </div>
-            <button
-              type="button"
-              onClick={shareProduct}
-              className="pdp-mobile-share"
-              aria-label="Share product"
-            >
-              <Share2 size={21} aria-hidden="true" />
-            </button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            {phone.grade && (
-              <button
-                type="button"
-                className={`badge ${GRADE_CLASS[selectedVariant?.condition ?? phone.grade]}`}
-                onClick={() => setGradeExplainerOpen(true)}
-                aria-label={`${selectedVariant?.condition ?? phone.grade} condition — view the grading guide`}
-                style={{ cursor: 'pointer' }}
-              >
-                {selectedVariant?.condition ?? phone.grade}
-              </button>
-            )}
-            <button
-              onClick={() => setGradeExplainerOpen(true)}
-              style={{
-                background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 600,
-                color: 'var(--brand-cyan-hover)',
-                textDecoration: 'underline', textUnderlineOffset: '3px',
-                padding: 0,
-              }}
-            >
-              How does grading work?
-            </button>
-            {/* Always at the top, for trust, and always a link down to the
-                reviews. Stars and the average come only from verified-buyer
-                reviews: an invented rating (this page once hardcoded
-                "4.8★ (342 reviews)") is banned under the DMCC Act 2024. Until
-                the first review lands it says so and invites one. */}
+  const ratingLink = (
+            /* Always at the top, for trust, and always a link down to the
+               reviews. Stars and the average come only from verified-buyer
+               reviews: an invented rating (this page once hardcoded
+               "4.8★ (342 reviews)") is banned under the DMCC Act 2024. */
             <a
               href="#pdp-reviews"
               className="pdp-rating-link"
               aria-label={reviewCount > 0
                 ? `Rated ${averageRating.toFixed(1)} out of 5 from ${reviewCount} review${reviewCount === 1 ? '' : 's'}`
                 : 'No reviews yet. Be the first to review'}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '6px',
-                textDecoration: 'none', color: 'inherit',
-              }}
             >
-              <span style={{ display: 'flex', gap: '2px', color: 'var(--color-star)' }} aria-hidden="true">
+              <span className="pdp-rating-link__stars" aria-hidden="true">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill={reviewCount > 0 && i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+                  <Star key={i} size={13} fill={reviewCount > 0 && i < Math.round(averageRating) ? 'currentColor' : 'none'} />
                 ))}
               </span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', fontWeight: 500, textDecoration: 'underline', textUnderlineOffset: '3px' }}>
-                {reviewCount > 0
-                  ? `${averageRating.toFixed(1)} (${reviewCount} review${reviewCount === 1 ? '' : 's'})`
-                  : 'No reviews yet · be the first'}
+              <span className="pdp-rating-link__text">
+                {reviewCount > 0 ? `${averageRating.toFixed(1)} (${reviewCount})` : 'No reviews yet'}
               </span>
             </a>
+  );
+
+  /**
+   * Brand, rating and share on one line, then the name. The grade lives once,
+   * beside the price, and is the way into the grading guide — it used to be a
+   * badge, a "How does grading work?" link, a condition card and its own
+   * "What does each grade mean?" link, all on one screen.
+   */
+  const identityBlock = (
+        <div className="pdp-identity">
+          <div className="pdp-identity__top">
+            <p className="overline pdp-identity__brand" style={{ color: 'var(--grey-50)', margin: 0 }}>{phone.brand || 'Premium Device'}</p>
+            <div className="pdp-identity__actions">
+              {ratingLink}
+              <button
+                type="button"
+                onClick={shareProduct}
+                className="pdp-mobile-share"
+                aria-label="Share product"
+              >
+                <Share2 size={19} aria-hidden="true" />
+              </button>
+            </div>
           </div>
+          <h1 className="pdp-identity__title" style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(24px, 3.4vw, 32px)', fontWeight: 800, color: 'var(--brand-header)', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+            {phone.model || 'Product Details'}
+          </h1>
         </div>
   );
 
@@ -549,6 +525,17 @@ export default function ProductDetail() {
               <span className="pdp-price-block__saving">
                 Save {Math.round((savings / displayOriginalPrice) * 100)}%
               </span>
+            )}
+            {(selectedVariant?.condition ?? phone.grade) && (
+              <button
+                type="button"
+                className={`badge pdp-grade-badge ${GRADE_CLASS[selectedVariant?.condition ?? phone.grade]}`}
+                onClick={() => setGradeExplainerOpen(true)}
+                aria-label={`${selectedVariant?.condition ?? phone.grade} condition — view the grading guide`}
+              >
+                {selectedVariant?.condition ?? phone.grade}
+                <Info size={12} aria-hidden="true" />
+              </button>
             )}
           </div>
 
@@ -821,16 +808,18 @@ export default function ProductDetail() {
             {/* Only shows when stock is genuinely low; renders nothing
                 otherwise, rather than inventing a reason to hurry. */}
             <UrgencyCue productId={phone.id} stock={displayStock} />
-            <PdpDeliveryUrgency />
+            {/* One delivery line. A second card below the options repeated it
+                with a made-up postcode (SW1A 1AA) and a "high confidence" tag. */}
+            {displayStock > 0 && <PdpDeliveryUrgency />}
 
             {/* The two facts a refurb buyer checks before anything else.
                 They were two 64px cards stacked in a grid, which pushed Add to
                 cart a further 90px down the column for four short words. One
                 row says the same thing. */}
             <div className="pdp-facts">
-              <span><Battery size={16} aria-hidden="true" /> Battery <strong>{displayBatteryHealth}%</strong></span>
-              <span><ShieldCheck size={16} aria-hidden="true" /> Warranty <strong>{phone.warrantyMonths} months</strong></span>
-              <span><RotateCcw size={16} aria-hidden="true" /> <strong>{phone.returnDays}-day</strong> returns</span>
+              <span><Battery size={16} aria-hidden="true" /><strong>{displayBatteryHealth}%</strong><em>battery</em></span>
+              <span><ShieldCheck size={16} aria-hidden="true" /><strong>{phone.warrantyMonths} months</strong><em>warranty</em></span>
+              <span><RotateCcw size={16} aria-hidden="true" /><strong>{phone.returnDays} days</strong><em>returns</em></span>
             </div>
 
             {/* Choice comes before proof: changing a finish, capacity or grade
@@ -864,12 +853,6 @@ export default function ProductDetail() {
               </fieldset>
             )}
 
-            {/* Delivery */}
-            {displayStock > 0 && (
-            <div style={{ marginTop: '-2px' }}>
-              <DeliveryPromiseComponent postalCode="SW1A 1AA" orderTime={new Date()} showAllOptions={false} />
-            </div>
-            )}
 
             {/* Actions */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -991,17 +974,6 @@ export default function ProductDetail() {
                   the button, not up by the price, where it used to sit as a
                   line of grey text. */}
               <PaymentTrustMark variant="pdp" />
-            </div>
-
-            {/* Reassurance, below the decision rather than above it. Returns
-                moved into .pdp-facts, beside battery and warranty, so this no
-                longer says the same thing twice. */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start', paddingTop: 'var(--spacing-16)', borderTop: '1px solid var(--grey-10)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <CheckCircle2 size={16} style={{ color: 'var(--grey-40)' }} />
-                <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)' }}>Verified by independent technicians</span>
-              </div>
-              <PriceMatchBadge />
             </div>
 
             {/* The test evidence follows the selected unit, delivery and

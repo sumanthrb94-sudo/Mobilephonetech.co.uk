@@ -102,7 +102,8 @@ async function verifyVariantDecision(page, device) {
     console.log(`[${device}] SKIP  in-place colour update: this product has one configuration`);
   }
 
-  const gradingHelp = page.getByRole('button', { name: 'What does each grade mean?' });
+  // The grade badge beside the price is the one way in to the grading guide.
+  const gradingHelp = page.getByRole('button', { name: /view the grading guide/i });
   if (await gradingHelp.count()) {
     await gradingHelp.first().click();
     const dialog = page.getByRole('dialog');

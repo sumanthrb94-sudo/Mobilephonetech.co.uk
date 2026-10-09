@@ -230,7 +230,6 @@ export default function VariantSelector({
 
         renderOption={(option) => <Pill key={option.value} option={option} onPick={pick} />}
       />
-      <GradingHelp onOpen={onExplainGrading} />
     </div>
   );
 }
@@ -253,7 +252,7 @@ const CONDITION_RANK: Record<string, number> = {
   'Fair': 7,
 };
 
-function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainGrading }: {
+function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onVariantSelect: (variant: ProductVariant) => void;
@@ -469,6 +468,9 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
               Condition: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{activeCondition}</strong>
             </span>
           </div>
+          {/* One grade on offer is a fact, not a choice: the label above says
+              it, and a lone full-width button only repeated it. */}
+          {conditions.length > 1 && (
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(95px, 1fr))`, gap: '8px' }}>
             {conditions.map(condition => {
               const isSelected = activeCondition === condition;
@@ -519,81 +521,16 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
               );
             })}
           </div>
-          <GradingHelp onOpen={onExplainGrading} />
+          )}
         </div>
       )}
 
-      {/* 4. Active Selection Real-time Stock & Price Confirmation Box */}
-      {activeVariant && (
-        <div style={{
-          padding: '12px 14px',
-          borderRadius: '8px',
-          background: 'var(--grey-5, #f8fafc)',
-          border: '1px solid var(--grey-15, #e2e8f0)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-        }}>
-          <div>
-            <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 700, color: 'var(--black)' }}>
-              {[activeVariant.storage, activeVariant.color, activeVariant.condition].filter(Boolean).join(' · ')}
-            </div>
-            <div style={{ fontFamily: 'var(--font-body)', fontSize: '12px', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {activeVariant.stock > 0 ? (
-                <span style={{ color: activeVariant.stock <= 3 ? '#d97706' : '#16a34a', fontWeight: 600 }}>
-                  {activeVariant.stock <= 3 ? `Only ${activeVariant.stock} left in stock` : `✓ In stock (${activeVariant.stock} available)`}
-                </span>
-              ) : (
-                <span style={{ color: '#dc2626', fontWeight: 600 }}>Currently out of stock</span>
-              )}
-              {activeVariant.batteryHealth != null && (
-                <span style={{ color: 'var(--grey-50)' }}>· {activeVariant.batteryHealth}% Battery</span>
-              )}
-            </div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 900, color: 'var(--black)' }}>
-              £{activeVariant.price}
-            </span>
-            {activeVariant.originalPrice && activeVariant.originalPrice > activeVariant.price && (
-              <span style={{ display: 'block', fontSize: '11px', color: 'var(--grey-40)', textDecoration: 'line-through' }}>
-                £{activeVariant.originalPrice}
-              </span>
-            )}
-          </div>
-        </div>
-      )}
+      {/* No confirmation box: it restated the grade, price, stock and
+          battery that the page already shows once each. */}
     </div>
   );
 }
 
-function GradingHelp({ onOpen }: { onOpen?: () => void }) {
-  if (!onOpen) return null;
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      style={{
-        alignSelf: 'flex-start',
-        marginTop: '8px',
-        padding: 0,
-        border: 0,
-        background: 'none',
-        color: 'var(--brand-cyan-hover)',
-        cursor: 'pointer',
-        fontFamily: 'var(--font-body)',
-        fontSize: '12px',
-        fontWeight: 700,
-        textDecoration: 'underline',
-        textUnderlineOffset: '3px',
-      }}
-    >
-      What does each grade mean?
-    </button>
-  );
-}
 
 
 /**

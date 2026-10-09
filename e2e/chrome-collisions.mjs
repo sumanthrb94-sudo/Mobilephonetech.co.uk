@@ -228,7 +228,7 @@ async function run() {
     });
     rec('wide desktop', 'hero source image is loaded', true, wideHero?.sourceLoaded ?? false);
     rec('wide desktop', 'hero canvas is wider than the 3:1 artwork', true, (wideHero?.canvasRatio ?? 0) > (wideHero?.sourceRatio ?? Infinity));
-    rec('wide desktop', 'uses the dedicated 4.16:1 desktop artwork', true, /desktop-4x16-20261004\.png$/.test(wideHero?.selectedSource ?? ''));
+    rec('wide desktop', 'uses the dedicated 4.16:1 desktop artwork', true, /desktop-4x16-20261004(-\d+w)?\.(png|webp|avif)$/.test(wideHero?.selectedSource ?? ''));
     rec('wide desktop', 'hero artwork starts below the fixed navigation', true, wideHero?.imageClearsFixedNavigation ?? false);
     rec('wide desktop', 'wide hero preserves the complete artwork instead of cropping it', 'contain', wideHero?.imageFit);
     await ctx.close();
@@ -278,7 +278,8 @@ async function run() {
         ctaVisible: c.top >= 0 && c.bottom <= window.innerHeight,
         hitsControl,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth,
-        mobileSafeSource: /mobile-safe-20261004\.png$/.test(image.currentSrc),
+        // The browser may pick the AVIF/WebP rendition of the same artwork.
+        mobileSafeSource: /mobile-safe-20261004(-\d+w)?\.(png|webp|avif)$/.test(image.currentSrc),
       };
     });
 

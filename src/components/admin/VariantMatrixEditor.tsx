@@ -1,5 +1,6 @@
 import { Plus, Trash2, Smartphone } from 'lucide-react';
 import type { InventoryUnit, ProductGrade, ProductVariant } from '../../types';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 type Props = {
   variants: ProductVariant[];
@@ -47,6 +48,33 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
   const updateUnits = (index: number, nextUnits: InventoryUnit[]) =>
     patch(index, { inventoryUnits: nextUnits, stock: availableUnits(nextUnits) });
   const total = variants.reduce((sum, variant) => sum + Math.max(0, Number(variant.stock) || 0), 0);
+  // Eleven columns need a desktop. On a phone the table was a sideways
+  // scroller whose labels were off screen, so staff saw rows of empty boxes;
+  // there each configuration is a card with its labels on it.
+  const wide = useMediaQuery('(min-width: 1024px)');
+  const addUnit = (index: number) => {
+    const units = variants[index].inventoryUnits ?? [];
+    updateUnits(index, [...units, physicalUnit(variants[index], units.length + 1)]);
+  };
+  const unitCards = (variant: ProductVariant, index: number) => {
+    const units = variant.inventoryUnits ?? [];
+    const prefix = `variant-${index}`;
+    return units.map((unit, unitIndex) => (
+      <UnitCard
+        key={unit.id || unitIndex}
+        unit={unit}
+        unitNumber={unitIndex + 1}
+        isApplePhone={isApplePhone}
+        errors={Object.entries(errors).filter(([key]) => key.startsWith(`${prefix}-unit-${unitIndex}`)).map(([, message]) => message).filter(Boolean) as string[]}
+        onChange={change => updateUnits(index, units.map((candidate, i) => i === unitIndex ? { ...candidate, ...change } : candidate))}
+        onRemove={() => updateUnits(index, units.filter((_, i) => i !== unitIndex))}
+      />
+    ));
+  };
+  const rowErrors = (index: number) => {
+    const prefix = `variant-${index}`;
+    return Object.entries(errors).filter(([key]) => key.startsWith(prefix) && !key.includes('-unit-')).map(([, value]) => value).join(' ');
+  };
 
   return (
     <section style={sectionStyle} aria-labelledby="variant-matrix-title">
@@ -68,6 +96,48 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
       ) : (
         <>
           <p style={summaryStyle}>{variants.length} configurations · <strong>{total} units available</strong> · public price and stock are calculated from these rows.</p>
+          {!wide ? (
+            <div style={{ display: 'grid', gap: 12 }}>
+              {variants.map((variant, index) => {
+                const units = variant.inventoryUnits ?? [];
+                const tracked = units.length > 0;
+                const n = index + 1;
+                const name = [variant.storage, variant.color, variant.connectivity, variant.condition].filter(Boolean).join(' · ') || 'New configuration';
+                const err = rowErrors(index);
+                return (
+                  <article key={variant.id} style={configCardStyle}>
+                    <div style={unitCardHeadStyle}>
+                      <strong style={unitNameStyle}>{n}. {name}</strong>
+                      <button type="button" className="admin-ghost-danger" aria-label={`Remove configuration ${n}`} onClick={() => remove(index)}><Trash2 size={15} /></button>
+                    </div>
+                    <div style={unitFieldsStyle}>
+                      <MiniField label="Storage"><input aria-label={`Configuration ${n} storage`} style={miniInputStyle} value={variant.storage ?? ''} placeholder="128GB" onChange={e => patch(index, { storage: e.target.value })} /></MiniField>
+                      <MiniField label="Colour"><input aria-label={`Configuration ${n} colour`} style={miniInputStyle} value={variant.color ?? ''} placeholder="Black" onChange={e => patch(index, { color: e.target.value })} /></MiniField>
+                      <MiniField label="Connection"><select aria-label={`Configuration ${n} connection`} style={miniInputStyle} value={variant.connectivity ?? ''} onChange={e => patch(index, { connectivity: e.target.value })}><option value="">—</option><option value="Wi-Fi">Wi-Fi</option><option value="Cellular">Cellular</option></select></MiniField>
+                      <MiniField label="Condition"><select aria-label={`Configuration ${n} condition`} style={miniInputStyle} value={variant.condition ?? ''} onChange={e => patch(index, { condition: (e.target.value || undefined) as ProductGrade | undefined })}>{!variant.condition && <option value="">Choose…</option>}{gradeChoices.map(g => <option key={g} value={g}>{g}</option>)}</select></MiniField>
+                      <MiniField label="Sell £"><input aria-label={`Configuration ${n} selling price`} style={miniInputStyle} type="number" inputMode="decimal" min="0" step="0.01" value={variant.price || ''} onChange={e => patch(index, { price: Number(e.target.value) || 0 })} /></MiniField>
+                      <MiniField label="Was £ (optional)"><input aria-label={`Configuration ${n} was price`} style={miniInputStyle} type="number" inputMode="decimal" min="0" step="0.01" value={variant.originalPrice || ''} onChange={e => patch(index, { originalPrice: Number(e.target.value) || 0 })} /></MiniField>
+                      <MiniField label={isApplePhone ? 'Battery %' : 'Battery % (optional)'}><input aria-label={`Configuration ${n} battery health`} style={miniInputStyle} type="number" min={isApplePhone ? 85 : 0} max="100" value={variant.batteryHealth ?? ''} placeholder={isApplePhone ? '85+' : '—'} onChange={e => patch(index, { batteryHealth: e.target.value === '' ? undefined : Number(e.target.value) })} /></MiniField>
+                      <MiniField label="Photos"><span style={{ ...photoCountStyle(photoCount(variant)), paddingTop: 8 }}>{photoCount(variant) ? `${photoCount(variant)} photo${photoCount(variant) === 1 ? '' : 's'}` : 'None yet'}</span></MiniField>
+                    </div>
+                    <div style={stockBoxStyle}>
+                      {tracked ? (
+                        <p style={stockLineStyle}><strong>{availableUnits(units)} in stock</strong> · counted from the phones below</p>
+                      ) : (
+                        <MiniField label="In stock"><input aria-label={`Configuration ${n} stock`} style={miniInputStyle} type="number" inputMode="numeric" min="0" step="1" value={variant.stock} onChange={e => patch(index, { stock: Math.max(0, Math.floor(Number(e.target.value) || 0)) })} /></MiniField>
+                      )}
+                      {!tracked && <p style={unitHintStyle}>Or record each handset by IMEI with its buy price and location; stock then counts itself.</p>}
+                      {tracked && <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>{unitCards(variant, index)}</div>}
+                      <button type="button" className="btn btn-secondary btn-sm" style={{ marginTop: 10 }} onClick={() => addUnit(index)}>
+                        <Smartphone size={14} /> {tracked ? 'Add another phone' : 'Add a phone by IMEI'}
+                      </button>
+                    </div>
+                    {err && <p role="alert" style={unitErrorStyle}>{err}</p>}
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
           <div style={tableWrapStyle}>
             <table style={tableStyle}>
               <thead><tr>{['Storage', 'Colour', 'Connection', 'Condition', 'Battery', 'Photos', 'Sell £', 'Was £', 'Available', 'Physical units', ''].map(label => <th key={label} style={thStyle}>{label}</th>)}</tr></thead>
@@ -91,8 +161,8 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
                           {tracked ? <strong style={stockCountStyle}>{availableUnits(units)} tracked</strong> : <input aria-label={`Configuration ${index + 1} stock`} style={inputStyle} type="number" min="0" step="1" value={variant.stock} onChange={e => patch(index, { stock: Math.max(0, Math.floor(Number(e.target.value) || 0)) })} />}
                         </td>
                         <td style={tdStyle}>
-                          <button type="button" className="btn btn-secondary btn-sm" onClick={() => updateUnits(index, [...units, physicalUnit(variant, units.length + 1)])}>
-                            <Smartphone size={14} /> {tracked ? 'Add unit' : 'Track by IMEI'}
+                          <button type="button" className="btn btn-secondary btn-sm" onClick={() => addUnit(index)}>
+                            <Smartphone size={14} /> {tracked ? 'Add another phone' : 'Add a phone by IMEI'}
                           </button>
                         </td>
                         <td style={tdStyle}><button type="button" className="admin-ghost-danger" aria-label={`Remove configuration ${index + 1}`} onClick={() => remove(index)}><Trash2 size={15} /></button></td>
@@ -127,6 +197,7 @@ export default function VariantMatrixEditor({ variants, gradeChoices, isApplePho
               </tbody>
             </table>
           </div>
+          )}
         </>
       )}
     </section>
@@ -188,3 +259,6 @@ const miniFieldStyle: React.CSSProperties = { display: 'grid', gap: 4, fontFamil
 const miniInputStyle: React.CSSProperties = { width: '100%', minWidth: 0, height: 34, padding: '0 8px', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-sm)', background: '#fff', boxSizing: 'border-box', fontFamily: 'var(--font-body)', fontSize: 12.5, color: 'var(--black)' };
 const unitErrorStyle: React.CSSProperties = { margin: '8px 0 0', color: 'var(--color-sale)', fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: 1.4 };
 const errorCellStyle: React.CSSProperties = { padding: '0 8px 10px', color: 'var(--color-sale)', fontFamily: 'var(--font-body)', fontSize: 12 };
+const configCardStyle: React.CSSProperties = { border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)', padding: 12, background: 'var(--grey-0)' };
+const stockBoxStyle: React.CSSProperties = { marginTop: 4, paddingTop: 10, borderTop: '1px solid var(--grey-10)' };
+const stockLineStyle: React.CSSProperties = { margin: 0, fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-60)' };

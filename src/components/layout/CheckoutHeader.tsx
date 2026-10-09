@@ -15,7 +15,12 @@ import { Lock, RefreshCw, ArrowLeft } from 'lucide-react';
  * - Left-side "Cart" ghost-link lets them back out to the cart drawer
  *   without having to hunt for a hamburger that isn't there
  */
-export default function CheckoutHeader() {
+export default function CheckoutHeader({
+  backTo = '/cart', backLabel = 'Back to cart', trustLabel = 'Secure checkout',
+}: {
+  /** Also used, focused the same way, by the sign-in screen. */
+  backTo?: string; backLabel?: string; trustLabel?: string;
+} = {}) {
   const navigate = useNavigate();
   return (
     <header
@@ -45,8 +50,8 @@ export default function CheckoutHeader() {
       >
         {/* Back-to-cart link — ghost on mobile, labelled on tablet+ */}
         <button
-          onClick={() => navigate('/cart')}
-          aria-label="Back to cart"
+          onClick={() => navigate(backTo)}
+          aria-label={backLabel}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -63,7 +68,7 @@ export default function CheckoutHeader() {
           }}
         >
           <ArrowLeft size={18} />
-          <span className="hidden sm:inline">Back to cart</span>
+          <span className="hidden sm:inline">{backLabel}</span>
         </button>
 
         {/* Logo — centred */}
@@ -108,7 +113,7 @@ export default function CheckoutHeader() {
           }}
         >
           <Lock size={14} />
-          <span className="hidden sm:inline">Secure checkout</span>
+          <span className="hidden sm:inline">{trustLabel}</span>
         </div>
       </div>
     </header>
