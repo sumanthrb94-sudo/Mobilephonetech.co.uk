@@ -3,6 +3,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { auth, db, COL } from '../lib/firebase';
 
 import { useAuth } from './AuthContext';
+import type { GeoPin } from '../utils/address';
 
 const ADDRESS_KEY = 'mt_shipping_address';
 
@@ -69,6 +70,8 @@ export interface ShippingAddress {
   city: string;
   postalCode: string;
   country: string;
+  /** Where the customer put the map pin, when they had a map (AddressFields). */
+  location?: GeoPin;
 }
 
 export interface ShippingOption {

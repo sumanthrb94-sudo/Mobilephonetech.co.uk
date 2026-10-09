@@ -1,6 +1,7 @@
 import { esc } from './_email.js';
 import { estimateArrival } from './_deliveryEstimate.js';
 import { COMPANY } from '../src/config/company.js';
+import { pinMapUrl, sanitiseLocation } from '../src/utils/address.js';
 
 /**
  * Customer email templates — welcome, order confirmation, dispatch, and out
@@ -198,6 +199,8 @@ export interface OrderLike {
     city?: string;
     postalCode?: string;
     country?: string;
+    /** The customer's map pin (AddressFields), when they placed one. */
+    location?: { lat: number; lng: number; pinned?: boolean } | null;
   };
   items?: OrderItem[];
   subtotal?: number;
@@ -928,6 +931,11 @@ export function newOrderAlertEmail(order: OrderLike & { contactPhone?: string })
   const headline = `New order to pack — ${money(order.total)}`;
   const subline = `Order ${order.id} · ${count} item${count === 1 ? '' : 's'} · ${method}`;
   const phone = order.contactPhone || order.shippingAddress?.phone || '';
+  // Where the customer put the pin. Only worth a line when they moved it —
+  // an untouched pin is just the postcode's centre, which the postcode
+  // already says.
+  const pin = sanitiseLocation(order.shippingAddress?.location);
+  const pinUrl = pin?.pinned ? pinMapUrl(pin) : '';
 
   const body = [
     button('Open in Admin → Orders', `${SHOP_URL}/admin/orders`),
@@ -936,6 +944,7 @@ export function newOrderAlertEmail(order: OrderLike & { contactPhone?: string })
     )}</table>`,
     totalsBlock(order),
     addressBlock(order),
+    pinUrl ? p(`<a href="${esc(pinUrl)}" style="color:${PALETTE.ink};">Customer's pin on the map</a> — check it before booking the label.`) : '',
     p(`Customer: ${esc(order.contactEmail ?? '')}${phone ? ` · ${esc(phone)}` : ''}`),
     p(`<span style="font-size:12.5px;color:${PALETTE.muted};">Delivery chosen: ${esc(method)}. Mark it dispatched with the courier and tracking number in Admin, which emails the customer.</span>`),
   ].join('');
@@ -952,6 +961,7 @@ export function newOrderAlertEmail(order: OrderLike & { contactPhone?: string })
     '',
     `Total: ${money(order.total)}`,
     `Ship to: ${[a.fullName, a.addressLine1, a.addressLine2, a.city, a.postalCode].filter(Boolean).join(', ')}`,
+    ...(pinUrl ? [`Pin: ${pinUrl}`] : []),
     `Customer: ${order.contactEmail ?? ''}${phone ? ` · ${phone}` : ''}`,
     '',
     `Admin: ${SHOP_URL}/admin/orders`,

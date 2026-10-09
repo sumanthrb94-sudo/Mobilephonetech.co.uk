@@ -81,13 +81,40 @@ service cloud.firestore {
     // immutable from the client: it is display-only, but letting someone set
     // it to "admin" would be misleading at best and, if any future code ever
     // trusted it, a privilege escalation.
+    // The saved delivery address (src/lib/profileAddress.ts). Checkout writes
+    // it now, so its shape is held to exactly what that writes: these keys,
+    // bounded strings, and a pin that is a real coordinate. Staff open the
+    // pin before booking a courier, so it must never be something else.
+    function validPin(p) {
+      return p == null
+          || (p is map
+              && p.keys().hasOnly(['lat', 'lng', 'pinned'])
+              && p.lat is number && p.lat >= -90 && p.lat <= 90
+              && p.lng is number && p.lng >= -180 && p.lng <= 180
+              && (!('pinned' in p) || p.pinned is bool));
+    }
+    function validProfileAddress(a) {
+      return a is map
+          && a.keys().hasOnly(['line1', 'line2', 'city', 'postcode', 'country', 'location'])
+          && (!('line1' in a) || (a.line1 is string && a.line1.size() <= 200))
+          && (!('line2' in a) || (a.line2 is string && a.line2.size() <= 200))
+          && (!('city' in a) || (a.city is string && a.city.size() <= 100))
+          && (!('postcode' in a) || (a.postcode is string && a.postcode.size() <= 20))
+          && (!('country' in a) || (a.country is string && a.country.size() <= 100))
+          && (!('location' in a) || validPin(a.location));
+    }
+
     match /users/{uid} {
       allow read: if isSelf(uid) || isAdmin();
       allow create: if isSelf(uid)
                     && (!request.resource.data.keys().hasAny(['role'])
-                        || request.resource.data.role == 'customer');
+                        || request.resource.data.role == 'customer')
+                    && (!('address' in request.resource.data)
+                        || validProfileAddress(request.resource.data.address));
       allow update: if isSelf(uid)
-                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'welcomeEmailSentAt']));
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'welcomeEmailSentAt']))
+                    && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['address'])
+                        || validProfileAddress(request.resource.data.address));
       allow delete: if false;
 
       // Cart and wishlist are private to their owner. Admins are deliberately

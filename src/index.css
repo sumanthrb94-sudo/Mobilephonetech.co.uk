@@ -294,6 +294,19 @@ body {
   }
 }
 
+/* Email and phone: one column on a phone, where an email address needs the
+   whole width, side by side from a small tablet up. */
+.checkout-contact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .checkout-contact-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
 /* Express-pay buttons — slightly shorter on phones so three stacked
    buttons don't eat the whole viewport */
 .express-pay-btn {

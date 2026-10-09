@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Package, MapPin, Lock, ChevronRight, ChevronLeft, Edit3, Check, X, Eye, EyeOff, LogOut, ShoppingBag, Heart, LifeBuoy, Truck, RotateCcw, FileText, ShieldCheck, Cookie, BatteryCharging } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'motion/react';
@@ -12,15 +12,12 @@ import AuthModal from './AuthModal';
 import { setSignInScreen } from '../lib/signInScreen';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { COMPANY, companyDetailsComplete } from '../config/company';
-import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
+import AddressFields from './AddressFields';
+import { EMPTY_ADDRESS, formatAddressLines, pinMapUrl, type AddressDraft } from '../utils/address';
+import { loadSavedAddress, saveProfileAddress } from '../lib/profileAddress';
 import ReturnFlowModal from './ReturnFlowModal';
 import { listMyReturns, isReturnable, RETURN_STATUS_LABEL, WARRANTY_MONTHS } from '../lib/returns';
 import type { ReturnItem, ReturnRequest } from '../types';
-
-// Same lazy split as checkout, and for the same reason: Leaflet plus its
-// stylesheet is ~42KB gzipped, wanted only by someone who pressed Find
-// address on this tab specifically, not by every visit to My Account.
-const AddressMap = lazy(() => import('./AddressMap'));
 
 type Tab = 'profile' | 'orders' | 'addresses' | 'security';
 
@@ -163,40 +160,18 @@ export default function AccountPage() {
   const [returns, setReturns] = useState<ReturnRequest[]>([]);
   const [returnOrder, setReturnOrder] = useState<{ id: string; createdAt: string; items: ReturnItem[] } | null>(null);
 
-  // Address state
-  const [address, setAddress] = useState({ line1: '', line2: '', city: '', postcode: '', country: 'United Kingdom' });
+  // Address state. `savedAddress` is what is on file (null: nothing yet);
+  // `addressDraft` is the form while editing. The form is AddressFields —
+  // the same component checkout uses, postcode lookup and map included.
+  const [savedAddress, setSavedAddress] = useState<AddressDraft | null>(null);
+  // 'order' while what is shown came from the last order rather than the
+  // profile, so the card can say so and offer to keep it.
+  const [savedFrom, setSavedFrom] = useState<'profile' | 'order' | null>(null);
+  const [addressLoaded, setAddressLoaded] = useState(false);
+  const [addressDraft, setAddressDraft] = useState<AddressDraft>(EMPTY_ADDRESS);
   const [editingAddress, setEditingAddress] = useState(false);
   const [savingAddress, setSavingAddress] = useState(false);
-
-  // Postcode lookup, same as checkout's: a union rather than a bag of
-  // booleans so "loading and errored" is not a state this can reach.
-  type LookupState =
-    | { status: 'idle' }
-    | { status: 'loading' }
-    | { status: 'found'; place: PostcodePlace }
-    | { status: 'error'; message: string };
-  const [addressLookup, setAddressLookup] = useState<LookupState>({ status: 'idle' });
-  const [postcodeQuery, setPostcodeQuery] = useState('');
-
-  async function runAddressLookup() {
-    const typed = postcodeQuery.trim();
-    setAddressLookup({ status: 'loading' });
-    const result = await lookupPostcode(typed);
-    if (!result.ok) {
-      setAddressLookup({ status: 'error', message: result.message });
-      return;
-    }
-    const { place } = result;
-    setAddress((a) => ({
-      ...a,
-      postcode: place.postcode,
-      city: place.town || a.city,
-      // County has no field of its own here either; line 2 is where it
-      // belongs, and only if nothing is already sitting there.
-      line2: !a.line2 && place.county && place.county !== place.town ? place.county : a.line2,
-    }));
-    setAddressLookup({ status: 'found', place });
-  }
+  const [addressError, setAddressError] = useState('');
 
   // Security state
   const [newPw, setNewPw] = useState('');
@@ -258,9 +233,14 @@ export default function AccountPage() {
       if (data) {
         setFullName((data.fullName as string) ?? user!.fullName);
         setPhone((data.phone as string) ?? '');
-        if (data.address) setAddress(data.address as typeof address);
       }
     } catch { /* fall back to the values already in state */ }
+    // Read through the same helper checkout uses, so the two cannot disagree
+    // about where the address lives or what shape it is in.
+    const saved = await loadSavedAddress(user!.id).catch(() => null);
+    setSavedAddress(saved?.address ?? null);
+    setSavedFrom(saved?.source ?? null);
+    setAddressLoaded(true);
   }
 
   async function loadOrders() {
@@ -306,16 +286,33 @@ export default function AccountPage() {
     setTimeout(() => setProfileSaved(false), 3000);
   }
 
+  function startEditingAddress() {
+    setAddressDraft(savedAddress ? { ...savedAddress } : { ...EMPTY_ADDRESS });
+    setAddressError('');
+    setEditingAddress(true);
+  }
+
   async function saveAddress() {
     if (!session) return;
+    const missing = !addressDraft.addressLine1.trim() ? 'Enter your house number and street.'
+      : !addressDraft.city.trim() ? 'Enter your town or city.'
+      : !/^[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}$/i.test(addressDraft.postalCode.trim()) ? 'Enter a valid UK postcode.'
+      : '';
+    if (missing) { setAddressError(missing); return; }
     setSavingAddress(true);
-    await setDoc(
-      doc(db, COL.users, user!.id),
-      { address, updatedAt: serverTimestamp() },
-      { merge: true },
-    ).catch(() => { /* surfaced by the unchanged UI state */ });
-    setSavingAddress(false);
-    setEditingAddress(false);
+    setAddressError('');
+    try {
+      await saveProfileAddress(user!.id, addressDraft);
+      setSavedAddress({ ...addressDraft });
+      setSavedFrom('profile');
+      setEditingAddress(false);
+    } catch {
+      // Used to be swallowed, leaving the form closed and the old address
+      // showing as if it had saved.
+      setAddressError('We could not save your address. Please try again.');
+    } finally {
+      setSavingAddress(false);
+    }
   }
 
   async function changePassword() {
@@ -768,96 +765,64 @@ export default function AccountPage() {
                 </div>
               )}
 
-              {/* ── Addresses tab ── */}
+              {/* ── Addresses tab ──
+                  Was four grey read-only boxes reading "Not set" — for every
+                  customer, because checkout never wrote the profile this
+                  read. Now an address card when there is one, an invitation
+                  when there is not, and checkout's own form for editing. */}
               {openTab === 'addresses' && (
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: 0 }}>Saved address</h2>
-                    {!editingAddress ? (
-                      <button onClick={() => setEditingAddress(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
+                  <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 18, fontWeight: 800, color: 'var(--black)', margin: '0 0 16px' }}>Delivery address</h2>
+
+                  {!addressLoaded && !editingAddress && (
+                    <div aria-busy="true" style={{ height: 96, borderRadius: 'var(--radius-lg)', background: 'var(--grey-5)' }} />
+                  )}
+
+                  {addressLoaded && !editingAddress && savedAddress && (
+                    <div data-testid="saved-address" style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '14px 16px', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-lg)', background: 'var(--grey-0)' }}>
+                      <MapPin size={18} aria-hidden="true" style={{ color: 'var(--grey-50)', flexShrink: 0, marginTop: 2 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <address style={{ fontStyle: 'normal', fontFamily: 'var(--font-body)', fontSize: 14, lineHeight: 1.55, color: 'var(--black)' }}>
+                          {fullName && <strong style={{ display: 'block', fontWeight: 700 }}>{fullName}</strong>}
+                          {formatAddressLines(savedAddress).map(l => <span key={l} style={{ display: 'block' }}>{l}</span>)}
+                        </address>
+                        <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--grey-50)', margin: '6px 0 0' }}>
+                          {savedFrom === 'order' ? 'From your last order. Save it to keep it on your account.' : 'Used to pre-fill checkout.'}
+                          {savedAddress.location?.pinned && (
+                            <> · <a href={pinMapUrl(savedAddress.location)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--brand-cyan-hover)' }}>Pinned on map</a></>
+                          )}
+                        </p>
+                      </div>
+                      <button type="button" onClick={startEditingAddress} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 999, border: '1px solid var(--grey-20)', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--grey-70)', cursor: 'pointer', flexShrink: 0 }}>
                         <Edit3 size={13} /> Edit
                       </button>
-                    ) : (
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        <button onClick={() => setEditingAddress(false)} style={{ padding: '8px 14px', borderRadius: 999, border: '1.5px solid #e5e7eb', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                        <button onClick={saveAddress} disabled={savingAddress} style={{ padding: '8px 16px', borderRadius: 999, border: 'none', background: 'var(--black)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer' }}>
+                    </div>
+                  )}
+
+                  {addressLoaded && !editingAddress && !savedAddress && (
+                    <div style={{ padding: '20px 16px', border: '1px dashed var(--grey-20)', borderRadius: 'var(--radius-lg)', textAlign: 'center' }}>
+                      <MapPin size={22} aria-hidden="true" style={{ color: 'var(--grey-40)', marginBottom: 6 }} />
+                      <p style={{ fontFamily: 'var(--font-body)', fontSize: 14, color: 'var(--grey-70)', margin: '0 0 12px' }}>
+                        No delivery address yet. Add one and checkout will fill it in for you.
+                      </p>
+                      <button type="button" onClick={startEditingAddress} className="btn btn-primary btn-md">Add address</button>
+                    </div>
+                  )}
+
+                  {editingAddress && (
+                    <form onSubmit={(e) => { e.preventDefault(); void saveAddress(); }} noValidate>
+                      <AddressFields value={addressDraft} onChange={setAddressDraft} />
+                      {addressError && (
+                        <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-sale)', margin: '12px 0 0' }}>{addressError}</p>
+                      )}
+                      <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 16 }}>
+                        <button type="button" onClick={() => setEditingAddress(false)} style={{ padding: '10px 16px', borderRadius: 999, border: '1px solid var(--grey-20)', background: 'white', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                        <button type="submit" disabled={savingAddress} style={{ padding: '10px 18px', borderRadius: 999, border: 'none', background: 'var(--black)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 700, color: 'white', cursor: 'pointer', opacity: savingAddress ? 0.6 : 1 }}>
                           {savingAddress ? 'Saving…' : 'Save address'}
                         </button>
                       </div>
-                    )}
-                  </div>
-                  {editingAddress && (
-                    <div style={{ marginBottom: 20 }}>
-                      <label style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                        Postcode lookup
-                      </label>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', marginBottom: 12 }}>
-                        <input
-                          value={postcodeQuery}
-                          onChange={(e) => { setPostcodeQuery(e.target.value); if (addressLookup.status !== 'idle') setAddressLookup({ status: 'idle' }); }}
-                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void runAddressLookup(); } }}
-                          placeholder="e.g. SW1A 1AA"
-                          autoComplete="postal-code"
-                          style={{ ...inputStyle, flex: 1 }}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => { void runAddressLookup(); }}
-                          disabled={addressLookup.status === 'loading'}
-                          className="btn btn-secondary btn-md"
-                        >
-                          {addressLookup.status === 'loading' ? 'Finding…' : 'Find address'}
-                        </button>
-                      </div>
-                      <div aria-live="polite">
-                        {addressLookup.status === 'error' && (
-                          <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--color-sale)', margin: '0 0 12px 0' }}>
-                            {addressLookup.message}
-                          </p>
-                        )}
-                        {addressLookup.status === 'found' && (
-                          <div style={{ marginBottom: 12 }}>
-                            <p style={{ fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--grey-70)', margin: '0 0 8px 0' }}>
-                              Found <strong style={{ color: 'var(--black)' }}>{addressLookup.place.postcode}</strong>
-                              {addressLookup.place.town ? <> — {addressLookup.place.town}</> : null}
-                              . Add your house number and street below.
-                            </p>
-                            {hasCoordinates(addressLookup.place) && (
-                              <Suspense fallback={<div style={{ height: 170, borderRadius: 'var(--radius-lg)', background: 'var(--grey-5)', border: '1px solid var(--grey-20)' }} />}>
-                                <AddressMap
-                                  latitude={addressLookup.place.latitude}
-                                  longitude={addressLookup.place.longitude}
-                                  label={addressLookup.place.postcode}
-                                />
-                              </Suspense>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <p style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--grey-50)', margin: 0 }}>
-                        Checks your postcode and fills in the town and county. Your house number and street are yours to add.
-                      </p>
-                    </div>
+                    </form>
                   )}
-                  <div className="account-field-row">
-                    {[
-                      { label: 'Address line 1', key: 'line1' as const, col: '1 / -1' },
-                      { label: 'Address line 2 (optional)', key: 'line2' as const, col: '1 / -1' },
-                      { label: 'City', key: 'city' as const },
-                      { label: 'Postcode', key: 'postcode' as const },
-                    ].map(({ label, key, col }) => (
-                      <div key={key} style={{ gridColumn: col }}>
-                        <label style={{ display: 'block', fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 700, color: '#374151', marginBottom: 6, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</label>
-                        {editingAddress ? (
-                          <input value={address[key]} onChange={e => setAddress(a => ({ ...a, [key]: e.target.value }))} style={inputStyle} />
-                        ) : (
-                          <div style={{ padding: '10px 14px', borderRadius: 10, background: 'var(--grey-5)', fontFamily: 'var(--font-body)', fontSize: 14, color: '#111827' }}>
-                            {address[key] || <span style={{ color: '#9ca3af' }}>Not set</span>}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
 

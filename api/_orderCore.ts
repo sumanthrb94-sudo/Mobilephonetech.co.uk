@@ -1,6 +1,7 @@
 import { sendEmail, looksLikeEmail } from './_email.js';
 import { orderConfirmationEmail, newOrderAlertEmail } from './_templates.js';
 import { COMPANY } from '../src/config/company.js';
+import { sanitiseLocation } from '../src/utils/address.js';
 
 /**
  * The shared heart of ordering: price a basket, reserve its stock, write it,
@@ -120,6 +121,7 @@ export async function priceAndValidate(
   if (!clean(address.postalCode ?? address.postcode, 20)) return fail(400, 'A postcode is required');
 
   const contactPhone = clean(address.phone, 40);
+  const pin = sanitiseLocation(address.location);
   if (!contactPhone) return fail(400, 'A contact phone number is required for delivery');
 
   const accountEmail = clean(caller?.email, 254);
@@ -258,6 +260,9 @@ export async function priceAndValidate(
       city: clean(address.city, 100),
       postalCode: clean(address.postalCode ?? address.postcode, 20),
       country: clean(address.country, 100) || 'United Kingdom',
+      // The customer's map pin, when they had a map: re-validated here like
+      // every other field, and simply absent when missing or malformed.
+      ...(pin ? { location: pin } : {}),
     },
     items: priced,
     createdAt: now,

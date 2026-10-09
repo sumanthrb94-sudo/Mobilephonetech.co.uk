@@ -1,14 +1,16 @@
-import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
 import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn, MapPin } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
 import ProductImage from './ProductImage';
 import PayPalCheckout, { PayPalPayload, isPayPalConfigured } from './PayPalCheckout';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
-import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
+import AddressFields, { Field, fieldLabelStyle } from './AddressFields';
+import { EMPTY_ADDRESS, fromStoredAddress, isAddressEmpty, sameAddress, sanitiseLocation, type AddressDraft } from '../utils/address';
+import { loadSavedAddress, saveProfileAddress } from '../lib/profileAddress';
 import { estimateArrival } from '../../api/_deliveryEstimate';
 import { auth } from '../lib/firebase';
 
@@ -26,11 +28,6 @@ import { auth } from '../lib/firebase';
 // checkout, so there is now exactly one, and it is the one that works.
 
 const PAYPAL_METHOD = { brand: 'PayPal', last4: 'PYPL', display: 'PayPal' } as const;
-
-/* Leaflet plus its stylesheet is ~42KB gzipped and is only ever wanted by a
-   shopper who pressed Find address. Split out so checkout — the page least
-   able to afford weight — never loads it for anyone else. */
-const AddressMap = lazy(() => import('./AddressMap'));
 
 /**
  * CheckoutFlow — three-step buy flow (shipping → payment → review → confirmation).
@@ -56,65 +53,37 @@ export default function CheckoutFlow() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   /**
-   * The postcode lookup's one piece of state. A union rather than a bag of
-   * booleans: "loading and errored and found" is not a state this can reach
-   * by construction, so it cannot be rendered by accident either.
+   * The address half of the form, controlled and shared with My Account
+   * through AddressFields. Name, email and phone stay uncontrolled below —
+   * they already fall back to the signed-in user's own details.
    */
-  type LookupState =
-    | { status: 'idle' }
-    | { status: 'loading' }
-    | { status: 'found'; place: PostcodePlace }
-    | { status: 'error'; message: string };
-  const [lookupState, setLookupState] = useState<LookupState>({ status: 'idle' });
+  const [addressDraft, setAddressDraft] = useState<AddressDraft>(
+    () => fromStoredAddress(shippingAddress) ?? { ...EMPTY_ADDRESS },
+  );
+  const isAccount = Boolean(user && !user.isGuest);
+  // Save to the profile unless told not to. On by default because the
+  // overwhelming case is "my address"; the box exists for the gift sent to
+  // someone else's door, which should not replace your own.
+  const [saveToAccount, setSaveToAccount] = useState(true);
+  // What the profile held when the form opened, so a repeat order to the
+  // same door does not rewrite it every time.
+  const savedOnProfile = useRef<AddressDraft | null>(null);
 
-  /**
-   * Look the postcode up and fill in what came back.
-   *
-   * Writes through the DOM nodes rather than through state because this form
-   * is uncontrolled — defaultValue plus FormData on submit — so the inputs
-   * ARE the source of truth here, and setting state instead would leave the
-   * boxes showing the old values while the submit sent new ones. The pattern
-   * matches the "use this address" shortcut above it.
-   *
-   * Only ever fills the town, county and postcode. The house number and
-   * street are left alone even when empty: the old demo invented "1 <some
-   * street>" and a plausible wrong address that a shopper skims past is how
-   * a parcel goes to the wrong door.
-   */
-  const runPostcodeLookup = async () => {
-    const field = document.getElementById('postcode-lookup') as HTMLInputElement | null;
-    const typed = field?.value?.trim() ?? '';
-
-    setLookupState({ status: 'loading' });
-    const result = await lookupPostcode(typed);
-
-    if (!result.ok) {
-      setLookupState({ status: 'error', message: result.message });
-      return;
-    }
-
-    const { place } = result;
-    const set = (name: string, value: string, { overwrite = true } = {}) => {
-      const el = document.querySelector<HTMLInputElement>(`input[name="${name}"]`);
-      if (!el || !value) return;
-      if (!overwrite && el.value.trim()) return;
-      el.value = value;
-    };
-
-    set('postalCode', place.postcode);
-    set('city', place.town);
-    // County has no field of its own; line 2 is where it belongs, and only
-    // if the shopper has not already put something there.
-    if (place.county && place.county !== place.town) {
-      set('addressLine2', place.county, { overwrite: false });
-    }
-
-    setLookupState({ status: 'found', place });
-
-    // Straight to the one thing still to type.
-    const line1 = document.querySelector<HTMLInputElement>('input[name="addressLine1"]');
-    line1?.focus();
-  };
+  // A signed-in customer gets their saved address — from the profile, or
+  // failing that their last order — when this device has nothing for them.
+  // Only fills an untouched form: anything typed meanwhile wins.
+  useEffect(() => {
+    if (!isAccount || !user) return;
+    let cancelled = false;
+    void loadSavedAddress(user.id).then((saved) => {
+      if (cancelled || !saved) return;
+      if (saved.source === 'profile') savedOnProfile.current = saved.address;
+      setAddressDraft((current) => (isAddressEmpty(current) ? saved.address : current));
+      const phoneBox = document.querySelector<HTMLInputElement>('input[name="phone"]');
+      if (phoneBox && !phoneBox.value.trim() && saved.phone) phoneBox.value = saved.phone;
+    });
+    return () => { cancelled = true; };
+  }, [isAccount, user?.id]);
 
   // Why the server refused the order, shown on the review step. Empty when
   // there is nothing wrong.
@@ -239,8 +208,8 @@ export default function CheckoutFlow() {
     const formData = new FormData(e.currentTarget);
     const data = {
       fullName: formData.get('fullName'), email: formData.get('email'), phone: formData.get('phone'),
-      addressLine1: formData.get('addressLine1'), addressLine2: formData.get('addressLine2'),
-      city: formData.get('city'), postalCode: formData.get('postalCode'), country: formData.get('country') || 'United Kingdom',
+      addressLine1: addressDraft.addressLine1, addressLine2: addressDraft.addressLine2,
+      city: addressDraft.city, postalCode: addressDraft.postalCode, country: addressDraft.country || 'United Kingdom',
     };
 
     const errors = validateShippingForm(data);
@@ -250,7 +219,23 @@ export default function CheckoutFlow() {
     }
 
     setFormErrors({});
-    setShippingAddress(data as ShippingAddress);
+    // The pin travels with the address so staff can see the door; the server
+    // re-validates it like every other field (api/_orderCore.ts).
+    const location = sanitiseLocation(addressDraft.location);
+    setShippingAddress({ ...(data as ShippingAddress), ...(location ? { location } : {}) });
+
+    // Remember it on the account — the step that was missing, and why My
+    // Account → Addresses said "Not set" for customers with orders. Best
+    // effort: a failed profile write must never stand between someone and
+    // paying.
+    if (isAccount && user && saveToAccount && !sameAddress(savedOnProfile.current, addressDraft)) {
+      const uid = user.id;
+      const toSave = { ...addressDraft };
+      saveProfileAddress(uid, toSave)
+        .then(() => { savedOnProfile.current = toSave; })
+        .catch(() => { /* the order still carries the address */ });
+    }
+
     setCurrentStep('payment');
   };
 
@@ -506,7 +491,6 @@ export default function CheckoutFlow() {
 
   // ── COMMON STYLES ──────────────────────────────────────────────────────────
   const inputStyle = { width: '100%', padding: '14px 16px', background: 'var(--grey-0)', border: '1px solid var(--grey-20)', borderRadius: 'var(--radius-md)', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--black)', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' as const };
-  const labelStyle = { display: 'block', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, color: 'var(--black)', marginBottom: '8px' };
   const errorStyle = { fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--color-sale)', marginTop: '4px' };
 
   return (
@@ -593,171 +577,59 @@ export default function CheckoutFlow() {
               {/* Shipping Form */}
               {currentStep === 'shipping' && checkoutMode === 'shipping' && (
                 <motion.form key="shipping" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handleShippingSubmit} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
-                  {/* Selected-address preview — demo-seeded, shown pre-filled so the
-                      walk-through flows straight through; still editable below. */}
-                  {shippingAddress?.addressLine1 && (
-                    <div
-                      role="status"
-                      aria-label="Delivering to"
-                      style={{
-                        display: 'flex', alignItems: 'flex-start', gap: '14px',
-                        padding: '14px 16px',
-                        borderRadius: 'var(--radius-lg)',
-                        background: 'var(--color-brand-subtle)',
-                        border: '1px solid rgba(0,108,73,0.25)',
-                        marginBottom: 'var(--spacing-24)',
-                      }}
-                    >
-                      <MapPin size={18} style={{ color: 'var(--brand-cyan-hover)', flexShrink: 0, marginTop: '2px' }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-sans)',
-                            fontSize: '11px',
-                            fontWeight: 800,
-                            letterSpacing: '0.08em',
-                            textTransform: 'uppercase',
-                            color: 'var(--brand-cyan-hover)',
-                            marginBottom: '4px',
-                          }}
-                        >
-                          Delivering to
-                        </div>
-                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', marginBottom: '2px' }}>
-                          {shippingAddress.fullName}
-                        </div>
-                        <div style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)', lineHeight: 1.5 }}>
-                          {shippingAddress.addressLine1}
-                          {shippingAddress.addressLine2 ? `, ${shippingAddress.addressLine2}` : ''}
-                          {' · '}{shippingAddress.city}{' '}{shippingAddress.postalCode}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const el = document.querySelector<HTMLInputElement>('input[name="addressLine1"]');
-                          el?.focus();
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }}
-                        style={{
-                          background: 'transparent',
-                          border: 'none',
-                          color: 'var(--brand-cyan-hover)',
-                          fontFamily: 'var(--font-body)',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          letterSpacing: '0.04em',
-                          textTransform: 'uppercase',
-                          cursor: 'pointer',
-                          flexShrink: 0,
-                        }}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: 'var(--spacing-24)', flexWrap: 'wrap' }}>
-                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 5vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.15 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+                    <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(20px, 4.5vw, 24px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0, lineHeight: 1.15 }}>
                       Shipping address
                     </h2>
                     {!isAuthenticated && (
-                      <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change mode</button>
+                      <button type="button" onClick={() => setCheckoutMode('selection')} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Change mode</button>
                     )}
                   </div>
 
-                  {/* Postcode lookup — real, against postcodes.io.
-                      What it fills is the town and county, checked against
-                      the ONS database, plus a map of where that postcode is.
-                      It does NOT offer a list of houses to pick from: that
-                      list is Royal Mail's PAF and PAF is licensed. See
-                      src/utils/postcodeLookup.ts. */}
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', marginBottom: 'var(--spacing-12)' }}>
-                    <div style={{ flex: 1 }}>
-                      <label style={labelStyle} htmlFor="postcode-lookup">Postcode lookup</label>
-                      <input
-                        type="text"
-                        id="postcode-lookup"
-                        name="postcodeLookup"
-                        placeholder="e.g. SW1A 1AA"
-                        autoComplete="postal-code"
-                        style={inputStyle}
-                        aria-describedby="postcode-lookup-hint"
-                        onChange={() => { if (lookupState.status !== 'idle') setLookupState({ status: 'idle' }); }}
-                        onKeyDown={(e) => {
-                          // Enter in this field means "look up", not "submit
-                          // the whole checkout" — which is what it meant
-                          // before, one keystroke from a half-filled address.
-                          if (e.key === 'Enter') { e.preventDefault(); void runPostcodeLookup(); }
-                        }}
+                  {/* Compact on purpose: 44px fields (the .input class), 12px
+                      between rows, two columns where two short answers sit
+                      naturally side by side. The address itself — postcode,
+                      town, map, street — is AddressFields, the same component
+                      My Account edits with. */}
+                  <div style={{ display: 'grid', gap: '12px' }}>
+                    <Field label="Full name" name="fullName" autoComplete="name" defaultValue={shippingAddress?.fullName || user?.fullName || ''} error={formErrors.fullName} />
+                    <div className="checkout-contact-row">
+                      <Field
+                        label="Email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        defaultValue={shippingAddress?.email || user?.email || ''}
+                        error={formErrors.email}
+                        // The receipt always goes to the account address; a
+                        // different one typed here gets a copy as well.
+                        hint={isAuthenticated && user?.email ? <>Receipt goes to {user.email}; a different email here gets a copy too.</> : undefined}
                       />
+                      <Field label="Phone" name="phone" type="tel" autoComplete="tel" defaultValue={shippingAddress?.phone || user?.phoneNumber || ''} error={formErrors.phone} />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => { void runPostcodeLookup(); }}
-                      disabled={lookupState.status === 'loading'}
-                      className="btn btn-secondary btn-md"
-                    >
-                      {lookupState.status === 'loading' ? 'Finding…' : 'Find address'}
-                    </button>
+                    <AddressFields value={addressDraft} onChange={setAddressDraft} errors={formErrors} />
                   </div>
 
-                  {/* One live region for every outcome, so a screen reader is
-                      told what happened without hunting for it. */}
-                  <div aria-live="polite">
-                    {lookupState.status === 'error' && (
-                      <p role="alert" style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--color-sale)', margin: '0 0 var(--spacing-12) 0' }}>
-                        {lookupState.message}
-                      </p>
-                    )}
-                    {lookupState.status === 'found' && (
-                      <div style={{ marginBottom: 'var(--spacing-12)' }}>
-                        <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-70)', margin: '0 0 8px 0' }}>
-                          Found <strong style={{ color: 'var(--black)' }}>{lookupState.place.postcode}</strong>
-                          {lookupState.place.town ? <> — {lookupState.place.town}</> : null}
-                          . Add your house number and street below.
-                        </p>
-                        {hasCoordinates(lookupState.place) && (
-                          <Suspense fallback={<div style={{ height: 170, borderRadius: 'var(--radius-lg)', background: 'var(--grey-5)', border: '1px solid var(--grey-20)' }} />}>
-                            <AddressMap
-                              latitude={lookupState.place.latitude}
-                              longitude={lookupState.place.longitude}
-                              label={lookupState.place.postcode}
-                            />
-                          </Suspense>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  <p id="postcode-lookup-hint" style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', margin: '0 0 var(--spacing-24) 0' }}>
-                    Checks your postcode and fills in the town and county. Your house number and street are yours to add.
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Full Name</label><input type="text" name="fullName" defaultValue={shippingAddress?.fullName || user?.fullName || ''} style={inputStyle} />{formErrors.fullName && <p style={errorStyle}>{formErrors.fullName}</p>}</div>
-                    <div><label style={labelStyle}>Email</label><input type="email" name="email" defaultValue={shippingAddress?.email || user?.email || ''} style={inputStyle} />{isAuthenticated && user?.email && (
-                      <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', marginTop: '6px', lineHeight: 1.45 }}>
-                        Your receipt always goes to <strong style={{ color: 'var(--grey-60)' }}>{user.email}</strong>. Enter a different address here and we will send it to <strong style={{ color: 'var(--grey-60)' }}>both</strong>.
-                      </p>
-                    )}{formErrors.email && <p style={errorStyle}>{formErrors.email}</p>}</div>
-                    <div><label style={labelStyle}>Phone</label><input type="tel" name="phone" defaultValue={shippingAddress?.phone || user?.phoneNumber || ''} style={inputStyle} />{formErrors.phone && <p style={errorStyle}>{formErrors.phone}</p>}</div>
-                    <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address Line 1</label><input type="text" name="addressLine1" defaultValue={shippingAddress?.addressLine1} style={inputStyle} />{formErrors.addressLine1 && <p style={errorStyle}>{formErrors.addressLine1}</p>}</div>
-                    <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address Line 2 (Optional)</label><input type="text" name="addressLine2" defaultValue={shippingAddress?.addressLine2} style={inputStyle} /></div>
-                    <div><label style={labelStyle}>City</label><input type="text" name="city" defaultValue={shippingAddress?.city} style={inputStyle} />{formErrors.city && <p style={errorStyle}>{formErrors.city}</p>}</div>
-                    <div><label style={labelStyle}>Postal Code</label><input type="text" name="postalCode" defaultValue={shippingAddress?.postalCode} style={inputStyle} />{formErrors.postalCode && <p style={errorStyle}>{formErrors.postalCode}</p>}</div>
-                  </div>
+                  {isAccount && (
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-70)', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={saveToAccount} onChange={(e) => setSaveToAccount(e.target.checked)} style={{ width: 16, height: 16, accentColor: 'var(--black)' }} />
+                      Save this address to my account
+                    </label>
+                  )}
 
                   {/* Gift message toggle */}
-                  <details style={{ marginTop: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '12px 16px' }}>
-                    <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-sans)', fontWeight: 700, fontSize: '14px', color: 'var(--black)' }}>
-                      🎁 Add a gift message <span style={{ color: 'var(--grey-50)', fontWeight: 500 }}>— free</span>
+                  <details style={{ marginTop: '12px', borderTop: '1px solid var(--grey-10)', paddingTop: '12px' }}>
+                    <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '13px', color: 'var(--grey-70)' }}>
+                      Add a gift message <span style={{ color: 'var(--grey-50)', fontWeight: 500 }}>— free</span>
                     </summary>
+                    <label htmlFor="gift-message" style={{ ...fieldLabelStyle, marginTop: '10px' }}>Message</label>
                     <textarea
+                      id="gift-message"
                       name="giftMessage"
                       maxLength={200}
-                      placeholder="Your message (max 200 characters)"
-                      style={{ ...inputStyle, marginTop: '10px', minHeight: '64px', padding: '10px 12px', resize: 'vertical', fontFamily: 'var(--font-body)' }}
+                      placeholder="Up to 200 characters"
+                      className="input"
+                      style={{ height: 'auto', minHeight: '64px', padding: '10px 12px', resize: 'vertical' }}
                     />
                   </details>
 
