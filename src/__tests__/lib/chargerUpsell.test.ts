@@ -35,3 +35,29 @@ describe('chargerUpsellFor', () => {
     }])).toBeNull();
   });
 });
+
+describe('the upsell charger is stock, not sample data', () => {
+  it('is not on the list the catalogue import page offers to delete', async () => {
+    // It once was, so the import page offered it for deletion with the demo
+    // phones, and the "Add a charger" option vanished from every phone page.
+    const { default: sampleIds } = await import('../../data/catalogue/legacySampleIds.json');
+    expect(sampleIds).not.toContain('lehart-usb-c-fast-charger-brick-with-cable');
+  });
+});
+
+describe('a charger re-created in the admin', () => {
+  const recreated = { ...phone('LeHart'), id: 'lehart-20w-usb-c-charger', model: '20W USB-C Fast Charger', category: 'Accessories' as const, price: 19, stock: 5 };
+
+  it('is offered even though its id differs from the original', () => {
+    expect(chargerUpsellFor(phone('Apple'), [recreated])?.product.id).toBe('lehart-20w-usb-c-charger');
+  });
+
+  it('is not offered when it is out of stock', () => {
+    expect(chargerUpsellFor(phone('Apple'), [{ ...recreated, stock: 0 }])).toBeNull();
+  });
+
+  it('never offers a phone as the charger', () => {
+    const phoneNamedCharger = { ...phone('Apple'), id: 'x', model: 'USB-C Charger Phone', stock: 3 };
+    expect(chargerUpsellFor(phone('Apple'), [phoneNamedCharger])).toBeNull();
+  });
+});
