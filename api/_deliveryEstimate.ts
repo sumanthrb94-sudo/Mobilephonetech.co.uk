@@ -40,7 +40,33 @@ export const UK_DELIVERY_MAP: Record<string, { region: string; days: number }> =
   BT: { region: 'Belfast',     days: 3 },
 };
 
-export const CUTOFF_HOUR = 14; // 2 PM
+/**
+ * Dispatch cut-off, UK time: 4pm. The site has always promised "order before
+ * 4pm" (product page, delivery policy, FAQ) while this said 2pm, so an order
+ * at 3pm was told it would arrive a day later than every page had promised.
+ */
+export const CUTOFF_HOUR = 16;
+
+/**
+ * The hour and weekday in the UK, whatever clock this runs on. The server runs
+ * on UTC, so getHours() there was an hour behind for the whole of British
+ * Summer Time — a 4.30pm order read as 3.30pm and was promised a day early.
+ */
+export function ukClock(at: Date): { hour: number; weekday: number } {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Europe/London', hour: 'numeric', hourCycle: 'h23', weekday: 'short',
+  }).formatToParts(at);
+  const hour = Number(parts.find((p) => p.type === 'hour')?.value ?? at.getHours());
+  const name = parts.find((p) => p.type === 'weekday')?.value ?? '';
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(name);
+  return { hour, weekday: weekday === -1 ? at.getDay() : weekday };
+}
+
+/** True when an order placed now is packed today: a weekday, before 4pm UK time. */
+export function dispatchesSameDay(at: Date): boolean {
+  const { hour, weekday } = ukClock(at);
+  return weekday !== 0 && weekday !== 6 && hour < CUTOFF_HOUR;
+}
 
 /** Weekends are not delivery days, so they do not count toward the estimate. */
 export function addWorkdays(from: Date, days: number): Date {
@@ -68,10 +94,17 @@ export function regionFor(postcode: unknown): string {
   return (UK_DELIVERY_MAP[areaOf(postcode)] ?? { region: 'UK', days: 2 }).region;
 }
 
-/** Working days added by the chosen service, over and above the base transit. */
+/**
+ * Working days of transit for each service. Next-day is the only service sold
+ * now; the delivery policy promises the next working day across mainland UK
+ * and two working days to Northern Ireland, the Highlands and the islands —
+ * the areas whose base transit here is three days or more. The other two keys
+ * stay so orders written before express and standard were withdrawn still
+ * quote the date they were promised.
+ */
 const SERVICE_ADJUSTMENT: Record<string, (base: number) => number> = {
-  nextday: () => 1,
-  next_day: () => 1,
+  nextday: (base) => (base >= 3 ? 2 : 1),
+  next_day: (base) => (base >= 3 ? 2 : 1),
   express: (base) => Math.max(1, base - 1),
   standard: (base) => base,
 };
@@ -100,16 +133,21 @@ export function estimateArrival(opts: {
   // all and silently fell through to standard — a next-day order quoted, and
   // then delivered, a day late.
   const method = String(opts.shippingMethod ?? '').toLowerCase().replace(/[^a-z]/g, '');
-  const key = Object.keys(SERVICE_ADJUSTMENT).find((k) => method.includes(k.replace('_', ''))) ?? 'standard';
+  // An order with no stored method is a next-day order: it is the only
+  // service there is. Older orders name theirs.
+  const key = method
+    ? Object.keys(SERVICE_ADJUSTMENT).find((k) => method.includes(k.replace('_', ''))) ?? 'standard'
+    : 'next_day';
   let days = SERVICE_ADJUSTMENT[key](base);
 
   const from = opts.from ? new Date(opts.from) : new Date();
   if (Number.isNaN(from.getTime())) return null;
 
-  // Ordered after the 2pm cut-off, so picking and packing starts the next
-  // working day. Quoting today's cut-off to someone who missed it is the
-  // single easiest way to be a day late on your own promise.
-  if (from.getHours() >= CUTOFF_HOUR) days += 1;
+  // Ordered after the 4pm cut-off, or at the weekend, so picking and packing
+  // starts the next working day. Quoting today's cut-off to someone who missed
+  // it is the single easiest way to be a day late on your own promise. A
+  // Saturday order used to be quoted Monday, the day it is dispatched.
+  if (!dispatchesSameDay(from)) days += 1;
 
   const date = addWorkdays(from, days);
   return { date, label: formatDate(date), region };

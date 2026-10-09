@@ -198,7 +198,7 @@ await Promise.all([
       headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
       body: JSON.stringify({
         items: [{ productId: 'apple-iphone-17', quantity: 1 }],
-        shippingOptionId: 'standard',
+        shippingOptionId: 'next_day',
         shippingAddress: {
           fullName: BUYER, addressLine1: '2 Concurrency Close', city: 'London',
           postalCode: 'NW1 6XE', phone: '07700900456', email: CUSTOMER_EMAIL,

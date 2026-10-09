@@ -147,9 +147,10 @@ const alarms = () => incidents().filter((i: Doc) => i.kind !== 'capture-attempt'
 const attempt = () => store.payment_incidents?.['PP-1'];
 
 describe('POST /api/paypal/capture', () => {
-  // £389 + £14.99 next-day, +20% VAT = £484.79. Standard shipping is free,
-  // so the default basket (no shippingOptionId) is £389 + 20% = £466.80.
-  const TOTAL = 466.8;
+  // Catalogue prices already include VAT, so nothing is added on top: the
+  // default basket (free next-day delivery) is exactly the £389 shown on the
+  // product page. This used to be £466.80, 20% more than advertised.
+  const TOTAL = 389;
 
   it('writes the order when the captured amount matches the re-priced basket', async () => {
     capturePayPalOrder.mockResolvedValue({

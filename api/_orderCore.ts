@@ -34,11 +34,17 @@ export class StockConflict extends Error {}
  * the warehouse. The screen, /api/delivery and this table must agree, and
  * src/__tests__/api/orderCoreShipping.test.ts drives this from the screen's
  * own list so they cannot drift apart again.
+ *
+ * One service now: free next-day, which is what the rest of the site has
+ * always promised. Checkout used to offer free 3-5 day standard and charge
+ * £19.99 for the next-day delivery the product page called free. Standard and
+ * express are gone rather than mapped: an id this table does not know is
+ * refused, never quietly re-priced. Orders written before keep the name and
+ * cost they stored.
  */
+const DEFAULT_SHIPPING = 'next_day';
 const SHIPPING: Record<string, { name: string; cost: number }> = {
-  standard: { name: 'Standard Delivery', cost: 0 },
-  express: { name: 'Express Delivery', cost: 9.99 },
-  next_day: { name: 'Next Day Delivery', cost: 19.99 },
+  next_day: { name: 'Free Next-Day Delivery', cost: 0 },
 };
 
 const COUPONS: Record<string, { type: 'percentage' | 'fixed'; value: number; minOrder?: number }> = {
@@ -47,7 +53,6 @@ const COUPONS: Record<string, { type: 'percentage' | 'fixed'; value: number; min
   REFURB15: { type: 'percentage', value: 15, minOrder: 200 },
 };
 
-const VAT_RATE = 0.2;
 const MAX_LINES = 20;
 const MAX_QTY_PER_LINE = 5;
 
@@ -68,6 +73,7 @@ export interface PricedOrder {
   discount: number;
   shippingCost: number;
   shippingMethod: string;
+  /** Always 0: prices include VAT. Kept so stored orders keep one shape. */
   tax: number;
   total: number;
   currency: 'GBP';
@@ -137,7 +143,7 @@ export async function priceAndValidate(
 
   // Unknown is refused, not defaulted. Defaulting to free standard delivery is
   // how a mis-keyed Next Day went out free for as long as it did.
-  const shippingId = String(body.shippingOptionId ?? 'standard');
+  const shippingId = String(body.shippingOptionId ?? DEFAULT_SHIPPING);
   const shipping = Object.prototype.hasOwnProperty.call(SHIPPING, shippingId) ? SHIPPING[shippingId] : null;
   if (!shipping) return fail(400, 'That delivery option is not available');
 
@@ -227,8 +233,14 @@ export async function priceAndValidate(
   }
 
   const shippingCost = money(shipping.cost);
-  const tax = money((subtotal - discount + shippingCost) * VAT_RATE);
-  const total = money(subtotal - discount + shippingCost + tax);
+  // Catalogue prices are what the customer sees on the product page, and UK
+  // consumer prices must already include VAT (Price Marking Order 2004). This
+  // once added 20% on top, so a £270 phone was charged £324. Nothing is added
+  // here; `tax` stays on the order as 0 so older orders, which stored a
+  // figure, still render. Refurbished stock may be sold under the VAT margin
+  // scheme, so no VAT amount is shown to the customer either.
+  const tax = 0;
+  const total = money(subtotal - discount + shippingCost);
   if (total < 0) return fail(400, 'That basket does not price correctly');
 
   const now = new Date().toISOString();

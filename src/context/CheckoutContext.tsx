@@ -107,6 +107,8 @@ export interface Order {
   subtotal: number;
   shippingCost: number;
   discount?: number;
+  couponCode?: string | null;
+  /** 0 on every new order: prices include VAT. Older orders stored a figure. */
   tax: number;
   total: number;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
@@ -165,26 +167,18 @@ interface CheckoutContextType {
 
 const CheckoutContext = createContext<CheckoutContextType | undefined>(undefined);
 
+/**
+ * The one delivery service: free next-day. Must match SHIPPING in
+ * api/_orderCore.ts (src/__tests__/api/orderCoreShipping.test.ts). Standard
+ * (free, 3-5 days) and Express (£9.99) were withdrawn, and Next Day was £19.99
+ * here while every other page called it free.
+ */
 const SHIPPING_OPTIONS: ShippingOption[] = [
   {
-    id: 'standard',
-    name: 'Standard Delivery',
-    description: 'Delivery in 3-5 business days',
-    cost: 0,
-    estimatedDays: 5,
-  },
-  {
-    id: 'express',
-    name: 'Express Delivery',
-    description: 'Delivery in 1-2 business days',
-    cost: 9.99,
-    estimatedDays: 2,
-  },
-  {
     id: 'next_day',
-    name: 'Next Day Delivery',
+    name: 'Free Next-Day Delivery',
     description: 'Delivery by next business day',
-    cost: 19.99,
+    cost: 0,
     estimatedDays: 1,
   },
 ];
@@ -324,7 +318,7 @@ export function CheckoutProvider({ children }: { children: React.ReactNode }) {
           selectedCondition: i.selectedCondition ?? null,
         })),
         shippingAddress: order.shippingAddress,
-        shippingOptionId: order.shippingOption?.id ?? 'standard',
+        shippingOptionId: order.shippingOption?.id ?? 'next_day',
         couponCode: appliedCoupon?.code ?? null,
         guestEmail: order.shippingAddress?.email ?? null,
       }),

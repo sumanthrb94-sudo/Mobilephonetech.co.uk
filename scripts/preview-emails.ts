@@ -66,8 +66,8 @@ const SAMPLE_ORDER: OrderLike = {
   discount: 198.8,
   shippingCost: 0,
   shippingMethod: 'Standard Delivery',
-  tax: 357.84,
-  total: 2147.04,
+  tax: 0,
+  total: 1789.2,
   couponCode: 'REFURB15',
 };
 

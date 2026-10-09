@@ -207,13 +207,13 @@ describe('the whole journey, in order', () => {
     expect(out.code).toBe(201);
     orderId = out.body.order.id;
 
-    // £389 + £19.99 Next Day — the price the checkout screen shows — then
-    // 20% VAT on the lot. This used to send `nextday`, a key only the server
-    // knew, at a price only the server had; the screen has always sent
-    // `next_day` at £19.99, and the server now agrees with it.
+    // £389, delivery free, and nothing added: catalogue prices include VAT.
+    // This was once £389 + £19.99 next-day + 20% VAT on top = £490.79 for a
+    // phone advertised at £389 with free next-day delivery.
     expect(out.body.order.subtotal).toBe(389);
-    expect(out.body.order.shippingCost).toBe(19.99);
-    expect(out.body.order.total).toBe(490.79);
+    expect(out.body.order.shippingCost).toBe(0);
+    expect(out.body.order.tax).toBe(0);
+    expect(out.body.order.total).toBe(389);
     expect(out.body.order.status).toBe('pending');
     expect(out.body.confirmationEmail.sent).toBe(true);
 

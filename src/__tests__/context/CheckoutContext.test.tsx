@@ -211,25 +211,21 @@ describe('CheckoutContext', () => {
   // ── Shipping options ──────────────────────────────────────────────────────
 
   describe('shipping options', () => {
-    it('shippingOption defaults to standard (cost: 0)', () => {
+    it('shippingOption defaults to free next-day, the only service', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
       expect(result.current.shippingOption).not.toBeNull();
-      expect(result.current.shippingOption!.id).toBe('standard');
+      expect(result.current.shippingOption!.id).toBe('next_day');
       expect(result.current.shippingOption!.cost).toBe(0);
     });
 
-    it('setShippingOption changes the active option', () => {
-      const { result } = renderHook(() => useCheckout(), { wrapper });
-      const express = SHIPPING_OPTIONS.find(o => o.id === 'express')!;
-      act(() => result.current.setShippingOption(express));
-      expect(result.current.shippingOption!.id).toBe('express');
+    it('offers no paid or slower alternatives', () => {
+      expect(SHIPPING_OPTIONS.map(o => o.id)).toEqual(['next_day']);
     });
 
-    it('setShippingOption updates cost correctly for next_day', () => {
+    it('setShippingOption still sets the active option', () => {
       const { result } = renderHook(() => useCheckout(), { wrapper });
-      const nextDay = SHIPPING_OPTIONS.find(o => o.id === 'next_day')!;
-      act(() => result.current.setShippingOption(nextDay));
-      expect(result.current.shippingOption!.cost).toBe(19.99);
+      act(() => result.current.setShippingOption(SHIPPING_OPTIONS[0]));
+      expect(result.current.shippingOption!.id).toBe('next_day');
     });
   });
 

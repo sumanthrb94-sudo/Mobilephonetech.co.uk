@@ -32,8 +32,8 @@ const ORDER: OrderLike = {
   discount: 100,
   shippingCost: 9.99,
   shippingMethod: 'Express Delivery',
-  tax: 365.5,
-  total: 2192.99,
+  tax: 0,
+  total: 1827.49,
   couponCode: 'SAVE10',
 };
 
@@ -78,8 +78,24 @@ describe('order confirmation', () => {
   it('shows the server-computed totals rather than recomputing them', () => {
     expect(built.html).toContain('£1917.50'); // subtotal
     expect(built.html).toContain('−£100.00'); // discount
-    expect(built.html).toContain('£365.50'); // VAT
-    expect(built.html).toContain('£2192.99'); // total
+    expect(built.html).toContain('£1827.49'); // total
+  });
+
+  it('states prices include VAT and adds no VAT line on top', () => {
+    // Prices are VAT-inclusive; a "VAT (20%)" row would read as a surcharge.
+    expect(built.html).toContain('All prices include VAT');
+    expect(built.text).toContain('All prices include VAT');
+    expect(built.html).not.toContain('VAT (20%)');
+    expect(built.text).not.toContain('VAT (20%)');
+  });
+
+  it('still shows the VAT an order written before the fix was charged', () => {
+    // Its stored total includes that figure; hiding it would leave a total the
+    // rows above it do not add up to.
+    const legacy = orderConfirmationEmail({ ...ORDER, tax: 365.5, total: 2192.99 });
+    expect(legacy.html).toContain('VAT (20%)');
+    expect(legacy.html).toContain('£365.50');
+    expect(legacy.text).toContain('VAT (20%): £365.50');
   });
 
   it('names the coupon that produced the discount', () => {

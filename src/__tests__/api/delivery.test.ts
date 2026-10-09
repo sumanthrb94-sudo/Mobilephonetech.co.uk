@@ -50,22 +50,11 @@ describe('GET /api/delivery', () => {
     expect(r.statusCode).toBe(200);
   });
 
-  it('returns standard free delivery option for all postcodes', () => {
+  it('offers one service, free next-day, matching the checkout', () => {
     const r = res();
     handler(req('GET', { postcode: 'M1 1AE' }), r);
     const body = r.body as any;
-    const standard = body.options.find((o: any) => o.id === 'standard');
-    expect(standard).toBeDefined();
-    expect(standard.price).toBe(0);
-  });
-
-  it('returns express option with non-zero price', () => {
-    const r = res();
-    handler(req('GET', { postcode: 'EH1 1AB' }), r);
-    const body = r.body as any;
-    const express = body.options.find((o: any) => o.id === 'express');
-    expect(express).toBeDefined();
-    expect(express.price).toBeGreaterThan(0);
+    expect(body.options.map((o: any) => [o.id, o.price])).toEqual([['next_day', 0]]);
   });
 
   it('returns a region field in response', () => {
@@ -96,15 +85,12 @@ describe('GET /api/delivery', () => {
     expect(r.statusCode).toBe(200);
   });
 
-  it('remote islands (e.g. ZE Shetland) skip next-day option', () => {
-    const r = res();
-    handler(req('GET', { postcode: 'ZE1 0NU' }), r);
-    const body = r.body as any;
-    if (r.statusCode === 200) {
-      const nextDay = body.options.find((o: any) => o.id === 'next_day');
-      // next_day is only offered for locations.days <= 2
-      // ZE has days=4 so next_day should NOT be present
-      expect(nextDay).toBeUndefined();
-    }
+  it('quotes the islands later than London', () => {
+    const date = (postcode: string) => {
+      const r = res();
+      handler(req('GET', { postcode }), r);
+      return (r.body as any).options[0].estimatedDate;
+    };
+    expect(date('ZE1 0NU') > date('SW1A 1AA')).toBe(true);
   });
 });

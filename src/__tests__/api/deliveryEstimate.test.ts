@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { estimateArrival, regionFor, addWorkdays } from '../../../api/_deliveryEstimate.js';
+import { estimateArrival, regionFor, addWorkdays, ukClock, dispatchesSameDay } from '../../../api/_deliveryEstimate.js';
 
 /**
  * The date these produce is now the headline of the order emails, so being
@@ -10,11 +10,14 @@ import { estimateArrival, regionFor, addWorkdays } from '../../../api/_deliveryE
  * appears once the weekend logic actually matters.
  */
 
-// 2026-08-25 is a Tuesday. 10:00 is before the 14:00 cut-off.
-const TUE_MORNING = new Date('2026-08-25T10:00:00');
-const TUE_AFTERNOON = new Date('2026-08-25T15:00:00');
+// UK times, written with their offset (August is BST, +01:00) so the suite
+// means the same thing on a UTC server as on a laptop in London.
+// 2026-08-25 is a Tuesday. 10:00 is before the 16:00 cut-off.
+const TUE_MORNING = new Date('2026-08-25T10:00:00+01:00');
+const TUE_3PM = new Date('2026-08-25T15:00:00+01:00');
+const TUE_AFTERNOON = new Date('2026-08-25T16:30:00+01:00');
 // 2026-08-28 is a Friday.
-const FRI_MORNING = new Date('2026-08-28T10:00:00');
+const FRI_MORNING = new Date('2026-08-28T10:00:00+01:00');
 
 describe('addWorkdays', () => {
   it('steps over the weekend', () => {
@@ -33,13 +36,36 @@ describe('addWorkdays', () => {
 
 describe('estimateArrival', () => {
   it('gives next working day for a London postcode ordered before the cut-off', () => {
-    const est = estimateArrival({ postcode: 'SE1 3TX', shippingMethod: 'Standard Delivery', from: TUE_MORNING });
+    const est = estimateArrival({ postcode: 'SE1 3TX', shippingMethod: 'Free Next-Day Delivery', from: TUE_MORNING });
     expect(est?.label).toBe('Wednesday 26 Aug');
     expect(est?.region).toBe('South London');
   });
 
-  it('adds a day when the order misses the 2pm cut-off', () => {
-    const est = estimateArrival({ postcode: 'SE1 3TX', shippingMethod: 'Standard Delivery', from: TUE_AFTERNOON });
+  it('keeps the next-day promise for a 3pm order — the cut-off is 4pm', () => {
+    // It was 2pm here while every page said "order before 4pm".
+    const est = estimateArrival({ postcode: 'SE1 3TX', shippingMethod: 'Free Next-Day Delivery', from: TUE_3PM });
+    expect(est?.label).toBe('Wednesday 26 Aug');
+  });
+
+  it('gives next working day across mainland UK, two days to the islands and Northern Ireland', () => {
+    const at = (postcode: string) => estimateArrival({ postcode, shippingMethod: 'Free Next-Day Delivery', from: TUE_MORNING })!.label;
+    expect(at('G1 1AA')).toBe('Wednesday 26 Aug');
+    expect(at('CF10 1AA')).toBe('Wednesday 26 Aug');
+    expect(at('BT1 1AA')).toBe('Thursday 27 Aug');
+    expect(at('KW15 1AA')).toBe('Thursday 27 Aug');
+  });
+
+  it('treats an order with no stored method as next-day, the only service', () => {
+    expect(estimateArrival({ postcode: 'SE1 3TX', from: TUE_MORNING })?.label).toBe('Wednesday 26 Aug');
+  });
+
+  it('dispatches a weekend order on Monday, so it arrives Tuesday', () => {
+    const sat = estimateArrival({ postcode: 'SE1 3TX', from: new Date('2026-08-29T10:00:00+01:00') });
+    expect(sat?.label).toBe('Tuesday 1 Sept');
+  });
+
+  it('adds a day when the order misses the 4pm cut-off', () => {
+    const est = estimateArrival({ postcode: 'SE1 3TX', shippingMethod: 'Free Next-Day Delivery', from: TUE_AFTERNOON });
     // Picking starts the next working day, so Thursday rather than Wednesday.
     // Quoting the same date either side of the cut-off is how you are a day
     // late on your own promise.
@@ -48,7 +74,7 @@ describe('estimateArrival', () => {
 
   it('skips the weekend from a Friday afternoon order', () => {
     const est = estimateArrival({
-      postcode: 'SE1 3TX', shippingMethod: 'Standard Delivery', from: new Date('2026-08-28T16:00:00'),
+      postcode: 'SE1 3TX', shippingMethod: 'Free Next-Day Delivery', from: new Date('2026-08-28T16:00:00+01:00'),
     });
     expect(est?.label).toBe('Tuesday 1 Sept');
   });
@@ -60,11 +86,13 @@ describe('estimateArrival', () => {
     expect(orkney.region).toBe('Orkney');
   });
 
-  it('beats standard with express, and next-day beats both', () => {
+  it('still dates orders placed under the withdrawn standard and express services', () => {
     const at = (m: string) => estimateArrival({ postcode: 'IV1 1AA', shippingMethod: m, from: TUE_MORNING })!.date.getTime();
-    // Inverness is 3 days standard, so the services actually differ there.
+    // Old orders keep the service they were sold. Inverness is 3 days
+    // standard, so the services actually differ there.
     expect(at('Express Delivery')).toBeLessThan(at('Standard Delivery'));
-    expect(at('Next Day Delivery')).toBeLessThan(at('Express Delivery'));
+    // Two working days to the Highlands, as the delivery policy states.
+    expect(at('Next Day Delivery')).toBeLessThanOrEqual(at('Express Delivery'));
   });
 
   it('returns null rather than inventing a date for an unknown postcode', () => {
@@ -86,5 +114,20 @@ describe('estimateArrival', () => {
 
   it('falls back to a generic region rather than throwing on junk', () => {
     expect(regionFor('!!!')).toBe('UK');
+  });
+});
+
+describe('the 4pm cut-off is UK time, not the server clock', () => {
+  it('reads 4.30pm BST as 16:00-something even when the instant is 15:30 UTC', () => {
+    expect(ukClock(new Date('2026-08-25T15:30:00Z')).hour).toBe(16);
+    expect(dispatchesSameDay(new Date('2026-08-25T15:30:00Z'))).toBe(false);
+  });
+
+  it('reads 3.30pm GMT in winter as before the cut-off', () => {
+    expect(dispatchesSameDay(new Date('2026-12-01T15:30:00Z'))).toBe(true);
+  });
+
+  it('never dispatches the same day at the weekend', () => {
+    expect(dispatchesSameDay(new Date('2026-08-29T09:00:00+01:00'))).toBe(false);
   });
 });

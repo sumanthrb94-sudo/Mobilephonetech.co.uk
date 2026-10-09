@@ -269,6 +269,11 @@ function totalsBlock(order: OrderLike): string {
 
   const discount = Number(order.discount ?? 0);
   const shipping = Number(order.shippingCost ?? 0);
+  // Prices include VAT, so nothing is added and no VAT amount is shown (stock
+  // may be sold under the margin scheme). Orders written before that fix
+  // stored a charged VAT figure; it stays visible on those so their totals
+  // still add up.
+  const legacyTax = Number(order.tax ?? 0);
 
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
     ${row('Subtotal', money(order.subtotal))}
@@ -278,9 +283,10 @@ function totalsBlock(order: OrderLike): string {
         : ''
     }
     ${row(order.shippingMethod || 'Delivery', shipping > 0 ? money(shipping) : 'Free')}
-    ${row('VAT (20%)', money(order.tax))}
+    ${legacyTax > 0 ? row('VAT (20%)', money(legacyTax)) : ''}
     <tr><td colspan="2" style="padding-top:11px;border-top:1px solid ${PALETTE.border};line-height:1px;font-size:0;">&nbsp;</td></tr>
     ${row('Total', money(order.total), { strong: true })}
+    <tr><td colspan="2" style="padding-top:4px;font-family:${FONT};font-size:12px;color:${PALETTE.muted};">All prices include VAT</td></tr>
   </table>`;
 }
 
@@ -486,7 +492,7 @@ export function orderConfirmationEmail(order: OrderLike): Built {
       ? p(
           `<span style="font-size:12.5px;color:${PALETTE.muted};">Delivery estimate for ${esc(
             arrival.region,
-          )} by ${esc(order.shippingMethod || 'Standard Delivery')}. We will email you when it is dispatched.</span>`,
+          )} by ${esc(order.shippingMethod || 'Free Next-Day Delivery')}. We will email you when it is dispatched.</span>`,
         )
       : p(
           `<span style="font-size:12.5px;color:${PALETTE.muted};">We will email you when your order is dispatched.</span>`,
@@ -508,8 +514,9 @@ export function orderConfirmationEmail(order: OrderLike): Built {
     `Subtotal: ${money(order.subtotal)}`,
     Number(order.discount ?? 0) > 0 ? `Discount: -${money(order.discount)}` : '',
     `${order.shippingMethod || 'Delivery'}: ${Number(order.shippingCost ?? 0) > 0 ? money(order.shippingCost) : 'Free'}`,
-    `VAT (20%): ${money(order.tax)}`,
+    Number(order.tax ?? 0) > 0 ? `VAT (20%): ${money(order.tax)}` : '',
     `Total: ${money(order.total)}`,
+    'All prices include VAT',
     '',
     `Your orders: ${SHOP_URL}/orders`,
     `Returns: ${SHOP_URL}/returns`,
@@ -924,7 +931,7 @@ export function accountWelcomeEmail(opts: { name?: string | null; email?: string
 export function newOrderAlertEmail(order: OrderLike & { contactPhone?: string }): Built {
   const items = order.items ?? [];
   const count = items.reduce((n, i) => n + Number(i.quantity ?? 1), 0);
-  const method = order.shippingMethod || 'Standard Delivery';
+  const method = order.shippingMethod || 'Free Next-Day Delivery';
   const headline = `New order to pack — ${money(order.total)}`;
   const subline = `Order ${order.id} · ${count} item${count === 1 ? '' : 's'} · ${method}`;
   const phone = order.contactPhone || order.shippingAddress?.phone || '';

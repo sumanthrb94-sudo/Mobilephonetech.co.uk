@@ -266,7 +266,7 @@ async function postOrder(payload) {
     const res = await fetch(`${API}/api/orders`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-forwarded-for': `198.51.100.${probe}` },
-      body: JSON.stringify({ shippingAddress: ADDRESS, shippingOptionId: 'standard', ...payload }),
+      body: JSON.stringify({ shippingAddress: ADDRESS, shippingOptionId: 'next_day', ...payload }),
     });
     return { status: res.status, body: await res.json().catch(() => ({})) };
   } catch (err) {
@@ -326,9 +326,17 @@ if (!apiReachable) {
     ghost.status === 400 ? 'DENIED:400' : `ALLOWED:${ghost.status}`,
     'must be refused cleanly, not crash');
 
+  const legit = await postOrder({ items: [{ productId: 'apple-iphone-17', quantity: 1 }] });
   check('CONTROL', 'A legitimate order still succeeds',
-    (await postOrder({ items: [{ productId: 'apple-iphone-17', quantity: 1 }] })).status === 201
-      ? 'ALLOWED' : 'DENIED');
+    legit.status === 201 ? 'ALLOWED' : 'DENIED');
+
+  // Catalogue prices already include VAT. The server once added 20% on top,
+  // so with free next-day delivery the total must be the advertised price.
+  const legitOrder = legit.body?.order ?? {};
+  check('CONTROL', 'The total is the advertised price, nothing added on top',
+    legit.status === 201 && legitOrder.total === legitOrder.items?.[0]?.price && !legitOrder.tax
+      ? 'ALLOWED' : 'DENIED',
+    `total £${legitOrder.total} for a £${legitOrder.items?.[0]?.price} phone`);
 }
 
 // ── Report ────────────────────────────────────────────────────

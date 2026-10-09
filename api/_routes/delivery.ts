@@ -5,7 +5,7 @@
  * order emails quote the same date this quotes. Two copies that drifted apart
  * would show one day at checkout and another in the inbox.
  */
-import { UK_DELIVERY_MAP, CUTOFF_HOUR, addWorkdays, formatDate } from '../_deliveryEstimate.js';
+import { UK_DELIVERY_MAP, CUTOFF_HOUR, addWorkdays, formatDate, estimateArrival, dispatchesSameDay } from '../_deliveryEstimate.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function handler(req: any, res: any) {
@@ -30,14 +30,17 @@ export default function handler(req: any, res: any) {
   const location = UK_DELIVERY_MAP[area] ?? { region: 'UK', days: 2 };
 
   const now = new Date();
-  const hour = now.getHours();
-  const orderBeforeCutoff = hour < CUTOFF_HOUR;
 
   /**
-   * Typed explicitly: an empty literal infers as never[], so every push below
-   * was an error the moment api/ was brought under tsc. `available` is only
-   * present on next-day, hence optional.
+   * One service, as the checkout and api/_orderCore.ts sell it: free next-day.
+   * This used to quote free standard, £9.99 express and £19.99 next-day with a
+   * 2pm cut-off while every page promised free next-day before 4pm. The date
+   * comes from estimateArrival, the same estimator the order emails use, so
+   * the cut-off, weekends and the two-day areas (Northern Ireland, Highlands,
+   * islands) are handled once.
    */
+  const arrival = estimateArrival({ postcode, shippingMethod: 'next_day', from: now });
+  const date = arrival?.date ?? addWorkdays(now, dispatchesSameDay(now) ? 1 : 2);
   const options: Array<{
     id: string;
     name: string;
@@ -45,48 +48,16 @@ export default function handler(req: any, res: any) {
     estimatedDate: string;
     displayDate: string;
     cutoffNote: string | null;
-    available?: boolean;
-  }> = [];
-
-  // Standard (free)
-  const stdDays = location.days;
-  const stdDate = addWorkdays(now, stdDays);
-  options.push({
-    id: 'standard',
-    name: 'Standard Delivery',
+  }> = [{
+    id: 'next_day',
+    name: 'Free Next-Day Delivery',
     price: 0,
-    estimatedDate: stdDate.toISOString().split('T')[0],
-    displayDate: formatDate(stdDate),
-    cutoffNote: null,
-  });
-
-  // Express (£9.99) — 1 workday faster, min 1 day
-  const expDays = Math.max(1, stdDays - 1);
-  const expDate = addWorkdays(now, expDays);
-  options.push({
-    id: 'express',
-    name: 'Express Delivery',
-    price: 9.99,
-    estimatedDate: expDate.toISOString().split('T')[0],
-    displayDate: formatDate(expDate),
-    cutoffNote: 'Order before 2 PM for same-day dispatch',
-  });
-
-  // Next-day (£19.99) — only if before cutoff and not remote islands
-  if (location.days <= 2) {
-    const ndDate = addWorkdays(now, 1);
-    options.push({
-      id: 'next_day',
-      name: 'Next Day Delivery',
-      price: 19.99,
-      estimatedDate: ndDate.toISOString().split('T')[0],
-      displayDate: formatDate(ndDate),
-      cutoffNote: orderBeforeCutoff
-        ? null
-        : 'Order after 2 PM — dispatches tomorrow for next-day delivery',
-      available: orderBeforeCutoff,
-    });
-  }
+    estimatedDate: date.toISOString().split('T')[0],
+    displayDate: formatDate(date),
+    cutoffNote: dispatchesSameDay(now)
+      ? `Order before ${CUTOFF_HOUR - 12}pm for dispatch today`
+      : 'Dispatched next working day',
+  }];
 
   return res.status(200).json({
     postcode,

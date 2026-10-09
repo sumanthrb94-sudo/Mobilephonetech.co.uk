@@ -29,7 +29,7 @@ const db = (product: Record<string, unknown>) => ({
 
 const basket = (line: Record<string, unknown>) => ({
   items: [{ productId: 'apple-iphone-15', quantity: 1, ...line }],
-  shippingOptionId: 'standard',
+  shippingOptionId: 'next_day',
   shippingAddress: {
     fullName: 'Ram Test', addressLine1: '1 High St', city: 'London',
     postalCode: 'SE1 3TX', phone: '07700900123', email: 'ram@example.com',

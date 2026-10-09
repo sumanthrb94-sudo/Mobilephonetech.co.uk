@@ -1,16 +1,18 @@
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { useCart } from '../context/CartContext';
-import { useCheckout, SHIPPING_OPTIONS, ShippingAddress, PaymentMethod } from '../context/CheckoutContext';
+import { useCheckout, ShippingAddress, PaymentMethod } from '../context/CheckoutContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, Tag, X, User, LogIn, MapPin } from 'lucide-react';
+import { ArrowLeft, Check, Lock, Truck, CreditCard, CheckCircle2, User, LogIn, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import AuthModal from './AuthModal';
-import ProductImage from './ProductImage';
+import { OrderSummaryPanel, OrderSummaryToggle, TotalsRows } from './CheckoutSummary';
+import DeliveryNote from './DeliveryNote';
 import PayPalCheckout, { PayPalPayload, isPayPalConfigured } from './PayPalCheckout';
 import { useSeo, SITE_ORIGIN } from '../hooks/useSeo';
 import { lookupPostcode, hasCoordinates, type PostcodePlace } from '../utils/postcodeLookup';
 import { estimateArrival } from '../../api/_deliveryEstimate';
 import { auth } from '../lib/firebase';
+import { checkoutTotals } from '../lib/checkoutTotals';
 
 // PayPal is the only payment gateway. This form NEVER collects card details.
 //
@@ -48,8 +50,8 @@ export default function CheckoutFlow() {
   const { items, cartTotal, clearCart } = useCart();
   const { 
     currentStep, setCurrentStep, shippingAddress, setShippingAddress,
-    shippingOption, setShippingOption, paymentMethod, setPaymentMethod,
-    appliedCoupon, applyCoupon, removeCoupon, recordServerOrder, lastOrder,
+    shippingOption, paymentMethod, setPaymentMethod,
+    appliedCoupon, recordServerOrder, lastOrder,
   } = useCheckout();
   const { user, isAuthenticated, continueAsGuest } = useAuth();
 
@@ -173,8 +175,6 @@ export default function CheckoutFlow() {
     })).catch(() => { /* best-effort — a missed reminder is not a checkout error */ });
   }, [user?.email, user?.fullName, currentStep, items, cartTotal]);
 
-  const [couponCode, setCouponCode] = useState('');
-  const [couponError, setCouponError] = useState('');
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [checkoutMode, setCheckoutMode] = useState<'selection' | 'shipping'>(isAuthenticated || user?.isGuest ? 'shipping' : 'selection');
 
@@ -186,20 +186,11 @@ export default function CheckoutFlow() {
   // have no fallback at all, so a new shopper sees their own details where
   // known and empty boxes for the rest — never an invented address.
 
-  const shippingCost = shippingOption?.cost || 0;
-  const subtotal = cartTotal;
-  
-  let discount = 0;
-  if (appliedCoupon) {
-    if (appliedCoupon.discountType === 'percentage') {
-      discount = subtotal * (appliedCoupon.value / 100);
-    } else {
-      discount = Math.min(appliedCoupon.value, subtotal);
-    }
-  }
-
-  const tax = (subtotal - discount + shippingCost) * 0.2; // 20% VAT
-  const total = subtotal - discount + shippingCost + tax;
+  // Priced as the server prices it: prices include VAT, so nothing is added
+  // on top. This once added "Estimated Tax (20%)" and charged a £270 phone at
+  // £324. See src/lib/checkoutTotals.ts.
+  const totals = checkoutTotals(items, shippingOption?.cost || 0, appliedCoupon);
+  const { subtotal, discount, shippingCost, total } = totals;
 
   // UK-postcode regex covers the official 2016 Royal Mail format:
   // outward (A9/A9A/A99/AA9/AA9A/AA99) + space-optional + inward (9AA).
@@ -271,13 +262,6 @@ export default function CheckoutFlow() {
     setCurrentStep('review');
   };
 
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCouponError('');
-    if (!couponCode.trim()) return;
-    if (applyCoupon(couponCode)) { setCouponCode(''); } else { setCouponError('Invalid coupon code'); }
-  };
-
   /**
    * The basket payload the payment routes take — the same shape /api/orders
    * receives, prices only ever set server-side. Built fresh at call time so a
@@ -296,7 +280,7 @@ export default function CheckoutFlow() {
       selectedCondition: i.selectedCondition ?? null,
     })),
     shippingAddress: shippingAddress as unknown as Record<string, unknown>,
-    shippingOptionId: shippingOption?.id ?? 'standard',
+    shippingOptionId: shippingOption?.id ?? 'next_day',
     couponCode: appliedCoupon?.code ?? null,
     guestEmail: shippingAddress?.email ?? null,
   });
@@ -316,7 +300,9 @@ export default function CheckoutFlow() {
       paymentMethod: paymentMethod ?? { id: 'paypal', type: 'paypal', brand: 'PayPal', last4: 'PYPL' } as PaymentMethod,
       subtotal: Number(serverOrder.subtotal ?? subtotal),
       shippingCost: Number(serverOrder.shippingCost ?? shippingCost),
-      tax: Number(serverOrder.tax ?? tax),
+      discount: Number(serverOrder.discount ?? discount),
+      couponCode: (serverOrder.couponCode as string | null | undefined) ?? appliedCoupon?.code ?? null,
+      tax: Number(serverOrder.tax ?? 0),
       total: Number(serverOrder.total ?? total),
       status: 'confirmed',
       createdAt: String(serverOrder.createdAt ?? new Date().toISOString()),
@@ -437,15 +423,20 @@ export default function CheckoutFlow() {
               <p style={{ fontFamily: 'var(--font-sans)', fontSize: '20px', fontWeight: 800, color: 'var(--black)', margin: '0 0 var(--spacing-20) 0', letterSpacing: '-0.01em' }}>
                 {lastOrder.id}
               </p>
-              <div style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-16)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <Row label="Subtotal" value={`£${lastOrder.subtotal.toFixed(2)}`} />
-                {discount > 0 && <Row label="Discount" value={`-£${discount.toFixed(2)}`} accent />}
-                <Row label="Shipping" value={lastOrder.shippingCost === 0 ? 'FREE' : `£${lastOrder.shippingCost.toFixed(2)}`} trust={lastOrder.shippingCost === 0} />
-                <Row label="Tax (20%)" value={`£${lastOrder.tax.toFixed(2)}`} />
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--grey-10)', paddingTop: '12px', marginTop: '4px', alignItems: 'baseline' }}>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 800, color: 'var(--black)' }}>Total</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 900, color: 'var(--black)', letterSpacing: '-0.02em' }}>£{lastOrder.total.toFixed(2)}</span>
-                </div>
+              {/* The server's figures for this order, not the basket's: the
+                  basket has been cleared by now, and the discount line used to
+                  read it — so a discounted order confirmed with no discount
+                  shown. No VAT line: prices include VAT. */}
+              <div style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-16)' }}>
+                <TotalsRows
+                  totals={{
+                    subtotal: lastOrder.subtotal,
+                    discount: Number(lastOrder.discount ?? 0),
+                    shippingCost: lastOrder.shippingCost,
+                    total: lastOrder.total,
+                  }}
+                  couponCode={lastOrder.couponCode}
+                />
               </div>
             </div>
 
@@ -510,11 +501,14 @@ export default function CheckoutFlow() {
   const errorStyle = { fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--color-sale)', marginTop: '4px' };
 
   return (
-    <div style={{ background: 'var(--grey-5)', minHeight: '100vh', paddingTop: 'var(--spacing-32)', paddingBottom: 'var(--spacing-80)' }}>
+    <div className="pt-3 pb-12 sm:pt-8 sm:pb-20" style={{ background: 'var(--grey-5)', minHeight: '100vh' }}>
       <div className="container-bm" style={{ maxWidth: '1024px' }}>
 
+        {/* Phones: the whole basket behind one bar, total showing. */}
+        <OrderSummaryToggle totals={totals} />
+
         {/* Progress Indicator */}
-        <div style={{ marginBottom: 'var(--spacing-32)' }}>
+        <div className="mb-3 sm:mb-6">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: '520px', margin: '0 auto' }}>
             {['Shipping', 'Payment', 'Review'].map((step, index) => {
               const isActive = (index === 0 && ['shipping', 'payment', 'review'].includes(currentStep)) || (index === 1 && ['payment', 'review'].includes(currentStep)) || (index === 2 && currentStep === 'review');
@@ -527,7 +521,7 @@ export default function CheckoutFlow() {
                     <div
                       aria-current={isActive ? 'step' : undefined}
                       style={{
-                        width: '32px', height: '32px', borderRadius: '50%',
+                        width: '28px', height: '28px', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800,
                         transition: 'all 0.3s', flexShrink: 0,
@@ -558,30 +552,33 @@ export default function CheckoutFlow() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* ── Main Content Area ─────────────────────────────────────────── */}
           <div className="lg:col-span-2">
             <AnimatePresence mode="wait">
               
               {/* Login / Guest Selection */}
               {checkoutMode === 'selection' && !isAuthenticated && !user?.isGuest && (
-                <motion.div key="selection" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-                  <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(26px, 4vw, 32px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Checkout</h1>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <motion.div key="selection" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
+                  <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'clamp(22px, 4vw, 28px)', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', marginBottom: 'var(--spacing-16)' }}>Checkout</h1>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                     
-                    <div style={{ padding: 'var(--spacing-24)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
+                    <div style={{ padding: 'var(--spacing-16)', borderRadius: 'var(--radius-md)', border: '1px solid var(--grey-10)' }}>
                       <LogIn size={24} style={{ color: 'var(--black)', marginBottom: '16px' }} />
                       <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>Returning Customer</h3>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', marginBottom: '24px', lineHeight: 1.5 }}>Sign in for a faster checkout experience.</p>
                       <button onClick={() => setIsAuthModalOpen(true)} className="btn btn-primary btn-md" style={{ width: '100%' }}>Sign In</button>
                     </div>
 
-                    <div style={{ padding: 'var(--spacing-24)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
+                    <div style={{ padding: 'var(--spacing-16)', borderRadius: 'var(--radius-md)', border: '1px solid var(--grey-10)' }}>
                       <User size={24} style={{ color: 'var(--grey-40)', marginBottom: '16px' }} />
                       <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: '8px' }}>Guest Checkout</h3>
                       <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-50)', marginBottom: '24px', lineHeight: 1.5 }}>No account needed. Checkout securely as a guest.</p>
                       <form onSubmit={handleGuestCheckout} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        <input type="email" name="guestEmail" required placeholder="Email address" style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan-hover)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
+                        {/* A real label: the placeholder was the only name this
+                            field had, and it disappears on the first keystroke. */}
+                        <label htmlFor="guest-email" style={{ ...labelStyle, marginBottom: 0 }}>Email address</label>
+                        <input type="email" id="guest-email" name="guestEmail" required autoComplete="email" placeholder="you@example.com" style={inputStyle} onFocus={(e) => e.target.style.borderColor = 'var(--brand-cyan-hover)'} onBlur={(e) => e.target.style.borderColor = 'var(--grey-20)'} />
                         <button type="submit" className="btn btn-secondary btn-md" style={{ width: '100%' }}>Continue as Guest</button>
                       </form>
                     </div>
@@ -761,51 +758,11 @@ export default function CheckoutFlow() {
                     />
                   </details>
 
-                  <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginTop: 'var(--spacing-48)', marginBottom: 'var(--spacing-20)' }}>Delivery Method</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {SHIPPING_OPTIONS.map((option) => {
-                      const selected = shippingOption?.id === option.id;
-                      return (
-                      /* A real radio input, visually hidden inside the label.
-                         This card used to be a <label> around a <div> drawn to
-                         look like a radio, with no input and no handler
-                         anywhere on it — so tapping Express or Next Day did
-                         nothing at all. setShippingOption existed on the
-                         context and was called from the context's own unit
-                         tests and from nowhere else, which is why a green
-                         suite sat on top of a delivery picker that could not
-                         pick. Every order went out on Standard/FREE whatever
-                         the shopper chose, and the two paid options were
-                         unreachable.
-
-                         An input rather than an onClick on the div: the label
-                         then makes the whole card a hit target for free, and
-                         the group gets keyboard arrows, focus and screen
-                         reader semantics that a clickable div would have to
-                         reimplement badly. */
-                      <label key={option.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', border: selected ? '2px solid var(--black)' : '1px solid var(--grey-20)', borderRadius: 'var(--radius-lg)', cursor: 'pointer', background: 'var(--grey-0)' }}>
-                        <input
-                          type="radio"
-                          name="shipping-option"
-                          value={option.id}
-                          checked={selected}
-                          onChange={() => setShippingOption(option)}
-                          className="sr-only"
-                        />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                          <div aria-hidden="true" style={{ width: '18px', height: '18px', borderRadius: '50%', border: selected ? '5px solid var(--black)' : '1px solid var(--grey-30)', background: 'white', flexShrink: 0 }} />
-                          <div>
-                            <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 700, color: 'var(--black)', marginBottom: '2px' }}>{option.name}</p>
-                            <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)' }}>{option.description}</p>
-                          </div>
-                        </div>
-                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--black)' }}>{option.cost === 0 ? 'FREE' : `£${option.cost.toFixed(2)}`}</span>
-                      </label>
-                      );
-                    })}
+                  <div style={{ marginTop: 'var(--spacing-24)' }}>
+                    <DeliveryNote />
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
+                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-20)' }}>
                     Continue to Payment <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
                   </button>
                 </motion.form>
@@ -813,8 +770,8 @@ export default function CheckoutFlow() {
 
               {/* Payment Form */}
               {currentStep === 'payment' && (
-                <motion.form key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handlePaymentSubmit} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
-                  <div style={{ marginBottom: 'var(--spacing-24)' }}>
+                <motion.form key="payment" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} onSubmit={handlePaymentSubmit} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
+                  <div style={{ marginBottom: 'var(--spacing-16)' }}>
                     <button
                       type="button"
                       onClick={() => setCurrentStep('shipping')}
@@ -864,7 +821,7 @@ export default function CheckoutFlow() {
                     </span>
                   </div>
 
-                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-48)' }}>
+                  <button type="submit" className="btn btn-primary btn-lg btn-full" style={{ marginTop: 'var(--spacing-20)' }}>
                     Review Order <ArrowLeft size={16} style={{ transform: 'rotate(180deg)' }} />
                   </button>
                 </motion.form>
@@ -872,8 +829,8 @@ export default function CheckoutFlow() {
 
               {/* Review Step */}
               {currentStep === 'review' && (
-                <motion.div key="review" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--grey-10)' }}>
-                  <div style={{ marginBottom: 'var(--spacing-24)' }}>
+                <motion.div key="review" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="checkout-card" style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--grey-10)' }}>
+                  <div style={{ marginBottom: 'var(--spacing-16)' }}>
                     <button
                       type="button"
                       onClick={() => setCurrentStep('payment')}
@@ -893,9 +850,9 @@ export default function CheckoutFlow() {
                     </h2>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
-                    <div style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-12)' }}>
+                    <div style={{ padding: '14px 16px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                         <h3 className="overline" style={{ margin: 0 }}>Shipping Address</h3>
                         <button onClick={() => setCurrentStep('shipping')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
                       </div>
@@ -904,8 +861,8 @@ export default function CheckoutFlow() {
                       </p>
                     </div>
 
-                    <div style={{ padding: 'var(--spacing-24)', background: 'var(--grey-5)', borderRadius: 'var(--radius-lg)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <div style={{ padding: '14px 16px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                         <h3 className="overline" style={{ margin: 0 }}>Payment Method</h3>
                         <button onClick={() => setCurrentStep('payment')} style={{ background: 'none', border: 'none', color: 'var(--brand-cyan-hover)', fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Edit</button>
                       </div>
@@ -924,7 +881,7 @@ export default function CheckoutFlow() {
                     <div
                       role="alert"
                       style={{
-                        marginTop: 'var(--spacing-24)',
+                        marginTop: 'var(--spacing-16)',
                         padding: '14px 16px',
                         borderRadius: 'var(--radius-lg)',
                         background: '#fef2f2',
@@ -951,7 +908,13 @@ export default function CheckoutFlow() {
                       the notice below stands in for it — an unconfigured
                       gateway must read as "cannot take orders", never as a
                       button that appears to work. */}
-                  <div style={{ marginTop: 'var(--spacing-32)' }}>
+                  {/* Phones have no side column, so the figures being paid are
+                      restated here, right above the button that pays them. */}
+                  <div className="lg:hidden" style={{ marginTop: 'var(--spacing-16)', padding: '14px 16px', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)' }}>
+                    <TotalsRows totals={totals} couponCode={appliedCoupon?.code} />
+                  </div>
+
+                  <div style={{ marginTop: 'var(--spacing-20)' }}>
                     {shippingAddress && shippingOption && paypalAvailable && (
                       <PayPalCheckout
                         payload={buildPayapalPayload()}
@@ -993,102 +956,17 @@ export default function CheckoutFlow() {
           </div>
 
           {/* ── Sidebar - Order Summary ─────────────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-24)' }}>
-            <div style={{ background: 'var(--grey-0)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-32)', border: '1px solid var(--grey-10)' }}>
-              <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)', marginBottom: 'var(--spacing-24)' }}>Order Summary</h3>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: 'var(--spacing-24)' }}>
-                {items.map((item) => (
-                  <div key={item.id} style={{ display: 'flex', gap: '16px' }}>
-                    <div style={{ width: '64px', height: '64px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', padding: '4px', flexShrink: 0, overflow: 'hidden' }}>
-                      <ProductImage brand={item.brand} model={item.model} category={item.category} color={item.selectedColor} imageUrl={item.imageUrl} alt={item.model} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.model}</p>
-                      <p style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', marginBottom: '4px' }}>Qty: {item.quantity}</p>
-                      <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, color: 'var(--black)' }}>£{(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Coupon Section */}
-              <div style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-24)', marginBottom: 'var(--spacing-24)' }}>
-                <p className="overline" style={{ marginBottom: '12px' }}>Promo Code</p>
-                {appliedCoupon ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyItems: 'space-between', padding: '12px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--color-trust-text)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
-                      <Tag size={14} color="var(--color-trust-text)" />
-                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '13px', fontWeight: 700, color: 'var(--color-trust-text)' }}>{appliedCoupon.code}</span>
-                    </div>
-                    <button onClick={removeCoupon} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', color: 'var(--color-trust-text)' }}><X size={14} /></button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '8px' }}>
-                    <input type="text" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="Enter code" style={{ ...inputStyle, padding: '10px 12px', flex: 1 }} />
-                    <button type="submit" className="btn btn-secondary" style={{ padding: '0 16px', height: '42px', fontSize: '12px' }}>Apply</button>
-                  </form>
-                )}
-                {couponError && <p style={errorStyle}>{couponError}</p>}
-                {!appliedCoupon && <p style={{ fontFamily: 'var(--font-body)', fontSize: '11px', color: 'var(--grey-40)', marginTop: '8px' }}>Got a promo code from our newsletter? Paste it above.</p>}
-              </div>
-
-              {/* Totals */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-24)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                  <span>Subtotal</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{subtotal.toFixed(2)}</span>
-                </div>
-                {discount > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--color-trust-text)', fontWeight: 600 }}>
-                    <span>Discount</span> <span>-£{discount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                  <span>Shipping</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{shippingCost.toFixed(2)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-50)' }}>
-                  <span>Estimated Tax (20%)</span> <span style={{ color: 'var(--black)', fontWeight: 600 }}>£{tax.toFixed(2)}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--grey-10)', paddingTop: '16px', marginTop: '4px' }}>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)' }}>Total</span>
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 900, color: 'var(--black)' }}>£{total.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Trust Signal Box */}
-            <div style={{ background: 'var(--black)', borderRadius: 'var(--radius-xl)', padding: 'var(--spacing-24)', color: 'white' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                <Truck size={20} color="white" />
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Fast Delivery</p>
-              </div>
-              <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-20)', lineHeight: 1.5, margin: 0 }}>
-                Orders placed before 4 PM are eligible for Next-Day Delivery. All shipments are fully insured and tracked.
-              </p>
-            </div>
+          {/* Desktop only; phones get the toggle bar above. The black "Fast
+              delivery — orders before 4 PM are eligible for Next-Day" box that
+              sat under this is gone: it contradicted the paid Next Day option
+              beside it, and the delivery line in the form now says the same
+              thing once, with the real dispatch day. */}
+          <div className="hidden lg:block">
+            <OrderSummaryPanel totals={totals} />
           </div>
         </div>
       </div>
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onSuccess={() => setCheckoutMode('shipping')} />
-    </div>
-  );
-}
-
-function Row({ label, value, accent, trust }: { label: string; value: string; accent?: boolean; trust?: boolean }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'var(--font-body)', fontSize: '14px' }}>
-      <span style={{ color: 'var(--grey-50)' }}>{label}</span>
-      <span
-        style={{
-          color: trust ? 'var(--color-trust-text)' : accent ? 'var(--color-trust-text)' : 'var(--black)',
-          fontWeight: trust || accent ? 700 : 600,
-          fontFamily: trust ? 'var(--font-sans)' : 'var(--font-body)',
-          letterSpacing: trust ? '0.06em' : 0,
-          fontSize: trust ? '13px' : '14px',
-        }}
-      >
-        {value}
-      </span>
     </div>
   );
 }

@@ -283,14 +283,15 @@ body {
   }
 }
 
-/* Checkout card — mobile-first padding scale. 20/20 on phones so the
-   form breathes without overflowing narrow viewports; 32/32 on sm+ */
+/* Checkout card — mobile-first padding scale. 16px on phones, 24px on sm+:
+   at 20/32 with 24px+ gaps between every block, the delivery choice and the
+   Continue button sat several screens down on a phone. */
 .checkout-card {
-  padding: 20px 18px;
+  padding: 16px;
 }
 @media (min-width: 640px) {
   .checkout-card {
-    padding: 32px;
+    padding: 24px;
   }
 }
 
