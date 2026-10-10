@@ -2,6 +2,7 @@ import { sendEmail, looksLikeEmail } from './_email.js';
 import { orderConfirmationEmail, newOrderAlertEmail } from './_templates.js';
 import { COMPANY } from '../src/config/company.js';
 import { sanitiseLocation } from '../src/utils/address.js';
+import { photosFirst, isUploadedPhoto } from '../src/lib/productImages.js';
 
 /**
  * The shared heart of ordering: price a basket, reserve its stock, write it,
@@ -197,7 +198,10 @@ export async function priceAndValidate(
       // change tomorrow; rewriting an old order's margin would be incorrect.
       buyPrice: Number(variant?.buyPrice ?? product.buyPrice ?? 0),
       quantity,
-      imageUrl: product.imageUrl ?? null,
+      // The photo of the colour bought, else the product's own: a real
+      // uploaded photo only, so the receipt never points at a placeholder.
+      imageUrl: [photosFirst(variant?.imageUrl, variant?.galleryImages).imageUrl, photosFirst(product.imageUrl, product.galleryImages).imageUrl]
+        .find(isUploadedPhoto) ?? null,
       grade: product.grade ?? null,
       // What staff pack comes from the configuration that was priced, never
       // from labels the request supplied.

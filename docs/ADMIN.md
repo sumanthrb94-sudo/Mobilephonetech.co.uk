@@ -133,9 +133,20 @@ The first image is the primary one shown on cards and as the product hero, so
 "make primary" is a move-to-front rather than a second field to keep in sync.
 A partly failed batch keeps whatever uploaded and reports the rest.
 
-Products seeded with bundled `/assets/…` artwork show a **Bundled** badge —
-those files ship with the app rather than living in storage, so removing one
-only unlinks it.
+Only real photos (a full `https://` link, e.g. Cloudinary) count as photos.
+The first real photo is the main one, and products with none show a drawing
+of the device in the chosen colour. The bundled demo drawings and icons that
+used to sit in `/assets/catalogue` have been removed.
+
+**Home page rows (Admin → Series)** — which product rows appear below the
+banners, in what order, and which products each one holds: iPhone, iPhone 17,
+Galaxy S, Fold & Flip, Pixel, and any new line (iPad, Galaxy A, Apple Watch…).
+Each row is a plain rule: a brand, words the model must contain, and words
+that rule it out. A row only shows products **in stock** and hides itself
+when it has none; the editor previews what it will show and warns when it is
+empty. The dashboard's launch checklist names any row that is hidden, so a
+row disappearing is never silent. The order of the other home page blocks
+(trust, reviews, FAQ…) is set in **Admin → Home layout**.
 
 **Delete** — behind a confirmation dialog that points to setting stock to 0 as
 the reversible alternative. Stored images are removed first, then the document:

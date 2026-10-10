@@ -236,17 +236,18 @@ describe('listing copy', () => {
     }
   });
 
-  it('gives every colour on sale its own image', () => {
+  it('keeps each colour on sale, with no stand-in image', () => {
     const twoColours = [
       rows[0],
       { ...rows[0], IMEI: '2', Colour: 'Blue' },
     ];
     const { products } = cat.buildCatalogue(twoColours);
-    const images = products[0].variants.map((v: any) => v.imageUrl);
+    const variants = products[0].variants;
 
-    // A picker that changes the price and not the picture tells the customer
-    // their colour choice made no difference.
-    expect(new Set(images).size).toBe(2);
-    expect(images.every((i: string) => i.endsWith('.svg'))).toBe(true);
+    // Each colour is its own configuration, so the picker can switch between
+    // them. No bundled drawing is attached: the shop draws the device in the
+    // chosen colour until staff add a real photo of it.
+    expect(new Set(variants.map((v: any) => v.color)).size).toBe(2);
+    expect(variants.every((v: any) => v.imageUrl === undefined)).toBe(true);
   });
 });

@@ -327,11 +327,10 @@ export function buildCatalogue(rows) {
         id: slugify(grade, colour || 'default'),
         condition: grade,
         color: colour || undefined,
-        // Set by the importer, which draws one image per colour. Without it,
-        // choosing Blue leaves a black handset on screen — which reads as a
-        // broken page, or worse, as a bait-and-switch on the one attribute a
-        // customer picked deliberately.
-        imageUrl: colour ? `/assets/catalogue/${id}--${slugify(colour)}.svg` : undefined,
+        // No stand-in image: the shop draws the device in the chosen colour
+        // until staff add a real photo for it (see ProductImage). The bundled
+        // per-colour drawings these used to point at have been removed.
+        imageUrl: undefined,
         storage: first.storage ?? undefined,
         price: priced.price,
         originalPrice: priced.originalPrice,
