@@ -4973,7 +4973,10 @@ html.is-signin .support-fab { display: none; }
 .pdp-section[open] > .pdp-section__summary .pdp-section__chevron { transform: rotate(180deg); }
 .pdp-section__body { padding: 0 0 var(--spacing-24); }
 
-/* Cart on phones: total, checkout and payment marks above the item list. */
+/* Cart on phones: total, checkout and payment marks above the item list.
+   Hidden from 1024px here, not by Tailwind's lg:hidden: this rule is outside
+   any cascade layer, so it beats the layered utility and showed on desktop. */
 .cart-quick-checkout { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--grey-10); border-radius: var(--radius-lg); background: var(--grey-0); }
 .cart-quick-checkout__total { display: flex; align-items: baseline; justify-content: space-between; font-family: var(--font-body); font-size: 14px; color: var(--grey-60); }
 .cart-quick-checkout__total strong { font-family: var(--font-sans); font-size: 20px; font-weight: 900; color: var(--black); }
+@media (min-width: 64rem) { .cart-quick-checkout { display: none; } }

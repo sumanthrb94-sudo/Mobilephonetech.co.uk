@@ -239,7 +239,7 @@ const KEYWORDS: Record<string, string> = {
   // white and pale neutrals
   pearl: '#efebe4', ivory: '#f2ecdf', platinum: '#d9d9d6', linen: '#ece4d6',
   // grey and silver
-  ash: '#b2b2ae', smoke: '#8f9194', stone: '#a29d94', steel: '#8a8f94',
+  ash: '#b2b2ae', smoke: '#8f9194', stone: '#a29d94',
   gunmetal: '#4a4d52', pewter: '#8c8d8a',
   // blue
   icy: '#c7dbe9', ice: '#c7dbe9', sky: '#a3c8e4', arctic: '#cfe2ee',
@@ -277,6 +277,8 @@ const KEYWORDS: Record<string, string> = {
  */
 const MATERIALS: Record<string, string> = {
   titanium: '#8e8e90', metal: '#8e8e90', aluminium: '#c9cacc', aluminum: '#c9cacc', chrome: '#d4d6d8',
+  // A case material, not a colour: "Gold Stainless Steel" is gold.
+  steel: '#8a8f94', stainless: '#8a8f94',
 };
 
 /** Words that shade the colour they qualify: "Baby Blue", "Midnight Blue", "Silver Shadow". */
@@ -343,7 +345,9 @@ function shade(hex: string, otherWords: string[]): string {
 
 /** A table entry by its own key only — never "constructor" from Object.prototype. */
 function lookup(table: Record<string, string>, key: string): string | undefined {
-  return Object.hasOwn(table, key) ? table[key] : undefined;
+  // hasOwnProperty, not Object.hasOwn: the build targets ES2020 and esbuild
+  // does not polyfill built-ins, so Object.hasOwn threw on iOS before 15.4.
+  return Object.prototype.hasOwnProperty.call(table, key) ? table[key] : undefined;
 }
 
 /** The colour a finish name describes, or null when nothing in it is a colour. */

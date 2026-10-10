@@ -28,3 +28,10 @@ describe('cartLineImage', () => {
     expect(cartLineImage({ id: 'v-violet' }, [product])).toBe(photo('s24-violet'));
   });
 });
+
+describe('cartLineImage when the configuration is gone', () => {
+  it('keeps the saved photo of the chosen colour rather than the shared product photo', () => {
+    expect(cartLineImage({ id: 'v-gone', productId: 'samsung-galaxy-s24', variantId: 'v-gone', color: 'Marble Grey', imageUrl: photo('s24-grey') }, [product]))
+      .toBe(photo('s24-grey'));
+  });
+});

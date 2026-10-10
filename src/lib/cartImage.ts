@@ -21,7 +21,8 @@ const firstPhoto = (v: Pick<ProductVariant, 'imageUrl' | 'galleryImages'> | unde
  * and showed "Photo coming soon" in the cart for ever after.
  *
  * Prefers the exact configuration, then any configuration in the same
- * colour, then the product's main photo, then whatever the line saved.
+ * colour, then the photo the line saved if it is a real one, then the
+ * product's main photo, then whatever the line saved.
  */
 export function cartLineImage(line: CartLineRef, catalogue: Product[]): string {
   const saved = line.imageUrl ?? '';
@@ -35,8 +36,11 @@ export function cartLineImage(line: CartLineRef, catalogue: Product[]): string {
   const colour = (line.selectedColor ?? exact?.color ?? line.color ?? '').trim().toLowerCase();
   const sameColour = colour ? variants.filter(v => (v.color ?? '').trim().toLowerCase() === colour) : [];
 
+  // A saved real photo beats the product's shared one: if the line's
+  // configuration has since gone, the shared photo may be another colour.
   return firstPhoto(exact)
     ?? sameColour.map(firstPhoto).find(Boolean)
+    ?? (isUploadedPhoto(saved) ? saved : null)
     ?? (isUploadedPhoto(product.imageUrl) ? product.imageUrl : null)
     ?? saved;
 }

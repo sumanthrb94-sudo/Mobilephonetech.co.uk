@@ -189,3 +189,14 @@ describe('stored swatches', () => {
     expect(storedSwatch(variants, 'Blue')).toBe('#a6bccf');
   });
 });
+
+describe('case materials', () => {
+  it('Apple stainless steel finishes take their colour, not the metal', async () => {
+    const { colourHex } = await import('../../utils/deviceColors');
+    const gold = colourHex('Gold Stainless Steel', 'Apple');
+    const silver = colourHex('Silver Stainless Steel', 'Apple');
+    const graphite = colourHex('Graphite Stainless Steel', 'Apple');
+    expect(new Set([gold, silver, graphite]).size).toBe(3);
+    expect(colourHex('Stainless Steel', 'Apple')).toBe('#8a8f94');
+  });
+});
