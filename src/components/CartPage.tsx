@@ -12,6 +12,9 @@ import {
 import { motion } from 'motion/react';
 import ProductImage from './ProductImage';
 import AnimatedPrice from './ui/AnimatedPrice';
+import PaymentTrustMark from './PaymentTrustMark';
+import { useCatalogue } from '../context/CatalogueContext';
+import { cartLineImage } from '../lib/cartImage';
 
 
 /**
@@ -28,6 +31,7 @@ export default function CartPage() {
     noindex: true,
   });
   const { items, removeFromCart, updateQuantity, cartTotal, clearCart } = useCart();
+  const { products: catalogue } = useCatalogue();
   const { setCurrentStep } = useCheckout();
   const { addToWishlist } = useWishlist();
   const { showToast } = useUI();
@@ -173,6 +177,20 @@ export default function CartPage() {
               </button>
             </div>
 
+            {/* Phones: the order summary sits below every item, so a long
+                basket put checkout several screens away. The total and the
+                way to pay are repeated here, above the list. */}
+            <div className="lg:hidden cart-quick-checkout">
+              <div className="cart-quick-checkout__total">
+                <span>Total</span>
+                <strong><AnimatedPrice value={cartTotal} decimals={2} /></strong>
+              </div>
+              <button onClick={handleCheckout} className="btn btn-buy btn-lg btn-full">
+                Proceed to checkout <ArrowRight size={16} />
+              </button>
+              <PaymentTrustMark variant="pdp" />
+            </div>
+
             {/* Items */}
             {items.map((item, index) => (
               <motion.div
@@ -209,8 +227,9 @@ export default function CartPage() {
                     model={item.model}
                     category={item.category}
                     color={item.selectedColor}
-                    imageUrl={item.imageUrl}
+                    imageUrl={cartLineImage(item, catalogue)}
                     alt={item.model}
+                    context="thumb"
                   />
                 </div>
 
@@ -484,6 +503,11 @@ export default function CartPage() {
               >
                 Proceed to checkout <ArrowRight size={16} />
               </button>
+
+              {/* How they will pay, right where they commit to paying. */}
+              <div style={{ margin: '2px 0 12px' }}>
+                <PaymentTrustMark variant="pdp" />
+              </div>
 
               <button
                 onClick={() => navigate('/products')}

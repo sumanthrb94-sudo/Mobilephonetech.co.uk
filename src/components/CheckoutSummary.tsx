@@ -5,6 +5,8 @@ import { useCheckout } from '../context/CheckoutContext';
 import ProductImage from './ProductImage';
 import { gbp, type CheckoutTotals } from '../lib/checkoutTotals';
 import AnimatedPrice from './ui/AnimatedPrice';
+import { useCatalogue } from '../context/CatalogueContext';
+import { cartLineImage } from '../lib/cartImage';
 
 
 /**
@@ -24,6 +26,7 @@ const variantLine = (item: CartItem) =>
   [item.selectedStorage, item.selectedColor, item.selectedCondition].filter(Boolean).join(' · ');
 
 function OrderLines({ items }: { items: CartItem[] }) {
+  const { products: catalogue } = useCatalogue();
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
       {items.map((item) => {
@@ -34,7 +37,7 @@ function OrderLines({ items }: { items: CartItem[] }) {
                 soon" tag only ever showed as a clipped "oto coming so". */}
             <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0, background: 'var(--grey-5)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)', padding: '3px', boxSizing: 'border-box' }}>
               <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: 'calc(var(--radius-md) - 2px)' }}>
-                <ProductImage brand={item.brand} model={item.model} category={item.category} color={item.selectedColor} imageUrl={item.imageUrl} alt={item.model} context="thumb" />
+                <ProductImage brand={item.brand} model={item.model} category={item.category} color={item.selectedColor} imageUrl={cartLineImage(item, catalogue)} alt={item.model} context="thumb" />
               </div>
               {item.quantity > 1 && (
                 <span aria-hidden="true" style={{ position: 'absolute', top: '-6px', right: '-6px', minWidth: '18px', height: '18px', padding: '0 5px', boxSizing: 'border-box', borderRadius: '9px', background: 'var(--grey-60)', color: 'white', fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 700, lineHeight: '18px', textAlign: 'center' }}>

@@ -5,9 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, X, ArrowRight, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProductImage from './ProductImage';
+import { useCatalogue } from '../context/CatalogueContext';
+import { cartLineImage } from '../lib/cartImage';
+import PaymentTrustMark from './PaymentTrustMark';
 
 export default function AddedToCartModal() {
   const { lastAddedItem, clearLastAdded, cartTotal, cartCount } = useCart();
+  const { products: catalogue } = useCatalogue();
   const { setCurrentStep } = useCheckout();
   const navigate = useNavigate();
   const isOpen = !!lastAddedItem;
@@ -145,7 +149,7 @@ export default function AddedToCartModal() {
                     model={lastAddedItem.model}
                     category={lastAddedItem.category}
                     color={lastAddedItem.selectedColor}
-                    imageUrl={lastAddedItem.imageUrl}
+                    imageUrl={cartLineImage(lastAddedItem, catalogue)}
                     alt={lastAddedItem.model}
                   />
                 </div>
@@ -191,6 +195,7 @@ export default function AddedToCartModal() {
                 >
                   Proceed to checkout <ArrowRight size={16} />
                 </button>
+                <PaymentTrustMark variant="pdp" />
                 <button onClick={handleGoToCart} className="btn btn-secondary btn-md btn-full">
                   Go to cart
                 </button>
