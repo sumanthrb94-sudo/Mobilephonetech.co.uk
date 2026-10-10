@@ -121,8 +121,10 @@ function TabPanel({
                 `${phone.warrantyMonths}-month warranty`,
                 `${phone.returnDays}-day free returns`,
                 'Independently tested & verified',
-                'Unlocked — works with any UK network',
-                'Charger & cable included',
+                ...(isPhone(phone) ? ['Unlocked — works with any UK network'] : []),
+                // Only a cable is in the box: the wall charger is the add-on
+                // offered above Add to cart, so never claim one is included.
+                isWatch(phone) ? 'Charging cable included' : 'Charging cable included (charger sold separately)',
               ].map((item) => (
                 <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
                   <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
@@ -1140,4 +1142,12 @@ function galleryFor(phone: Product, variant: ProductVariant | null): string[] {
         ? phone.galleryImages
         : [phone.imageUrl];
   return list.filter(isUploadedPhoto);
+}
+
+function isWatch(p: Product): boolean {
+  return p.category === 'Smartwatches' || /watch/i.test(p.model);
+}
+
+function isPhone(p: Product): boolean {
+  return p.category === 'Phones' && !isWatch(p);
 }

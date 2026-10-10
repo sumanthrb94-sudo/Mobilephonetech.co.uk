@@ -313,7 +313,7 @@ function contentsForCategory(category: string): BoxItem[] {
     'Ipads & Tabs': [{ icon: Smartphone, label: 'Device' }, { icon: Cable, label: 'USB-C cable' }, { icon: FileText, label: 'Documentation' }],
     Hearables:    [{ icon: Headphones, label: 'Earbuds + case' }, { icon: Cable, label: 'USB-C cable' }, { icon: Package, label: 'Ear tips' }, { icon: FileText, label: 'Documentation' }],
     Speakers:     [{ icon: Package, label: 'Speaker' }, { icon: Plug, label: 'Power cable' }, { icon: FileText, label: 'Documentation' }],
-    Smartwatches: [{ icon: Watch, label: 'Watch' }, { icon: BatteryCharging, label: 'Magnetic charger' }, { icon: Package, label: 'Strap' }, { icon: FileText, label: 'Documentation' }],
+    Smartwatches: [{ icon: Watch, label: 'Watch' }, { icon: BatteryCharging, label: 'Magnetic charging cable' }, { icon: Package, label: 'Strap' }, { icon: FileText, label: 'Documentation' }],
     Playables:    [{ icon: Gamepad2, label: 'Console' }, { icon: Gamepad2, label: 'Controller' }, { icon: Plug, label: 'Power cable' }, { icon: Cable, label: 'HDMI cable' }],
     Gaming:       [{ icon: Gamepad2, label: 'Console' }, { icon: Gamepad2, label: 'Controller' }, { icon: Plug, label: 'Power cable' }, { icon: Cable, label: 'HDMI cable' }],
     Accessories:  [{ icon: Package, label: 'Product' }, { icon: FileText, label: 'Documentation' }],

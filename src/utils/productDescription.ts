@@ -29,8 +29,18 @@ export function generateProductDescription(product: Product): string {
       ? ` Battery health ${batteryHealth}%.`
       : '';
 
+  // Tablets and watches first: they are made by the same brands as phones,
+  // and an iPad was being described as "a refurbished smartphone".
+  const lowerModel = model.toLowerCase();
+  const isTablet = cat === 'tablets' || cat === 'ipads & tabs' || lowerModel.includes('ipad') || /\btab\b/.test(lowerModel);
+  const isWatch = cat === 'smartwatches' || lowerModel.includes('watch');
+
+  if (isWatch) {
+    return `The ${brand} ${model} is a refurbished smartwatch supplied ${conditionPhrase}.${healthNote} Every unit is independently tested and comes with a 12-month warranty and 30-day free returns.`;
+  }
+
   // Category-specific description templates
-  if (cat === 'phones' || brand === 'Apple' || brand === 'Samsung' || brand === 'Google') {
+  if (!isTablet && (cat === 'phones' || brand === 'Apple' || brand === 'Samsung' || brand === 'Google')) {
     const parts: string[] = [];
 
     parts.push(
@@ -63,7 +73,7 @@ export function generateProductDescription(product: Product): string {
     return parts.join(' ');
   }
 
-  if (cat === 'tablets' || model.toLowerCase().includes('ipad') || model.toLowerCase().includes('tab')) {
+  if (isTablet) {
     const parts: string[] = [
       `The ${brand} ${model} is a refurbished tablet supplied ${conditionPhrase}.`,
     ];

@@ -20,7 +20,7 @@ const SECTIONS: { title: string; items: QA[] }[] = [
     items: [
       { q: 'What grade should I pick?',          a: 'Pristine if you want a device indistinguishable from new. Excellent is our best-seller — very light marks at most, screen flawless. Good if cosmetics don\'t matter. Functional quality is identical across every grade.' },
       { q: 'Is the battery health guaranteed?',  a: 'Yes. Every refurbished handset ships with battery health 80%+ on Fair/Good, 85%+ on Excellent, and 90-95%+ on Pristine. If it falls below threshold within the warranty period, we replace the cell free.' },
-      { q: 'Do I get the original box and accessories?', a: 'Refurbs ship in our recyclable packaging with a new cable. Earphones, chargers and original boxes are not guaranteed (Apple stopped including most of these in 2020 anyway).' },
+      { q: 'Do I get the original box and accessories?', a: 'Every device ships in our recyclable packaging with a new charging cable. A wall charger is not included (Apple and Samsung stopped putting one in the box too); you can add one on the product page. Earphones and the original box are not included.' },
       { q: 'Are parts genuine?',                 a: 'Replacement parts are either OEM original or OEM-grade equivalents from certified suppliers. We don\'t fit counterfeit components.' },
     ],
   },
