@@ -417,7 +417,8 @@ async function run(view, contextOpts) {
       const vh = window.innerHeight;
       const onScreen = (el) => { const r = el?.getBoundingClientRect(); return !!r && r.width > 0 && r.top < vh && r.bottom > 0; };
       const real = [...document.querySelectorAll('button')]
-        .find(b => /add to cart|out of stock/i.test(b.textContent || '') && !b.closest('.pdp-stickybuy'));
+        // A grade row's "Out of stock" is that grade's status, not the buy button.
+        .find(b => /add to cart|out of stock/i.test(b.textContent || '') && !b.closest('.pdp-stickybuy, .pdp-grade-list'));
       return onScreen(real) || onScreen(document.querySelector('.pdp-stickybuy'));
     });
     rec(view, 'Product page shows a buy control without scrolling',
@@ -434,7 +435,7 @@ async function run(view, contextOpts) {
     await page.waitForTimeout(700);
     const reachable = await page.evaluate(() => {
       const btn = [...document.querySelectorAll('button')]
-        .find(b => /add to cart|out of stock/i.test(b.textContent || ''));
+        .find(b => /add to cart|out of stock/i.test(b.textContent || '') && !b.closest('.pdp-grade-list'));
       const r = btn?.getBoundingClientRect();
       const realOnScreen = r ? r.top < window.innerHeight && r.bottom > 0 : false;
       const bar = document.querySelector('.pdp-stickybuy');

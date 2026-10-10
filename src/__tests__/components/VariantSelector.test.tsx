@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import VariantSelector from '../../components/VariantSelector';
-import type { Product } from '../../types';
+import type { Product, ProductVariant } from '../../types';
 
 /**
  * The variant selector had no test before this, which is part of why it
@@ -299,6 +300,179 @@ describe('VariantSelector — multi-variant matrix (Amazon style)', () => {
 
     expect(screen.getByText(/Capacity:/i).textContent).toContain('128GB');
     expect(screen.queryByRole('button', { name: /128GB/i })).toBeNull();
+  });
+});
+
+/**
+ * Every grade, one under another.
+ *
+ * The shop owner asked for the whole grade ladder on the product page at
+ * once: Pristine, Excellent and Good always listed, each priced for the
+ * colour and capacity chosen above it, and a grade with none on the shelf
+ * still shown but with no price. Fair is not sold and must never appear.
+ */
+describe('VariantSelector — every grade listed vertically', () => {
+  const variants: ProductVariant[] = [
+    { id: 'blk-128-p', color: 'Black', storage: '128GB', condition: 'Pristine',  price: 500, originalPrice: 900, stock: 2 },
+    { id: 'blk-128-e', color: 'Black', storage: '128GB', condition: 'Excellent', price: 450, originalPrice: 900, stock: 3 },
+    { id: 'blk-128-g', color: 'Black', storage: '128GB', condition: 'Good',      price: 400, originalPrice: 900, stock: 0 },
+    { id: 'blk-128-f', color: 'Black', storage: '128GB', condition: 'Fair',      price: 300, originalPrice: 900, stock: 5 },
+    { id: 'blk-256-p', color: 'Black', storage: '256GB', condition: 'Pristine',  price: 600, originalPrice: 1000, stock: 1 },
+    { id: 'blk-256-g', color: 'Black', storage: '256GB', condition: 'Good',      price: 520, originalPrice: 1000, stock: 4 },
+    { id: 'blk-256-g-cheap', color: 'Black', storage: '256GB', condition: 'Good', price: 510.5, originalPrice: 1000, stock: 2 },
+    { id: 'blu-128-e', color: 'Blue',  storage: '128GB', condition: 'Excellent', price: 455, originalPrice: 900, stock: 1 },
+    // Sold out, so the Blue Pristine row must say so rather than show £999.
+    { id: 'blu-128-p', color: 'Blue',  storage: '128GB', condition: 'Pristine',  price: 999, originalPrice: 1200, stock: 0 },
+  ];
+  const matrix = product({ id: 'iphone-15', model: 'iPhone 15', variants });
+
+  /** Feeds each choice back in, the way ProductDetail does. */
+  function Harness({ onSelect, initial = null, onExplainGrading }: {
+    onSelect: (v: ProductVariant) => void;
+    initial?: ProductVariant | null;
+    onExplainGrading?: () => void;
+  }) {
+    const [selected, setSelected] = useState<ProductVariant | null>(initial);
+    return (
+      <VariantSelector
+        product={matrix}
+        selectedVariant={selected}
+        onVariantSelect={(v) => { onSelect(v); setSelected(v); }}
+        onExplainGrading={onExplainGrading}
+      />
+    );
+  }
+
+  function renderMatrix(initial: ProductVariant | null = null, onExplainGrading?: () => void) {
+    const onSelect = vi.fn();
+    render(
+      <MemoryRouter>
+        <Harness onSelect={onSelect} initial={initial} onExplainGrading={onExplainGrading} />
+      </MemoryRouter>,
+    );
+    return { onSelect };
+  }
+
+  const gradeList = () => screen.getByRole('group', { name: /condition/i });
+  const gradeRow = (grade: string) =>
+    within(gradeList()).getByRole('button', { name: new RegExp(`^${grade},`) });
+
+  it('lists Pristine, Excellent and Good, in that order, one row each', () => {
+    renderMatrix();
+    const rows = within(gradeList()).getAllByRole('button');
+
+    expect(rows.map(r => r.getAttribute('aria-label')?.split(',')[0])).toEqual(['Pristine', 'Excellent', 'Good']);
+    expect(rows[0].textContent).toContain('Flawless, looks like new');
+    expect(rows[1].textContent).toContain('Very light signs of use');
+    expect(rows[2].textContent).toContain('Visible signs of everyday use');
+  });
+
+  it('still lists all three grades when a model only has one of them', () => {
+    const onlyPristine = product({
+      id: 'ipad-11',
+      variants: [{ id: 'ipad-p', color: 'Silver', storage: '128GB', condition: 'Pristine', price: 270, originalPrice: 400, stock: 3 }],
+    });
+    render(
+      <MemoryRouter>
+        <VariantSelector product={onlyPristine} onVariantSelect={vi.fn()} selectedVariant={null} />
+      </MemoryRouter>,
+    );
+    const rows = within(gradeList()).getAllByRole('button');
+
+    expect(rows).toHaveLength(3);
+    expect(rows[0].textContent).toContain('£270');
+    for (const row of rows.slice(1)) {
+      expect(row.textContent).toContain('Out of stock');
+      expect(row.textContent).not.toContain('£');
+    }
+  });
+
+  it('shows an out-of-stock grade greyed, priceless and not selectable', async () => {
+    const { onSelect } = renderMatrix();
+    const good = gradeRow('Good');
+
+    expect(good.textContent).toContain('Out of stock');
+    expect(good.textContent).not.toContain('£');
+    expect(good.getAttribute('aria-label')).not.toContain('£');
+    expect(good.getAttribute('aria-disabled')).toBe('true');
+    expect(good.getAttribute('aria-pressed')).toBe('false');
+
+    onSelect.mockClear();
+    await userEvent.click(good);
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it('prices each grade for the chosen colour and capacity', async () => {
+    renderMatrix();
+    // Black 128GB: the first in-stock unit is the default.
+    expect(gradeRow('Pristine').textContent).toContain('£500');
+    expect(gradeRow('Excellent').textContent).toContain('£450');
+    expect(gradeRow('Good').textContent).toContain('Out of stock');
+
+    // Black 256GB: Excellent is not stocked there, Good is — at its cheapest.
+    await userEvent.click(screen.getByRole('button', { name: /^256GB/ }));
+    expect(gradeRow('Pristine').textContent).toContain('£600');
+    expect(gradeRow('Excellent').textContent).toContain('Out of stock');
+    expect(gradeRow('Excellent').textContent).not.toContain('£');
+    expect(gradeRow('Good').textContent).toContain('£510.50');
+
+    // Blue (only 128GB in stock): only Excellent, and at Blue's own price.
+    await userEvent.click(screen.getByRole('button', { name: /^Blue/ }));
+    expect(gradeRow('Pristine').textContent).toContain('Out of stock');
+    expect(gradeRow('Pristine').textContent).not.toContain('£999');
+    expect(gradeRow('Excellent').textContent).toContain('£455');
+    expect(gradeRow('Good').textContent).toContain('Out of stock');
+  });
+
+  it('selects the row\'s own unit when an in-stock grade is tapped', async () => {
+    const { onSelect } = renderMatrix();
+    expect(gradeRow('Pristine').getAttribute('aria-pressed')).toBe('true');
+
+    await userEvent.click(gradeRow('Excellent'));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'blk-128-e', price: 450 }));
+    expect(gradeRow('Excellent').getAttribute('aria-pressed')).toBe('true');
+    expect(gradeRow('Pristine').getAttribute('aria-pressed')).toBe('false');
+
+    // On 256GB, Good is the cheapest in-stock Good of that colour and size.
+    await userEvent.click(screen.getByRole('button', { name: /^256GB/ }));
+    await userEvent.click(gradeRow('Good'));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'blk-256-g-cheap' }));
+  });
+
+  it('can be chosen from the keyboard', async () => {
+    const { onSelect } = renderMatrix();
+    gradeRow('Excellent').focus();
+    expect(document.activeElement).toBe(gradeRow('Excellent'));
+
+    await userEvent.keyboard('{Enter}');
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'blk-128-e' }));
+  });
+
+  it('shows the saving against the dearest grade in stock, and only where real', () => {
+    renderMatrix();
+    expect(gradeRow('Excellent').textContent).toContain('Save £50 vs Pristine');
+    expect(gradeRow('Pristine').textContent).not.toContain('Save');
+    expect(gradeRow('Good').textContent).not.toContain('Save');
+  });
+
+  it('never shows Fair, even when a Fair unit is in stock or selected', () => {
+    const fair = variants.find(v => v.condition === 'Fair')!;
+    renderMatrix(fair);
+
+    expect(screen.queryByText(/Fair/)).toBeNull();
+    expect(screen.queryByRole('button', { name: /Fair/ })).toBeNull();
+    expect(screen.getByText(/^Condition/).textContent).toBe('Condition');
+    // No grade claims to be the selected one.
+    for (const row of within(gradeList()).getAllByRole('button')) {
+      expect(row.getAttribute('aria-pressed')).toBe('false');
+    }
+  });
+
+  it('opens the grading guide from the grade list', async () => {
+    const explain = vi.fn();
+    renderMatrix(null, explain);
+    await userEvent.click(screen.getByRole('button', { name: /how grades work/i }));
+    expect(explain).toHaveBeenCalled();
   });
 });
 

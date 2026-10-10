@@ -3782,8 +3782,7 @@ textarea,
     grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)) !important;
   }
 
-  .pdp-storage-choice,
-  .pdp-condition-choice {
+  .pdp-storage-choice {
     min-height: 52px !important;
     padding: 6px 7px !important;
   }
