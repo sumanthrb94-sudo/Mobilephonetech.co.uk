@@ -1,3 +1,4 @@
+import { storageLabel } from '../utils/storageLabel';
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, ArrowRight, BellRing } from 'lucide-react';
@@ -313,12 +314,12 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           </h3>
 
           {/* Storage */}
-          {phone.storage && (
+          {storageLabel(phone) && (
             <p style={{
               fontFamily: 'var(--font-body)', fontSize: '12px',
               color: '#6B7280', marginBottom: 8, lineHeight: 1,
             }}>
-              {phone.storage}
+              {storageLabel(phone)}
             </p>
           )}
 
