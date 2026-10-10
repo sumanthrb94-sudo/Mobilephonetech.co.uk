@@ -1,5 +1,5 @@
 import type { Product, ProductGrade, ProductVariant } from '../types';
-import { isUploadedPhoto, photosFirst } from './productImages';
+import { isUploadedPhoto, photosFirst } from './productImages.js';
 
 /**
  * Firestore <-> app-model mapping for products.
