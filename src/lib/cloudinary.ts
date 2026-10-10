@@ -24,6 +24,23 @@ interface SignedUpload {
   folder: string;
 }
 
+/** Long enough for a 5MB photo on a slow connection, short enough that nobody stares at a spinner. */
+export const SIGN_TIMEOUT_MS = 15_000;
+export const UPLOAD_TIMEOUT_MS = 90_000;
+
+function timeoutSignal(ms: number): AbortSignal | undefined {
+  return typeof AbortSignal !== 'undefined' && 'timeout' in AbortSignal ? AbortSignal.timeout(ms) : undefined;
+}
+
+const isTimeout = (err: unknown) => ['TimeoutError', 'AbortError'].includes((err as { name?: string })?.name ?? '');
+
+/*
+ * Every outcome but "not configured" throws with the reason, and nothing
+ * waits forever. Production has no Firebase Storage bucket, so a Cloudinary
+ * failure that quietly fell back to Storage left the uploader spinning for
+ * the ten minutes the Storage client spends retrying, and the real reason
+ * was never shown to anyone.
+ */
 export async function uploadViaCloudinary(
   kind: UploadKind,
   file: File,
@@ -40,12 +57,12 @@ export async function uploadViaCloudinary(
         ...(token ? { authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ kind, id }),
+      signal: timeoutSignal(SIGN_TIMEOUT_MS),
     });
-  } catch {
-    // The route is not reachable at all — a preview build with no API host
-    // behind it, or an offline moment. Fall back rather than fail: the
-    // upload has somewhere else to go.
-    return null;
+  } catch (err) {
+    throw new Error(isTimeout(err)
+      ? 'The server took too long to approve the upload. Check your connection and try again.'
+      : 'Could not reach the server to approve the upload. Check your connection and try again.');
   }
 
   // Not configured here — the caller falls back to its own uploader.
@@ -69,14 +86,24 @@ export async function uploadViaCloudinary(
   form.append('signature', signature);
   form.append('folder', folder);
 
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body: form,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+      method: 'POST',
+      body: form,
+      signal: timeoutSignal(UPLOAD_TIMEOUT_MS),
+    });
+  } catch (err) {
+    throw new Error(isTimeout(err)
+      ? 'The upload took too long and was stopped. Try again, or try a smaller photo.'
+      : 'Could not reach Cloudinary to upload the photo. Check your connection and try again.');
+  }
 
   if (!res.ok) {
     const detail = await res.json().catch(() => ({}));
-    throw new Error(detail?.error?.message || 'The image could not be uploaded.');
+    // Cloudinary's own words, e.g. "Invalid Signature" or "Unknown API key",
+    // which point straight at a wrong key in the Vercel settings.
+    throw new Error(`Cloudinary refused the upload: ${detail?.error?.message || `error ${res.status}`}`);
   }
 
   const body = await res.json() as { secure_url?: string };

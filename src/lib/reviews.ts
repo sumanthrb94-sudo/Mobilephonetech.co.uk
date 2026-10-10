@@ -33,12 +33,10 @@ export async function uploadReviewPhoto(userId: string, file: File): Promise<str
   // Cloudinary when configured, Firebase Storage otherwise. The signing
   // route puts the file in a folder named after the caller's own uid, the
   // same scoping storage.rules enforces below.
-  try {
-    const hosted = await uploadViaCloudinary('review', file);
-    if (hosted) return hosted;
-  } catch (err) {
-    console.warn('[review] Cloudinary upload failed, falling back to Firebase Storage backup:', err);
-  }
+  // A Cloudinary failure is reported rather than retried on Storage, which
+  // production does not have — see src/lib/cloudinary.ts.
+  const hosted = await uploadViaCloudinary('review', file);
+  if (hosted) return hosted;
 
   const ext = file.name.includes('.') ? file.name.split('.').pop()!.toLowerCase() : 'jpg';
   const path = `review-photos/${userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;

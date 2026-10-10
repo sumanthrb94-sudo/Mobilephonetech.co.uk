@@ -48,6 +48,10 @@ export const app: FirebaseApp = getApps().length
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const storage: FirebaseStorage = getStorage(app);
+// The client's default is to keep retrying a failed upload for ten minutes,
+// all of it behind a spinner. A minute is plenty for a real network blip.
+storage.maxUploadRetryTime = 60_000;
+storage.maxOperationRetryTime = 30_000;
 
 /**
  * Point the SDK at the local emulator suite when VITE_FIREBASE_EMULATOR=true.

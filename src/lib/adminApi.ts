@@ -758,17 +758,15 @@ export async function uploadImage(
 
   // Cloudinary when the deployment has it configured, Firebase Storage
   // otherwise — see src/lib/cloudinary.ts. Both return a URL, and everything
-  // downstream only ever stores and renders that string.
-  try {
-    const hosted = await uploadViaCloudinary(
-      bucket === BANNER_BUCKET ? 'banner' : 'product',
-      file,
-      productId,
-    );
-    if (hosted) return hosted;
-  } catch (err) {
-    console.warn('[uploadImage] Cloudinary upload failed, falling back to Firebase Storage backup:', err);
-  }
+  // downstream only ever stores and renders that string. A Cloudinary
+  // failure is reported, not retried on Storage: production has no Storage
+  // bucket, so that fallback only ever hid the real error behind a spinner.
+  const hosted = await uploadViaCloudinary(
+    bucket === BANNER_BUCKET ? 'banner' : 'product',
+    file,
+    productId,
+  );
+  if (hosted) return hosted;
 
   const unique = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const path = imagePath(productId, file.name, unique);
