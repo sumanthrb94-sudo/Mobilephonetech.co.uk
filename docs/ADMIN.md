@@ -138,6 +138,13 @@ The first real photo is the main one, and products with none show a drawing
 of the device in the chosen colour. The bundled demo drawings and icons that
 used to sit in `/assets/catalogue` have been removed.
 
+**Specifications** — the editor's Specifications section has the same
+fields, in the same groups, as the specs table on the product page (both read
+`src/lib/specFields.ts`). An empty field shows the shop's default for that
+model family in grey, and the product page shows that default until you type
+your own value. Values are trimmed and capped at 300 characters on save, and
+clearing a field brings the default back.
+
 **Home page rows (Admin → Series)** — which product rows appear below the
 banners, in what order, and which products each one holds: iPhone, iPhone 17,
 Galaxy S, Fold & Flip, Pixel, and any new line (iPad, Galaxy A, Apple Watch…).

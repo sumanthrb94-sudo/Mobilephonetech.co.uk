@@ -9,6 +9,8 @@ import {
 import ImageManager from './ImageManager';
 import VariantMatrixEditor from './VariantMatrixEditor';
 import { colourHex } from '../../utils/deviceColors';
+import { enrichSpecs } from '../../utils/deviceSpecs';
+import { SPEC_GROUPS, SPEC_MAX_LENGTH } from '../../lib/specFields';
 
 const CATEGORIES = ['Phones', 'Tablets', 'Smartwatches', 'Accessories', 'Speakers', 'Hearables', 'Playables'];
 
@@ -62,6 +64,9 @@ export default function ProductEditor() {
     setDraft(d => ({ ...d, [key]: value }));
 
   const saving_disabled = saving || loading;
+
+  // What the product page shows for a field left empty: the family/brand default.
+  const specDefaults = useMemo(() => enrichSpecs(draft.brand, draft.model, {}), [draft.brand, draft.model]);
 
   const discount = useMemo(() => {
     if (!draft.originalPrice || draft.originalPrice <= draft.price) return null;
@@ -304,6 +309,33 @@ export default function ProductEditor() {
           </Row>}
         </Section>
 
+        <Section title="Specifications">
+          <p style={bodyStyle}>
+            These fill the specs table on the product page. A field left empty shows the
+            default in grey, which is what shoppers see until you replace it.
+          </p>
+          {SPEC_GROUPS.map(group => (
+            <details key={group.title} style={specGroupStyle} open={group.items.some(i => draft.specs?.[i.key])}>
+              <summary style={specSummaryStyle}>
+                {group.title}
+                <span style={colourCountStyle}>
+                  {group.items.filter(i => draft.specs?.[i.key]).length} of {group.items.length} set
+                </span>
+              </summary>
+              <div className="admin-spec-grid">
+                {group.items.map(item => (
+                  <Field key={item.key} label={item.label} id={`spec-${item.key}`}>
+                    <input id={`field-spec-${item.key}`} style={inputStyle} maxLength={SPEC_MAX_LENGTH}
+                      placeholder={specDefaults[item.key] ?? ''}
+                      value={draft.specs?.[item.key] ?? ''}
+                      onChange={e => set('specs', { ...draft.specs, [item.key]: e.target.value })} />
+                  </Field>
+                ))}
+              </div>
+            </details>
+          ))}
+        </Section>
+
         {colourGroups.length > 0 && (
           <Section title="Photos by colour">
             <p style={bodyStyle}>
@@ -478,6 +510,13 @@ const colourBlockStyle: React.CSSProperties = {
 };
 const colourTitleStyle: React.CSSProperties = {
   display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 10px',
+  fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)',
+};
+const specGroupStyle: React.CSSProperties = {
+  borderTop: '1px solid var(--grey-10)', paddingTop: '10px',
+};
+const specSummaryStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 0 10px',
   fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)',
 };
 const colourCountStyle: React.CSSProperties = {

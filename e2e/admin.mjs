@@ -327,10 +327,16 @@ async function run(view, contextOpts) {
   rec(view, 'Slug is locked when editing', await page.locator('#field-id').isEditable() === false);
 
   await page.locator('#field-price').fill('699');
+  // Specifications: an empty field shows the shop default as its placeholder.
+  rec(view, 'Spec fields show the default as a placeholder',
+    Boolean(await page.locator('#field-spec-chip').getAttribute('placeholder')));
+  await page.locator('summary', { hasText: 'Performance' }).first().click();
+  await page.locator('#field-spec-chip').fill('  A19 Test Chip  ');
   await page.getByRole('button', { name: /Save changes/i }).first().click();
   await page.waitForTimeout(1000);
   const edited = await getProduct('apple-iphone-17');
   rec(view, 'Edit persists to Firestore', edited?.price === 699, `price=${edited?.price}`);
+  rec(view, 'Edited spec is saved trimmed', edited?.specs?.chip === 'A19 Test Chip', `chip=${edited?.specs?.chip}`);
   await shot(page, `${view}-edited`);
 
   // ── 8. Image manager ──

@@ -9,7 +9,8 @@ import { db, storage, COL, withAdminRetry } from './firebase';
 import { uploadViaCloudinary } from './cloudinary';
 import { buildSearchTerms, docToProduct, isOffered, stripUndefined } from './productMapper';
 import { capImages } from './productImages';
-import type { InventoryUnit, Product, ProductGrade, ProductVariant } from '../types';
+import { cleanSpecs } from './specFields';
+import type { InventoryUnit, Product, ProductGrade, ProductSpecs, ProductVariant } from '../types';
 
 /** Storage folder for product imagery. */
 export const IMAGE_BUCKET = 'product-images';
@@ -64,6 +65,8 @@ export interface ProductDraft {
   stock: number;
   description?: string;
   conditionDescription?: string;
+  /** Specification fields staff set; blank ones fall back to the family default on the product page. */
+  specs?: ProductSpecs;
   colorOptions?: string[];
   storageOptions?: string[];
   /** One model can have many independently priced, sellable configurations. */
@@ -194,6 +197,9 @@ export function draftToRow(draft: ProductDraft): Record<string, unknown> {
     stock: summary?.stock ?? draft.stock,
     description: draft.description || null,
     conditionDescription: draft.conditionDescription || null,
+    // Only when the editor carried them: a draft without specs leaves the
+    // stored ones as they are rather than wiping them.
+    specs: draft.specs ? cleanSpecs(draft.specs) : undefined,
     colorOptions: summary?.colorOptions.length ? summary.colorOptions : draft.colorOptions?.length ? draft.colorOptions : null,
     storageOptions: summary?.storageOptions.length ? summary.storageOptions : draft.storageOptions?.length ? draft.storageOptions : null,
     conditionOptions: summary?.conditionOptions.length ? summary.conditionOptions : null,
@@ -254,6 +260,7 @@ export function productToDraft(p: Product): ProductDraft {
     stock: p.stock,
     description: p.description,
     conditionDescription: p.conditionDescription,
+    specs: p.specs ?? {},
     colorOptions: p.colorOptions,
     storageOptions: p.storageOptions,
     variants: p.variants ?? [],

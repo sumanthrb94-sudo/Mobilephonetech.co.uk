@@ -1647,6 +1647,18 @@ html.is-checkout .ai-fab {
   }
 }
 
+/* Spec fields: one column on phones, two from 640px. */
+.admin-spec-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px 16px;
+  padding: 4px 0 12px;
+}
+
+@media (min-width: 640px) {
+  .admin-spec-grid { grid-template-columns: 1fr 1fr; }
+}
+
 /* ── Operations Hub ──────────────────────────────────────────────
    Structure follows the InventoryManager console so staff moving between
    the two tools recognise the layout; the palette is LeHart's own. The

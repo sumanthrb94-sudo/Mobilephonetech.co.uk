@@ -1,101 +1,10 @@
 import React from 'react';
 import { ProductSpecs } from '../types';
+import { SPEC_GROUPS } from '../lib/specFields';
 
 interface TechnicalSpecsProps {
   specs: ProductSpecs;
 }
-
-interface SpecGroup {
-  title: string;
-  items: { key: keyof ProductSpecs; label: string }[];
-}
-
-const SPEC_GROUPS: SpecGroup[] = [
-  {
-    title: 'Launch',
-    items: [
-      { key: 'os', label: 'Operating System' },
-      { key: 'osVersion', label: 'OS Version' },
-      { key: 'body', label: 'Body' },
-      { key: 'bodyBuild', label: 'Build' },
-      { key: 'bodySIM', label: 'SIM' },
-      { key: 'bodyProtection', label: 'Protection' },
-    ],
-  },
-  {
-    title: 'Display',
-    items: [
-      { key: 'displaySize', label: 'Size' },
-      { key: 'display', label: 'Type' },
-      { key: 'displayResolution', label: 'Resolution' },
-      { key: 'displayProtection', label: 'Protection' },
-      { key: 'displayFeatures', label: 'Features' },
-    ],
-  },
-  {
-    title: 'Performance',
-    items: [
-      { key: 'chip', label: 'Chipset' },
-      { key: 'processor', label: 'Processor' },
-      { key: 'cpu', label: 'CPU' },
-      { key: 'gpu', label: 'GPU' },
-      { key: 'ram', label: 'RAM' },
-      { key: 'storage', label: 'Storage' },
-      { key: 'storageExpandable', label: 'Expandable' },
-    ],
-  },
-  {
-    title: 'Camera',
-    items: [
-      { key: 'mainCamera', label: 'Main Camera' },
-      { key: 'mainCameraFeatures', label: 'Main Features' },
-      { key: 'mainCameraVideo', label: 'Main Video' },
-      { key: 'selfieCamera', label: 'Selfie Camera' },
-      { key: 'selfieCameraFeatures', label: 'Selfie Features' },
-      { key: 'selfieCameraVideo', label: 'Selfie Video' },
-    ],
-  },
-  {
-    title: 'Battery',
-    items: [
-      { key: 'battery', label: 'Capacity' },
-      { key: 'batteryCharging', label: 'Charging Type' },
-      { key: 'batteryChargingSpeed', label: 'Charging Speed' },
-      { key: 'batteryLife', label: 'Battery Life' },
-    ],
-  },
-  {
-    title: 'Connectivity',
-    items: [
-      { key: 'network', label: 'Network' },
-      { key: 'network2G', label: '2G Bands' },
-      { key: 'network3G', label: '3G Bands' },
-      { key: 'network4G', label: '4G Bands' },
-      { key: 'network5G', label: '5G Bands' },
-      { key: 'networkSpeed', label: 'Speed' },
-      { key: 'commsWLAN', label: 'WLAN' },
-      { key: 'commsBluetooth', label: 'Bluetooth' },
-      { key: 'commsNFC', label: 'NFC' },
-      { key: 'commsUSB', label: 'USB' },
-      { key: 'commsGPS', label: 'GPS' },
-    ],
-  },
-  {
-    title: 'Physical',
-    items: [
-      { key: 'bodyDimensions', label: 'Dimensions' },
-      { key: 'bodyWeight', label: 'Weight' },
-      { key: 'miscColors', label: 'Colors' },
-    ],
-  },
-  {
-    title: 'Audio',
-    items: [
-      { key: 'soundLoudspeaker', label: 'Loudspeaker' },
-      { key: 'soundJack', label: '3.5mm Jack' },
-    ],
-  },
-];
 
 function cleanValue(value: string | undefined): string | undefined {
   if (!value) return undefined;
