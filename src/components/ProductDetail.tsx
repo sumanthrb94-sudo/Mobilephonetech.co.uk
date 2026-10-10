@@ -44,6 +44,7 @@ import PdpGradeVisualizer from './pdp/PdpGradeVisualizer';
 import PdpWhyRefurbishedBento from './pdp/PdpWhyRefurbishedBento';
 import PdpLabInspectionReel from './pdp/PdpLabInspectionReel';
 import { chargerUpsellFor } from '../lib/chargerUpsell';
+import { gradeOffer } from '../lib/gradeOffers';
 import AnimatedPrice from './ui/AnimatedPrice';
 import PdpSection, { openPdpSection } from './pdp/PdpSection';
 import { displayName } from '../utils/displayName';
@@ -1061,14 +1062,12 @@ export default function ProductDetail() {
           bare
           currentGrade={selectedVariant?.condition ?? phone.grade}
           onSelectGrade={(newGrade) => {
-            // Comparing grades may select one, but only a unit that exists:
-            // same colour and storage, that grade, in stock, cheapest first.
-            // It used to relabel the current unit with the new grade and
-            // keep its price, a grade/price pair that was never for sale.
-            const match = (phone.variants ?? [])
-              .filter(v => v.condition === newGrade && v.stock > 0
-                && v.color === selectedVariant?.color && v.storage === selectedVariant?.storage)
-              .sort((a, b) => a.price - b.price)[0];
+            // Comparing grades may select one, but only a unit that exists,
+            // and the same unit the grade list beside the price offers for
+            // that grade (same colour, storage and, on a tablet, radio). It
+            // used to relabel the current unit with the new grade and keep
+            // its price, a grade/price pair that was never for sale.
+            const match = gradeOffer(phone.variants ?? [], selectedVariant, newGrade);
             if (match) chooseVariant(match);
           }}
         />

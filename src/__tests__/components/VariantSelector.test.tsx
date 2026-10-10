@@ -4,6 +4,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import VariantSelector from '../../components/VariantSelector';
+import { gradeOffer } from '../../lib/gradeOffers';
 import type { Product, ProductVariant } from '../../types';
 
 /**
@@ -49,6 +50,41 @@ function renderFor(current: Product) {
   );
   return { onVariantSelect };
 }
+
+/** Feeds each choice back in, the way ProductDetail does. */
+function SelectionHarness({ product: current, onSelect, initial = null, onExplainGrading }: {
+  product: Product;
+  onSelect: (v: ProductVariant) => void;
+  initial?: ProductVariant | null;
+  onExplainGrading?: () => void;
+}) {
+  const [selected, setSelected] = useState<ProductVariant | null>(initial);
+  return (
+    <VariantSelector
+      product={current}
+      selectedVariant={selected}
+      onVariantSelect={(v) => { onSelect(v); setSelected(v); }}
+      onExplainGrading={onExplainGrading}
+    />
+  );
+}
+
+function renderSelection(current: Product, initial: ProductVariant | null = null) {
+  const onSelect = vi.fn();
+  render(
+    <MemoryRouter>
+      <SelectionHarness product={current} onSelect={onSelect} initial={initial} />
+    </MemoryRouter>,
+  );
+  return { onSelect };
+}
+
+const gradeList = () => screen.getByRole('group', { name: /condition/i });
+const gradeRow = (grade: string) =>
+  within(gradeList()).getByRole('button', { name: new RegExp(`^${grade},`) });
+const gradeNames = () =>
+  within(gradeList()).getAllByRole('button').map(r => r.getAttribute('aria-label')?.split(',')[0]);
+const conditionLabel = () => screen.getByText(/^Condition/).textContent;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -309,14 +345,14 @@ describe('VariantSelector — multi-variant matrix (Amazon style)', () => {
  * The shop owner asked for the whole grade ladder on the product page at
  * once: Pristine, Excellent and Good always listed, each priced for the
  * colour and capacity chosen above it, and a grade with none on the shelf
- * still shown but with no price. Fair is not sold and must never appear.
+ * still shown but with no price. New and Fair appear only for a model that
+ * actually carries them (see the next block).
  */
 describe('VariantSelector — every grade listed vertically', () => {
   const variants: ProductVariant[] = [
     { id: 'blk-128-p', color: 'Black', storage: '128GB', condition: 'Pristine',  price: 500, originalPrice: 900, stock: 2 },
     { id: 'blk-128-e', color: 'Black', storage: '128GB', condition: 'Excellent', price: 450, originalPrice: 900, stock: 3 },
     { id: 'blk-128-g', color: 'Black', storage: '128GB', condition: 'Good',      price: 400, originalPrice: 900, stock: 0 },
-    { id: 'blk-128-f', color: 'Black', storage: '128GB', condition: 'Fair',      price: 300, originalPrice: 900, stock: 5 },
     { id: 'blk-256-p', color: 'Black', storage: '256GB', condition: 'Pristine',  price: 600, originalPrice: 1000, stock: 1 },
     { id: 'blk-256-g', color: 'Black', storage: '256GB', condition: 'Good',      price: 520, originalPrice: 1000, stock: 4 },
     { id: 'blk-256-g-cheap', color: 'Black', storage: '256GB', condition: 'Good', price: 510.5, originalPrice: 1000, stock: 2 },
@@ -326,36 +362,15 @@ describe('VariantSelector — every grade listed vertically', () => {
   ];
   const matrix = product({ id: 'iphone-15', model: 'iPhone 15', variants });
 
-  /** Feeds each choice back in, the way ProductDetail does. */
-  function Harness({ onSelect, initial = null, onExplainGrading }: {
-    onSelect: (v: ProductVariant) => void;
-    initial?: ProductVariant | null;
-    onExplainGrading?: () => void;
-  }) {
-    const [selected, setSelected] = useState<ProductVariant | null>(initial);
-    return (
-      <VariantSelector
-        product={matrix}
-        selectedVariant={selected}
-        onVariantSelect={(v) => { onSelect(v); setSelected(v); }}
-        onExplainGrading={onExplainGrading}
-      />
-    );
-  }
-
   function renderMatrix(initial: ProductVariant | null = null, onExplainGrading?: () => void) {
     const onSelect = vi.fn();
     render(
       <MemoryRouter>
-        <Harness onSelect={onSelect} initial={initial} onExplainGrading={onExplainGrading} />
+        <SelectionHarness product={matrix} onSelect={onSelect} initial={initial} onExplainGrading={onExplainGrading} />
       </MemoryRouter>,
     );
     return { onSelect };
   }
-
-  const gradeList = () => screen.getByRole('group', { name: /condition/i });
-  const gradeRow = (grade: string) =>
-    within(gradeList()).getByRole('button', { name: new RegExp(`^${grade},`) });
 
   it('lists Pristine, Excellent and Good, in that order, one row each', () => {
     renderMatrix();
@@ -455,17 +470,36 @@ describe('VariantSelector — every grade listed vertically', () => {
     expect(gradeRow('Good').textContent).not.toContain('Save');
   });
 
-  it('never shows Fair, even when a Fair unit is in stock or selected', () => {
-    const fair = variants.find(v => v.condition === 'Fair')!;
-    renderMatrix(fair);
+  it('does not list Fair or New for a model that has no such unit', () => {
+    renderMatrix();
 
     expect(screen.queryByText(/Fair/)).toBeNull();
     expect(screen.queryByRole('button', { name: /Fair/ })).toBeNull();
-    expect(screen.getByText(/^Condition/).textContent).toBe('Condition');
-    // No grade claims to be the selected one.
-    for (const row of within(gradeList()).getAllByRole('button')) {
-      expect(row.getAttribute('aria-pressed')).toBe('false');
-    }
+    expect(screen.queryByRole('button', { name: /^New,/ })).toBeNull();
+    expect(screen.getByText(/^Condition/).textContent).toBe('Condition: Pristine');
+  });
+
+  it('lists Fair last, priced and selectable, for a model that has a Fair unit', async () => {
+    const withFair = [
+      ...variants,
+      { id: 'blk-128-f', color: 'Black', storage: '128GB', condition: 'Fair', price: 300, originalPrice: 900, stock: 5 } as ProductVariant,
+    ];
+    const onSelect = vi.fn();
+    render(
+      <MemoryRouter>
+        <SelectionHarness product={product({ id: 'iphone-15-fair', variants: withFair })} onSelect={onSelect} />
+      </MemoryRouter>,
+    );
+    const rows = within(gradeList()).getAllByRole('button');
+
+    expect(rows.map(r => r.getAttribute('aria-label')?.split(',')[0])).toEqual(['Pristine', 'Excellent', 'Good', 'Fair']);
+    expect(gradeRow('Fair').textContent).toContain('Noticeable signs of use, fully working');
+    expect(gradeRow('Fair').textContent).toContain('£300');
+
+    await userEvent.click(gradeRow('Fair'));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'blk-128-f' }));
+    expect(gradeRow('Fair').getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByText(/^Condition/).textContent).toBe('Condition: Fair');
   });
 
   it('opens the grading guide from the grade list', async () => {
@@ -473,6 +507,264 @@ describe('VariantSelector — every grade listed vertically', () => {
     renderMatrix(null, explain);
     await userEvent.click(screen.getByRole('button', { name: /how grades work/i }));
     expect(explain).toHaveBeenCalled();
+  });
+});
+
+/**
+ * New and Fair units.
+ *
+ * The grade list used to hold only Pristine, Excellent and Good. A model
+ * whose unit for sale was New (iPhone 17, listed first at £854) or Fair
+ * (Galaxy A52s, one unit at £75) then had no row for it: the Condition label
+ * was blank and all three rows could read "Out of stock" while the page sold
+ * the unit. New now leads the list and Fair ends it, whenever the model has
+ * one.
+ */
+describe('VariantSelector — New and Fair grades', () => {
+  const iphone17 = product({
+    id: 'apple-iphone-17',
+    model: 'iPhone 17',
+    variants: [
+      { id: 'i17-new', color: 'Lavender', storage: '256GB', condition: 'New',       price: 854, originalPrice: 899, stock: 1 },
+      { id: 'i17-p',   color: 'Lavender', storage: '256GB', condition: 'Pristine',  price: 720, originalPrice: 899, stock: 2 },
+      { id: 'i17-e',   color: 'Lavender', storage: '256GB', condition: 'Excellent', price: 680, originalPrice: 899, stock: 2 },
+    ],
+  });
+
+  it('lists New first, selected with its own price, when the model has a new unit', () => {
+    renderSelection(iphone17);
+
+    expect(gradeNames()).toEqual(['New', 'Pristine', 'Excellent', 'Good']);
+    expect(gradeRow('New').textContent).toContain('Brand new, unused');
+    expect(gradeRow('New').textContent).toContain('£854');
+    expect(gradeRow('New').getAttribute('aria-pressed')).toBe('true');
+    expect(conditionLabel()).toBe('Condition: New');
+    // The refurbished grades compare against it honestly.
+    expect(gradeRow('Pristine').textContent).toContain('Save £134 vs New');
+  });
+
+  it('lets the shopper choose New from another grade, and back', async () => {
+    const { onSelect } = renderSelection(iphone17, iphone17.variants![1]);
+    expect(gradeRow('Pristine').getAttribute('aria-pressed')).toBe('true');
+
+    await userEvent.click(gradeRow('New'));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'i17-new', price: 854 }));
+    expect(gradeRow('New').getAttribute('aria-pressed')).toBe('true');
+    expect(conditionLabel()).toBe('Condition: New');
+
+    await userEvent.click(gradeRow('Excellent'));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'i17-e' }));
+  });
+
+  it('shows a Fair-only model\'s unit as the selected Fair row, the standard grades out of stock', () => {
+    const a52s = product({
+      id: 'samsung-galaxy-a52s-5g-128gb',
+      brand: 'Samsung',
+      model: 'Galaxy A52s 5G',
+      variants: [
+        { id: 'a52s-fair', color: 'Awesome Black', storage: '128GB', condition: 'Fair', price: 75, originalPrice: 399, stock: 1 },
+      ],
+    });
+    const { onSelect } = renderSelection(a52s);
+
+    expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'a52s-fair' }));
+    expect(gradeNames()).toEqual(['Pristine', 'Excellent', 'Good', 'Fair']);
+    expect(conditionLabel()).toBe('Condition: Fair');
+
+    const fair = gradeRow('Fair');
+    expect(fair.getAttribute('aria-pressed')).toBe('true');
+    expect(fair.textContent).toContain('£75');
+    expect(fair.getAttribute('aria-disabled')).toBeNull();
+
+    for (const grade of ['Pristine', 'Excellent', 'Good']) {
+      expect(gradeRow(grade).textContent).toContain('Out of stock');
+      expect(gradeRow(grade).textContent).not.toContain('£');
+      expect(gradeRow(grade).getAttribute('aria-pressed')).toBe('false');
+    }
+  });
+});
+
+/**
+ * A selected unit that is sold out.
+ *
+ * Its row is the selected one, so it must say "Out of stock" and carry no
+ * price. It used to borrow the price of another unit of the same grade (a
+ * Cellular tablet beside a sold-out Wi-Fi one), which the page was not
+ * selling.
+ */
+describe('VariantSelector — a sold-out selected unit', () => {
+  const ipad = product({
+    id: 'ipad-air',
+    model: 'iPad Air',
+    variants: [
+      { id: 'wifi-p-oos', color: 'Silver', storage: '256GB', connectivity: 'Wi-Fi',    condition: 'Pristine', price: 450, originalPrice: 700, stock: 0 },
+      { id: 'cell-p',     color: 'Silver', storage: '256GB', connectivity: 'Cellular', condition: 'Pristine', price: 560, originalPrice: 800, stock: 1 },
+      { id: 'wifi-g',     color: 'Silver', storage: '256GB', connectivity: 'Wi-Fi',    condition: 'Good',     price: 380, originalPrice: 700, stock: 2 },
+    ],
+  });
+
+  it('marks its row selected and out of stock, with no price at all', async () => {
+    const { onSelect } = renderSelection(ipad, ipad.variants![0]);
+    const pristine = gradeRow('Pristine');
+
+    expect(conditionLabel()).toBe('Condition: Pristine');
+    expect(pristine.getAttribute('aria-pressed')).toBe('true');
+    expect(pristine.textContent).toContain('Out of stock');
+    expect(pristine.textContent).not.toContain('£');
+    expect(pristine.getAttribute('aria-label')).not.toContain('£');
+
+    // Nothing to choose on that row; the other grades still work.
+    onSelect.mockClear();
+    await userEvent.click(pristine);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(gradeRow('Good').textContent).toContain('£380');
+  });
+});
+
+/**
+ * Changing colour or capacity keeps the grade, and lands on a unit that can
+ * be bought: in stock on the same radio first, then in stock on the other,
+ * and a sold-out unit only when there is nothing else in that grade.
+ */
+describe('VariantSelector — switching colour or capacity', () => {
+  const ipad = product({
+    id: 'ipad-11',
+    model: 'iPad 11th Gen',
+    variants: [
+      { id: 's-128-wifi-p',     color: 'Silver', storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Pristine', price: 400, originalPrice: 600, stock: 2 },
+      // Listed first and cheapest, but sold out.
+      { id: 'b-128-wifi-p-oos', color: 'Blue',   storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Pristine', price: 390, originalPrice: 600, stock: 0 },
+      { id: 'b-128-cell-p',     color: 'Blue',   storage: '128GB', connectivity: 'Cellular', condition: 'Pristine', price: 520, originalPrice: 700, stock: 1 },
+      { id: 'b-128-wifi-p',     color: 'Blue',   storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Pristine', price: 410, originalPrice: 600, stock: 3 },
+      // 256GB Pristine: only Cellular is in stock.
+      { id: 's-256-wifi-p-oos', color: 'Silver', storage: '256GB', connectivity: 'Wi-Fi',    condition: 'Pristine', price: 450, originalPrice: 700, stock: 0 },
+      { id: 's-256-cell-p',     color: 'Silver', storage: '256GB', connectivity: 'Cellular', condition: 'Pristine', price: 560, originalPrice: 800, stock: 1 },
+      // Gold Pristine exists but is sold out; Gold Good is in stock.
+      { id: 'g-128-wifi-p-oos', color: 'Gold',   storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Pristine', price: 395, originalPrice: 600, stock: 0 },
+      { id: 'g-128-wifi-g',     color: 'Gold',   storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Good',     price: 300, originalPrice: 600, stock: 2 },
+    ],
+  });
+
+  it('prefers an in-stock unit on the same radio over a sold-out exact match', async () => {
+    const { onSelect } = renderSelection(ipad);
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's-128-wifi-p' }));
+
+    await userEvent.click(screen.getByRole('button', { name: /^Blue/ }));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'b-128-wifi-p', price: 410 }));
+    expect(gradeRow('Pristine').textContent).toContain('£410');
+    expect(gradeRow('Pristine').getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('takes the in-stock unit on the other radio before a sold-out one on this radio', async () => {
+    const { onSelect } = renderSelection(ipad);
+
+    await userEvent.click(screen.getByRole('button', { name: /^256GB/ }));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 's-256-cell-p' }));
+    expect(gradeRow('Pristine').textContent).toContain('£560');
+  });
+
+  it('lands on the sold-out unit only when that grade has nothing in stock, and says so', async () => {
+    const { onSelect } = renderSelection(ipad);
+
+    await userEvent.click(screen.getByRole('button', { name: /^Gold/ }));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'g-128-wifi-p-oos' }));
+    expect(gradeRow('Pristine').getAttribute('aria-pressed')).toBe('true');
+    expect(gradeRow('Pristine').textContent).toContain('Out of stock');
+    expect(gradeRow('Pristine').textContent).not.toContain('£');
+    expect(gradeRow('Good').textContent).toContain('£300');
+  });
+});
+
+/**
+ * Tablets come as Wi-Fi or Cellular, and a grade row must not switch radio
+ * without saying so, nor count the Cellular premium as a saving.
+ */
+describe('VariantSelector — tablet connectivity in the grade list', () => {
+  const variants: ProductVariant[] = [
+    { id: 'wifi-p',     color: 'Silver', storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Pristine',  price: 400, originalPrice: 600, stock: 2 },
+    { id: 'cell-p',     color: 'Silver', storage: '128GB', connectivity: 'Cellular', condition: 'Pristine',  price: 500, originalPrice: 700, stock: 2 },
+    { id: 'wifi-e-oos', color: 'Silver', storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Excellent', price: 330, originalPrice: 600, stock: 0 },
+    { id: 'cell-e',     color: 'Silver', storage: '128GB', connectivity: 'Cellular', condition: 'Excellent', price: 380, originalPrice: 700, stock: 1 },
+    { id: 'wifi-g',     color: 'Silver', storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Good',      price: 300, originalPrice: 600, stock: 3 },
+    // Cheaper, but on the other radio.
+    { id: 'cell-g',     color: 'Silver', storage: '128GB', connectivity: 'Cellular', condition: 'Good',      price: 280, originalPrice: 700, stock: 3 },
+  ];
+  const ipad = product({ id: 'ipad-mini', model: 'iPad mini', variants });
+
+  it('offers each grade on the selected radio, and names the radio when it cannot', () => {
+    renderSelection(ipad);
+
+    // Good: the Wi-Fi unit, not the cheaper Cellular one.
+    expect(gradeRow('Good').textContent).toContain('£300');
+    expect(gradeRow('Good').textContent).not.toContain('£280');
+    expect(gradeRow('Good').textContent).not.toContain('Cellular');
+
+    // Excellent: no Wi-Fi in stock, so Cellular, labelled as such.
+    const excellent = gradeRow('Excellent');
+    expect(excellent.textContent).toContain('£380');
+    expect(excellent.textContent).toContain('Cellular');
+    expect(excellent.getAttribute('aria-label')).toContain('Cellular');
+
+    expect(gradeRow('Pristine').textContent).not.toContain('Cellular');
+    expect(gradeRow('Pristine').textContent).not.toContain('Wi-Fi');
+  });
+
+  it('measures "Save" only against a unit on the same radio', () => {
+    renderSelection(ipad);
+
+    // Dearest is Pristine Wi-Fi at £400: Good Wi-Fi really is £100 less...
+    expect(gradeRow('Good').textContent).toContain('Save £100 vs Pristine');
+    // ...but Excellent is a Cellular unit, so no saving is claimed.
+    expect(gradeRow('Excellent').textContent).not.toContain('Save');
+  });
+
+  it('skips the saving when the dearest offer is on the other radio', () => {
+    const onlyCellularPristine = product({
+      id: 'ipad-mini-2',
+      model: 'iPad mini',
+      variants: [
+        { id: 'wifi-e', color: 'Silver', storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Excellent', price: 330, originalPrice: 600, stock: 1 },
+        { id: 'cell-p', color: 'Silver', storage: '128GB', connectivity: 'Cellular', condition: 'Pristine',  price: 500, originalPrice: 700, stock: 1 },
+        { id: 'wifi-g', color: 'Silver', storage: '128GB', connectivity: 'Wi-Fi',    condition: 'Good',      price: 300, originalPrice: 600, stock: 1 },
+      ],
+    });
+    renderSelection(onlyCellularPristine);
+
+    expect(gradeRow('Pristine').textContent).toContain('Cellular');
+    // Without the radio check these read "Save £170" and "Save £200 vs Pristine".
+    for (const grade of ['Pristine', 'Excellent', 'Good']) {
+      expect(gradeRow(grade).textContent).not.toContain('Save');
+    }
+  });
+
+  it('switches radio when the labelled row is chosen, and then labels nothing', async () => {
+    const { onSelect } = renderSelection(ipad);
+
+    await userEvent.click(gradeRow('Excellent'));
+    expect(onSelect).toHaveBeenLastCalledWith(expect.objectContaining({ id: 'cell-e' }));
+    // Now on Cellular, every grade is offered on Cellular.
+    expect(gradeRow('Pristine').textContent).toContain('£500');
+    expect(gradeRow('Good').textContent).toContain('£280');
+    for (const grade of ['Pristine', 'Excellent', 'Good']) {
+      expect(gradeRow(grade).textContent).not.toMatch(/Wi-Fi|Cellular/);
+    }
+  });
+
+  /**
+   * ProductDetail's grade comparison selects through gradeOffer too, so a
+   * grade chosen there is always the unit this row shows.
+   */
+  it('offers on every row exactly the unit gradeOffer picks for that grade', async () => {
+    const { onSelect } = renderSelection(ipad);
+    const active = onSelect.mock.lastCall![0] as ProductVariant;
+
+    for (const grade of ['Pristine', 'Excellent', 'Good'] as const) {
+      const unit = gradeOffer(variants, active, grade)!;
+      expect(gradeRow(grade).textContent).toContain(`£${unit.price}`);
+    }
+
+    await userEvent.click(gradeRow('Good'));
+    expect(onSelect.mock.lastCall![0]).toBe(gradeOffer(variants, active, 'Good'));
   });
 });
 

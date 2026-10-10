@@ -1,8 +1,11 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Product, ProductVariant } from '../types';
+import { Product, ProductGrade, ProductVariant } from '../types';
 import { useCatalogue } from '../context/CatalogueContext';
 import { colourHex, storedSwatch } from '../utils/deviceColors';
+import {
+  gradeLadder, gradeOffer, otherRadio, closestUnit, radioOf, trimmed,
+} from '../lib/gradeOffers';
 import {
   variantChoices, isChoosable, currentValue, currentValues, isAmbiguous, alternatives,
   type VariantOption,
@@ -245,18 +248,16 @@ function parseStorageSize(val?: string): number {
 }
 
 /**
- * The grades this shop sells, best first. Every one is always listed, in
- * stock or not, so a shopper sees the whole ladder at once. Fair is not sold
- * and never appears, even if a stray variant carries it.
+ * One line per grade: Pristine to Good in the words GradeExplainer uses at
+ * length, New and Fair (which it does not cover) in the same register. New
+ * and Fair are listed only for a model that carries them (see gradeLadder).
  */
-const SHOP_GRADES = ['Pristine', 'Excellent', 'Good'] as const;
-type ShopGrade = typeof SHOP_GRADES[number];
-
-/** One line per grade, in the words GradeExplainer uses at length. */
-const GRADE_LINE: Record<ShopGrade, string> = {
+const GRADE_LINE: Record<ProductGrade, string> = {
+  New: 'Brand new, unused',
   Pristine: 'Flawless, looks like new',
   Excellent: 'Very light signs of use',
   Good: 'Visible signs of everyday use',
+  Fair: 'Noticeable signs of use, fully working',
 };
 
 /** Whole pounds as £270 and pennies as £270.50, as AnimatedPrice shows them. */
@@ -264,8 +265,6 @@ function money(value: number): string {
   const pence = Math.round(value * 100);
   return pence % 100 === 0 ? `£${pence / 100}` : `£${(pence / 100).toFixed(2)}`;
 }
-
-const trimmed = (value?: string) => (value ?? '').trim();
 
 function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainGrading }: {
   variants: ProductVariant[];
@@ -305,69 +304,52 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
 
   const activeColor = activeVariant?.color?.trim() || colors[0];
   const activeStorage = activeVariant?.storage?.trim() || storages[0];
-  const activeCondition = activeVariant?.condition?.trim();
+  const activeCondition = trimmed(activeVariant?.condition);
+  const activeRadio = radioOf(activeVariant);
 
   /**
-   * One row per sellable grade for the colour and capacity on screen.
+   * One row per grade for the colour and capacity on screen: New when the
+   * model has any, Pristine, Excellent and Good always, Fair when it has any.
    *
-   * A row's price is the cheapest in-stock unit of that exact colour,
-   * capacity and grade — never a unit in another colour or size, which would
-   * put a price on the row that tapping it cannot deliver. The selected unit
-   * speaks for its own grade so the row always agrees with the page price,
-   * and a tablet keeps its Wi-Fi or Cellular radio when one is in stock.
-   * A grade with nothing on the shelf has no offer and so no price.
+   * Each row's unit comes from gradeOffer, which the grade comparison lower
+   * down the page uses too, so the two never pick different units. In short:
+   * the selected unit speaks for its own grade (and a sold-out one leaves
+   * its row "Out of stock" rather than borrowing another unit's price);
+   * other grades offer their cheapest in-stock unit of exactly this colour
+   * and capacity, on this tablet's radio when there is one. A row that has
+   * to use the other radio names it, so the switch is not silent.
    */
-  const gradeRows = useMemo(() => {
-    const colour = trimmed(activeVariant?.color);
-    const storage = trimmed(activeVariant?.storage);
-    const radio = trimmed(activeVariant?.connectivity);
-
-    return SHOP_GRADES.map(grade => {
-      if (activeVariant && activeVariant.stock > 0 && trimmed(activeVariant.condition) === grade) {
-        return { grade, offer: activeVariant };
-      }
-      const onShelf = variants.filter(v =>
-        v.stock > 0
-        && trimmed(v.condition) === grade
-        && trimmed(v.color) === colour
-        && trimmed(v.storage) === storage);
-      const sameRadio = onShelf.filter(v => trimmed(v.connectivity) === radio);
-      const pool = sameRadio.length ? sameRadio : onShelf;
-      const offer = pool.reduce<ProductVariant | undefined>(
-        (best, v) => (!best || v.price < best.price ? v : best), undefined);
-      return { grade, offer };
-    });
-  }, [variants, activeVariant]);
+  const gradeRows = useMemo(() => gradeLadder(variants).map(grade => {
+    const offer = gradeOffer(variants, activeVariant, grade);
+    return { grade, offer, radio: otherRadio(offer, activeVariant) };
+  }), [variants, activeVariant]);
 
   // "Save £X" is measured against the dearest grade actually on offer for
-  // this colour and capacity, and only shown where there is a real gap.
-  const dearest = gradeRows.reduce<{ grade: ShopGrade; price: number } | null>(
-    (top, row) => (row.offer && (!top || row.offer.price > top.price)
-      ? { grade: row.grade, price: row.offer.price }
+  // this colour and capacity, and only shown where there is a real gap and
+  // both units are on the same radio: a Wi-Fi unit is not "£80 cheaper"
+  // than a Cellular one because of a cheaper grade.
+  const dearest = gradeRows.reduce<{ grade: ProductGrade; offer: ProductVariant } | null>(
+    (top, row) => (row.offer && (!top || row.offer.price > top.offer.price)
+      ? { grade: row.grade, offer: row.offer }
       : top),
     null);
 
-  // Pick helper that selects the closest matching variant
+  // Changing colour or capacity keeps the grade and, on a tablet, the radio:
+  // see closestUnit for the order units are preferred in.
   const handleSelectColor = (newColor: string) => {
-    const exact = variants.find(v => v.color?.trim() === newColor && v.storage?.trim() === activeStorage && v.condition?.trim() === activeCondition);
-    if (exact) { onVariantSelect(exact); return; }
-    const sameStorage = variants.find(v => v.color?.trim() === newColor && v.storage?.trim() === activeStorage && v.stock > 0)
-      ?? variants.find(v => v.color?.trim() === newColor && v.storage?.trim() === activeStorage);
-    if (sameStorage) { onVariantSelect(sameStorage); return; }
-    const anyInColor = variants.find(v => v.color?.trim() === newColor && v.stock > 0)
-      ?? variants.find(v => v.color?.trim() === newColor);
-    if (anyInColor) onVariantSelect(anyInColor);
+    const inColour = variants.filter(v => trimmed(v.color) === newColor);
+    const sameStorage = inColour.filter(v => trimmed(v.storage) === activeStorage);
+    const exact = sameStorage.filter(v => trimmed(v.condition) === activeCondition);
+    const next = closestUnit(activeRadio, exact, sameStorage, inColour);
+    if (next) onVariantSelect(next);
   };
 
   const handleSelectStorage = (newStorage: string) => {
-    const exact = variants.find(v => v.storage?.trim() === newStorage && v.color?.trim() === activeColor && v.condition?.trim() === activeCondition);
-    if (exact) { onVariantSelect(exact); return; }
-    const sameColor = variants.find(v => v.storage?.trim() === newStorage && v.color?.trim() === activeColor && v.stock > 0)
-      ?? variants.find(v => v.storage?.trim() === newStorage && v.color?.trim() === activeColor);
-    if (sameColor) { onVariantSelect(sameColor); return; }
-    const anyInStorage = variants.find(v => v.storage?.trim() === newStorage && v.stock > 0)
-      ?? variants.find(v => v.storage?.trim() === newStorage);
-    if (anyInStorage) onVariantSelect(anyInStorage);
+    const inStorage = variants.filter(v => trimmed(v.storage) === newStorage);
+    const sameColour = inStorage.filter(v => trimmed(v.color) === activeColor);
+    const exact = sameColour.filter(v => trimmed(v.condition) === activeCondition);
+    const next = closestUnit(activeRadio, exact, sameColour, inStorage);
+    if (next) onVariantSelect(next);
   };
 
   // Only an in-stock row has an offer, so an out-of-stock grade can never be
@@ -377,7 +359,9 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
     onVariantSelect(offer);
   };
 
-  const shownGrade = SHOP_GRADES.find(g => g === activeCondition);
+  // Always the selected unit's own grade, whatever it is: the rows include
+  // New and Fair whenever the model carries them, so it always has a row.
+  const shownGrade = activeCondition || undefined;
   const gradeLabelId = React.useId();
 
   return (
@@ -510,7 +494,8 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
       )}
 
       {/* 3. Condition — every grade, one under another.
-          All three are always listed so the shopper can compare them at a
+          Pristine, Excellent and Good are always listed (New and Fair too,
+          for a model that has them) so the shopper can compare them at a
           glance, each priced for the colour and capacity chosen above. A
           grade with none on the shelf stays in the list, greyed, with no
           price: "Out of stock" says it exists and is not available now. */}
@@ -546,15 +531,17 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
           aria-labelledby={gradeLabelId}
           style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
         >
-          {gradeRows.map(({ grade, offer }) => {
+          {gradeRows.map(({ grade, offer, radio }) => {
             const isSelected = shownGrade === grade;
             const inStock = Boolean(offer);
             const saving = offer && dearest && dearest.grade !== grade
-              ? Math.round((dearest.price - offer.price) * 100) / 100
+              && radioOf(dearest.offer) === radioOf(offer)
+              ? Math.round((dearest.offer.price - offer.price) * 100) / 100
               : 0;
             const label = [
               grade,
               GRADE_LINE[grade],
+              radio,
               offer ? money(offer.price) : 'out of stock',
               saving > 0 && dearest ? `save ${money(saving)} compared with ${dearest.grade}` : '',
             ].filter(Boolean).join(', ');
@@ -600,13 +587,32 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
                   }}
                 />
                 <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    color: isSelected ? 'var(--brand-cyan-hover)' : 'var(--black)',
-                  }}>
-                    {grade}
+                  <span style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px' }}>
+                    <span style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      fontWeight: 700,
+                      color: isSelected ? 'var(--brand-cyan-hover)' : 'var(--black)',
+                    }}>
+                      {grade}
+                    </span>
+                    {/* This grade is only on the shelf with the other radio,
+                        so choosing it switches Wi-Fi to Cellular or back. */}
+                    {radio && (
+                      <span style={{
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        lineHeight: '16px',
+                        padding: '0 7px',
+                        borderRadius: '999px',
+                        border: '1px solid var(--grey-20)',
+                        color: 'var(--grey-60)',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {radio}
+                      </span>
+                    )}
                   </span>
                   <span style={{
                     fontFamily: 'var(--font-body)',
@@ -627,9 +633,9 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainG
                       Out of stock
                     </span>
                   )}
-                  {saving > 0 && (
+                  {saving > 0 && dearest && (
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--color-trust-text)' }}>
-                      Save {money(saving)} vs {dearest?.grade}
+                      Save {money(saving)} vs {dearest.grade}
                     </span>
                   )}
                 </span>
