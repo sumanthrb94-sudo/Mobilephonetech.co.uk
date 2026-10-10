@@ -302,3 +302,42 @@ describe('VariantSelector — multi-variant matrix (Amazon style)', () => {
   });
 });
 
+describe('VariantSelector — colour swatches', () => {
+  const hexToRgb = (hex: string) => {
+    const n = parseInt(hex.slice(1), 16);
+    return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`;
+  };
+  const swatch = (name: string) =>
+    (screen.getByRole('button', { name: new RegExp(`^${name}`) }) as HTMLElement).style.background;
+
+  const edge = (over: Partial<NonNullable<Product['variants']>[number]> = {}) => product({
+    id: 'galaxy-s25-edge',
+    brand: 'Samsung',
+    model: 'Galaxy S25 Edge',
+    variants: [
+      { id: 'e1', storage: '256GB', color: 'Titanium Silver',    condition: 'Excellent', price: 500, originalPrice: 500, stock: 2 },
+      { id: 'e2', storage: '256GB', color: 'Titanium Jet Black', condition: 'Excellent', price: 500, originalPrice: 500, stock: 2 },
+      { id: 'e3', storage: '256GB', color: 'Titanium Icy Blue',  condition: 'Excellent', price: 500, originalPrice: 500, stock: 2, ...over },
+    ],
+  });
+
+  /** All three used to paint the generic #888888. */
+  it('paints each Galaxy S25 Edge finish its own colour', () => {
+    renderFor(edge());
+    const backgrounds = ['Titanium Silver', 'Titanium Jet Black', 'Titanium Icy Blue'].map(swatch);
+    expect(new Set(backgrounds).size).toBe(3);
+    expect(backgrounds).not.toContain(hexToRgb('#888888'));
+    expect(swatch('Titanium Icy Blue')).toBe(hexToRgb('#adc8e2'));
+  });
+
+  it('does not let a stored placeholder grey override the colour the name gives', () => {
+    renderFor(edge({ colorHex: '#888888' }));
+    expect(swatch('Titanium Icy Blue')).toBe(hexToRgb('#adc8e2'));
+  });
+
+  it('still prefers a hex stored on purpose', () => {
+    renderFor(edge({ colorHex: '#9fc0e0' }));
+    expect(swatch('Titanium Icy Blue')).toBe(hexToRgb('#9fc0e0'));
+  });
+});
+

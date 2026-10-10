@@ -11,7 +11,7 @@ import QuickViewModal from './QuickViewModal';
 import PaymentTrustMark from './PaymentTrustMark';
 import { useHoverPrefetch } from '../hooks/useHoverPrefetch';
 import { getFastestDelivery } from '../utils/deliveryCalculator';
-import { knownColourHex } from '../utils/deviceColors';
+import { knownColourHex, storedSwatch } from '../utils/deviceColors';
 
 const GRADE_DOT: Record<ProductGrade, string> = {
   Pristine: '#3b82f6',
@@ -125,9 +125,10 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
   const colours = phone.colorOptions?.length ? phone.colorOptions : fromVariants;
   // The stored hex for that finish, else the shared palette. A bare colour
   // name as CSS ("Porcelain", "Obsidian") is not a colour, so the dot drew
-  // empty.
+  // empty. A stored placeholder grey is no colour either, so it loses to
+  // the name.
   const swatchOf = (c: string) =>
-    phone.variants?.find(v => v.color === c && v.colorHex)?.colorHex ?? SWATCHES[c] ?? knownColourHex(c) ?? '#c7c7cc';
+    storedSwatch(phone.variants, c) ?? SWATCHES[c] ?? knownColourHex(c) ?? '#c7c7cc';
   const visibleColours = colours.slice(0, 4);
   const overflowColours = colours.length - visibleColours.length;
 

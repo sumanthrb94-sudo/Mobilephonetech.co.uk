@@ -8,7 +8,7 @@ import {
 } from '../../lib/adminApi';
 import ImageManager from './ImageManager';
 import VariantMatrixEditor from './VariantMatrixEditor';
-import { colourHex } from '../../utils/deviceColors';
+import { colourHex, storedSwatch } from '../../utils/deviceColors';
 import { enrichSpecs } from '../../utils/deviceSpecs';
 import { SPEC_GROUPS, SPEC_MAX_LENGTH } from '../../lib/specFields';
 
@@ -405,8 +405,7 @@ function configsForColour(draft: ProductDraft, colour: string): number {
 }
 
 function colourSwatch(draft: ProductDraft, colour: string): string {
-  return (draft.variants ?? []).find(v => (v.color ?? '').trim() === colour && v.colorHex)?.colorHex
-    ?? colourHex(colour, draft.brand);
+  return storedSwatch(draft.variants, colour) ?? colourHex(colour, draft.brand);
 }
 
 function splitList(value: string): string[] {

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Product, ProductVariant } from '../types';
 import { useCatalogue } from '../context/CatalogueContext';
-import { colourHex } from '../utils/deviceColors';
+import { colourHex, storedSwatch } from '../utils/deviceColors';
 import {
   variantChoices, isChoosable, currentValue, currentValues, isAmbiguous, alternatives,
   type VariantOption,
@@ -202,7 +202,9 @@ export default function VariantSelector({
               height: '36px',
               borderRadius: '50%',
               border: option.current ? '2.5px solid var(--brand-cyan)' : '2px solid var(--grey-20)',
-              background: colorSwatches[option.value] ?? option.value.toLowerCase(),
+              // Not the name as CSS: "Titanium Icy Blue" is not a CSS colour,
+              // so the circle drew empty.
+              background: colorSwatches[option.value] ?? colourHex(option.value),
               cursor: option.current ? 'default' : 'pointer',
               padding: 0,
               outline: option.current ? '2px solid var(--brand-cyan)' : 'none',
@@ -350,8 +352,9 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
               const isSelected = activeColor === color;
               // A finish recorded with its own swatch (catalogue imports carry
               // Apple's) wins over the shared palette, where one name such as
-              // "Blue" covers several different Apple blues.
-              const hex = variants.find(v => v.color?.trim() === color && v.colorHex)?.colorHex ?? colourHex(color);
+              // "Blue" covers several different Apple blues. A stored
+              // placeholder grey does not: the name says more than that.
+              const hex = storedSwatch(variants, color) ?? colourHex(color);
               // Check if in stock in current storage or any storage
               const inStock = variants.some(v => v.color?.trim() === color && v.stock > 0);
               return (

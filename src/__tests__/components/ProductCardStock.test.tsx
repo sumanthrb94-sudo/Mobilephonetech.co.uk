@@ -31,4 +31,15 @@ describe('product card stock', () => {
     const dot = container.querySelector('[aria-label="Porcelain"]') as HTMLElement;
     expect(dot.style.background).toMatch(/rgb|#/);
   });
+
+  it('tells Samsung finishes apart, even past a stored placeholder grey', () => {
+    const finishes = ['Titanium Silver', 'Titanium Jet Black', 'Titanium Icy Blue'];
+    const variants = finishes.map((color, i) => ({
+      id: `v${i}`, color, colorHex: '#888888', price: 500, originalPrice: 500, stock: 1,
+    }));
+    const { container } = render(<MemoryRouter><ProductCard phone={{ ...base, brand: 'Samsung', stock: 1, colorOptions: finishes, variants }} /></MemoryRouter>);
+    const backgrounds = finishes.map(c => (container.querySelector(`[aria-label="${c}"]`) as HTMLElement).style.background);
+    expect(new Set(backgrounds).size).toBe(3);
+    expect(backgrounds).not.toContain('rgb(136, 136, 136)');
+  });
 });
