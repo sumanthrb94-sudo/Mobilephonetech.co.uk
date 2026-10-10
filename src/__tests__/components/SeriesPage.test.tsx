@@ -25,7 +25,7 @@ const product = (brand: string, model: string): Product => ({
   grade: 'Excellent', category: 'Phones', images: [],
   description: '', conditionDescription: '', batteryHealth: 90,
   warrantyMonths: 12, returnDays: 30, colorOptions: [], storageOptions: [],
-  imageUrl: '', isCertified: true, specs: {} as Product['specs'],
+  imageUrl: 'https://res.cloudinary.com/test/image/upload/v1/phone.png', isCertified: true, specs: {} as Product['specs'],
 } as Product);
 
 const CATALOGUE = [

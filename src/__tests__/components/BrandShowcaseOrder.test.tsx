@@ -18,7 +18,7 @@ vi.mock('../../lib/seriesPanels', async (importOriginal) => {
   return { ...actual, listLivePanels: () => listLivePanels() };
 });
 
-const { MOCK_PHONES } = await import('../../test/fixtures/mockPhones');
+const { MOCK_PHONES_WITH_PHOTOS: MOCK_PHONES } = await import('../../test/fixtures/mockPhones');
 const ids = (c: HTMLElement) => [...c.querySelectorAll('section[data-panel-id]')].map(s => s.getAttribute('data-panel-id'));
 
 describe('home page rows', () => {

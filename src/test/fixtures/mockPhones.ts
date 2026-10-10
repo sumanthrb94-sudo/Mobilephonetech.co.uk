@@ -18226,3 +18226,12 @@ export const MOCK_PHONES: Product[] = [
     ],
   },
 ];
+
+/**
+ * The same phones with a real (uploaded-style) photo each. Home page rows
+ * only show photographed products, so tests of the rows start from these.
+ */
+export const MOCK_PHONES_WITH_PHOTOS = MOCK_PHONES.map(p => ({
+  ...p,
+  imageUrl: `https://res.cloudinary.com/test/image/upload/v1/${p.id}.png`,
+}));

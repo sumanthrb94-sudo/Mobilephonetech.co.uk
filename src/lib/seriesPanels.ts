@@ -3,6 +3,7 @@ import {
 } from 'firebase/firestore';
 import { db, COL, withAdminRetry } from './firebase';
 import type { Product } from '../types';
+import { isUploadedPhoto } from './productImages';
 
 /**
  * The home page's series panels, editable by staff.
@@ -235,6 +236,10 @@ export function panelProducts(catalogue: Product[], panel: SeriesPanel): Product
     // Home rails sell: only what can be bought today. Out-of-stock models
     // stay in the shop and search, after the ones in stock.
     if ((p.stock ?? 0) <= 0) continue;
+    // Only products with a real photo: a "photo coming soon" drawing next to
+    // photographed phones looks unfinished. They stay in the shop and search,
+    // and join the row as soon as a photo is uploaded.
+    if (!isUploadedPhoto(p.imageUrl)) continue;
     if (!matchesPanel(p, panel)) continue;
     const key = p.model.trim().toLowerCase();
     if (seen.has(key)) continue;

@@ -24,7 +24,7 @@ const product = (brand: string, model: string, extra: Partial<Product> = {}): Pr
   images: [], description: '', conditionDescription: '',
   batteryHealth: 90, warrantyMonths: 12, returnDays: 30,
   colorOptions: [], storageOptions: [],
-  imageUrl: '', isCertified: true, specs: {} as Product['specs'],
+  imageUrl: 'https://res.cloudinary.com/test/image/upload/v1/phone.png', isCertified: true, specs: {} as Product['specs'],
   ...extra,
 } as Product);
 
@@ -148,6 +148,20 @@ describe('the built-in panels still select what their JavaScript rules did', () 
 });
 
 describe('panelProducts', () => {
+  it('leaves out products without a real photo', () => {
+    const drawn = product('Apple', 'iPhone 17 Pro', { id: 'drawn', imageUrl: '' });
+    const stock = product('Apple', 'iPhone 17 Pro', { id: 'stock-render', imageUrl: '/assets/iphone-17-pro-max-trio.jpg' });
+    const real = product('Apple', 'iPhone 17', { id: 'real' });
+    const out = panelProducts([drawn, stock, real], byId('iphone-17'));
+    expect(out.map(p => p.id)).toEqual(['real']);
+  });
+
+  it('uses a photographed listing of a model over an earlier one without', () => {
+    const drawn = product('Apple', 'iPhone 17', { id: 'drawn', imageUrl: '' });
+    const real = product('Apple', 'iPhone 17', { id: 'real' });
+    expect(panelProducts([drawn, real], byId('iphone-17')).map(p => p.id)).toEqual(['real']);
+  });
+
   it('shows one entry per model, not one per storage size', () => {
     const dupes = [
       product('Apple', 'iPhone 17 Pro', { id: 'a', storage: '256GB' }),

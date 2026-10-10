@@ -6,7 +6,7 @@ import { BUILT_IN_PANELS, toneForPosition } from '../../lib/seriesPanels';
 
 // The live catalogue, as if loaded from the database.
 vi.mock('../../context/CatalogueContext', async () => {
-  const { MOCK_PHONES: products } = await import('../../test/fixtures/mockPhones');
+  const { MOCK_PHONES_WITH_PHOTOS: products } = await import('../../test/fixtures/mockPhones');
   return { useCatalogue: () => ({ products, isLoading: false, fromSupabase: true }) };
 });
 
