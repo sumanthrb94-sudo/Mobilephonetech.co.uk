@@ -124,30 +124,35 @@ function TabPanel({
               <p style={{ fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.7 }}>{phone.conditionDescription}</p>
             </div>
           )}
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', fontWeight: 700, marginBottom: '12px', color: 'var(--black)' }}>What's included</h3>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[
-                `${phone.warrantyMonths}-month warranty`,
-                `${phone.returnDays}-day free returns`,
-                'Independently tested & verified',
-                ...(isPhone(phone) ? ['Unlocked — works with any UK network'] : []),
-                // Only a cable is in the box: the wall charger is the add-on
-                // offered above Add to cart, so never claim one is included.
-                isWatch(phone) ? 'Charging cable included' : 'Charging cable included (charger sold separately)',
-              ].map((item) => (
-                <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
-                  <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div style={{ gridColumn: '1 / -1' }}>
-            <EcoImpact productId={phone.id} />
-          </div>
         </div>
       ),
+    },
+    {
+      id: 'pdp-included',
+      heading: "What's included",
+      body: (
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {[
+            `${phone.warrantyMonths}-month warranty`,
+            `${phone.returnDays}-day free returns`,
+            'Independently tested & verified',
+            ...(isPhone(phone) ? ['Unlocked — works with any UK network'] : []),
+            // Only a cable is in the box: the wall charger is the add-on
+            // offered above Add to cart, so never claim one is included.
+            isWatch(phone) ? 'Charging cable included' : 'Charging cable included (charger sold separately)',
+          ].map((item) => (
+            <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)' }}>
+              <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
+              {item}
+            </li>
+          ))}
+        </ul>
+      ),
+    },
+    {
+      id: 'pdp-eco',
+      heading: 'Your environmental savings',
+      body: <EcoImpact productId={phone.id} />,
     },
     {
       id: 'pdp-grades',
