@@ -74,8 +74,13 @@ const staticRoutes = [
 
 // Every blog article, read from the guides data so a new article is in the
 // sitemap without anyone remembering to add it here.
-const guideSlugs = [...readFileSync(new URL('../src/data/guides.ts', import.meta.url), 'utf8')
-  .matchAll(/^\s+slug: '([a-z0-9-]+)'/gm)].map(m => m[1]);
+// A scheduled article (publishedAt after today) is left out until a build
+// on or after its day: listing it earlier points Google at a page that
+// reads "not found".
+const guideSource = readFileSync(new URL('../src/data/guides.ts', import.meta.url), 'utf8');
+const guideSlugs = [...guideSource.matchAll(/^\s+slug: '([a-z0-9-]+)',[\s\S]*?publishedAt: '(\d{4}-\d{2}-\d{2})'/gm)]
+  .filter(m => m[2] <= today)
+  .map(m => m[1]);
 
 const urls = [
   ...staticRoutes.map(r => ({ loc: `${ORIGIN}${r.path}`, lastmod: today, priority: r.priority, changefreq: r.freq })),

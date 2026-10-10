@@ -1,6 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, CheckCircle2, Tag, Bell } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, CheckCircle2, Tag, Bell, ArrowRight } from 'lucide-react';
+import { useCatalogue } from '../context/CatalogueContext';
+import { isUploadedPhoto } from '../lib/productImages';
+import ProductImage from './ProductImage';
+import type { Product } from '../types';
 
 const STORAGE_KEY = 'mt_newsletter_email';
 
@@ -156,6 +161,7 @@ export default function NewsletterSignup() {
           </div>
 
           <div>
+            <DealCard />
             <AnimatePresence mode="wait">
               {submitted ? (
                 <motion.div
@@ -286,5 +292,65 @@ export default function NewsletterSignup() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The block promises price drops, so show one: the in-stock product with a
+ * real photo that is furthest below its new price, linked to its page. The
+ * figures are the product's own (our price against the new price it lists),
+ * never an invented "was" price.
+ */
+export function pickDeal(products: Product[]): Product | null {
+  let best: Product | null = null;
+  let bestSaving = 0;
+  for (const p of products) {
+    if (p.stock <= 0 || !isUploadedPhoto(p.imageUrl)) continue;
+    if (!(p.originalPrice > p.price) || p.price <= 0) continue;
+    const saving = (p.originalPrice - p.price) / p.originalPrice;
+    // Ties go to the dearer phone: a flagship reads as the better deal.
+    if (saving > bestSaving + 1e-9 || (Math.abs(saving - bestSaving) < 1e-9 && best && p.originalPrice > best.originalPrice)) {
+      best = p;
+      bestSaving = saving;
+    }
+  }
+  return best;
+}
+
+function DealCard() {
+  const { products } = useCatalogue();
+  const deal = pickDeal(products);
+  if (!deal) return null;
+  const saving = deal.originalPrice - deal.price;
+  return (
+    <Link
+      to={`/product/${deal.id}`}
+      aria-label={`${deal.brand} ${deal.model}, £${deal.price}, £${saving} less than new`}
+      style={{
+        display: 'grid', gridTemplateColumns: '96px 1fr', gap: '14px', alignItems: 'center',
+        padding: '12px', marginBottom: '20px', borderRadius: 'var(--radius-lg)',
+        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+        color: 'white', textDecoration: 'none',
+      }}
+    >
+      <div style={{ width: 96, height: 96, borderRadius: 'var(--radius-md)', background: 'white', padding: 6, boxSizing: 'border-box' }}>
+        <ProductImage brand={deal.brand} model={deal.model} category={deal.category} imageUrl={deal.imageUrl} alt="" context="thumb" />
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--brand-cyan-on-dark)' }}>
+          Biggest saving today
+        </div>
+        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 16, fontWeight: 800, margin: '3px 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {deal.model}{deal.storage ? ` · ${deal.storage}` : ''}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', fontFamily: 'var(--font-body)' }}>
+          <strong style={{ fontFamily: 'var(--font-sans)', fontSize: 20, fontWeight: 900 }}>£{deal.price}</strong>
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', textDecoration: 'line-through' }}>£{deal.originalPrice} new</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4, fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700, color: '#7ee2a8' }}>
+          £{saving} less than new <ArrowRight size={13} aria-hidden="true" />
+        </div>
+      </div>
+    </Link>
   );
 }

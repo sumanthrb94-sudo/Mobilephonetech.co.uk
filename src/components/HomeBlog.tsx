@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { ArrowRight, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-import { GUIDES } from '../data/guides';
+import { publishedGuides } from '../data/guides';
 
 /**
  * HomeBlog — the latest articles from the blog (src/data/guides.ts), each
@@ -62,7 +62,7 @@ export default function HomeBlog() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
           style={{ gap: '20px' }}
         >
-          {GUIDES.slice(0, HOME_POST_COUNT).map((p, i) => (
+          {publishedGuides().slice(0, HOME_POST_COUNT).map((p, i) => (
             <motion.article
               key={p.slug}
               initial={{ opacity: 0, y: 14 }}

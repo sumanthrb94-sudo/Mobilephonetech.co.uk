@@ -1,7 +1,8 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import Breadcrumbs from '../ui/Breadcrumbs';
-import { GUIDES, GUIDE_REDIRECTS, guideBySlug, type Guide } from '../../data/guides';
+import { GUIDE_REDIRECTS, guideBySlug, publishedGuides, type Guide } from '../../data/guides';
+import GuideProducts from './GuideProducts';
 import { useSeo, SITE_ORIGIN } from '../../hooks/useSeo';
 
 /**
@@ -23,7 +24,7 @@ function formatDate(iso: string): string {
 function GuideList() {
   useSeo({
     title: 'Buying guides — LeHart',
-    description: 'Plain-English guides to buying a refurbished phone: grades, battery health, which iPhone to choose, warranties and your rights.',
+    description: 'Plain-English guides to buying a refurbished phone: grades, battery health, software updates, network locks, which model to choose, warranties and your rights.',
     canonical: `${SITE_ORIGIN}/guides`,
   });
   return (
@@ -42,7 +43,7 @@ function GuideList() {
         </header>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-          {GUIDES.map(g => (
+          {publishedGuides().map(g => (
             <Link key={g.slug} to={`/guides/${g.slug}`} className="guide-card">
               <span className="guide-card__tag" style={{ background: `linear-gradient(135deg, ${g.accent.from}, ${g.accent.to})`, color: g.accent.ink }}>
                 {g.category}
@@ -79,7 +80,7 @@ function GuideArticle({ guide }: { guide: Guide }) {
     },
   });
 
-  const more = GUIDES.filter(g => g.slug !== guide.slug).slice(0, 3);
+  const more = publishedGuides().filter(g => g.slug !== guide.slug).slice(0, 3);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
@@ -102,7 +103,9 @@ function GuideArticle({ guide }: { guide: Guide }) {
             ? <h2 key={i}>{b.text}</h2>
             : b.type === 'ul'
               ? <ul key={i}>{b.items.map(item => <li key={item}>{item}</li>)}</ul>
-              : <p key={i}>{b.text}</p>)}
+              : b.type === 'products'
+                ? <GuideProducts key={i} block={b} />
+                : <p key={i}>{b.text}</p>)}
         </div>
 
         <div className="guide-cta">
