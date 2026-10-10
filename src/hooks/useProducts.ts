@@ -163,15 +163,15 @@ export async function searchProducts(term: string, max = 20): Promise<Product[]>
  * falls back to the direct read below, so a flaky endpoint degrades to "one
  * real read", never to an empty shop.
  */
-export async function fetchCatalogue(max = FETCH_CAP): Promise<Product[]> {
+export async function fetchCatalogue(max = FETCH_CAP): Promise<{ products: Product[]; panels: unknown[] | null }> {
   try {
     const res = await fetch('/api/catalogue');
     if (!res.ok) throw new Error(`catalogue endpoint returned ${res.status}`);
-    const data = await res.json() as { products?: Product[] };
+    const data = await res.json() as { products?: Product[]; panels?: unknown[] };
     if (!data.products?.length) throw new Error('empty');
-    return data.products;
+    return { products: data.products, panels: Array.isArray(data.panels) ? data.panels : null };
   } catch {
-    return fetchCatalogueDirect(max);
+    return { products: await fetchCatalogueDirect(max), panels: null };
   }
 }
 

@@ -30,7 +30,7 @@ describe('fetchCatalogue', () => {
       { id: 'apple-iphone-15-plus-128gb', data: { model: 'iPhone 15 Plus', brand: 'Apple', price: 459, updatedAt: '2026-09-01T00:00:00.000Z' } },
     ]) as never);
 
-    const rows = await fetchCatalogue();
+    const { products: rows } = await fetchCatalogue();
 
     expect(rows).toHaveLength(1);
     // The id must be the document id: it is what the order route prices by.
@@ -44,7 +44,7 @@ describe('fetchCatalogue', () => {
       { id: 'middle', data: { model: 'C', brand: 'Apple', price: 1, updatedAt: '2026-05-01T00:00:00.000Z' } },
     ]) as never);
 
-    expect((await fetchCatalogue()).map(p => p.id)).toEqual(['newest', 'middle', 'older']);
+    expect((await fetchCatalogue()).products.map(p => p.id)).toEqual(['newest', 'middle', 'older']);
   });
 
   /**
@@ -56,13 +56,18 @@ describe('fetchCatalogue', () => {
     it('uses the endpoint response and never touches Firestore when it succeeds', async () => {
       const fetchMock = vi.fn(async () => ({
         ok: true,
-        json: async () => ({ products: [{ id: 'from-endpoint', model: 'X', brand: 'Apple', price: 1 }] }),
+        json: async () => ({
+          products: [{ id: 'from-endpoint', model: 'X', brand: 'Apple', price: 1 }],
+          panels: [{ id: 'pixel', active: true, headline: 'Pixel' }],
+        }),
       }));
       vi.stubGlobal('fetch', fetchMock);
 
-      const rows = await fetchCatalogue();
+      const { products: rows, panels } = await fetchCatalogue();
 
       expect(rows.map(p => p.id)).toEqual(['from-endpoint']);
+      // The home page rows come in the same response.
+      expect(panels).toEqual([{ id: 'pixel', active: true, headline: 'Pixel' }]);
       expect(fetchMock).toHaveBeenCalledWith('/api/catalogue');
       expect(getDocs).not.toHaveBeenCalled();
 
@@ -75,7 +80,9 @@ describe('fetchCatalogue', () => {
         { id: 'direct-read', data: { model: 'Y', brand: 'Apple', price: 1, updatedAt: '2026-01-01T00:00:00.000Z' } },
       ]) as never);
 
-      expect((await fetchCatalogue()).map(p => p.id)).toEqual(['direct-read']);
+      const direct = await fetchCatalogue();
+      expect(direct.products.map(p => p.id)).toEqual(['direct-read']);
+      expect(direct.panels).toBeNull();
 
       vi.unstubAllGlobals();
     });
@@ -86,7 +93,7 @@ describe('fetchCatalogue', () => {
         { id: 'direct-read-2', data: { model: 'Z', brand: 'Apple', price: 1, updatedAt: '2026-01-01T00:00:00.000Z' } },
       ]) as never);
 
-      expect((await fetchCatalogue()).map(p => p.id)).toEqual(['direct-read-2']);
+      expect((await fetchCatalogue()).products.map(p => p.id)).toEqual(['direct-read-2']);
 
       vi.unstubAllGlobals();
     });

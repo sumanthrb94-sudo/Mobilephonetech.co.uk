@@ -12,7 +12,8 @@ import type { Product } from '../types';
  */
 
 function getTablets(catalogue: Product[]) {
-  const tablets = catalogue.filter(p => p.category === 'Tablets');
+  // Older rows say 'Ipads & Tabs'; both are tablets.
+  const tablets = catalogue.filter(p => p.category === 'Tablets' || p.category === 'Ipads & Tabs');
   const ipads    = Array.from(new Set(tablets.filter(p => p.brand === 'Apple').map(p => p.model)));
   const androids = Array.from(new Set(tablets.filter(p => p.brand !== 'Apple').map(p => p.model)));
   // Newest-first heuristic: higher year numbers first, then the rest alphabetical.

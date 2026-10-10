@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Product } from '../types';
 import { fetchCatalogue } from '../hooks/useProducts';
+import { livePanelsFrom, type SeriesPanel } from '../lib/seriesPanels';
 
 interface CatalogueValue {
   /** Listed products from the live database. Empty until it answers, or if it cannot be reached. */
@@ -12,6 +13,12 @@ interface CatalogueValue {
    * than sample ones. Named for Supabase originally; kept for its callers.
    */
   fromSupabase: boolean;
+  /**
+   * The home page rows (Admin → Series), delivered with the products by
+   * /api/catalogue. Null while loading, or when the catalogue had to be
+   * read straight from Firestore; the home page then reads them itself.
+   */
+  panels: SeriesPanel[] | null;
 }
 
 /**
@@ -22,6 +29,7 @@ const CatalogueContext = createContext<CatalogueValue>({
   products: [],
   isLoading: false,
   fromSupabase: false,
+  panels: null,
 });
 
 // The storefront is ~133 products; one request keeps every consumer consistent
@@ -32,16 +40,18 @@ export function CatalogueProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts]         = useState<Product[]>([]);
   const [isLoading, setIsLoading]       = useState(true);
   const [fromSupabase, setFromSupabase] = useState(false);
+  const [panels, setPanels]             = useState<SeriesPanel[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        const rows = await fetchCatalogue(CATALOGUE_LIMIT);
+        const { products: rows, panels: rawPanels } = await fetchCatalogue(CATALOGUE_LIMIT);
         if (cancelled) return;
 
         setProducts(rows);
+        if (rawPanels) setPanels(livePanelsFrom(rawPanels));
         setFromSupabase(true);
       } catch {
         // Nothing to show. Consumers read fromSupabase to explain why.
@@ -55,7 +65,7 @@ export function CatalogueProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <CatalogueContext.Provider value={{ products, isLoading, fromSupabase }}>
+    <CatalogueContext.Provider value={{ products, isLoading, fromSupabase, panels }}>
       {children}
     </CatalogueContext.Provider>
   );

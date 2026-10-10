@@ -78,7 +78,7 @@ export const BUILT_IN_PANELS: SeriesPanel[] = [
     subline: 'Battery health verified. Face ID tested. Every sensor checked. 12-month warranty, 30-day returns — no asterisk.',
     ctaLabel: 'Shop iPhone 17',
     ctaHref: `/products?brand=Apple&model=${encodeURIComponent('iPhone 17')}`,
-    heroImage: '/assets/iphone-17-pro-max-trio.jpg',
+    heroImage: '',
     tone: 'light',
     brand: 'Apple',
     include: ['iPhone 17'],
@@ -293,34 +293,17 @@ export async function listLivePanels(): Promise<SeriesPanel[]> {
 }
 
 /**
- * The rows the home page showed last time, so a returning visitor's first
- * paint is the real set instead of the built-ins swapping out a second later.
- * Browser storage can be missing or blocked; every path then returns null.
+ * The live rows from raw stored documents, as /api/catalogue delivers them:
+ * active ones with a headline, in order, or the built-ins if none.
  */
-const PANEL_CACHE_KEY = 'lehart.homePanels.v1';
-
-export function readCachedPanels(): SeriesPanel[] | null {
-  try {
-    const raw = window.localStorage.getItem(PANEL_CACHE_KEY);
-    if (!raw) return null;
-    const rows = JSON.parse(raw);
-    if (!Array.isArray(rows) || rows.length === 0) return null;
-    const panels = rows
-      .filter((r): r is Record<string, unknown> => Boolean(r) && typeof r === 'object' && typeof r.id === 'string')
-      .map(r => toPanel(r.id as string, r))
-      .filter(p => p.active && p.headline);
-    return panels.length > 0 ? panels : null;
-  } catch {
-    return null;
-  }
-}
-
-export function cachePanels(panels: SeriesPanel[]): void {
-  try {
-    window.localStorage.setItem(PANEL_CACHE_KEY, JSON.stringify(panels));
-  } catch {
-    // Storage full or blocked: the next visit simply waits for Firestore.
-  }
+export function livePanelsFrom(rows: unknown): SeriesPanel[] {
+  if (!Array.isArray(rows)) return BUILT_IN_PANELS;
+  const live = rows
+    .filter((r): r is Record<string, unknown> => Boolean(r) && typeof r === 'object' && typeof (r as { id?: unknown }).id === 'string')
+    .map(r => toPanel(r.id as string, r))
+    .filter(p => p.active && p.headline)
+    .sort((a, b) => a.order - b.order);
+  return live.length > 0 ? live : BUILT_IN_PANELS;
 }
 
 export async function savePanel(p: SeriesPanel): Promise<void> {

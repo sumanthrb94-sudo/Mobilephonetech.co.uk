@@ -10,13 +10,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
  */
 
 let docs: { id: string; data: Record<string, unknown> }[] = [];
+let panelDocs: { id: string; data: Record<string, unknown> }[] = [];
+const snap = (rows: typeof docs) => ({ docs: rows.map(d => ({ id: d.id, data: () => d.data })) });
 vi.mock('../../../api/_firebaseAdmin.js', () => ({
   adminDb: async () => ({
-    collection: () => ({
-      limit: () => ({
-        get: async () => ({ docs: docs.map(d => ({ id: d.id, data: () => d.data })) }),
-      }),
-    }),
+    collection: (name: string) => name === 'seriesPanels'
+      ? { get: async () => snap(panelDocs) }
+      : { limit: () => ({ get: async () => snap(docs) }) },
   }),
 }));
 
@@ -36,6 +36,10 @@ async function get() {
 }
 
 beforeEach(() => {
+  panelDocs = [
+    { id: 'pixel', data: { active: true, headline: 'Pixel', order: 4, updatedAt: { toDate: () => new Date('2026-10-01T00:00:00Z') } } },
+    { id: 'hidden', data: { active: false, headline: 'Hidden', order: 1 } },
+  ];
   docs = [
     { id: 'older', data: { model: 'A', brand: 'Apple', price: 1, updatedAt: '2026-01-01T00:00:00.000Z' } },
     { id: 'newest', data: { model: 'B', brand: 'Apple', price: 2, createdAt: '2026-09-01T00:00:00.000Z' } },
@@ -67,5 +71,13 @@ describe('GET /api/catalogue', () => {
     const res: any = { setHeader: () => res, status: (c: number) => { res.code = c; return res; }, json: () => res };
     await handler({ method: 'POST', headers: {}, query: {} }, res);
     expect(res.code).toBe(405);
+  });
+});
+
+describe('home page rows in the same response', () => {
+  it('includes only the active rows, JSON-safe', async () => {
+    const { code, body } = await get();
+    expect(code).toBe(200);
+    expect(body.panels).toEqual([{ id: 'pixel', active: true, headline: 'Pixel', order: 4, updatedAt: '2026-10-01T00:00:00.000Z' }]);
   });
 });

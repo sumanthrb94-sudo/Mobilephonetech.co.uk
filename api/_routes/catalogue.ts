@@ -32,7 +32,16 @@ export default async function handler(req: any, res: any) {
   if (!db) return res.status(503).json({ error: 'Catalogue is unavailable' });
 
   try {
-    const snap = await db.collection('products').limit(FETCH_CAP).get();
+    // The home page rows (Admin → Series) travel with the products: the
+    // rows are useless without them, and a second request from the browser
+    // meant loading the Firestore client before the home page could finish.
+    const [snap, panelSnap] = await Promise.all([
+      db.collection('products').limit(FETCH_CAP).get(),
+      db.collection('seriesPanels').get(),
+    ]);
+    const panels = panelSnap.docs
+      .map(d => ({ ...plain(d.data() as Record<string, unknown>), id: d.id }) as Record<string, unknown>)
+      .filter(p => p.active === true);
 
     // Same tie-break as the client-side fetchCatalogue this replaces: sort on
     // whichever timestamp the writer actually set, since an orderBy in the
@@ -55,9 +64,19 @@ export default async function handler(req: any, res: any) {
     // edit still shows within about a minute.
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
-    return res.status(200).json({ products });
+    return res.status(200).json({ products, panels });
   } catch (err) {
     console.error('[api/catalogue]', err);
     return res.status(500).json({ error: 'Failed to fetch catalogue' });
   }
+}
+
+/** Only the JSON-safe fields of a stored row (timestamps become ISO strings). */
+function plain(data: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(data)) {
+    const ts = v as { toDate?: () => Date } | null;
+    out[k] = ts && typeof ts.toDate === 'function' ? ts.toDate().toISOString() : v;
+  }
+  return out;
 }

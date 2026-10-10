@@ -5,13 +5,11 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
+import { isUploadedPhoto } from '../lib/productImages';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import {
-  BUILT_IN_PANELS, cachePanels, listLivePanels, panelProducts, readCachedPanels, toneForPosition, type SeriesPanel,
+  listLivePanels, panelProducts, toneForPosition, type SeriesPanel,
 } from '../lib/seriesPanels';
-
-/** How long a first-time visitor waits for the stored rows before the built-ins stand in. */
-const PANEL_WAIT_MS = 4000;
 import type { Product } from '../types';
 
 /**
@@ -31,26 +29,22 @@ import type { Product } from '../types';
 export default function BrandShowcase() {
   const { products: catalogue } = useCatalogue();
 
-  // Which rows to show is decided by staff in Admin → Series. Painting the
-  // built-ins first and then swapping in the stored set made the page change
-  // under the shopper (iPhone 17 first, then iPhone a moment later). So the
-  // first paint uses the set this browser saw last time, or waits for the
-  // stored set; the built-ins only stand in if Firestore is slow or failing.
-  const [panels, setPanels] = useState<SeriesPanel[] | null>(readCachedPanels);
+  // The rows set in Admin → Series arrive with the product list from the
+  // edge-cached /api/catalogue, so rows and products appear together with
+  // no second request and no built-in set swapping out. Only if that
+  // endpoint failed (the catalogue then came straight from Firestore) are
+  // the rows read separately.
+  const { panels: delivered, isLoading } = useCatalogue();
+  const [fetched, setFetched] = useState<SeriesPanel[] | null>(null);
 
   useEffect(() => {
+    if (isLoading || delivered) return;
     let cancelled = false;
-    const fallback = setTimeout(() => {
-      if (!cancelled) setPanels(p => p ?? BUILT_IN_PANELS);
-    }, PANEL_WAIT_MS);
-    listLivePanels().then(next => {
-      if (cancelled) return;
-      clearTimeout(fallback);
-      setPanels(next);
-      if (next !== BUILT_IN_PANELS) cachePanels(next);
-    });
-    return () => { cancelled = true; clearTimeout(fallback); };
-  }, []);
+    listLivePanels().then(next => { if (!cancelled) setFetched(next); });
+    return () => { cancelled = true; };
+  }, [isLoading, delivered]);
+
+  const panels = delivered ?? fetched;
 
   // A panel whose rule matches nothing is simply not rendered, which is what
   // makes a mistyped rule harmless rather than a broken page. Colour is given
@@ -102,7 +96,12 @@ function toneStyles(tone: SeriesPanel['tone']) {
  */
 export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; products: Product[] }) {
   const { isDesktop } = useBreakpoint();
-  const hero = products[0];
+  // The artwork is the lead product with a real photo, so the panel never
+  // shows a drawing or a stock render while a real photo is available.
+  const hero = products.find(p => isUploadedPhoto(p.imageUrl)) ?? products[0];
+  // Stored artwork counts only if it is an uploaded photo: a bundled /assets
+  // picture is a stock render of a phone we may not even sell.
+  const artwork = isUploadedPhoto(panel.heroImage) ? panel.heroImage : '';
   const t = toneStyles(panel.tone);
 
   return (
@@ -243,11 +242,10 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
                 boxShadow: t.frameShadow,
               }}
             >
-              {/* Panel artwork is campaign imagery chosen in Admin › Series, like
-                  the banners, so it is shown as set. Without it the panel falls
-                  back to the lead product's own photo, or the logo. */}
-              {panel.heroImage
-                ? <img src={panel.heroImage} alt={hero.model} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              {/* Artwork uploaded in Admin › Series, else the first product
+                  in the row that has a real photo. */}
+              {artwork
+                ? <img src={artwork} alt={hero.model} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 : <ProductImage brand={hero.brand} model={hero.model} category={hero.category} color={hero.colorOptions?.[0] ?? hero.variants?.[0]?.color} imageUrl={hero.imageUrl} alt={hero.model} />}
             </div>
           </div>
