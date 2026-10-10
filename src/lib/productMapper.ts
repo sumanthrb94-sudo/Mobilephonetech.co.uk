@@ -1,4 +1,5 @@
 import type { Product, ProductGrade, ProductVariant } from '../types';
+import { isUploadedPhoto, photosFirst } from './productImages';
 
 /**
  * Firestore <-> app-model mapping for products.
@@ -50,6 +51,18 @@ export interface ProductDoc {
 }
 
 export function docToProduct(id: string, d: Record<string, unknown>): Product {
+  // Real photos ahead of placeholder drawings, for each colour and for the
+  // product — see photosFirst. A product whose own main image is still a
+  // drawing takes its first colour's photo, in-stock colours first, so a
+  // card never shows a drawing while a real photo of that phone exists.
+  const variants = Array.isArray(d.variants)
+    ? (d.variants as ProductVariant[]).map(v => (v && typeof v === 'object' ? { ...v, ...photosFirst(v.imageUrl, v.galleryImages) } : v))
+    : undefined;
+  const own = photosFirst(d.imageUrl, d.galleryImages);
+  const fromColour = isUploadedPhoto(own.imageUrl) ? undefined
+    : [...(variants ?? [])].sort((a, b) => Number((b?.stock ?? 0) > 0) - Number((a?.stock ?? 0) > 0))
+        .find(v => isUploadedPhoto(v?.imageUrl));
+  const images = fromColour ? { imageUrl: fromColour.imageUrl as string, galleryImages: fromColour.galleryImages } : own;
   return {
     id,
     model: (d.model as string) ?? '',
@@ -64,8 +77,8 @@ export function docToProduct(id: string, d: Record<string, unknown>): Product {
     batteryHealth: d.batteryHealth == null ? 100 : Number(d.batteryHealth),
     warrantyMonths: Number(d.warrantyMonths ?? 12),
     returnDays: Number(d.returnDays ?? 30),
-    imageUrl: (d.imageUrl as string) ?? '',
-    galleryImages: (d.galleryImages as string[]) ?? undefined,
+    imageUrl: images.imageUrl ?? '',
+    galleryImages: images.galleryImages ?? undefined,
     isCertified: Boolean(d.isCertified),
     stock: Number(d.stock ?? 0),
     specs: (d.specs as Product['specs']) ?? {},
@@ -74,7 +87,7 @@ export function docToProduct(id: string, d: Record<string, unknown>): Product {
     colorOptions: (d.colorOptions as string[]) ?? undefined,
     storageOptions: (d.storageOptions as string[]) ?? undefined,
     conditionOptions: (d.conditionOptions as ProductGrade[]) ?? undefined,
-    variants: (d.variants as ProductVariant[]) ?? undefined,
+    variants,
     reviews: (d.reviews as Product['reviews']) ?? undefined,
     buyPrice: d.buyPrice != null ? Number(d.buyPrice) : undefined,
     supplier: (d.supplier as string) ?? undefined,

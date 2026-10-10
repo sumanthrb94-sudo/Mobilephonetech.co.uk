@@ -337,11 +337,17 @@ export interface ReadinessCheck {
   detail: string;
 }
 
+/** A home page product row and how many in-stock products it would show. */
+export interface HomeRow {
+  label: string;
+  showing: number;
+}
+
 export function readiness(
   products: InsightProduct[],
   orders: InsightOrder[],
   health: SiteHealth | null,
-  extra: { icoRegistration?: string } = {},
+  extra: { icoRegistration?: string; homeRows?: HomeRow[] | null } = {},
 ): ReadinessCheck[] {
   const sellable = products.filter(p => p.listed && p.stock > 0);
   const withPhoto = sellable.filter(p => p.hasPhoto).length;
@@ -368,6 +374,7 @@ export function readiness(
       state: !sellable.length ? 'unknown' : withPhoto === sellable.length ? 'done' : 'todo',
       detail: sellable.length ? `${withPhoto} of ${sellable.length} in-stock products have photos` : 'Nothing in stock yet',
     },
+    homeRowsCheck(extra.homeRows),
     {
       label: 'Listed products have stock',
       state: listedEmpty ? 'todo' : 'done',
@@ -384,4 +391,23 @@ export function readiness(
       detail: extra.icoRegistration ? `Registered: ${extra.icoRegistration}` : 'Register with the ICO and add the number to company settings',
     },
   ];
+}
+
+/**
+ * Whether every home page row has something to show.
+ *
+ * A row only shows products in stock, and quietly disappears when it has
+ * none, which is right for shoppers and invisible to staff: the iPhone 17 row
+ * vanished this way and nobody could tell why the home page had no iPhones.
+ * This names the hidden rows so they get stock, a wider rule, or switched off
+ * in Admin > Series.
+ */
+export function homeRowsCheck(rows: HomeRow[] | null | undefined): ReadinessCheck {
+  const label = 'Every home page row shows products';
+  if (!rows) return { label, state: 'unknown', detail: 'Could not read the home page rows' };
+  const hidden = rows.filter(r => r.showing === 0);
+  if (!rows.length) return { label, state: 'todo', detail: 'No product rows are switched on (Admin > Series)' };
+  return hidden.length
+    ? { label, state: 'todo', detail: `Hidden, nothing in stock: ${hidden.map(r => r.label).join(', ')}. Fix in Admin > Series` }
+    : { label, state: 'done', detail: `${rows.length} rows showing: ${rows.map(r => `${r.label} (${r.showing})`).join(', ')}` };
 }

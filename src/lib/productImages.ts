@@ -59,3 +59,24 @@ export function galleryFrames(images: string[]): string[] {
     (_, i) => usable[i % usable.length],
   );
 }
+
+/**
+ * Real photos first, placeholders gone.
+ *
+ * Products created from the catalogue start with a bundled drawing
+ * (/assets/catalogue/*.svg) as their main image. When staff later add real
+ * photos by link, those land after the drawing, and the main image (which
+ * decides cards, the product page hero and the home page) stayed the
+ * drawing: eight in-stock iPhones had their Cloudinary photos stored and
+ * none of them showed. So: as soon as one real photo exists, the main image
+ * is the first real photo and the stand-ins drop out of the gallery. With no
+ * real photo, nothing changes.
+ */
+export function photosFirst(imageUrl: unknown, gallery: unknown): { imageUrl: string; galleryImages?: string[] } {
+  const primary = typeof imageUrl === 'string' ? imageUrl : '';
+  const list = Array.isArray(gallery) ? gallery.filter((g): g is string => typeof g === 'string' && g.length > 0) : undefined;
+  const photos = [primary, ...(list ?? [])].filter(isUploadedPhoto);
+  if (!photos.length) return { imageUrl: primary, galleryImages: list };
+  const unique = [...new Set(photos)];
+  return { imageUrl: unique[0], galleryImages: unique };
+}

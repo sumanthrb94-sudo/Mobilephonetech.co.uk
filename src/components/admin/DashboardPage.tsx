@@ -63,7 +63,7 @@ export default function DashboardPage() {
       push: pushToSell(products, orders, demand),
       accounts: accounts(products, orders),
       ahead: ahead(products, orders, demand),
-      readiness: readiness(products, orders, health, { icoRegistration: COMPANY.icoRegistration }),
+      readiness: readiness(products, orders, health, { icoRegistration: COMPANY.icoRegistration, homeRows: inputs.homeRows }),
     };
   }, [inputs]);
 

@@ -156,7 +156,7 @@ describe('back-in-stock requests', () => {
 
 describe('ready for launch', () => {
   it('reads PayPal and email from the live health check', () => {
-    const live = readiness([product('a')], [order('1', 'a')], { paypalConfigured: true, paypalEnv: 'live', emailConfigured: true }, { icoRegistration: 'ZA1' });
+    const live = readiness([product('a')], [order('1', 'a')], { paypalConfigured: true, paypalEnv: 'live', emailConfigured: true }, { icoRegistration: 'ZA1', homeRows: [{ label: 'iPhone', showing: 1 }] });
     expect(live.every(c => c.state === 'done')).toBe(true);
 
     const sandbox = readiness([product('a')], [], { paypalConfigured: true, paypalEnv: 'sandbox', emailConfigured: false });
