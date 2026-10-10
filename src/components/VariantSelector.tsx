@@ -242,17 +242,30 @@ function parseStorageSize(val?: string): number {
   return match[2].toUpperCase() === 'TB' ? num * 1024 : num;
 }
 
-const CONDITION_RANK: Record<string, number> = {
-  'Brand New': 1,
-  'New': 2,
-  'Like New': 3,
-  'Pristine': 4,
-  'Excellent': 5,
-  'Good': 6,
-  'Fair': 7,
+/**
+ * The grades this shop sells, best first. Every one is always listed, in
+ * stock or not, so a shopper sees the whole ladder at once. Fair is not sold
+ * and never appears, even if a stray variant carries it.
+ */
+const SHOP_GRADES = ['Pristine', 'Excellent', 'Good'] as const;
+type ShopGrade = typeof SHOP_GRADES[number];
+
+/** One line per grade, in the words GradeExplainer uses at length. */
+const GRADE_LINE: Record<ShopGrade, string> = {
+  Pristine: 'Flawless, looks like new',
+  Excellent: 'Very light signs of use',
+  Good: 'Visible signs of everyday use',
 };
 
-function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
+/** Whole pounds as £270 and pennies as £270.50, as AnimatedPrice shows them. */
+function money(value: number): string {
+  const pence = Math.round(value * 100);
+  return pence % 100 === 0 ? `£${pence / 100}` : `£${(pence / 100).toFixed(2)}`;
+}
+
+const trimmed = (value?: string) => (value ?? '').trim();
+
+function MatrixSelector({ variants, selectedVariant, onVariantSelect, onExplainGrading }: {
   variants: ProductVariant[];
   selectedVariant: ProductVariant | null;
   onVariantSelect: (variant: ProductVariant) => void;
@@ -269,12 +282,6 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
     const set = new Set<string>();
     variants.forEach(v => { if (v.storage) set.add(v.storage.trim()); });
     return Array.from(set).sort((a, b) => parseStorageSize(a) - parseStorageSize(b));
-  }, [variants]);
-
-  const conditions = useMemo(() => {
-    const set = new Set<string>();
-    variants.forEach(v => { if (v.condition) set.add(v.condition.trim()); });
-    return Array.from(set).sort((a, b) => (CONDITION_RANK[a] ?? 99) - (CONDITION_RANK[b] ?? 99));
   }, [variants]);
 
   // Active or defaulted variant
@@ -296,7 +303,47 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
 
   const activeColor = activeVariant?.color?.trim() || colors[0];
   const activeStorage = activeVariant?.storage?.trim() || storages[0];
-  const activeCondition = activeVariant?.condition?.trim() || conditions[0];
+  const activeCondition = activeVariant?.condition?.trim();
+
+  /**
+   * One row per sellable grade for the colour and capacity on screen.
+   *
+   * A row's price is the cheapest in-stock unit of that exact colour,
+   * capacity and grade — never a unit in another colour or size, which would
+   * put a price on the row that tapping it cannot deliver. The selected unit
+   * speaks for its own grade so the row always agrees with the page price,
+   * and a tablet keeps its Wi-Fi or Cellular radio when one is in stock.
+   * A grade with nothing on the shelf has no offer and so no price.
+   */
+  const gradeRows = useMemo(() => {
+    const colour = trimmed(activeVariant?.color);
+    const storage = trimmed(activeVariant?.storage);
+    const radio = trimmed(activeVariant?.connectivity);
+
+    return SHOP_GRADES.map(grade => {
+      if (activeVariant && activeVariant.stock > 0 && trimmed(activeVariant.condition) === grade) {
+        return { grade, offer: activeVariant };
+      }
+      const onShelf = variants.filter(v =>
+        v.stock > 0
+        && trimmed(v.condition) === grade
+        && trimmed(v.color) === colour
+        && trimmed(v.storage) === storage);
+      const sameRadio = onShelf.filter(v => trimmed(v.connectivity) === radio);
+      const pool = sameRadio.length ? sameRadio : onShelf;
+      const offer = pool.reduce<ProductVariant | undefined>(
+        (best, v) => (!best || v.price < best.price ? v : best), undefined);
+      return { grade, offer };
+    });
+  }, [variants, activeVariant]);
+
+  // "Save £X" is measured against the dearest grade actually on offer for
+  // this colour and capacity, and only shown where there is a real gap.
+  const dearest = gradeRows.reduce<{ grade: ShopGrade; price: number } | null>(
+    (top, row) => (row.offer && (!top || row.offer.price > top.price)
+      ? { grade: row.grade, price: row.offer.price }
+      : top),
+    null);
 
   // Pick helper that selects the closest matching variant
   const handleSelectColor = (newColor: string) => {
@@ -321,16 +368,15 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
     if (anyInStorage) onVariantSelect(anyInStorage);
   };
 
-  const handleSelectCondition = (newCondition: string) => {
-    const exact = variants.find(v => v.condition?.trim() === newCondition && v.color?.trim() === activeColor && v.storage?.trim() === activeStorage);
-    if (exact) { onVariantSelect(exact); return; }
-    const sameStorage = variants.find(v => v.condition?.trim() === newCondition && v.storage?.trim() === activeStorage && v.stock > 0)
-      ?? variants.find(v => v.condition?.trim() === newCondition && v.storage?.trim() === activeStorage);
-    if (sameStorage) { onVariantSelect(sameStorage); return; }
-    const anyInCondition = variants.find(v => v.condition?.trim() === newCondition && v.stock > 0)
-      ?? variants.find(v => v.condition?.trim() === newCondition);
-    if (anyInCondition) onVariantSelect(anyInCondition);
+  // Only an in-stock row has an offer, so an out-of-stock grade can never be
+  // chosen, by tap or by keyboard.
+  const handleSelectGrade = (offer: ProductVariant | undefined) => {
+    if (!offer || offer.id === activeVariant?.id) return;
+    onVariantSelect(offer);
   };
+
+  const shownGrade = SHOP_GRADES.find(g => g === activeCondition);
+  const gradeLabelId = React.useId();
 
   return (
     <div className="pdp-variant-selector" style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '16px', borderTop: '1px solid var(--grey-10)' }}>
@@ -460,70 +506,135 @@ function MatrixSelector({ variants, selectedVariant, onVariantSelect }: {
         </div>
       )}
 
-      {/* 3. Condition / Grade Row */}
-      {conditions.length > 0 && (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span style={labelStyle}>
-              Condition: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{activeCondition}</strong>
-            </span>
-          </div>
-          {/* One grade on offer is a fact, not a choice: the label above says
-              it, and a lone full-width button only repeated it. */}
-          {conditions.length > 1 && (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fit, minmax(95px, 1fr))`, gap: '8px' }}>
-            {conditions.map(condition => {
-              const isSelected = activeCondition === condition;
-              const matching = variants.find(v => v.condition?.trim() === condition && v.storage?.trim() === activeStorage && v.color?.trim() === activeColor)
-                ?? variants.find(v => v.condition?.trim() === condition && v.storage?.trim() === activeStorage)
-                ?? variants.find(v => v.condition?.trim() === condition);
-              const inStock = (matching?.stock ?? 0) > 0;
-              const price = matching?.price;
+      {/* 3. Condition — every grade, one under another.
+          All three are always listed so the shopper can compare them at a
+          glance, each priced for the colour and capacity chosen above. A
+          grade with none on the shelf stays in the list, greyed, with no
+          price: "Out of stock" says it exists and is not available now. */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+          <span id={gradeLabelId} style={{ ...labelStyle, marginBottom: 0 }}>
+            Condition{shownGrade && <>: <strong style={{ color: 'var(--black)', textTransform: 'none' }}>{shownGrade}</strong></>}
+          </span>
+          {onExplainGrading && (
+            <button
+              type="button"
+              onClick={onExplainGrading}
+              style={{
+                padding: 0,
+                background: 'none',
+                border: 0,
+                color: 'var(--brand-cyan-hover)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: '12px',
+                fontWeight: 600,
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              How grades work
+            </button>
+          )}
+        </div>
+        <div
+          className="pdp-grade-list"
+          role="group"
+          aria-labelledby={gradeLabelId}
+          style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+        >
+          {gradeRows.map(({ grade, offer }) => {
+            const isSelected = shownGrade === grade;
+            const inStock = Boolean(offer);
+            const saving = offer && dearest && dearest.grade !== grade
+              ? Math.round((dearest.price - offer.price) * 100) / 100
+              : 0;
+            const label = [
+              grade,
+              GRADE_LINE[grade],
+              offer ? money(offer.price) : 'out of stock',
+              saving > 0 && dearest ? `save ${money(saving)} compared with ${dearest.grade}` : '',
+            ].filter(Boolean).join(', ');
 
-              return (
-                  <button
-                    key={condition}
-                    type="button"
-                    className="pdp-condition-choice"
-                  onClick={() => handleSelectCondition(condition)}
+            return (
+              <button
+                key={grade}
+                type="button"
+                className="pdp-grade-choice"
+                aria-pressed={isSelected}
+                aria-disabled={!inStock || undefined}
+                aria-label={label}
+                onClick={() => handleSelectGrade(offer)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  minWidth: 0,
+                  minHeight: '58px',
+                  boxSizing: 'border-box',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
+                  background: isSelected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
+                  textAlign: 'left',
+                  cursor: !inStock ? 'not-allowed' : isSelected ? 'default' : 'pointer',
+                  opacity: inStock ? 1 : 0.55,
+                  transition: 'border-color 0.15s, background 0.15s',
+                }}
+              >
+                {/* A radio mark, so the choice reads without relying on colour. */}
+                <span
+                  aria-hidden="true"
                   style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
-                    border: `1.5px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-20)'}`,
-                    background: isSelected ? 'var(--color-brand-subtle)' : 'var(--grey-0)',
-                    cursor: inStock ? 'pointer' : 'default',
-                    transition: 'border-color 0.15s, background 0.15s',
-                    opacity: inStock ? 1 : 0.5,
+                    flexShrink: 0,
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    boxSizing: 'border-box',
+                    border: `2px solid ${isSelected ? 'var(--brand-cyan)' : 'var(--grey-30)'}`,
+                    background: isSelected ? 'radial-gradient(circle, var(--brand-cyan) 0 4px, transparent 4.5px)' : 'var(--grey-0)',
                   }}
-                >
+                />
+                <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <span style={{
                     fontFamily: 'var(--font-sans)',
-                    fontSize: '13px',
+                    fontSize: '14px',
                     fontWeight: 700,
-                    color: isSelected ? 'var(--brand-cyan)' : 'var(--black)',
+                    color: isSelected ? 'var(--brand-cyan-hover)' : 'var(--black)',
                   }}>
-                    {condition}
+                    {grade}
                   </span>
                   <span style={{
                     fontFamily: 'var(--font-body)',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    color: inStock ? (isSelected ? 'var(--brand-cyan)' : 'var(--grey-50)') : '#dc2626',
-                    marginTop: '2px',
+                    fontSize: '12px',
+                    lineHeight: 1.35,
+                    color: 'var(--grey-60)',
                   }}>
-                    {inStock && price != null ? `£${price}` : 'Sold out'}
+                    {GRADE_LINE[grade]}
                   </span>
-                </button>
-              );
-            })}
-          </div>
-          )}
+                </span>
+                <span style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px', textAlign: 'right' }}>
+                  {offer ? (
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)' }}>
+                      {money(offer.price)}
+                    </span>
+                  ) : (
+                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', fontWeight: 700, color: 'var(--grey-50)' }}>
+                      Out of stock
+                    </span>
+                  )}
+                  {saving > 0 && (
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '11px', fontWeight: 600, color: 'var(--color-trust-text)' }}>
+                      Save {money(saving)} vs {dearest?.grade}
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* No confirmation box: it restated the grade, price, stock and
           battery that the page already shows once each. */}
