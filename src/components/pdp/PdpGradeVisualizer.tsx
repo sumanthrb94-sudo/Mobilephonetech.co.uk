@@ -49,7 +49,7 @@ const GRADE_DATA: Record<string, {
   },
 };
 
-export default function PdpGradeVisualizer({ currentGrade = 'Pristine', onSelectGrade }: PdpGradeVisualizerProps) {
+export default function PdpGradeVisualizer({ currentGrade = 'Pristine', onSelectGrade, bare = false }: PdpGradeVisualizerProps & { bare?: boolean }) {
   const [activeGrade, setActiveGrade] = useState<string>(
     ['Pristine', 'Excellent', 'Good'].includes(currentGrade) ? currentGrade : 'Pristine'
   );
@@ -66,15 +66,17 @@ export default function PdpGradeVisualizer({ currentGrade = 'Pristine', onSelect
         display: 'flex',
         flexDirection: 'column',
         gap: '16px',
-        marginTop: '16px',
+        marginTop: bare ? 0 : '16px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {!bare && <>
           <Sparkles size={18} style={{ color: 'var(--brand-cyan)' }} />
           <h3 style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 800, color: 'var(--black)' }}>
             Compare Cosmetic Grades
           </h3>
+          </>}
         </div>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: '12px', color: 'var(--grey-50)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
           <Info size={13} /> 100% functional on every grade

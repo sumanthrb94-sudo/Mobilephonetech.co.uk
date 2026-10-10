@@ -118,13 +118,18 @@ function searchTerms(brand, model, category) {
   return [...terms].slice(0, 120);
 }
 
+// Real-photo links (served by the preview itself): home page rows only show
+// products with an uploaded photo, so a bundled /assets path would leave
+// the home page empty in these tests.
+const PHOTO_BASE = process.env.E2E_BASE_URL || 'http://127.0.0.1:4173';
+
 export const SEED_PRODUCTS = [
   {
     id: 'apple-iphone-17',
     model: 'iPhone 17', brand: 'Apple', category: 'Phones', storage: '256GB',
     price: 759, originalPrice: 1099, grade: 'Good', batteryHealth: 90,
     warrantyMonths: 12, returnDays: 30,
-    imageUrl: '/assets/iphone-17-pro-max-orange.jpg',
+    imageUrl: `${PHOTO_BASE}/assets/iphone-17-pro-max-orange.jpg`,
     isCertified: true, stock: 4, createdAt: '2026-01-02T00:00:00Z',
   },
   {
@@ -132,7 +137,7 @@ export const SEED_PRODUCTS = [
     model: 'Galaxy S23', brand: 'Samsung', category: 'Phones', storage: '128GB',
     price: 399, originalPrice: 849, grade: 'Excellent', batteryHealth: 94,
     warrantyMonths: 12, returnDays: 30,
-    imageUrl: '/assets/galaxy-s23.jpg',
+    imageUrl: `${PHOTO_BASE}/assets/iphone-17-pro-max-orange-case.jpg`,
     isCertified: true, stock: 0, createdAt: '2026-01-01T00:00:00Z',
   },
 ];

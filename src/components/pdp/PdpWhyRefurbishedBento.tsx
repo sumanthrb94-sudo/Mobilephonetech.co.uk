@@ -1,20 +1,27 @@
+import { displayName } from '../../utils/displayName';
 import { ShieldCheck, RotateCcw, Package, Leaf, Truck, CheckCircle2 } from 'lucide-react';
 
 interface PdpWhyRefurbishedBentoProps {
   brand: string;
   model: string;
+  category?: string;
+  /** Inside a collapsible section, whose title row replaces this header. */
+  bare?: boolean;
 }
 
-export default function PdpWhyRefurbishedBento({ brand, model }: PdpWhyRefurbishedBentoProps) {
+export default function PdpWhyRefurbishedBento({ brand, model, category = 'Phones', bare = false }: PdpWhyRefurbishedBentoProps) {
+  const name = displayName(brand, model);
+  const isWatch = category === 'Smartwatches' || /watch/i.test(model);
+  const isPhone = category === 'Phones' && !isWatch;
   return (
     <section
       aria-label="Why buy refurbished from LeHart"
       style={{
-        marginTop: 'var(--spacing-32)',
-        marginBottom: 'var(--spacing-32)',
+        marginTop: bare ? 0 : 'var(--spacing-32)',
+        marginBottom: bare ? 0 : 'var(--spacing-32)',
       }}
     >
-      <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-24)' }}>
+      {!bare && <div style={{ textAlign: 'center', marginBottom: 'var(--spacing-24)' }}>
         <p className="overline" style={{ color: 'var(--brand-cyan)', marginBottom: '6px' }}>
           The LeHart Difference
         </p>
@@ -40,9 +47,9 @@ export default function PdpWhyRefurbishedBento({ brand, model }: PdpWhyRefurbish
             lineHeight: 1.6,
           }}
         >
-          Buying refurbished doesn't mean compromising. Here is our ironclad commitment for your {brand} {model}.
+          Buying refurbished doesn't mean compromising. Here is our ironclad commitment for your {name}.
         </p>
-      </div>
+      </div>}
 
       {/* Bento Grid */}
       <div
@@ -83,7 +90,7 @@ export default function PdpWhyRefurbishedBento({ brand, model }: PdpWhyRefurbish
             12-Month Free Warranty
           </h3>
           <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.65 }}>
-            Full hardware peace of mind. If anything goes wrong with the motherboard, display, camera, or charging port, we repair or replace it with priority shipping at zero charge.
+            Full hardware peace of mind. If anything goes wrong with the internals, display{isWatch ? ', sensors' : ', camera'} or charging, we repair or replace it with priority shipping at zero charge.
           </p>
           <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--color-trust-text)' }}>
             <CheckCircle2 size={15} /> 100% parts & labor covered
@@ -161,16 +168,16 @@ export default function PdpWhyRefurbishedBento({ brand, model }: PdpWhyRefurbish
           <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: 'var(--grey-70)' }}>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
-              <span>Certified {brand} {model} (sanitized & wiped)</span>
+              <span>Certified {name} (sanitized & wiped)</span>
             </li>
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
-              <span>Heavy-duty braided fast-charging cable</span>
+              <span>{isWatch ? 'Magnetic charging cable' : 'Charging cable (wall charger sold separately)'}</span>
             </li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {isPhone && <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
-              <span>Universal SIM tray ejector tool</span>
-            </li>
+              <span>SIM tray ejector tool</span>
+            </li>}
             <li style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CheckCircle2 size={15} style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
               <span>Official 70-point diagnostic inspection card</span>

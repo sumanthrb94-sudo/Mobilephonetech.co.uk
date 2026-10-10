@@ -4962,3 +4962,14 @@ html.is-signin .support-fab { display: none; }
   .qv-media { height: 260px; }
   .qv-title { font-size: 22px; }
 }
+
+/* Product page: collapsible sections (PdpSection). */
+.pdp-section { border-top: 1px solid var(--grey-10); }
+.pdp-section:last-of-type { border-bottom: 1px solid var(--grey-10); }
+.pdp-section__summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0; cursor: pointer; list-style: none; }
+.pdp-section__summary::-webkit-details-marker { display: none; }
+.pdp-section__summary:focus-visible { outline: 2px solid var(--brand-cyan); outline-offset: 2px; border-radius: 6px; }
+.pdp-section__title { font-family: var(--font-sans); font-size: clamp(17px, 2.6vw, 20px); font-weight: 800; color: var(--black); letter-spacing: -0.01em; margin: 0; }
+.pdp-section__chevron { flex-shrink: 0; color: var(--grey-60); transition: transform var(--duration-fast, .15s) ease; }
+.pdp-section[open] > .pdp-section__summary .pdp-section__chevron { transform: rotate(180deg); }
+.pdp-section__body { padding: 0 0 var(--spacing-24); }

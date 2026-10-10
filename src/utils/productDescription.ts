@@ -1,8 +1,10 @@
+import { displayName } from './displayName';
 import type { Product } from '../types';
 
 export function generateProductDescription(product: Product): string {
   const { brand, model, specs, category, grade, batteryHealth } = product;
   const cat = (category || '').toLowerCase();
+  const name = displayName(brand, model);
 
   // Pull key spec tokens for use in sentences
   const display = specs?.displaySize ? `${specs.displaySize} ${specs.display || 'display'}` : null;
@@ -36,7 +38,7 @@ export function generateProductDescription(product: Product): string {
   const isWatch = cat === 'smartwatches' || lowerModel.includes('watch');
 
   if (isWatch) {
-    return `The ${brand} ${model} is a refurbished smartwatch supplied ${conditionPhrase}.${healthNote} Every unit is independently tested and comes with a 12-month warranty and 30-day free returns.`;
+    return `The ${name} is a refurbished smartwatch supplied ${conditionPhrase}.${healthNote} Every unit is independently tested and comes with a 12-month warranty and 30-day free returns.`;
   }
 
   // Category-specific description templates
@@ -44,7 +46,7 @@ export function generateProductDescription(product: Product): string {
     const parts: string[] = [];
 
     parts.push(
-      `The ${brand} ${model} is a refurbished smartphone supplied ${conditionPhrase}.`
+      `The ${name} is a refurbished smartphone supplied ${conditionPhrase}.`
     );
 
     const highlights: string[] = [];
@@ -75,7 +77,7 @@ export function generateProductDescription(product: Product): string {
 
   if (isTablet) {
     const parts: string[] = [
-      `The ${brand} ${model} is a refurbished tablet supplied ${conditionPhrase}.`,
+      `The ${name} is a refurbished tablet supplied ${conditionPhrase}.`,
     ];
     const highlights: string[] = [];
     if (display) highlights.push(`a ${display}`);
@@ -90,7 +92,7 @@ export function generateProductDescription(product: Product): string {
 
   if (cat === 'computing' || model.toLowerCase().includes('macbook') || model.toLowerCase().includes('laptop')) {
     const parts: string[] = [
-      `The ${brand} ${model} is a refurbished laptop supplied ${conditionPhrase}.`,
+      `The ${name} is a refurbished laptop supplied ${conditionPhrase}.`,
     ];
     if (chip) parts.push(`Powered by ${chip}.`);
     if (ram) parts.push(`Configured with ${ram} RAM.`);
@@ -99,13 +101,13 @@ export function generateProductDescription(product: Product): string {
   }
 
   if (cat === 'playables' || cat === 'gaming') {
-    return `The ${brand} ${model} is a certified refurbished gaming device supplied ${conditionPhrase}. Fully tested and verified to meet our quality standards, covered by a 12-month warranty and 30-day free returns.`;
+    return `The ${name} is a certified refurbished gaming device supplied ${conditionPhrase}. Fully tested and verified to meet our quality standards, covered by a 12-month warranty and 30-day free returns.`;
   }
 
   if (cat === 'speakers' || cat === 'audio' || cat === 'headphones') {
-    return `The ${brand} ${model} is a refurbished audio device supplied ${conditionPhrase}. Independently tested and certified for full functionality, backed by our standard warranty.`;
+    return `The ${name} is a refurbished audio device supplied ${conditionPhrase}. Independently tested and certified for full functionality, backed by our standard warranty.`;
   }
 
   // Generic fallback
-  return `The ${brand} ${model} is supplied ${conditionPhrase}. Every unit is independently inspected and tested to ensure it meets our quality standards, and comes backed by a 12-month warranty and 30-day free returns.`;
+  return `The ${name} is supplied ${conditionPhrase}. Every unit is independently inspected and tested to ensure it meets our quality standards, and comes backed by a 12-month warranty and 30-day free returns.`;
 }

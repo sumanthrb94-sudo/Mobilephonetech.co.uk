@@ -204,9 +204,11 @@ async function run(view, contextOpts) {
 
   // The at-a-glance sections: what to do now, what to push, launch readiness.
   rec(view, 'Needs-doing-now tiles are shown', await page.locator('.ops-todo-tile').count() === 5);
-  rec(view, 'Push to sell names the unsold in-stock product and why',
-    /Push to sell/i.test(hub) && /Apple iPhone 17/.test(hub) && /Upload photos/i.test(hub));
-  rec(view, 'Readiness counts in-stock products with photos', /0 of 1 in-stock products have photos/.test(hub));
+  // The seed iPhone carries a photo (home rows only show photographed
+  // products), so it is pushed for a reason other than missing photos.
+  rec(view, 'Push to sell names the unsold in-stock product',
+    /Push to sell/i.test(hub) && /Apple iPhone 17/.test(hub));
+  rec(view, 'Readiness counts in-stock products with photos', /1 of 1 in-stock products have photos/.test(hub));
   rec(view, 'Accounts panel is shown', /Accounts/.test(hub) && /Stock on hand/i.test(hub));
 
   // Setup and insights pages sit behind two menus; every page is still reachable.

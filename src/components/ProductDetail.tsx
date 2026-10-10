@@ -45,15 +45,25 @@ import PdpWhyRefurbishedBento from './pdp/PdpWhyRefurbishedBento';
 import PdpLabInspectionReel from './pdp/PdpLabInspectionReel';
 import { chargerUpsellFor } from '../lib/chargerUpsell';
 import AnimatedPrice from './ui/AnimatedPrice';
+import PdpSection, { openPdpSection } from './pdp/PdpSection';
+import { displayName } from '../utils/displayName';
 
 function TabPanel({
-  phone, reviews, setReviews,
+  phone, reviews, setReviews, gradeSection,
 }: {
   phone: Product;
   reviews: import('../types').Review[];
   setReviews: React.Dispatch<React.SetStateAction<import('../types').Review[]>>;
+  /** The grade comparison, which needs the page's selection state. */
+  gradeSection: React.ReactNode;
 }) {
   const enrichedSpecs = enrichSpecs(phone.brand, phone.model, phone.specs);
+
+  // Arriving with #pdp-reviews (or any section's id) opens that section.
+  React.useEffect(() => {
+    const target = window.location.hash.slice(1);
+    if (target.startsWith('pdp-')) openPdpSection(target);
+  }, []);
 
   const handleAddReview = async (review: Omit<import('../types').Review, 'id' | 'date'>) => {
     const newReview: import('../types').Review = {
@@ -100,7 +110,7 @@ function TabPanel({
   const sections: { id: string; heading: string; body: React.ReactNode }[] = [
     {
       id: 'pdp-about',
-      heading: `About this ${phone.brand} ${phone.model}`,
+      heading: `About this ${displayName(phone.brand, phone.model)}`,
       body: (
         <div style={{ display: 'grid', gap: 'var(--spacing-24)' }} className="lg:grid-cols-2">
           <div style={{ gridColumn: '1 / -1' }}>
@@ -140,6 +150,16 @@ function TabPanel({
       ),
     },
     {
+      id: 'pdp-grades',
+      heading: 'Compare cosmetic grades',
+      body: gradeSection,
+    },
+    {
+      id: 'pdp-why-lehart',
+      heading: 'Why buy refurbished from LeHart',
+      body: <PdpWhyRefurbishedBento brand={phone.brand} model={phone.model} category={phone.category} bare />,
+    },
+    {
       id: 'pdp-specs',
       heading: 'Specifications',
       body: <TechnicalSpecs specs={enrichedSpecs} />,
@@ -159,25 +179,12 @@ function TabPanel({
 
   return (
     <div style={{ marginTop: 'var(--spacing-24)' }}>
-      {sections.map(({ id, heading, body }) => (
-        <section
-          key={id}
-          id={id}
-          aria-labelledby={`${id}-h`}
-          style={{ borderTop: '1px solid var(--grey-10)', paddingTop: 'var(--spacing-24)', paddingBottom: 'var(--spacing-24)' }}
-        >
-          <h2
-            id={`${id}-h`}
-            style={{
-              fontFamily: 'var(--font-sans)', fontSize: 'clamp(19px, 3vw, 22px)',
-              fontWeight: 800, color: 'var(--black)', margin: '0 0 var(--spacing-16)',
-              letterSpacing: '-0.01em',
-            }}
-          >
-            {heading}
-          </h2>
+      {/* Each section opens on tap; only "About" starts open, so the whole
+          list of topics fits on a screen or two instead of eight. */}
+      {sections.map(({ id, heading, body }, i) => (
+        <PdpSection key={id} id={id} title={heading} defaultOpen={i === 0}>
           {body}
-        </section>
+        </PdpSection>
       ))}
     </div>
   );
@@ -496,6 +503,7 @@ export default function ProductDetail() {
                "4.8★ (342 reviews)") is banned under the DMCC Act 2024. */
             <a
               href="#pdp-reviews"
+              onClick={() => openPdpSection('pdp-reviews')}
               className="pdp-rating-link"
               aria-label={reviewCount > 0
                 ? `Rated ${averageRating.toFixed(1)} out of 5 from ${reviewCount} review${reviewCount === 1 ? '' : 's'}`
@@ -1041,7 +1049,11 @@ export default function ProductDetail() {
           />
         )}
 
+
+        {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
+        <TabPanel phone={phone} reviews={reviews} setReviews={setReviews} gradeSection={
         <PdpGradeVisualizer
+          bare
           currentGrade={selectedVariant?.condition ?? phone.grade}
           onSelectGrade={(newGrade) => {
             if (selectedVariant) {
@@ -1060,11 +1072,7 @@ export default function ProductDetail() {
             }
           }}
         />
-
-        <PdpWhyRefurbishedBento brand={phone.brand} model={phone.model} />
-
-        {/* ── Tabbed detail panel (Amazon-style) ─────────────────── */}
-        <TabPanel phone={phone} reviews={reviews} setReviews={setReviews} />
+        } />
 
         <RelatedProductsSection currentProduct={phone} />
         <RecentlyViewed excludeId={phone.id} />
