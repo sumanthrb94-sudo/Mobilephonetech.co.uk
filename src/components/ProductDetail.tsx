@@ -1061,20 +1061,15 @@ export default function ProductDetail() {
           bare
           currentGrade={selectedVariant?.condition ?? phone.grade}
           onSelectGrade={(newGrade) => {
-            if (selectedVariant) {
-              setSelectedVariant({ ...selectedVariant, condition: newGrade });
-            } else if (phone) {
-              setSelectedVariant({
-                id: `${phone.id}-${newGrade.toLowerCase()}`,
-                color: phone.colorOptions?.[0] || 'Default',
-                storage: phone.storage || '128 GB',
-                condition: newGrade,
-                price: phone.price,
-                originalPrice: phone.originalPrice,
-                stock: phone.stock,
-                batteryHealth: phone.batteryHealth,
-              });
-            }
+            // Comparing grades may select one, but only a unit that exists:
+            // same colour and storage, that grade, in stock, cheapest first.
+            // It used to relabel the current unit with the new grade and
+            // keep its price, a grade/price pair that was never for sale.
+            const match = (phone.variants ?? [])
+              .filter(v => v.condition === newGrade && v.stock > 0
+                && v.color === selectedVariant?.color && v.storage === selectedVariant?.storage)
+              .sort((a, b) => a.price - b.price)[0];
+            if (match) chooseVariant(match);
           }}
         />
         } />
