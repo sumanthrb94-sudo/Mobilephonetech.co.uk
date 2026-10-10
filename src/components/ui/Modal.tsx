@@ -78,13 +78,11 @@ export default function Modal({
               flexDirection: 'column',
             }}
           >
-            {(title || dismissible) && (
+            {title && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--spacing-20) var(--spacing-24)', borderBottom: '1px solid var(--grey-10)' }}>
-                {title && (
-                  <h2 id={titleId} style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0 }}>
-                    {title}
-                  </h2>
-                )}
+                <h2 id={titleId} style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--black)', margin: 0 }}>
+                  {title}
+                </h2>
                 {dismissible && (
                   <button
                     onClick={onClose}
@@ -101,6 +99,23 @@ export default function Modal({
                   </button>
                 )}
               </div>
+            )}
+            {/* No title: no header bar either, only the close button in the
+                corner, so the content starts at the top (quick view). */}
+            {!title && dismissible && (
+              <button
+                onClick={onClose}
+                aria-label="Close dialog"
+                style={{
+                  position: 'absolute', top: '12px', right: '12px', zIndex: 2,
+                  width: '32px', height: '32px',
+                  borderRadius: 'var(--radius-full)',
+                  background: 'var(--grey-5)', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--grey-70)',
+                }}
+              >
+                <X size={16} />
+              </button>
             )}
             <div style={{ padding: 'var(--spacing-24)' }}>{children}</div>
             {footer && (

@@ -4917,3 +4917,23 @@ html.is-signin .support-fab { display: none; }
 /* Name, then price, without a band of air between them. */
 .pdp-lede { gap: 6px; }
 .pdp-lede .pdp-identity__title { margin-bottom: 0 !important; }
+
+/* Quick view: compact on every screen. Phones get a short photo strip and
+   the details straight under it; from 640px the photo sits in its own
+   column beside the details, so price and buttons are visible without
+   scrolling. */
+.qv { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.qv-media { position: relative; height: 200px; padding: 12px; border-radius: var(--radius-lg); background: var(--grey-5);
+  display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.qv-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.qv-brand { font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-50); }
+.qv-title { font-family: var(--font-sans); font-size: 20px; font-weight: 800; letter-spacing: -.02em; color: var(--black); margin: 0; line-height: 1.15; }
+.qv-storage { color: var(--grey-50); font-weight: 600; font-size: 15px; }
+.qv-trust { display: flex; flex-wrap: wrap; gap: 6px 14px; padding-top: 10px; margin-top: 2px; border-top: 1px solid var(--grey-10); }
+.qv-actions { display: flex; gap: 8px; margin-top: 6px; }
+.qv-actions .btn { min-height: 44px; }
+@media (min-width: 640px) {
+  .qv { grid-template-columns: 260px 1fr; gap: 24px; align-items: center; }
+  .qv-media { height: 260px; }
+  .qv-title { font-size: 22px; }
+}
