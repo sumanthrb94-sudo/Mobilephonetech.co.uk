@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isUploadedPhoto } from '../lib/productImages';
-import { cloudinarySrcSet } from '../lib/cloudinaryUrl';
+import { cloudinarySrcSet, cloudinaryWidthUrl } from '../lib/cloudinaryUrl';
 import DeviceMock from './DeviceMock';
 
 export interface ProductImageProps {
@@ -52,7 +52,9 @@ export function ProductImage({ brand, model, imageUrl, color, category, alt, con
     const srcSet = cloudinarySrcSet(imageUrl);
     return (
       <img
-        src={imageUrl}
+        // A sized copy even for the fallback, never the original upload,
+        // which for some catalogue photos is a 1.25MB PNG.
+        src={srcSet ? cloudinaryWidthUrl(imageUrl, 828) : imageUrl}
         srcSet={srcSet}
         sizes={srcSet ? SIZES[context ?? 'default'] : undefined}
         alt={alt ?? ''}

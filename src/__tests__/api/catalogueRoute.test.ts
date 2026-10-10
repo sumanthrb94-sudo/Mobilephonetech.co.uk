@@ -55,11 +55,11 @@ describe('GET /api/catalogue', () => {
 
     // Browsers always revalidate, so a staff price change is never shown
     // stale from a shopper's own cache; only Vercel's edge holds a copy, and
-    // briefly.
+    // only for minutes: a price shown is never more than ~6 minutes behind.
     expect(out.headers['Cache-Control']).toBe('no-cache');
     const edge = String(out.headers['Vercel-CDN-Cache-Control']);
-    expect(Number(edge.match(/s-maxage=(\d+)/)?.[1])).toBeLessThanOrEqual(30);
-    expect(Number(edge.match(/stale-while-revalidate=(\d+)/)?.[1] ?? 0)).toBeLessThanOrEqual(60);
+    expect(Number(edge.match(/s-maxage=(\d+)/)?.[1])).toBeLessThanOrEqual(60);
+    expect(Number(edge.match(/stale-while-revalidate=(\d+)/)?.[1] ?? 0)).toBeLessThanOrEqual(300);
     expect(edge).toMatch(/stale-while-revalidate/);
   });
 

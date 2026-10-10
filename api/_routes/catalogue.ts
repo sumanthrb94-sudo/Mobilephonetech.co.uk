@@ -46,12 +46,15 @@ export default async function handler(req: any, res: any) {
       .map(r => forShop(docToProduct(r.id, r.data)));
 
     // Checkout charges the price in the database, so the shop must not show
-    // an old one. Browsers never reuse a copy (stale-while-revalidate in this
-    // header let them flash the previous price); only Vercel's edge caches,
-    // through its own header, sharing one read per region for 30s and
-    // refreshing in the background for 60s more.
+    // an old one for long. Browsers never reuse a copy (stale-while-revalidate
+    // in this header let them flash the previous price); only Vercel's edge
+    // caches, through its own header: fresh for 60s, then served instantly
+    // while it refreshes in the background for up to 5 minutes more. Building
+    // the list takes ~400ms (every product read from Firestore), and with a
+    // 30s window most shoppers paid that; now almost none do, and a staff
+    // edit still shows within about a minute.
     res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Vercel-CDN-Cache-Control', 'public, s-maxage=30, stale-while-revalidate=60');
+    res.setHeader('Vercel-CDN-Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     return res.status(200).json({ products });
   } catch (err) {
     console.error('[api/catalogue]', err);

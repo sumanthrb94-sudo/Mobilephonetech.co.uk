@@ -23,11 +23,18 @@ describe('cloudinaryWidthUrl', () => {
     expect(cloudinaryWidthUrl(`${BASE}/iphone.jpg`, 160)).toBe(`${BASE}/w_160,c_limit,f_auto,q_auto/iphone.jpg`);
   });
 
+  it('sizes a fetch link too, keeping its crop but choosing format and quality', () => {
+    const src = 'https://images.samsung.com/is/image/samsung/p6pim/uk/s25-front.jpg';
+    expect(cloudinaryWidthUrl(`https://res.cloudinary.com/smvandmc/image/fetch/c_crop,w_1280,h_1280,g_center/c_scale,w_1600,f_jpg,q_92/${src}`, 480))
+      .toBe(`https://res.cloudinary.com/smvandmc/image/fetch/c_crop,w_1280,h_1280,g_center/c_scale,w_1600/w_480,c_limit,f_auto,q_auto/${src}`);
+    expect(cloudinarySrcSet(`https://res.cloudinary.com/demo/image/fetch/${src}`, [320]))
+      .toBe(`https://res.cloudinary.com/demo/image/fetch/w_320,c_limit,f_auto,q_auto/${src} 320w`);
+  });
+
   it('leaves every other URL untouched', () => {
     for (const url of [
       '/assets/quality-inspection.png',
       'https://firebasestorage.googleapis.com/v0/b/x/o/photo.jpg?alt=media',
-      'https://res.cloudinary.com/demo/image/fetch/https://example.com/a.jpg',
       'https://example.com/res.cloudinary.com/image/upload/a.jpg',
       '',
     ]) {
