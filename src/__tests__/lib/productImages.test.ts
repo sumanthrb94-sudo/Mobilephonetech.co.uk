@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MAX_PRODUCT_IMAGES, capImages, galleryFrames, isUploadedPhoto } from '../../lib/productImages';
+import { MAX_PRODUCT_IMAGES, bothSidesPhoto, capImages, galleryFrames, isUploadedPhoto } from '../../lib/productImages';
 
 /**
  * Six images per product.
@@ -106,5 +106,31 @@ describe('isUploadedPhoto', () => {
     expect(isUploadedPhoto('https://placehold.co/600x600')).toBe(false);
     expect(isUploadedPhoto('')).toBe(false);
     expect(isUploadedPhoto(undefined)).toBe(false);
+  });
+});
+
+describe('bothSidesPhoto', () => {
+  const u = (n: string) => `https://res.cloudinary.com/x/image/upload/v1/lehart/${n}.png`;
+
+  it('finds the shot named like its -front and -back siblings', () => {
+    expect(bothSidesPhoto({
+      imageUrl: u('iphone-13-pink-front'),
+      galleryImages: [u('iphone-13-pink-front'), u('iphone-13-pink-back'), u('iphone-13-pink')],
+    })).toBe(u('iphone-13-pink'));
+  });
+
+  it('looks in the colours, in-stock colours first', () => {
+    expect(bothSidesPhoto({
+      imageUrl: u('p-front'),
+      variants: [
+        { stock: 0, galleryImages: [u('p-blue-front'), u('p-blue')] },
+        { stock: 2, galleryImages: [u('p-green-back'), u('p-green')] },
+      ],
+    })).toBe(u('p-green'));
+  });
+
+  it('is null when no photo pairs with a front or back shot', () => {
+    expect(bothSidesPhoto({ imageUrl: u('a'), galleryImages: [u('a'), u('b')] })).toBeNull();
+    expect(bothSidesPhoto({ imageUrl: '/assets/x.png' })).toBeNull();
   });
 });

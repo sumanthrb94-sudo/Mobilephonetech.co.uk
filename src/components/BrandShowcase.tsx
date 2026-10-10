@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import { useCatalogue } from '../context/CatalogueContext';
 import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
-import { isUploadedPhoto } from '../lib/productImages';
+import { bothSidesPhoto, isUploadedPhoto } from '../lib/productImages';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import {
   listLivePanels, panelProducts, toneForPosition, type SeriesPanel,
@@ -101,7 +101,8 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
   const hero = products.find(p => isUploadedPhoto(p.imageUrl)) ?? products[0];
   // Stored artwork counts only if it is an uploaded photo: a bundled /assets
   // picture is a stock render of a phone we may not even sell.
-  const artwork = isUploadedPhoto(panel.heroImage) ? panel.heroImage : '';
+  // Otherwise the lead product's photo with both sides in one shot.
+  const artwork = isUploadedPhoto(panel.heroImage) ? panel.heroImage : (hero ? bothSidesPhoto(hero) ?? '' : '');
   const t = toneStyles(panel.tone);
 
   return (
@@ -242,11 +243,10 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
                 boxShadow: t.frameShadow,
               }}
             >
-              {/* Artwork uploaded in Admin › Series, else the first product
-                  in the row that has a real photo. */}
-              {artwork
-                ? <img src={artwork} alt={hero.model} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                : <ProductImage brand={hero.brand} model={hero.model} category={hero.category} color={hero.colorOptions?.[0] ?? hero.variants?.[0]?.color} imageUrl={hero.imageUrl} alt={hero.model} />}
+              {/* Artwork uploaded in Admin › Series, else the lead product's
+                  both-sides photo, else its main photo; resized, never the
+                  full-size upload. */}
+              <ProductImage brand={hero.brand} model={hero.model} category={hero.category} color={hero.colorOptions?.[0] ?? hero.variants?.[0]?.color} imageUrl={artwork || hero.imageUrl} alt={hero.model} context="card" />
             </div>
           </div>
         </motion.div>

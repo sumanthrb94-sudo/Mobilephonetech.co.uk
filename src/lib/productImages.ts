@@ -98,3 +98,40 @@ export function photosFirst(imageUrl: unknown, gallery: unknown): { imageUrl: st
   const unique = [...new Set(photos)];
   return { imageUrl: unique[0], galleryImages: unique };
 }
+
+const SIDE_SHOT = /-(front|back)$/;
+const fileStem = (url: string) => {
+  const name = url.split(/[?#]/)[0].split('/').pop() ?? '';
+  let decoded = name;
+  try { decoded = decodeURIComponent(name); } catch { /* keep as is */ }
+  return decoded.replace(/\.(png|jpe?g|webp|avif|gif)$/i, '').toLowerCase();
+};
+
+/**
+ * The photo showing the phone's back and front together, if it has one.
+ *
+ * Photos are named per finish: `…-cosmic-orange-front`, `…-cosmic-orange-back`
+ * and `…-cosmic-orange` for the shot with both sides. That last one is the
+ * best single picture of a phone, so home page rows use it as their artwork.
+ * It is recognised by name: a photo whose name is another photo's name minus
+ * "-front" or "-back". Colours in stock are looked at first.
+ */
+export function bothSidesPhoto(product: {
+  imageUrl?: string;
+  galleryImages?: string[];
+  variants?: { imageUrl?: string; galleryImages?: string[]; stock?: number }[];
+}): string | null {
+  const variants = [...(product.variants ?? [])].sort((a, b) => Number((b.stock ?? 0) > 0) - Number((a.stock ?? 0) > 0));
+  const lists = [
+    [product.imageUrl, ...(product.galleryImages ?? [])],
+    ...variants.map(v => [v.imageUrl, ...(v.galleryImages ?? [])]),
+  ];
+  for (const list of lists) {
+    const photos = list.filter(isUploadedPhoto);
+    const stems = photos.map(fileStem);
+    const i = stems.findIndex((s, k) => !SIDE_SHOT.test(s)
+      && stems.some((t, j) => j !== k && SIDE_SHOT.test(t) && t.replace(SIDE_SHOT, '') === s));
+    if (i >= 0) return photos[i];
+  }
+  return null;
+}
