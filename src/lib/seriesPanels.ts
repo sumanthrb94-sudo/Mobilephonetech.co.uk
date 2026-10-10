@@ -292,6 +292,37 @@ export async function listLivePanels(): Promise<SeriesPanel[]> {
   }
 }
 
+/**
+ * The rows the home page showed last time, so a returning visitor's first
+ * paint is the real set instead of the built-ins swapping out a second later.
+ * Browser storage can be missing or blocked; every path then returns null.
+ */
+const PANEL_CACHE_KEY = 'lehart.homePanels.v1';
+
+export function readCachedPanels(): SeriesPanel[] | null {
+  try {
+    const raw = window.localStorage.getItem(PANEL_CACHE_KEY);
+    if (!raw) return null;
+    const rows = JSON.parse(raw);
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const panels = rows
+      .filter((r): r is Record<string, unknown> => Boolean(r) && typeof r === 'object' && typeof r.id === 'string')
+      .map(r => toPanel(r.id as string, r))
+      .filter(p => p.active && p.headline);
+    return panels.length > 0 ? panels : null;
+  } catch {
+    return null;
+  }
+}
+
+export function cachePanels(panels: SeriesPanel[]): void {
+  try {
+    window.localStorage.setItem(PANEL_CACHE_KEY, JSON.stringify(panels));
+  } catch {
+    // Storage full or blocked: the next visit simply waits for Firestore.
+  }
+}
+
 export async function savePanel(p: SeriesPanel): Promise<void> {
   const problems = panelProblems(p);
   if (problems.length) throw new Error(problems[0]);

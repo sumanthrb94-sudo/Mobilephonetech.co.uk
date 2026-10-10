@@ -16,7 +16,9 @@ export default function Hero() {
    * a failed read or a shop that has not been given banners yet shows this
    * instead of a blank rectangle where the home page should be.
    */
-  const [managed, setManaged] = useState<Slide[] | null>(null);
+  // Start from the banners this browser saw last time, so a returning
+  // visitor does not watch the built-in set swap for the managed one.
+  const [managed, setManaged] = useState<Slide[] | null>(readCachedSlides);
 
   useEffect(() => {
     return subscribeLiveBanners(
@@ -26,7 +28,7 @@ export default function Hero() {
         // This prevents an abandoned draft or last season's hero reappearing
         // simply because its Firestore row is still active.
         const campaign = rows.filter(b => b.campaignSet === HOME_BANNER_SET);
-        setManaged(campaign.length ? campaign.map(b => ({
+        const next = campaign.length ? campaign.map(b => ({
           eyebrow: b.eyebrow,
           headline: b.headline,
           subline: b.subline,
@@ -49,7 +51,9 @@ export default function Hero() {
           // narrow phone.
           focal: 'right center',
           focalMobile: 'center top',
-        })) : null);
+        })) : null;
+        setManaged(next);
+        cacheSlides(next);
       },
       err => {
         // The built-in set stands, but say so: a silent catch here means a
@@ -70,4 +74,28 @@ export default function Hero() {
       <HeroCarousel slides={SLIDES} />
     </div>
   );
+}
+
+const SLIDE_CACHE_KEY = 'lehart.heroSlides.v1';
+
+/** Last managed banners, if browser storage has them and they look sound. */
+function readCachedSlides(): Slide[] | null {
+  try {
+    const rows = JSON.parse(window.localStorage.getItem(SLIDE_CACHE_KEY) ?? 'null');
+    if (!Array.isArray(rows) || rows.length === 0) return null;
+    const ok = rows.every(r => r && typeof r.headline === 'string' && typeof r.imageMobile === 'string'
+      && typeof r.image === 'string' && (r.ctaHref === '' || String(r.ctaHref).startsWith('/')));
+    return ok ? rows as Slide[] : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheSlides(slides: Slide[] | null): void {
+  try {
+    if (slides) window.localStorage.setItem(SLIDE_CACHE_KEY, JSON.stringify(slides));
+    else window.localStorage.removeItem(SLIDE_CACHE_KEY);
+  } catch {
+    // Storage blocked: the built-in set shows first, as before.
+  }
 }

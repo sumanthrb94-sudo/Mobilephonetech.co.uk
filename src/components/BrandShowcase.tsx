@@ -7,8 +7,11 @@ import ProductCard from './ProductCard';
 import ProductImage from './ProductImage';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import {
-  BUILT_IN_PANELS, listLivePanels, panelProducts, toneForPosition, type SeriesPanel,
+  BUILT_IN_PANELS, cachePanels, listLivePanels, panelProducts, readCachedPanels, toneForPosition, type SeriesPanel,
 } from '../lib/seriesPanels';
+
+/** How long a first-time visitor waits for the stored rows before the built-ins stand in. */
+const PANEL_WAIT_MS = 4000;
 import type { Product } from '../types';
 
 /**
@@ -28,22 +31,32 @@ import type { Product } from '../types';
 export default function BrandShowcase() {
   const { products: catalogue } = useCatalogue();
 
-  // The built-ins, not an empty list: the panels are most of the home page,
-  // so the first paint is the real thing and the stored set only ever
-  // replaces it. listLivePanels resolves to these on any failure too.
-  const [panels, setPanels] = useState<SeriesPanel[]>(BUILT_IN_PANELS);
+  // Which rows to show is decided by staff in Admin → Series. Painting the
+  // built-ins first and then swapping in the stored set made the page change
+  // under the shopper (iPhone 17 first, then iPhone a moment later). So the
+  // first paint uses the set this browser saw last time, or waits for the
+  // stored set; the built-ins only stand in if Firestore is slow or failing.
+  const [panels, setPanels] = useState<SeriesPanel[] | null>(readCachedPanels);
 
   useEffect(() => {
     let cancelled = false;
-    listLivePanels().then(next => { if (!cancelled) setPanels(next); });
-    return () => { cancelled = true; };
+    const fallback = setTimeout(() => {
+      if (!cancelled) setPanels(p => p ?? BUILT_IN_PANELS);
+    }, PANEL_WAIT_MS);
+    listLivePanels().then(next => {
+      if (cancelled) return;
+      clearTimeout(fallback);
+      setPanels(next);
+      if (next !== BUILT_IN_PANELS) cachePanels(next);
+    });
+    return () => { cancelled = true; clearTimeout(fallback); };
   }, []);
 
   // A panel whose rule matches nothing is simply not rendered, which is what
   // makes a mistyped rule harmless rather than a broken page. Colour is given
   // after that filter, so the panels that do show always alternate white,
   // black, white, black.
-  const shown = panels
+  const shown = (panels ?? [])
     .map(panel => ({ panel, products: panelProducts(catalogue, panel) }))
     .filter(({ products }) => products.length > 0);
 
@@ -96,6 +109,7 @@ export function SeriesPanelView({ panel, products }: { panel: SeriesPanel; produ
     <section
       aria-label={`${panel.eyebrow} — shop the series`}
       data-tone={panel.tone}
+      data-panel-id={panel.id}
       style={{
         width: '100%',
         position: 'relative',
