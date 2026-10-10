@@ -14,6 +14,7 @@ import RelatedProductsSection from './RelatedProductsSection';
 import VariantSelector from './VariantSelector';
 import ProductImage from './ProductImage';
 import { galleryFrames, isUploadedPhoto } from '../lib/productImages';
+import { preloadPhoto, preloadPhotos } from '../lib/preloadPhoto';
 import TechnicalSpecs from './TechnicalSpecs';
 import { enrichSpecs } from '../utils/deviceSpecs';
 import { ProductVariant, ProductGrade } from '../types';
@@ -212,13 +213,10 @@ export default function ProductDetail() {
   const [labReelOpen, setLabReelOpen] = React.useState(false);
   const [includeCharger, setIncludeCharger] = React.useState(false);
   const touchStartX = React.useRef<number | null>(null);
-  const chooseVariant = (variant: ProductVariant) => {
-    // The hero must start at the primary angle of the newly chosen finish.
-    // Keeping this in the selection event avoids introducing a conditional
-    // hook after the product-loading return below.
-    setSelectedImageIndex(0);
-    setSelectedVariant(variant);
-  };
+  // The hero returns to the first angle when the chosen finish's photos are
+  // on screen (see the gallery effect below), not before: resetting here
+  // showed the old colour's first photo while the new ones loaded.
+  const chooseVariant = (variant: ProductVariant) => setSelectedVariant(variant);
 
   // Load product: seed from the shared catalogue for an instant first paint,
   // then refresh from Supabase (which also brings variant rows).
@@ -357,8 +355,57 @@ export default function ProductDetail() {
     : { title: 'Product | Mobilephonetech.co.uk' }
   );
 
-  // Loading skeleton
-  if (phone === undefined) {
+  // ── Gallery: shown only once its photos have loaded ─────────────────
+  // The page waits for the chosen finish's photos (hero size and thumbnails)
+  // before it appears, so it never paints half-loaded. Switching colour
+  // keeps the current photos on screen until the new ones are ready, then
+  // swaps them in one go: nothing else on the page re-renders or blanks.
+  const targetGallery = React.useMemo(
+    () => (phone ? galleryFrames(galleryFor(phone, selectedVariant)) : []),
+    [phone, selectedVariant],
+  );
+  const targetKey = targetGallery.join('|');
+  // A matrix product picks its first in-stock configuration in an effect;
+  // until then the target would be the product-level gallery, briefly.
+  const variantPending = Boolean(phone?.variants?.length) && !selectedVariant;
+  const [shown, setShown] = React.useState<{ productId: string; key: string; gallery: string[] } | null>(null);
+
+  React.useEffect(() => {
+    if (!phone || variantPending) return;
+    if (shown?.productId === phone.id && shown.key === targetKey) return;
+    let cancelled = false;
+    const firstPaint = shown?.productId !== phone.id;
+    const photos = targetGallery.flatMap(url => [
+      { url, context: 'hero' as const },
+      { url, context: 'thumb' as const },
+    ]);
+    preloadPhotos(photos, firstPaint ? 6000 : 3000).then(() => {
+      if (cancelled) return;
+      setShown({ productId: phone.id, key: targetKey, gallery: targetGallery });
+      setSelectedImageIndex(0);
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phone?.id, targetKey, variantPending]);
+
+  // Once the page is up, fetch the other finishes' photos in the background
+  // so a colour switch is instant rather than a wait.
+  const galleryReady = Boolean(phone && shown?.productId === phone.id);
+  React.useEffect(() => {
+    if (!galleryReady || !phone?.variants?.length) return;
+    const seen = new Set<string>();
+    for (const v of phone.variants) {
+      for (const url of galleryFrames(galleryFor(phone, v))) {
+        if (seen.has(url)) continue;
+        seen.add(url);
+        preloadPhoto(url, 'hero');
+        preloadPhoto(url, 'thumb');
+      }
+    }
+  }, [galleryReady, phone]);
+
+  // Loading skeleton: the product, and its photos, are not ready yet.
+  if (phone === undefined || (phone && !galleryReady)) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--grey-0)', paddingTop: 'var(--spacing-48)', paddingBottom: 'var(--spacing-80)' }}>
         <div className="container-bm" style={{ maxWidth: 'var(--container-max)' }}>
@@ -392,31 +439,8 @@ export default function ProductDetail() {
     );
   }
 
-  /**
-   * Exactly six frames, always.
-   *
-   * The gallery is a six-cell grid, so the count is not a preference: fewer
-   * leaves holes in it, and a seventh wraps the thumbnail row onto a line
-   * that was never designed. Short of six it repeats what the product has —
-   * two good angles shown three times each reads better than four empty
-   * frames — and beyond six it takes the first six. The editor enforces the
-   * same limit, so this only catches rows that predate it.
-   */
-  // A colour/condition selection is state on this page, not a new route.
-  // Prefer its own gallery (or primary image) so the hero updates the moment
-  // a shopper taps a swatch; retain the model gallery as extra angles where
-  // a configuration supplies only one image.
-  const selectedGallery = (selectedVariant?.galleryImages?.length
-    ? selectedVariant.galleryImages
-    : selectedVariant?.imageUrl
-      ? [selectedVariant.imageUrl, ...(phone.galleryImages ?? []).filter(image => image !== selectedVariant.imageUrl)]
-      : phone.galleryImages?.length
-        ? phone.galleryImages
-        : [phone.imageUrl]
-  // Only uploaded photos make frames. With none, the gallery is a single
-  // "photo coming soon" mark with no arrows, thumbnails or full-screen view.
-  ).filter(isUploadedPhoto);
-  const activeGallery = galleryFrames(selectedGallery);
+  // What is on screen: the last gallery whose photos finished loading.
+  const activeGallery = shown?.gallery ?? [];
 
   const handleAddToCart = () => {
     // The accessory is a real, independently priced catalogue item. Add it
@@ -629,7 +653,6 @@ export default function ProductDetail() {
               }}
             >
               <div
-                key={activeGallery[selectedImageIndex]}
                 style={{
                   width: '100%',
                   height: '100%',
@@ -711,6 +734,7 @@ export default function ProductDetail() {
                 <Expand size={16} />
               </button>
 
+              {activeGallery.length > 1 && (<>
               <button
                 onClick={prevImage}
                 aria-label="Previous image"
@@ -726,10 +750,11 @@ export default function ProductDetail() {
                 <ChevronRight size={20} />
               </button>
               </>)}
+              </>)}
             </motion.div>
 
-            {/* 6 Thumbnails */}
-            <div className="pdp-gallery-dots" role="tablist" aria-label="Product gallery">
+            {/* Dots and thumbnails: one per distinct photo, none for a single photo. */}
+            {activeGallery.length > 1 && <div className="pdp-gallery-dots" role="tablist" aria-label="Product gallery">
               {activeGallery.map((_, i) => (
                 <button
                   key={i}
@@ -741,7 +766,7 @@ export default function ProductDetail() {
                   onClick={() => setSelectedImageIndex(i)}
                 />
               ))}
-            </div>
+            </div>}
 
             <button
               type="button"
@@ -754,7 +779,7 @@ export default function ProductDetail() {
               <ChevronRight size={20} aria-hidden="true" />
             </button>
 
-            <div className="pdp-thumbnails" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }} role="tablist" aria-label="Product gallery">
+            {activeGallery.length > 1 && <div className="pdp-thumbnails" style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)' }} role="tablist" aria-label="Product gallery">
               {activeGallery.map((src, i) => {
                 const isActive = selectedImageIndex === i;
                 return (
@@ -791,12 +816,13 @@ export default function ProductDetail() {
                         category={phone.category}
                         imageUrl={src}
                         alt=""
+                        context="thumb"
                       />
                     </div>
                   </button>
                 );
               })}
-            </div>
+            </div>}
           </div>
 
           {/* ── Right Column: the buy box ────────────────────────
@@ -1098,4 +1124,20 @@ export default function ProductDetail() {
       </AnimatePresence>
     </div>
   );
+}
+
+/**
+ * The photos for one configuration, in order. A configuration's own gallery
+ * wins; a configuration with only a main photo keeps the model's gallery as
+ * extra angles; otherwise the model's. Only uploaded photos make frames.
+ */
+function galleryFor(phone: Product, variant: ProductVariant | null): string[] {
+  const list = variant?.galleryImages?.length
+    ? variant.galleryImages
+    : variant?.imageUrl
+      ? [variant.imageUrl, ...(phone.galleryImages ?? []).filter(image => image !== variant.imageUrl)]
+      : phone.galleryImages?.length
+        ? phone.galleryImages
+        : [phone.imageUrl];
+  return list.filter(isUploadedPhoto);
 }

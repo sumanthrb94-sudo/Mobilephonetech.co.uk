@@ -43,45 +43,51 @@ describe('capImages', () => {
 });
 
 describe('galleryFrames', () => {
-  it('always returns six frames', () => {
-    for (const n of [1, 2, 3, 4, 5, 6, 7, 20]) {
-      const images = Array.from({ length: n }, (_, i) => `img-${i}`);
-      expect(galleryFrames(images)).toHaveLength(MAX_PRODUCT_IMAGES);
-    }
+  it('shows each distinct photo once, never padding with repeats', () => {
+    expect(galleryFrames(['a', 'b'])).toEqual(['a', 'b']);
+    expect(galleryFrames(['only'])).toEqual(['only']);
+    expect(galleryFrames(['a', 'b', 'c'])).toEqual(['a', 'b', 'c']);
   });
 
-  it('repeats what a product has, cycling from the start', () => {
-    expect(galleryFrames(['a', 'b'])).toEqual(['a', 'b', 'a', 'b', 'a', 'b']);
-    expect(galleryFrames(['only'])).toEqual(Array(6).fill('only'));
-    expect(galleryFrames(['a', 'b', 'c', 'd'])).toEqual(['a', 'b', 'c', 'd', 'a', 'b']);
+  it('drops exact duplicates, keeping the first position', () => {
+    expect(galleryFrames(['a', 'b', 'a', 'c', 'b'])).toEqual(['a', 'b', 'c']);
   });
 
-  it('passes six through untouched', () => {
+  it('treats the same Cloudinary photo at other sizes or formats as one', () => {
+    const base = 'https://res.cloudinary.com/smvandmc/image/upload/v17/lehart/iphone-13--green--front.png';
+    const resized = 'https://res.cloudinary.com/smvandmc/image/upload/w_800,c_limit/f_auto,q_auto/v17/lehart/iphone-13--green--front.png';
+    const other = 'https://res.cloudinary.com/smvandmc/image/upload/v17/lehart/iphone-13--back.png';
+    expect(galleryFrames([base, resized, other])).toEqual([base, other]);
+  });
+
+  it('treats a fetched copy of a photo as that photo', () => {
+    const src = 'https://cdn.example.test/p/iphone-13-front.jpg';
+    const fetched = `https://res.cloudinary.com/smvandmc/image/fetch/f_auto,q_auto/${src}`;
+    expect(galleryFrames([src, fetched])).toEqual([src]);
+  });
+
+  it('keeps different photos that merely share a folder', () => {
+    expect(galleryFrames([
+      'https://res.cloudinary.com/x/image/upload/v1/p/front.jpg',
+      'https://res.cloudinary.com/x/image/upload/v1/p/side.jpg',
+    ])).toHaveLength(2);
+  });
+
+  it('passes six through untouched and caps longer lists at six', () => {
     const six = ['a', 'b', 'c', 'd', 'e', 'f'];
     expect(galleryFrames(six)).toEqual(six);
-  });
-
-  it('shows the first six of an over-long list, not a wrapped seventh', () => {
     const many = Array.from({ length: 12 }, (_, i) => `img-${i}`);
-    expect(galleryFrames(many)).toEqual(['img-0', 'img-1', 'img-2', 'img-3', 'img-4', 'img-5']);
+    expect(galleryFrames(many)).toHaveLength(MAX_PRODUCT_IMAGES);
   });
 
   it('starts from the primary image', () => {
     expect(galleryFrames(['primary', 'b'])[0]).toBe('primary');
   });
 
-  /**
-   * An empty gallery rather than six copies of nothing: six blank frames
-   * would render as six broken images, which looks like a fault rather than
-   * a product awaiting photos. The caller decides what that state looks like.
-   */
-  it('gives nothing back when there is nothing to show', () => {
+  it('gives nothing back when there is nothing to show, and skips blanks', () => {
     expect(galleryFrames([])).toEqual([]);
     expect(galleryFrames(['', '', ''])).toEqual([]);
-  });
-
-  it('ignores blanks among real images rather than framing them', () => {
-    expect(galleryFrames(['a', '', 'b'])).toEqual(['a', 'b', 'a', 'b', 'a', 'b']);
+    expect(galleryFrames(['a', '', 'b'])).toEqual(['a', 'b']);
   });
 });
 

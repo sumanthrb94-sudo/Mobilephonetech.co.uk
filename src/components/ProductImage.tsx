@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isUploadedPhoto } from '../lib/productImages';
-import { cloudinarySrcSet, cloudinaryWidthUrl } from '../lib/cloudinaryUrl';
+import { photoAttrs } from '../lib/preloadPhoto';
 import DeviceMock from './DeviceMock';
 
 export interface ProductImageProps {
@@ -18,18 +18,6 @@ export interface ProductImageProps {
   /** Render hint: 'thumb' drops the "photo coming soon" tag. */
   context?: 'card' | 'hero' | 'thumb';
 }
-
-/*
- * How wide the photo is drawn, per context, for `sizes`. Generous on purpose:
- * too small a guess shows a soft photo, too large merely costs bytes. No
- * context (cart rows, quick view, gallery frames) keeps the large default.
- */
-const SIZES: Record<NonNullable<ProductImageProps['context']> | 'default', string> = {
-  hero: '(min-width: 1024px) 50vw, 100vw',
-  card: '(min-width: 1024px) 25vw, 50vw',
-  thumb: '96px',
-  default: '(min-width: 1024px) 50vw, 100vw',
-};
 
 /**
  * ProductImage — the product's uploaded photo, or a drawing of the device in
@@ -49,14 +37,13 @@ export function ProductImage({ brand, model, imageUrl, color, category, alt, con
     // The product page's main photo is that page's largest paint: fetch it
     // straight away and ahead of everything else, not when it scrolls in.
     const isHero = context === 'hero';
-    const srcSet = cloudinarySrcSet(imageUrl);
+    // Same attributes preloadPhoto uses, so a preloaded photo is a cache hit.
+    const { src, srcSet, sizes } = photoAttrs(imageUrl, context ?? 'default');
     return (
       <img
-        // A sized copy even for the fallback, never the original upload,
-        // which for some catalogue photos is a 1.25MB PNG.
-        src={srcSet ? cloudinaryWidthUrl(imageUrl, 828) : imageUrl}
+        src={src}
         srcSet={srcSet}
-        sizes={srcSet ? SIZES[context ?? 'default'] : undefined}
+        sizes={sizes}
         alt={alt ?? ''}
         loading={isHero ? 'eager' : 'lazy'}
         fetchPriority={isHero ? 'high' : undefined}

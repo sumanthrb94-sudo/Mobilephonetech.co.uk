@@ -1,9 +1,8 @@
 /**
  * How many pictures a product carries, and how the gallery fills its frames.
  *
- * Six, because the product page's gallery is a six-cell grid. The number is
- * a property of that layout rather than of storage: fewer than six leaves
- * holes in it, and a seventh has nowhere to go — it wraps the thumbnail row
+ * Six, because the product page's thumbnail row has six cells. Fewer simply
+ * leaves cells empty; a seventh has nowhere to go — it would wrap the row
  * onto a second line nobody designed.
  *
  * This lives in its own module, imported by both the shop and the admin, so
@@ -32,32 +31,51 @@ export function isUploadedPhoto(url: unknown): url is string {
 /**
  * The images a product is allowed to keep, in order.
  *
- * Duplicates are preserved on purpose. Six distinct photos of every device
- * is the goal, not the requirement, and a shop with two real angles is
- * better served showing them twice than showing four empty frames.
+ * At most six; the gallery itself shows each distinct photo once.
  */
 export function capImages(images: string[]): string[] {
   return images.slice(0, MAX_PRODUCT_IMAGES);
 }
 
 /**
- * Exactly six frames for the gallery, whatever the product has.
+ * The photos the gallery shows: each distinct photo once, up to six.
  *
- * Short of six it repeats what there is, cycling from the start, so the
- * grid is always full. Beyond six it takes the first six — which only
- * happens for rows saved before the limit existed, since the editor and
- * the save path both cap it now.
+ * It used to pad to six by repeating, so a colour with three photos showed
+ * each of them twice and a colour with one showed it six times. Shoppers
+ * read that as duplicates, and it is: the gallery now has as many frames as
+ * there are different photos.
  *
- * An empty list gives an empty gallery rather than six copies of nothing:
- * the caller decides what a product with no imagery looks like.
+ * "Different" is by photo, not by link: the same Cloudinary image with other
+ * size or format settings, or fetched from the same source, is one photo.
+ * An empty list stays empty; the caller decides what no imagery looks like.
  */
 export function galleryFrames(images: string[]): string[] {
-  const usable = images.filter(Boolean);
-  if (usable.length === 0) return [];
-  return Array.from(
-    { length: MAX_PRODUCT_IMAGES },
-    (_, i) => usable[i % usable.length],
-  );
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const url of images) {
+    if (!url) continue;
+    const key = photoKey(url);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(url);
+    if (out.length === MAX_PRODUCT_IMAGES) break;
+  }
+  return out;
+}
+
+/** One photo's identity: its link without size, format, version or query. */
+export function photoKey(url: string): string {
+  let s = url.trim().split(/[?#]/)[0];
+  const fetchAt = s.indexOf('/image/fetch/');
+  if (fetchAt >= 0) {
+    // res.cloudinary.com/<cloud>/image/fetch/<transforms>/<source url>
+    s = s.slice(fetchAt + '/image/fetch/'.length).replace(/^(?:[a-z]{1,3}_[^/]*\/)+/, '');
+    try { s = decodeURIComponent(s); } catch { /* keep as is */ }
+    return photoKey(s);
+  }
+  // res.cloudinary.com/<cloud>/image/upload/<transforms>/v123/<public id>
+  s = s.replace(/\/image\/upload\/(?:[a-z]{1,3}_[^/]*\/)*(?:v\d+\/)?/, '/image/upload/');
+  return s.replace(/\.(png|jpe?g|webp|avif|gif)$/i, '').toLowerCase();
 }
 
 /**
