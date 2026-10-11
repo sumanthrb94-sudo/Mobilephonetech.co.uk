@@ -82,7 +82,9 @@ function toneStyles(tone: SeriesPanel['tone']) {
     // highest-contrast option against its own surface.
     ctaBg: dark ? 'var(--brand-cyan)' : 'var(--black)',
     ctaFg: dark ? 'var(--black)' : 'var(--grey-0)',
-    frame: dark ? 'rgba(255,255,255,0.06)' : 'var(--grey-0)',
+    // White in both tones: product photos are shot on white, so a tinted
+    // frame showed the photo as a white box inside a grey tile.
+    frame: 'var(--grey-0)',
     frameShadow: dark ? '0 12px 32px rgba(0,0,0,0.45)' : '0 12px 24px rgba(12,10,9,0.08)',
   };
 }
