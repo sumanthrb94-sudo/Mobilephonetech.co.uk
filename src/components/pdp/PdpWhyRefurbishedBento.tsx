@@ -1,5 +1,6 @@
 import { displayName } from '../../utils/displayName';
-import { ShieldCheck, RotateCcw, Package, Leaf, Truck, CheckCircle2 } from 'lucide-react';
+import { COMPANY } from '../../config/company';
+import { ShieldCheck, RotateCcw, Package, Leaf, Truck, Headset, CheckCircle2 } from 'lucide-react';
 
 interface PdpWhyRefurbishedBentoProps {
   brand: string;
@@ -257,7 +258,46 @@ export default function PdpWhyRefurbishedBento({ brand, model, category = 'Phone
             Dispatched directly from our UK technical fulfillment centre. Fully tracked, signature required, with automated SMS/email delivery window updates.
           </p>
           <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--color-trust-text)' }}>
-            <CheckCircle2 size={15} /> Free delivery on all phone orders
+            <CheckCircle2 size={15} /> Free next-day delivery on all orders
+          </div>
+        </div>
+
+        {/* Card 6: Customer Service — completes the 3 × 2 grid */}
+        <div
+          style={{
+            background: 'linear-gradient(145deg, #ffffff 0%, var(--grey-5) 100%)',
+            border: '1px solid var(--grey-15)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          <div
+            style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: 'rgba(99, 102, 241, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--brand-header)',
+            }}
+          >
+            <Headset size={24} />
+          </div>
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)' }}>
+            Impeccable Customer Service
+          </h3>
+          <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.65 }}>
+            Questions about your order, grading, warranty or a return? Message our UK team from the chat on any page or email{' '}
+            <a href={`mailto:${COMPANY.supportEmail}`} style={{ color: 'var(--brand-header)', fontWeight: 600 }}>{COMPANY.supportEmail}</a>, and we reply within a few hours.
+          </p>
+          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--color-trust-text)' }}>
+            <CheckCircle2 size={15} /> UK-based support team
           </div>
         </div>
       </div>
