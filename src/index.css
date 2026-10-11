@@ -1417,17 +1417,43 @@ html.is-checkout .ai-fab {
   --product-card-price-size: 21px;
   --product-card-price-size-compact: 19px;
   --product-card-badge-offset: 8px;
-  --product-card-wishlist-offset: 8px;
-  --product-card-wishlist-size: 44px;
 }
 
 .product-card__media {
   min-width: 0;
 }
 
+/* Condition left, wishlist right, above the photo rather than on it. */
+.product-card__top {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 36px; padding: 0 var(--product-card-badge-offset);
+  background: var(--grey-0);
+}
+/* The button is a full 44px target, but its row is 36px tall: the box
+   overhangs the row (negative margins) so the card does not grow for it. */
 .product-card__wishlist {
-  min-width: 44px;
-  min-height: 44px;
+  width: 44px; height: 44px; margin: -4px -6px -4px 0; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 0; cursor: pointer;
+}
+.product-card__wishlist-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--grey-0); border: 1px solid var(--grey-20);
+  box-shadow: 0 1px 3px rgba(12,10,9,0.10);
+}
+
+/* Warranty strip under the photo. A single 28px line: when the second item
+   (returns) does not fit beside the first it wraps onto a hidden second
+   line, so narrow cards show the warranty alone and wide ones both. */
+.product-card__assurance {
+  display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center;
+  column-gap: 12px; height: 28px; padding: 0 8px; overflow: hidden;
+  background: var(--green-5); border-top: 1px solid var(--green-10); border-bottom: 1px solid var(--green-10);
+  font-family: var(--font-sans); font-size: 11px; font-weight: 700; color: #047857;
+}
+.product-card__assurance > span {
+  display: inline-flex; align-items: center; gap: 4px; height: 28px; line-height: 28px; white-space: nowrap;
 }
 
 @media (min-width: 640px) {
@@ -1453,8 +1479,6 @@ html.is-checkout .ai-fab {
     --product-card-title-size: 17px;
     --product-card-price-size: 24px;
     --product-card-badge-offset: 10px;
-    --product-card-wishlist-offset: 10px;
-    --product-card-wishlist-size: 44px;
   }
 }
 

@@ -1,7 +1,7 @@
 import { storageLabel } from '../utils/storageLabel';
 import React, { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ArrowRight, BellRing } from 'lucide-react';
+import { Heart, ArrowRight, BellRing, ShieldCheck, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Product, ProductGrade } from '../types';
 import { useWishlist } from '../context/WishlistContext';
@@ -165,18 +165,59 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             : '0 1px 4px rgba(0,0,0,0.05)',
         }}
       >
+        {/* ── Top row ──
+            Condition on the left, wishlist on the right, in a row of their
+            own above the photo. They used to float on the photo and covered
+            the top corners of the phone; the sale badge moved to the brand
+            row for the same reason. */}
+        <div className="product-card__top">
+          {phone.grade ? (
+            <span className="product-card__grade" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 4,
+              background: GRADE_BG[phone.grade],
+              // The tints are pale by design; on white they need an outline
+              // or the badge disappears into the card.
+              border: `1px solid ${GRADE_DOT[phone.grade]}33`,
+              padding: '4px 9px', borderRadius: '999px',
+              fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+              color: GRADE_DOT[phone.grade],
+            }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: GRADE_DOT[phone.grade], flexShrink: 0 }} />
+              {phone.grade}
+            </span>
+          ) : <span />}
+
+          <motion.button
+            onClick={handleWishlist}
+            aria-label={inWishlist ? 'Remove from wishlist' : 'Save'}
+            whileTap={{ scale: 1.25 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+            className="product-card__wishlist"
+          >
+            <span className="product-card__wishlist-dot">
+              <Heart
+                size={15}
+                style={{
+                  color: inWishlist ? '#ef4444' : '#9CA3AF',
+                  fill: inWishlist ? '#ef4444' : 'transparent',
+                  transition: 'all 0.2s',
+                }}
+              />
+            </span>
+          </motion.button>
+        </div>
+
         {/* ── Image zone ──
             White, not a dark panel. Catalogue photography is shot on white,
             so a dark background produced a visible white square floating
             inside a dark box inside the white card — three nested boxes for
             one product. Amazon and Back Market both put the shot straight
-            onto the card, and a hairline is enough to separate it from the
-            details below. Less padding too: the dark box was doing the
-            framing, so the product itself can now be bigger. */}
+            onto the card. Nothing sits on the photo now but the hover-only
+            Quick view pill. */}
         <div className="product-card__media" style={{
           position: 'relative',
           background: 'var(--grey-0)',
-          borderBottom: '1px solid var(--grey-10)',
           aspectRatio: '1 / 1',
           display: 'flex',
           alignItems: 'center',
@@ -194,66 +235,6 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
             alt={phone.model}
             context="card"
           />
-
-          {/* Grade badge — top left */}
-          {phone.grade && (
-            <span className="product-card__grade" style={{
-              position: 'absolute', top: 'var(--product-card-badge-offset)', left: 'var(--product-card-badge-offset)',
-              display: 'inline-flex', alignItems: 'center', gap: 4,
-              background: GRADE_BG[phone.grade],
-              // The tints are pale by design; on white they need an outline
-              // or the badge disappears into the card.
-              border: `1px solid ${GRADE_DOT[phone.grade]}33`,
-              padding: '4px 9px', borderRadius: '999px',
-              fontFamily: 'var(--font-sans)', fontSize: '10px', fontWeight: 700,
-              letterSpacing: '0.06em', textTransform: 'uppercase',
-              color: GRADE_DOT[phone.grade],
-            }}>
-              <span style={{ width: 5, height: 5, borderRadius: '50%', background: GRADE_DOT[phone.grade], flexShrink: 0 }} />
-              {phone.grade}
-            </span>
-          )}
-
-          {/* Save % — bottom left */}
-          {savingsPct > 0 && (
-            <span className="product-card__saving" style={{
-              position: 'absolute', bottom: 'var(--product-card-badge-offset)', left: 'var(--product-card-badge-offset)',
-              background: '#16a34a', color: '#fff',
-              fontFamily: 'var(--font-sans)', fontSize: '11px', fontWeight: 800,
-              letterSpacing: '0.04em', textTransform: 'uppercase',
-              padding: '4px 9px', borderRadius: '999px',
-              lineHeight: 1,
-            }}>
-              SAVE {savingsPct}%
-            </span>
-          )}
-
-          {/* Wishlist — top right */}
-          <motion.button
-            onClick={handleWishlist}
-            aria-label={inWishlist ? 'Remove from wishlist' : 'Save'}
-            whileTap={{ scale: 1.25 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-            className="product-card__wishlist"
-            style={{
-              position: 'absolute', top: 'var(--product-card-wishlist-offset)', right: 'var(--product-card-wishlist-offset)',
-              width: 'var(--product-card-wishlist-size)', height: 'var(--product-card-wishlist-size)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--grey-0)',
-              border: '1px solid var(--grey-20)',
-              borderRadius: '50%', cursor: 'pointer',
-              boxShadow: '0 1px 3px rgba(12,10,9,0.10)',
-            }}
-          >
-            <Heart
-              size={15}
-              style={{
-                color: inWishlist ? '#ef4444' : '#9CA3AF',
-                fill: inWishlist ? '#ef4444' : 'transparent',
-                transition: 'all 0.2s',
-              }}
-            />
-          </motion.button>
 
           {/* Quick view — on hover */}
           <AnimatePresence>
@@ -286,23 +267,46 @@ const ProductCard = memo(({ phone, compact = false }: ProductCardProps) => {
           </AnimatePresence>
         </div>
 
+        {/* ── Warranty strip ──
+            Directly under the photo: the reason to trust a refurbished phone
+            is the cover behind it, so it is the first thing read after the
+            picture. Returns show only where the card is wide enough. */}
+        {phone.warrantyMonths > 0 && (
+          <div className="product-card__assurance">
+            <span><ShieldCheck size={13} aria-hidden="true" />{phone.warrantyMonths}-month warranty</span>
+            {phone.returnDays > 0 && <span><RotateCcw size={12} aria-hidden="true" />{phone.returnDays}-day returns</span>}
+          </div>
+        )}
+
         {/* ── Card body ── */}
         <div className="product-card__body" style={{
           padding: compact ? 'var(--product-card-body-pad-compact)' : 'var(--product-card-body-pad)',
           display: 'flex',
           flexDirection: 'column',
           flexGrow: 1,
-          borderTop: '1px solid #F3F4F6',
         }}>
 
-          {/* Brand row */}
-          <div style={{ marginBottom: 6 }}>
+          {/* Brand row — the sale badge sits here, off the photo. */}
+          <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
             <span style={{
               fontFamily: 'var(--font-sans)', fontSize: '10.5px', fontWeight: 700,
               letterSpacing: '0.12em', textTransform: 'uppercase', color: '#9CA3AF',
+              minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}>
               {phone.brand}
             </span>
+            {savingsPct > 0 && (
+              <span className="product-card__saving" style={{
+                flexShrink: 0,
+                background: '#16a34a', color: '#fff',
+                fontFamily: 'var(--font-sans)', fontSize: '10.5px', fontWeight: 800,
+                letterSpacing: '0.04em', textTransform: 'uppercase',
+                padding: '4px 8px', borderRadius: '999px',
+                lineHeight: 1,
+              }}>
+                SAVE {savingsPct}%
+              </span>
+            )}
           </div>
 
           {/* Model name */}
