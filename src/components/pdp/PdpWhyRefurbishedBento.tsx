@@ -1,5 +1,6 @@
 import { displayName } from '../../utils/displayName';
 import { COMPANY } from '../../config/company';
+import { DELIVERY_CUTOFF } from '../../lib/deliveryCopy';
 import { ShieldCheck, RotateCcw, Package, Leaf, Truck, Headset, CheckCircle2 } from 'lucide-react';
 
 interface PdpWhyRefurbishedBentoProps {
@@ -60,6 +61,45 @@ export default function PdpWhyRefurbishedBento({ brand, model, category = 'Phone
           gap: '16px',
         }}
       >
+        {/* Free next-day delivery is the shop's headline promise, so it
+            leads the grid and is the one tile in the gold accent. */}
+        <div
+          style={{
+            background: 'linear-gradient(145deg, var(--accent-amber-bg) 0%, var(--color-brand-subtle) 100%)',
+            border: '1px solid var(--brand-cyan)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          <div
+            style={{
+              width: '42px',
+              height: '42px',
+              borderRadius: '10px',
+              background: 'rgba(161, 98, 7, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'var(--brand-cyan)',
+            }}
+          >
+            <Truck size={24} />
+          </div>
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)' }}>
+            Free Next-Day Delivery
+          </h3>
+          <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-70)', lineHeight: 1.65 }}>
+            {DELIVERY_CUTOFF}, free on every order. Sent from our UK centre by DPD or Royal Mail: fully tracked, signature required, with SMS and email updates on your delivery window.
+          </p>
+          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--brand-cyan-hover)' }}>
+            <CheckCircle2 size={15} /> Free on all orders across mainland UK
+          </div>
+        </div>
+
         {/* Card 1: 12-Month Warranty */}
         <div
           style={{
@@ -224,45 +264,7 @@ export default function PdpWhyRefurbishedBento({ brand, model, category = 'Phone
           </div>
         </div>
 
-        {/* Card 5: UK Fast Dispatch */}
-        <div
-          style={{
-            background: 'linear-gradient(145deg, #ffffff 0%, var(--grey-5) 100%)',
-            border: '1px solid var(--grey-15)',
-            borderRadius: 'var(--radius-xl)',
-            padding: '24px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            boxShadow: 'var(--shadow-sm)',
-          }}
-        >
-          <div
-            style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '10px',
-              background: 'rgba(6, 182, 212, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'var(--brand-cyan)',
-            }}
-          >
-            <Truck size={24} />
-          </div>
-          <h3 style={{ margin: 0, fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 800, color: 'var(--black)' }}>
-            Next-Day DPD & Royal Mail
-          </h3>
-          <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.65 }}>
-            Dispatched directly from our UK technical fulfillment centre. Fully tracked, signature required, with automated SMS/email delivery window updates.
-          </p>
-          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--color-trust-text)' }}>
-            <CheckCircle2 size={15} /> Free next-day delivery on all orders
-          </div>
-        </div>
-
-        {/* Card 6: Customer Service — completes the 3 × 2 grid */}
+        {/* Card 5: Customer Service — completes the 3 × 2 grid */}
         <div
           style={{
             background: 'linear-gradient(145deg, #ffffff 0%, var(--grey-5) 100%)',
