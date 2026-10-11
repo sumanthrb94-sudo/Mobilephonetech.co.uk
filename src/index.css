@@ -4947,7 +4947,8 @@ html.is-signin .support-fab { display: none; }
    column beside the details, so price and buttons are visible without
    scrolling. */
 .qv { display: grid; grid-template-columns: 1fr; gap: 14px; }
-.qv-media { position: relative; height: 200px; padding: 12px; border-radius: var(--radius-lg); background: var(--grey-5);
+/* White like the photography, so the photo does not sit as a box in a tint. */
+.qv-media { position: relative; height: 200px; padding: 12px; border-radius: var(--radius-lg); background: var(--grey-0);
   display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .qv-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .qv-brand { font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--grey-50); }

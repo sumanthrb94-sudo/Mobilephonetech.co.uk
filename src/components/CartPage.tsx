@@ -212,7 +212,7 @@ export default function CartPage() {
                   style={{
                     width: '100px',
                     height: '100px',
-                    background: 'var(--grey-5)',
+                    background: 'var(--grey-0)',
                     borderRadius: 'var(--radius-md)',
                     display: 'flex',
                     alignItems: 'center',

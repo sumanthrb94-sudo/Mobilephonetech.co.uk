@@ -683,7 +683,7 @@ export default function AccountPage() {
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 16 }}>
                                     {(order.items ?? []).map(item => (
                                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        <div style={{ width: 52, height: 52, borderRadius: 8, background: 'var(--grey-5)', flexShrink: 0, overflow: 'hidden' }}>
+                                        <div style={{ width: 52, height: 52, borderRadius: 8, background: 'var(--grey-0)', flexShrink: 0, overflow: 'hidden' }}>
                                           <ProductImage brand={item.brand} model={item.model} imageUrl={item.imageUrl ?? ''} alt={item.model} color={item.selectedColor ?? undefined} />
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>

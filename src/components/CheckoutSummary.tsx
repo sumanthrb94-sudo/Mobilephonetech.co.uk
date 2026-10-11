@@ -35,7 +35,7 @@ function OrderLines({ items }: { items: CartItem[] }) {
           <li key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* 48px and the 'thumb' context: at this size the "Photo coming
                 soon" tag only ever showed as a clipped "oto coming so". */}
-            <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0, background: 'var(--grey-5)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)', padding: '3px', boxSizing: 'border-box' }}>
+            <div style={{ position: 'relative', width: '48px', height: '48px', flexShrink: 0, background: 'var(--grey-0)', border: '1px solid var(--grey-10)', borderRadius: 'var(--radius-md)', padding: '3px', boxSizing: 'border-box' }}>
               <div style={{ width: '100%', height: '100%', overflow: 'hidden', borderRadius: 'calc(var(--radius-md) - 2px)' }}>
                 <ProductImage brand={item.brand} model={item.model} category={item.category} color={item.selectedColor} imageUrl={cartLineImage(item, catalogue)} alt={item.model} context="thumb" />
               </div>

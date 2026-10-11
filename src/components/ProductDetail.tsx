@@ -662,7 +662,9 @@ export default function ProductDetail() {
                 // every product. The catalogue photography is already shot on
                 // white, so the frame was a second background fighting the
                 // first — and on a phone it read as a border, not a backdrop.
-                background: 'var(--grey-5)',
+                // White, not off-white: even #fafaf9 showed the photo as a
+                // white box inside a tinted tile.
+                background: 'var(--grey-0)',
                 border: '1px solid var(--grey-10)',
                 boxSizing: 'border-box',
                 touchAction: 'pan-y',

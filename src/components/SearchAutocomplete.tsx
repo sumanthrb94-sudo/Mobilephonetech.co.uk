@@ -364,7 +364,7 @@ export default function SearchAutocomplete({
                           borderLeft: `3px solid ${isActive ? 'var(--brand-cyan)' : 'transparent'}`,
                         }}
                       >
-                        <div style={{ width: '40px', height: '40px', background: 'var(--grey-5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', overflow: 'hidden' }}>
+                        <div style={{ width: '40px', height: '40px', background: 'var(--grey-0)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, padding: '4px', overflow: 'hidden' }}>
                           <ProductImage brand={m.brand} model={m.model} category={m.category} color={m.colorOptions?.[0] ?? m.variants?.[0]?.color} imageUrl={m.imageUrl} alt="" />
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>

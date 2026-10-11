@@ -138,7 +138,7 @@ export default function AddedToCartModal() {
                 <div
                   style={{
                     width: '64px', height: '64px',
-                    background: 'var(--grey-5)',
+                    background: 'var(--grey-0)',
                     borderRadius: 'var(--radius-md)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     padding: '8px', flexShrink: 0, overflow: 'hidden',
