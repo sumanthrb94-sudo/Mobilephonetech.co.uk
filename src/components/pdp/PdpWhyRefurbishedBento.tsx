@@ -1,5 +1,5 @@
 import { displayName } from '../../utils/displayName';
-import { COMPANY } from '../../config/company';
+import { COMPANY, SUPPORT_REPLY_TIME } from '../../config/company';
 import { DELIVERY_CUTOFF } from '../../lib/deliveryCopy';
 import { ShieldCheck, RotateCcw, Package, Leaf, Truck, Headset, CheckCircle2 } from 'lucide-react';
 
@@ -296,7 +296,7 @@ export default function PdpWhyRefurbishedBento({ brand, model, category = 'Phone
           </h3>
           <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: '14px', color: 'var(--grey-60)', lineHeight: 1.65 }}>
             Questions about your order, grading, warranty or a return? Message our UK team from the chat on any page or email{' '}
-            <a href={`mailto:${COMPANY.supportEmail}`} style={{ color: 'var(--brand-header)', fontWeight: 600 }}>{COMPANY.supportEmail}</a>, and we reply within a few hours.
+            <a href={`mailto:${COMPANY.supportEmail}`} style={{ color: 'var(--brand-header)', fontWeight: 600 }}>{COMPANY.supportEmail}</a>, and we reply {SUPPORT_REPLY_TIME}.
           </p>
           <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: 'var(--color-trust-text)' }}>
             <CheckCircle2 size={15} /> UK-based support team

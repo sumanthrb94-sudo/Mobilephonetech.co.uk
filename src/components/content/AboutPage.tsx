@@ -1,5 +1,6 @@
 import Breadcrumbs from '../ui/Breadcrumbs';
 import { ShieldCheck, Leaf, Users, BadgeCheck } from 'lucide-react';
+import { SUPPORT_REPLY_TIME } from '../../config/company';
 
 const STATS = [
   { value: '7 years', label: 'Trading' },
@@ -11,7 +12,7 @@ const STATS = [
 const PILLARS = [
   { icon: ShieldCheck, title: 'Certified, not just refurbished', body: 'Every device passes a 70-point technical inspection and ships with a 12-month warranty. No third-party exceptions.' },
   { icon: Leaf,        title: 'Better for the planet',          body: 'We extend each device\'s life by 3-5 years, saving an average of 70kg CO₂ and 12,000L of water per handset.' },
-  { icon: Users,       title: 'Real people, real support',      body: 'UK-based customer team, reachable in under 10 minutes on average. No bots, no decision trees.' },
+  { icon: Users,       title: 'Real people, real support',      body: `UK-based customer team, replying ${SUPPORT_REPLY_TIME}. No bots, no decision trees.` },
   { icon: BadgeCheck,  title: 'Transparent grading',            body: 'Our grades tell you exactly what you\'re buying — no surprises when the box arrives.' },
 ];
 

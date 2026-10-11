@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Search } from 'lucide-react';
 import Breadcrumbs from '../ui/Breadcrumbs';
 import Accordion from '../ui/Accordion';
+import { SUPPORT_REPLY_TIME } from '../../config/company';
 
 type QA = { q: string; a: string };
 
@@ -64,7 +65,7 @@ export default function FaqPage() {
             Frequently asked questions
           </h1>
           <p style={{ fontFamily: 'var(--font-body)', fontSize: '17px', color: 'var(--grey-60)', lineHeight: 1.65, maxWidth: '620px' }}>
-            Can't find an answer? Our UK-based support team replies in under 10 minutes during opening hours.
+            Can't find an answer? Our UK-based support team replies {SUPPORT_REPLY_TIME}.
           </p>
         </header>
 

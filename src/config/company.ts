@@ -50,6 +50,13 @@ export const COMPANY = {
   supportPhone: '',
 } as const;
 
+/**
+ * How quickly support answers, in the one wording every page uses (chat,
+ * FAQ, About, product page). They used to disagree: "a few hours" in the
+ * chat, "under 10 minutes" in the FAQ.
+ */
+export const SUPPORT_REPLY_TIME = 'in under 10 minutes during opening hours';
+
 /** True once the legally-required identity fields are filled in. */
 export const companyDetailsComplete = (): boolean =>
   Boolean(COMPANY.legalName && COMPANY.companyNumber && COMPANY.registeredOffice);

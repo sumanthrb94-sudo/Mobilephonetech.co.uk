@@ -6,6 +6,7 @@ import {
   relativeTime, MAX_MESSAGE_LENGTH,
 } from '../lib/support';
 import type { SupportMessage } from '../types';
+import { SUPPORT_REPLY_TIME } from '../config/company';
 
 /**
  * Customer support chat.
@@ -93,7 +94,7 @@ export default function SupportChat() {
             <div>
               <strong style={{ fontFamily: 'var(--font-sans)', fontSize: 14.5 }}>LeHart support</strong>
               <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
-                We reply within a few hours
+                We reply {SUPPORT_REPLY_TIME}
               </p>
             </div>
             <button type="button" onClick={() => setOpen(false)} aria-label="Close support chat" className="support-close">
