@@ -90,7 +90,6 @@ export default function QuickViewModal({
             <button
               onClick={onAddToCart}
               className="btn btn-primary"
-              style={{ flex: 1 }}
               disabled={phone.stock <= 0}
             >
               {phone.stock > 0 ? 'Add to cart' : 'Out of stock'}
