@@ -1,17 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { dispatchDay } from '../../components/pdp/PdpDeliveryUrgency';
+import { DELIVERY_CUTOFF, DELIVERY_HEADLINE } from '../../lib/deliveryCopy';
 
-// The delivery line said "Dispatch today" at any hour, even after the 4pm
-// cut-off, beside a countdown to the next working day's.
-describe('dispatch day on the product page', () => {
-  it('is today before the cut-off', () => {
-    expect(dispatchDay(new Date(2026, 9, 8, 10), new Date(2026, 9, 8, 16))).toBe('today');
+// The product page counted down to the next dispatch ("order within 27h 31m
+// for dispatch tomorrow"). It now states the promise and the cut-off plainly,
+// and must keep matching the delivery policy.
+describe('delivery promise copy', () => {
+  it('states free next-day delivery and the 4pm weekday cut-off', () => {
+    expect(DELIVERY_HEADLINE).toMatch(/free next-day delivery/i);
+    expect(DELIVERY_HEADLINE).toMatch(/mainland UK/);
+    expect(DELIVERY_CUTOFF).toBe('Order before 4pm (Mon–Fri) for next-day delivery');
   });
-  it('is tomorrow after the cut-off on a weekday', () => {
-    expect(dispatchDay(new Date(2026, 9, 8, 18), new Date(2026, 9, 9, 16))).toBe('tomorrow');
-  });
-  it('names the weekday after a weekend', () => {
-    // Friday evening -> Monday's cut-off.
-    expect(dispatchDay(new Date(2026, 9, 9, 18), new Date(2026, 9, 12, 16))).toBe('Monday');
+  it('has no countdown', () => {
+    expect(`${DELIVERY_HEADLINE} ${DELIVERY_CUTOFF}`).not.toMatch(/\d+h \d+m|order within/i);
   });
 });

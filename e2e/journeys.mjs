@@ -412,13 +412,16 @@ async function run(view, contextOpts) {
     // button sits about 1,200px down, so the sticky bar has to be up on its
     // own — the bar used to arm only after the button had been seen once,
     // which on a phone meant no buy control anywhere on the first screen.
-    // Wait for the buy control itself rather than a fixed pause: on a slow
-    // first load the page was still rendering at 1.2s and this check failed
-    // now and then although the button was on screen once it painted.
-    await page.waitForFunction(() => [...document.querySelectorAll('button')]
-      .some(b => /add to cart|out of stock/i.test(b.textContent || '') && !b.closest('.pdp-stickybuy, .pdp-grade-list'))
-      || document.querySelector('.pdp-stickybuy'), null, { timeout: 6000 }).catch(() => {});
-    await page.waitForTimeout(300);
+    // Wait (up to 6s) for a buy control to be visible on the first screen,
+    // rather than a fixed pause: the real button, or on a phone the sticky
+    // bar, which appears once the page has settled (~0.7s after it mounts).
+    await page.waitForFunction(() => {
+      const vh = window.innerHeight;
+      const onScreen = (el) => { const r = el?.getBoundingClientRect(); return !!r && r.width > 0 && r.top < vh && r.bottom > 0; };
+      const real = [...document.querySelectorAll('button')]
+        .find(b => /add to cart|out of stock/i.test(b.textContent || '') && !b.closest('.pdp-stickybuy, .pdp-grade-list'));
+      return onScreen(real) || onScreen(document.querySelector('.pdp-stickybuy'));
+    }, null, { timeout: 6000 }).catch(() => {});
     const buyOnFirstScreen = await page.evaluate(() => {
       const vh = window.innerHeight;
       const onScreen = (el) => { const r = el?.getBoundingClientRect(); return !!r && r.width > 0 && r.top < vh && r.bottom > 0; };

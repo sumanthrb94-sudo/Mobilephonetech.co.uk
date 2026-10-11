@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import { Truck } from 'lucide-react';
-import { CUTOFF_HOUR, addWorkdays, dispatchesSameDay } from '../../api/_deliveryEstimate';
+import { addWorkdays, dispatchesSameDay } from '../../api/_deliveryEstimate';
+import { DELIVERY_CUTOFF, DELIVERY_HEADLINE } from '../lib/deliveryCopy';
 
 /**
  * Delivery, as one line: there is one service, so there is nothing to pick.
@@ -25,15 +25,6 @@ export function dispatchLabel(now: Date): string {
 }
 
 export default function DeliveryNote() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const day = dispatchLabel(now);
-  const cutoff = `${CUTOFF_HOUR - 12}pm`;
-
   return (
     <div
       role="note"
@@ -47,11 +38,8 @@ export default function DeliveryNote() {
     >
       <Truck size={18} aria-hidden="true" style={{ color: 'var(--color-trust-text)', flexShrink: 0 }} />
       <span style={{ flex: 1, minWidth: 0, fontFamily: 'var(--font-body)', fontSize: '13px', color: 'var(--grey-60)', lineHeight: 1.4 }}>
-        <strong style={{ color: 'var(--black)', fontWeight: 700 }}>Free next-day delivery</strong>
-        {' — '}
-        {day === 'today'
-          ? <>order by {cutoff} for dispatch today</>
-          : <>dispatched {day}</>}
+        <strong style={{ color: 'var(--black)', fontWeight: 700 }}>{DELIVERY_HEADLINE}</strong>
+        {' — '}{DELIVERY_CUTOFF}
       </span>
       <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 800, color: 'var(--color-trust-text)', whiteSpace: 'nowrap' }}>FREE</span>
     </div>
