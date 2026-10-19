@@ -1,6 +1,6 @@
 import {
   collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp,
-  setDoc, updateDoc, where, limit as fsLimit,
+  setDoc, updateDoc, where, limit as fsLimit, orderBy,
 } from 'firebase/firestore';
 import {
   deleteObject, getDownloadURL, listAll, ref, uploadBytes,
@@ -580,7 +580,8 @@ export async function loadDashboardStats(): Promise<DashboardStats> {
   let ordersUnavailable = false;
 
   try {
-    const orderSnap = await getDocs(query(collection(db, COL.orders), fsLimit(500)));
+    // Newest 500, not the oldest: see listOrders (src/lib/orders.ts).
+    const orderSnap = await getDocs(query(collection(db, COL.orders), orderBy('createdAt', 'desc'), fsLimit(500)));
     const soldByProduct = new Map<string, number>();
     const today = new Date().toISOString().slice(0, 10);
     const sevenDaysAgo = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);

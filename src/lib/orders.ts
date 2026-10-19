@@ -1,4 +1,4 @@
-import { collection, getDocs, query, limit as fsLimit } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, limit as fsLimit } from 'firebase/firestore';
 import { auth, db, COL } from './firebase';
 import { sanitiseLocation } from '../utils/address';
 
@@ -118,7 +118,11 @@ function line(value: unknown): string {
 }
 
 export async function listOrders(): Promise<AdminOrder[]> {
-  const snap = await getDocs(query(collection(db, COL.orders), fsLimit(500)));
+  // Newest first IN THE QUERY. Without an orderBy Firestore returns documents
+  // by id, ascending, and order ids are ORD-<epoch ms>: so once there were more
+  // than 500 orders this screen kept the 500 OLDEST and the newest vanished.
+  // createdAt is a single field, which Firestore indexes automatically.
+  const snap = await getDocs(query(collection(db, COL.orders), orderBy('createdAt', 'desc'), fsLimit(500)));
 
   return snap.docs
     .map(d => {
@@ -158,8 +162,8 @@ export async function listOrders(): Promise<AdminOrder[]> {
         refundedAmount: o.refundedAmount ?? null,
       } satisfies AdminOrder;
     })
-    // Newest first. Firestore is not asked to order this because createdAt is a
-    // string field and a composite index for 500 rows buys nothing.
+    // Already newest first from the query; kept so a row with an odd createdAt
+    // cannot sit out of order.
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
