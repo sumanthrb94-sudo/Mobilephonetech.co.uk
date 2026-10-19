@@ -18,7 +18,7 @@ export const ASSISTANT_QUESTION_MAX = 500;
 export const ASSISTANT_PROMPT_MAX = 6000;
 
 /** Catalogue lines in one prompt, relevant models first. */
-const MAX_CATALOGUE_LINES = 20;
+const MAX_CATALOGUE_LINES = 40;
 /** Spec sheets in one prompt: each is about 1.5 KB even trimmed. */
 const MAX_SPEC_SHEETS = 2;
 /** The groups worth quoting; Network bands and Comms read as noise to a shopper. */
@@ -26,8 +26,17 @@ const SPEC_GROUPS = ['Launch', 'Body', 'Display', 'Platform', 'Memory', 'Main Ca
 
 export interface SpecEntry { model: string; specs: Record<string, unknown> }
 
-const words = (text: string): string[] =>
-  text.toLowerCase().split(/[^a-z0-9]+/).filter(word => word.length >= 3);
+/** Words that say nothing about WHICH device the shopper means. */
+const STOP_WORDS = new Set(['any', 'the', 'you', 'have', 'got', 'for', 'and', 'with', 'what', 'which', 'are', 'can', 'does', 'this', 'that', 'your', 'how', 'much', 'sell', 'stock', 'there', 'about', 'tell', 'show', 'best', 'good', 'cheap', 'cheapest']);
+
+/**
+ * The words in a question that could name a device, each with its singular:
+ * "watches" must find the Watch, "tablets" the Tab and "ipads" the iPad.
+ */
+export const questionStems = (text: string): string[][] =>
+  text.toLowerCase().split(/[^a-z0-9]+/)
+    .filter(word => word.length >= 3 && !STOP_WORDS.has(word))
+    .map(word => [...new Set([word, word.replace(/es$/, ''), word.replace(/s$/, '')])].filter(stem => stem.length >= 3));
 
 /** The spec sheets the question is about: its text contains the model name, or is a clear part of it. */
 export function relevantSpecs(question: string, specs: SpecEntry[]): SpecEntry[] {
@@ -58,7 +67,7 @@ function specSummary(entry: SpecEntry): string {
 
 /** What is for sale, one line per model (the cheapest unit), the ones the question names first. */
 export function catalogueLines(question: string, products: Product[]): { lines: string[]; more: number } {
-  const wanted = words(question);
+  const wanted = questionStems(question);
   const cheapest = new Map<string, Product>();
   for (const product of products) {
     if (!(product.stock > 0)) continue;
@@ -69,8 +78,10 @@ export function catalogueLines(question: string, products: Product[]): { lines: 
 
   const ranked = [...cheapest.values()]
     .map(product => {
-      const name = `${product.brand} ${product.model}`.toLowerCase();
-      return { product, score: wanted.filter(word => name.includes(word)).length };
+      // The category too, so "any watches?" or "tablets" finds them although no
+      // model is called that.
+      const name = `${product.brand} ${product.model} ${product.category ?? ''}`.toLowerCase();
+      return { product, score: wanted.filter(stems => stems.some(stem => name.includes(stem))).length };
     })
     .sort((a, b) => b.score - a.score || a.product.price - b.product.price);
 
@@ -101,7 +112,7 @@ SHOPPER'S QUESTION: ${question}
 RULES:
 1. Be concise, friendly and accurate; plain text, no markdown unless a list really helps.
 2. Quote prices and grades only from the list above; never invent a price, a stock level or a discount.
-3. If a model is not in the list, say it is not in stock at the moment rather than guessing.`;
+3. The list can be partial. If a model is not in it, do NOT say it is out of stock: say you cannot see it in the list you have and suggest searching the shop or asking the support team.`;
 
   // Shed detail, never fail: spec sheets go first (the biggest), then catalogue lines.
   let prompt = assemble();

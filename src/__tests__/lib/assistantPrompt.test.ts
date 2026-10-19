@@ -62,6 +62,34 @@ describe('buildAssistantPrompt', () => {
   });
 });
 
+describe('category and plural questions', () => {
+  // The list is capped, so a question that names no model used to get the 20
+  // cheapest handsets and the prompt then said anything missing was out of stock.
+  const phones = Array.from({ length: 50 }, (_, i) => product({ id: `ph${i}`, model: `Phone ${i}`, price: 100 + i }));
+  const watch = product({ id: 'w1', brand: 'Apple', model: 'Series 9', category: 'Smartwatches', price: 399 });
+  const tablet = product({ id: 't1', brand: 'Apple', model: 'iPad 10th Gen', category: 'Tablets', price: 349 });
+
+  it.each([['any watches?', 'Series 9'], ['do you sell smartwatches', 'Series 9'], ['tablets', 'iPad 10th Gen'], ['got any ipads']])(
+    'finds the right device for "%s" even behind fifty cheaper phones',
+    (question, expected = 'iPad 10th Gen') => {
+      const { lines } = catalogueLines(question, [...phones, watch, tablet]);
+      expect(lines[0]).toContain(expected);
+    },
+  );
+
+  it('does not tell the model that an unlisted model is out of stock', () => {
+    const prompt = buildAssistantPrompt({ question: 'any watches?', products: [...phones, watch], specs: [] });
+    expect(prompt).toContain('The list can be partial');
+    expect(prompt).not.toMatch(/not in the list, say it is not in stock/i);
+    expect(prompt).toContain('Series 9: from £399');
+  });
+
+  it('says how many more models there are when it shows a partial list', () => {
+    const prompt = buildAssistantPrompt({ question: 'hello', products: phones, specs: [] });
+    expect(prompt).toContain('(and 10 more models in stock)');
+  });
+});
+
 describe('relevantSpecs', () => {
   it('matches a model named in the question, with a cap of two sheets', () => {
     expect(relevantSpecs('compare the iphone 14 pro and Apple iPhone 13 and apple iphone 12 pro', specs)).toHaveLength(2);

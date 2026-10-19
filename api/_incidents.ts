@@ -10,9 +10,12 @@ import { orderAlertRecipients } from './_orderCore.js';
  * order, sat unseen until the customer complained. The row is still the
  * record; the email is what makes a human look at it.
  *
- * Alerting is best-effort and bounded: it must never be what fails a payment
- * or what holds a request past the platform's ceiling on a path that is
- * already running late, so it has a short deadline of its own.
+ * Alerting is best-effort and bounded: it can never be what FAILS a payment
+ * (nothing here throws), and it has a short deadline of its own so a hung mail
+ * provider cannot hold a request for long. It does not promise to fit inside
+ * the platform's ceiling: after PayPal's own 8 second deadline there may be
+ * no time left, which is why the row is written first and the email is the
+ * best-effort half.
  */
 
 /** Shorter than the default: these run on paths that have already failed. */
@@ -29,7 +32,7 @@ const NEXT_STEP: Record<string, string> = {
   'refund-failed': 'Open PayPal > Activity, find the payment (PayPal order / capture id below) and refund it by hand. The customer has not been told they are refunded.',
   'admin-refund-failed': 'Open PayPal > Activity and check whether the refund is there. If not, refund it from PayPal directly; the order is still marked as paid.',
   'refund-restock-failed': 'The customer is refunded. Put the units back on sale by hand in Admin > Products, then mark the order refunded.',
-  'capture-failed': 'PayPal did not answer in time, so we cannot tell whether the money was taken. Open PayPal > Activity and look for this PayPal order id. If a payment is there with no order, refund it.',
+  'capture-failed': 'PayPal did not give a clear answer, so we cannot tell whether the money was taken. Open PayPal > Activity and look for this PayPal order id. If a payment is there with no order, refund it.',
 };
 
 /** Fields worth putting in front of staff, in reading order. Nothing here is a secret. */
@@ -42,11 +45,14 @@ const FIELDS: Array<[string, string]> = [
 
 /**
  * A capture that failed with no verdict from PayPal (a timeout, a dropped
- * connection) may still have taken the money. A plain decline did not, and is
- * the shopper's problem, not an incident worth an email.
+ * connection, or PayPal itself answering 5xx) may still have taken the money.
+ * A plain decline did not, and is the shopper's problem, not an incident worth
+ * an email. api/_paypal.ts reports a non-2xx capture as "PayPal capture failed
+ * (<status>)" or with PayPal's own message, so 5xx and its wording are matched.
  */
 export function isAmbiguousFailure(error: unknown): boolean {
-  return /abort|timeout|timed out|fetch failed|network|econn|socket|enotfound|terminated/i.test(String(error ?? ''));
+  return /abort|timeout|timed out|fetch failed|network|econn|socket|enotfound|terminated|\(5\d\d\)|\(408\)|internal server error|service unavailable|bad gateway|gateway time/i
+    .test(String(error ?? ''));
 }
 
 export function incidentNeedsAlert(kind: string, detail: Record<string, unknown>): boolean {

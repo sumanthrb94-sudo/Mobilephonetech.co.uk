@@ -37,13 +37,17 @@ beforeEach(() => {
 
 describe('which incidents need an email', () => {
   it('treats a timeout or dropped connection as ambiguous: PayPal may have taken the money', () => {
-    for (const e of ['The operation was aborted due to timeout', 'fetch failed', 'This operation was aborted', 'read ECONNRESET']) {
+    for (const e of [
+      'The operation was aborted due to timeout', 'fetch failed', 'This operation was aborted', 'read ECONNRESET',
+      // PayPal itself failing is as "no verdict" as a timeout.
+      'PayPal capture failed (500)', 'PayPal capture failed (504)', 'An internal server error has occurred.', 'Bad Gateway',
+    ]) {
       expect(isAmbiguousFailure(e), e).toBe(true);
     }
   });
 
   it('does not treat a plain decline as an incident', () => {
-    for (const e of ['PayPal capture failed (422)', 'INSTRUMENT_DECLINED', 'The requested action could not be performed', null]) {
+    for (const e of ['PayPal capture failed (422)', 'PayPal capture failed (400)', 'INSTRUMENT_DECLINED', 'The requested action could not be performed', null]) {
       expect(isAmbiguousFailure(e), String(e)).toBe(false);
     }
     expect(incidentNeedsAlert('capture-failed', { paypalError: 'INSTRUMENT_DECLINED' })).toBe(false);
