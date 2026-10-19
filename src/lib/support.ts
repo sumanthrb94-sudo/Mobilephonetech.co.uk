@@ -1,6 +1,6 @@
 import {
   addDoc, collection, doc, getDoc, increment, limit, onSnapshot,
-  orderBy, query, serverTimestamp, setDoc, updateDoc,
+  orderBy, query, setDoc, updateDoc,
 } from 'firebase/firestore';
 import { db, COL } from './firebase';
 import type { SupportConversation, SupportMessage, MessageSender } from '../types';
@@ -69,7 +69,6 @@ export async function sendMessage(
     ...(sender === 'customer'
       ? { unreadForAdmin: increment(1) }
       : { unreadForCustomer: increment(1) }),
-    touchedAt: serverTimestamp(),
   });
 }
 

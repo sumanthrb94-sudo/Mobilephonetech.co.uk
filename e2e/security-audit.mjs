@@ -253,6 +253,15 @@ check('EXPLOIT', 'Customer edits a message after the fact',
 check('CONTROL', 'Customer marks their own support thread read',
   await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, { unreadForCustomer: 0 }));
 
+// The exact keys sendMessage() writes (src/lib/support.ts), as plain values
+// because the REST helper cannot express increment(). A key the rule does not
+// list is denied after the message has saved: that is what broke customer chat.
+check('CONTROL', 'Customer sends a message: the thread update sendMessage() makes',
+  await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, {
+    lastMessage: 'Is it unlocked?', lastMessageAt: new Date().toISOString(),
+    lastSender: 'customer', status: 'open', unreadForAdmin: 1,
+  }));
+
 check('EXPLOIT', 'Customer closes their own support thread (a staff decision)',
   await attemptUpdateAs(CUSTOMER_EMAIL, `conversations/${customerUid}`, { status: 'closed' }));
 

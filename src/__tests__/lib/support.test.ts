@@ -1,4 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, type Mock } from 'vitest';
+import { readFileSync } from 'node:fs';
 
 vi.mock('../../lib/firebase', () => ({
   db: {},
@@ -11,7 +12,8 @@ vi.mock('firebase/firestore', () => ({
   query: vi.fn(), serverTimestamp: vi.fn(), setDoc: vi.fn(), updateDoc: vi.fn(),
 }));
 
-const { relativeTime, MAX_MESSAGE_LENGTH } = await import('../../lib/support');
+const { relativeTime, MAX_MESSAGE_LENGTH, sendMessage } = await import('../../lib/support');
+const { updateDoc } = await import('firebase/firestore');
 
 describe('relativeTime', () => {
   const now = new Date('2026-08-21T12:00:00Z').getTime();
@@ -52,5 +54,27 @@ describe('relativeTime', () => {
 describe('message limits', () => {
   it('caps message length', () => {
     expect(MAX_MESSAGE_LENGTH).toBe(2000);
+  });
+});
+
+describe('sendMessage against the Firestore rules', () => {
+  // The conversation update a customer makes when they send a message must
+  // only touch keys the rule lets a customer change. An extra key (it was
+  // `touchedAt`) is denied by the rules AFTER the message itself has saved,
+  // so the customer saw an error, retried, and staff never saw the unread
+  // count. Reading the allowed keys from the rules file itself means this
+  // fails the moment either side drifts.
+  it('writes only keys the conversations rule allows a customer to update', async () => {
+    await sendMessage('uid-1', 'Hello, is it unlocked?', 'customer', 'Ann');
+
+    const written = Object.keys((updateDoc as Mock).mock.calls.at(-1)![1] as Record<string, unknown>);
+    const rules = readFileSync('firestore.rules', 'utf8');
+    const block = rules.slice(rules.indexOf('match /conversations/{convId}'));
+    const list = /affectedKeys\(\)\.hasOnly\(\[([^\]]*)\]/.exec(block);
+    expect(list, 'conversations update rule lists its allowed keys').not.toBeNull();
+    const allowed = [...list![1].matchAll(/'(\w+)'/g)].map(m => m[1]);
+
+    expect(written.filter(key => !allowed.includes(key))).toEqual([]);
+    expect(written).toEqual(expect.arrayContaining(['lastMessage', 'lastMessageAt', 'lastSender', 'status', 'unreadForAdmin']));
   });
 });
