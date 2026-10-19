@@ -49,10 +49,13 @@ await seedDoc('returns', 'RMA-VICTIM', {
   customerEmail: VICTIM_EMAIL, refundAmount: 759, items: [{ productId: 'x', quantity: 1, price: 759 }],
   history: [], photoUrls: [], createdAt: new Date().toISOString(),
 });
+// The one history entry a new return carries; a legitimate cancel must keep it
+// exactly as it is and append its own.
+const RMA_FIRST_ENTRY = { status: 'requested', at: '2026-10-01T09:00:00.000Z', by: 'customer' };
 await seedDoc('returns', 'RMA-MINE', {
   userId: customerUid, orderId: 'ORD-MINE', status: 'requested', outcome: 'refund',
   customerEmail: CUSTOMER_EMAIL, refundAmount: 759, items: [{ productId: 'x', quantity: 1, price: 759 }],
-  history: [{ status: 'requested', at: new Date().toISOString(), by: 'customer' }],
+  history: [RMA_FIRST_ENTRY],
   photoUrls: [], staffNote: null, createdAt: new Date().toISOString(),
 });
 await seedDoc('newsletterSubscribers', 'victim@example.com', {
@@ -141,13 +144,36 @@ check('EXPLOIT', 'Customer cancels their return while rewriting the email addres
   }),
   'a cancel may change status, updatedAt and history only');
 
+const CANCEL_AT = new Date().toISOString();
+const CANCEL_ENTRY = { status: 'cancelled', at: CANCEL_AT, by: 'customer' };
+
+check('EXPLOIT', 'Customer cancels their return and forges a staff entry in its history',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
+    status: 'cancelled', updatedAt: CANCEL_AT,
+    history: [RMA_FIRST_ENTRY, { status: 'approved', at: CANCEL_AT, by: 'admin', note: 'Refund promised' }],
+  }),
+  'the history is the record of who decided what');
+
+check('EXPLOIT', 'Customer cancels their return and rewrites its earlier history',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
+    status: 'cancelled', updatedAt: CANCEL_AT,
+    history: [{ status: 'approved', at: CANCEL_AT, by: 'admin' }, CANCEL_ENTRY],
+  }));
+
+check('EXPLOIT', 'Customer cancels their return and stores a history that is not a list',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
+    status: 'cancelled', updatedAt: CANCEL_AT, history: 'x',
+  }),
+  'it crashes the staff Returns screen when the row is opened');
+
+check('EXPLOIT', 'Customer cancels their return without adding their own history entry',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
+    status: 'cancelled', updatedAt: CANCEL_AT, history: [RMA_FIRST_ENTRY],
+  }));
+
 check('CONTROL', 'Customer cancels their own return: the update cancelReturn() makes',
   await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
-    status: 'cancelled', updatedAt: new Date().toISOString(),
-    history: [
-      { status: 'requested', at: new Date().toISOString(), by: 'customer' },
-      { status: 'cancelled', at: new Date().toISOString(), by: 'customer' },
-    ],
+    status: 'cancelled', updatedAt: CANCEL_AT, history: [RMA_FIRST_ENTRY, CANCEL_ENTRY],
   }));
 
 console.log('\n─── EXPLOITS: money and trust ───');

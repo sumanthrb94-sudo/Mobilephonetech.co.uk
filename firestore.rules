@@ -240,7 +240,21 @@ service cloud.firestore {
                         && resource.data.status == 'requested'
                         && request.resource.data.status == 'cancelled'
                         && request.resource.data.diff(resource.data).affectedKeys()
-                             .hasOnly(['status', 'updatedAt', 'history']));
+                             .hasOnly(['status', 'updatedAt', 'history'])
+                        // The values too, not just the keys: the history is the
+                        // record of who decided what. A cancel keeps every
+                        // existing entry as it was and appends exactly one,
+                        // the customer's own, so a customer cannot forge a
+                        // staff entry ("refund promised") or store something
+                        // that is not a list, which crashes the staff
+                        // Returns screen when the row is opened.
+                        && request.resource.data.updatedAt is string
+                        && request.resource.data.history is list
+                        && request.resource.data.history.size() == resource.data.history.size() + 1
+                        && request.resource.data.history[0:resource.data.history.size()] == resource.data.history
+                        && request.resource.data.history[resource.data.history.size()].status == 'cancelled'
+                        && request.resource.data.history[resource.data.history.size()].by == 'customer'
+                        && request.resource.data.history[resource.data.history.size()].at is string);
 
       allow delete: if false;
     }
