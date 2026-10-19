@@ -124,6 +124,38 @@ describe('Brevo', () => {
   });
 });
 
+describe('the send deadline', () => {
+  // sendEmail is awaited inside the PayPal capture after the order is written.
+  // Without a deadline a provider that hangs leaves the shopper on "payment
+  // could not be completed" for an order that exists.
+  it('gives every send an abort signal that has not fired', async () => {
+    process.env.RESEND_API_KEY = 're_test';
+    let signal: AbortSignal | undefined;
+    globalThis.fetch = (async (_url: string, init: { signal?: AbortSignal }) => {
+      signal = init.signal;
+      return { ok: true, status: 200, json: async () => ({ id: 'res_1' }), text: async () => '' };
+    }) as unknown as typeof fetch;
+
+    await send();
+    expect(signal).toBeInstanceOf(AbortSignal);
+    expect(signal!.aborted).toBe(false);
+  });
+
+  it('reports a send that hangs past its deadline as failed, without throwing', async () => {
+    process.env.BREVO_API_KEY = 'xkeysib-test';
+    // A provider that never answers: only the deadline can end this fetch.
+    globalThis.fetch = ((_url: string, init: { signal: AbortSignal }) =>
+      new Promise((_resolve, reject) => {
+        init.signal.addEventListener('abort', () => reject(init.signal.reason));
+      })) as unknown as typeof fetch;
+
+    const { sendEmail } = await import('../../../api/_email.js');
+    const result = await sendEmail({ to: 'ram@example.com', subject: 's', html: '<p>x</p>', text: 'x', timeoutMs: 30 });
+    expect(result.sent).toBe(false);
+    expect(result.error).toBeTruthy();
+  });
+});
+
 describe('what does not change with the provider', () => {
   it('warns about an unauthenticatable sender either way', async () => {
     const { senderDomainWarning } = await import('../../../api/_email.js');

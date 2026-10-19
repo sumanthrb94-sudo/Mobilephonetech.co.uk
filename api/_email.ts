@@ -101,6 +101,18 @@ export function looksLikeEmail(value: unknown): value is string {
   return typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
 }
 
+/**
+ * How long a send may take before we give up on it.
+ *
+ * sendEmail used to be the one outbound call with no deadline (PayPal, SMS and
+ * Brevo contacts all have one). It is awaited inside the PayPal capture AFTER
+ * the order is written, so a provider that accepted the connection and then
+ * hung left the customer on "payment could not be completed" until the
+ * platform killed the function, for an order that existed and a payment that
+ * had succeeded. Five seconds is generous for one API call.
+ */
+export const EMAIL_TIMEOUT_MS = 5_000;
+
 export async function sendEmail(params: {
   to: string;
   toName?: string;
@@ -110,6 +122,8 @@ export async function sendEmail(params: {
   replyTo?: string;
   /** Filter tag, so sends can be found in the provider's dashboard. */
   tag?: string;
+  /** Override the deadline (default EMAIL_TIMEOUT_MS), e.g. a shorter one on a path already running late. */
+  timeoutMs?: number;
 }): Promise<EmailResult> {
   if (!emailConfigured()) {
     return { sent: false, skipped: 'No email provider key, or EMAIL_FROM is not set' };
@@ -181,6 +195,7 @@ export async function sendEmail(params: {
       method: 'POST',
       headers: request.headers,
       body: JSON.stringify(request.body),
+      signal: AbortSignal.timeout(params.timeoutMs ?? EMAIL_TIMEOUT_MS),
     });
 
     if (!res.ok) {
