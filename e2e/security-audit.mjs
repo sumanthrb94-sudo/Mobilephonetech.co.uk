@@ -49,6 +49,12 @@ await seedDoc('returns', 'RMA-VICTIM', {
   customerEmail: VICTIM_EMAIL, refundAmount: 759, items: [{ productId: 'x', quantity: 1, price: 759 }],
   history: [], photoUrls: [], createdAt: new Date().toISOString(),
 });
+await seedDoc('returns', 'RMA-MINE', {
+  userId: customerUid, orderId: 'ORD-MINE', status: 'requested', outcome: 'refund',
+  customerEmail: CUSTOMER_EMAIL, refundAmount: 759, items: [{ productId: 'x', quantity: 1, price: 759 }],
+  history: [{ status: 'requested', at: new Date().toISOString(), by: 'customer' }],
+  photoUrls: [], staffNote: null, createdAt: new Date().toISOString(),
+});
 await seedDoc('newsletterSubscribers', 'victim@example.com', {
   email: 'victim@example.com', isActive: true,
   consent: { at: '2026-01-01T00:00:00Z', source: 'website-signup', method: 'single-opt-in' },
@@ -124,6 +130,25 @@ check('EXPLOIT', "Customer resolves another shopper's return",
 check('EXPLOIT', 'Customer marks their OWN return resolved',
   await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-VICTIM', { status: 'resolved' }),
   'self-service refund approval');
+
+// The return emails quote the stored address and staff note, in the shop's
+// name. A cancel that can also rewrite them turns return-notify into a
+// phishing relay, which is why the create rule pins both.
+check('EXPLOIT', 'Customer cancels their return while rewriting the email address and staff note',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
+    status: 'cancelled', updatedAt: new Date().toISOString(),
+    customerEmail: 'victim-of-phishing@example.com', staffNote: 'Click here to claim your refund',
+  }),
+  'a cancel may change status, updatedAt and history only');
+
+check('CONTROL', 'Customer cancels their own return: the update cancelReturn() makes',
+  await attemptUpdateAs(CUSTOMER_EMAIL, 'returns/RMA-MINE', {
+    status: 'cancelled', updatedAt: new Date().toISOString(),
+    history: [
+      { status: 'requested', at: new Date().toISOString(), by: 'customer' },
+      { status: 'cancelled', at: new Date().toISOString(), by: 'customer' },
+    ],
+  }));
 
 console.log('\n─── EXPLOITS: money and trust ───');
 

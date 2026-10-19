@@ -47,7 +47,7 @@ function bodyFor(kind: Kind, r: any): { html: string; text: string } {
     },
     rejected: {
       lead: 'We are not able to accept this return.',
-      detail: r.staffNote ? esc(r.staffNote) : 'Reply to this email and we will explain and look at it again.',
+      detail: r.staffNote ? esc(String(r.staffNote).slice(0, 1000)) : 'Reply to this email and we will explain and look at it again.',
     },
     resolved: {
       lead: r.outcome === 'refund'
@@ -119,6 +119,14 @@ export default async function handler(req: any, res: any) {
   const isAdmin = await callerIsAdmin(req);
   if (!isAdmin && record.userId !== caller.uid) {
     return res.status(403).json({ error: 'Not your return' });
+  }
+
+  // A customer may only trigger the acknowledgement of their own new request.
+  // Approved, rejected and resolved are staff decisions, announced by staff:
+  // letting the owner ask for them made this a way to have the shop's domain
+  // send "your refund has been issued" (and a note) to any return they hold.
+  if (!isAdmin && (kind !== 'received' || record.status !== 'requested')) {
+    return res.status(403).json({ error: 'Only staff can send that message' });
   }
 
   // Recipient comes from the stored document, never the request.

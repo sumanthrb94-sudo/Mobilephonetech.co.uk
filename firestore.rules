@@ -230,12 +230,17 @@ service cloud.firestore {
                     && request.resource.data.refundAmount <= get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.total;
 
       // The customer's only permitted edit is cancelling a request staff have
-      // not yet acted on.
+      // not yet acted on, and a cancel changes exactly the three fields
+      // src/lib/returns.ts cancelReturn writes. Without the key check a cancel
+      // could also rewrite customerEmail and staffNote, which the create rule
+      // above pins for the reason it gives: the return emails quote both.
       allow update: if isAdmin()
                     || (signedIn()
                         && resource.data.userId == request.auth.uid
                         && resource.data.status == 'requested'
-                        && request.resource.data.status == 'cancelled');
+                        && request.resource.data.status == 'cancelled'
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                             .hasOnly(['status', 'updatedAt', 'history']));
 
       allow delete: if false;
     }
