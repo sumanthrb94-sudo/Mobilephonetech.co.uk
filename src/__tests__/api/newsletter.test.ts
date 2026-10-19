@@ -32,6 +32,12 @@ vi.mock('../../../api/_firebaseAdmin.js', () => ({
   callerIsAdmin: () => Promise.resolve(false),
 }));
 
+const sendEmail = vi.fn(async (_p: unknown) => ({ sent: true } as { sent: boolean; skipped?: string; error?: string }));
+vi.mock('../../../api/_email.js', async (orig) => {
+  const actual = await orig<typeof import('../../../api/_email.js')>();
+  return { ...actual, sendEmail: (p: unknown) => sendEmail(p) };
+});
+
 // Import after mock
 const { default: handler } = await import('../../../api/_routes/newsletter');
 
@@ -187,5 +193,57 @@ describe('an address that opted out', () => {
     const r = res();
     await handler(req('POST', { email: 'gone@example.com' }), r);
     expect(r.statusCode).toBe(409);
+  });
+});
+
+describe('an address that is already subscribed', () => {
+  const original = {
+    email: 'regular@example.com', name: 'Regular Reader', isActive: true,
+    subscribedAt: '2026-06-01T10:00:00Z',
+    consent: { at: '2026-06-01T10:00:00Z', source: 'homepage-footer', policyVersion: '2026-06-01', method: 'single-opt-in' },
+  };
+
+  beforeEach(() => {
+    resetRateLimits();
+    setDocs.length = 0;
+    sendEmail.mockClear();
+    callerEmail = null;
+  });
+
+  it('is not sent another welcome email, so the form cannot be used to mail-bomb an address', async () => {
+    stored = { ...original };
+    const r = res();
+    await handler(req('POST', { email: 'regular@example.com' }), r);
+
+    expect(r.statusCode).toBe(200);
+    expect(sendEmail).not.toHaveBeenCalled();
+    expect((r.body as any).welcomeEmail).toBe('already subscribed');
+  });
+
+  it('keeps the original consent record and name rather than overwriting them', async () => {
+    // Anyone can submit anyone's address. The consent evidence is the owner's
+    // original signup, not whoever typed it last.
+    stored = { ...original };
+    await handler(req('POST', { email: 'regular@example.com', source: 'popup' }), res());
+    expect(setDocs).toHaveLength(0);
+  });
+
+  it('still welcomes a genuinely new subscriber exactly once', async () => {
+    stored = null;
+    const r = res();
+    await handler(req('POST', { email: 'brand-new@example.com' }), r);
+
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect((sendEmail.mock.calls[0][0] as { tag: string }).tag).toBe('newsletter-welcome');
+    expect(setDocs).toHaveLength(1);
+  });
+
+  it('welcomes an owner who comes back after opting out, signed in as that address', async () => {
+    stored = { email: 'back@example.com', isActive: false, unsubscribedAt: '2026-09-01T00:00:00Z' };
+    callerEmail = 'back@example.com';
+    await handler(req('POST', { email: 'back@example.com' }), res());
+
+    expect(setDocs[0]).toMatchObject({ isActive: true });
+    expect(sendEmail).toHaveBeenCalledTimes(1);
   });
 });

@@ -65,7 +65,15 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    await db.collection('newsletterSubscribers').doc(normalised).set({
+    // Someone already subscribed is left exactly as they are. Re-submitting an
+    // address (a visitor retrying, or anyone typing someone else's) used to
+    // overwrite the original consent record with a fresh one, wipe the name,
+    // and send another welcome email: with a limit of 10 a minute per instance
+    // that is a mail-bomb from the shop's domain and a way to burn the Brevo
+    // daily quota that order confirmations and the staff new-order alert share.
+    const alreadySubscribed = prior?.isActive === true;
+
+    if (!alreadySubscribed) await db.collection('newsletterSubscribers').doc(normalised).set({
       email: normalised,
       name: name?.trim() ?? null,
       isActive: true,
@@ -112,6 +120,7 @@ export default async function handler(req: any, res: any) {
         attributes: { SIGNUP_SOURCE: consentSource, POLICY_VERSION: PRIVACY_POLICY_VERSION },
       }),
       (async () => {
+        if (alreadySubscribed) return { sent: false, skipped: 'already subscribed' };
         const mail = welcomeEmail({ name: name?.trim() ?? null });
         return sendEmail({
           to: normalised,
