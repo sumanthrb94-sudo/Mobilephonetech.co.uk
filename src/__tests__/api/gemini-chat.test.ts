@@ -123,9 +123,26 @@ describe('POST /api/gemini-chat', () => {
   it('refuses a prompt longer than the cap without calling the model', async () => {
     process.env.GEMINI_API_KEY = 'k';
     const r = res();
-    await handler(req('POST', { prompt: 'x'.repeat(2001) }), r);
+    await handler(req('POST', { prompt: 'x'.repeat(8001) }), r);
     expect(r.statusCode).toBe(400);
     expect(mockGenerateContent).not.toHaveBeenCalled();
+  });
+
+  it('accepts a widget-sized prompt', async () => {
+    // The Tech Advisor widget sends up to 6,000 characters. The cap used to be
+    // 2,000, so every real question got a 400 and the widget never answered.
+    process.env.GEMINI_API_KEY = 'k';
+    mockGenerateContent.mockResolvedValueOnce({ text: 'ok' });
+    const r = res();
+    await handler(req('POST', { prompt: 'x'.repeat(6000) }), r);
+    expect(r.statusCode).toBe(200);
+  });
+
+  it('caps the length of the answer it pays for', async () => {
+    process.env.GEMINI_API_KEY = 'k';
+    mockGenerateContent.mockResolvedValueOnce({ text: 'ok' });
+    await handler(req('POST', { prompt: 'hi' }), res());
+    expect(mockGenerateContent.mock.calls[0][0].config).toEqual({ maxOutputTokens: 700 });
   });
 
   it('rate-limits before the key check, so a probe cannot detect config', async () => {

@@ -3,6 +3,7 @@ import { Send, X, Bot, Sparkles, User, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCatalogue } from '../context/CatalogueContext';
 import { useBreakpoint } from '../hooks/useBreakpoint';
+import { buildAssistantPrompt, ASSISTANT_QUESTION_MAX } from '../lib/assistantPrompt';
 
 /**
  * AIAssistant — floating tech-advisor chat.
@@ -46,33 +47,8 @@ export default function AIAssistant() {
 
     try {
       const gsmarenaData = await loadGsmarena();
-      const relevantData = gsmarenaData.filter(d =>
-        userMessage.toLowerCase().includes(d.model.toLowerCase()) ||
-        d.model.toLowerCase().includes(userMessage.toLowerCase())
-      );
-
-      const prompt = `
-        You are the Shopping Assistant for "LeHart", a global retail store for refurbished mobile technology.
-        Your goal is to help users navigate our catalog of smartphones, chargers, and accessories.
-
-        CATALOG HIGHLIGHTS (OUR INVENTORY):
-        ${products.map(p => `${p.model} (${p.brand}): £${p.price}, Grade: ${p.grade}`).join('\n')}
-
-        DEEP TECHNICAL KNOWLEDGE (FROM GSMARENA):
-        ${relevantData.length > 0
-          ? relevantData.map(d => `MODEL: ${d.model}\nSPECS: ${JSON.stringify(d.specs)}`).join('\n---\n')
-          : "Use your general knowledge for technical specs if not listed above."
-        }
-
-        USER QUESTION: ${userMessage}
-
-        INSTRUCTIONS:
-        1. Act like an expert tech advisor from a leading retail brand.
-        2. Use the GSMArena data to provide highly accurate technical details (e.g., sensor sizes, battery chemistry, precise weights).
-        3. Cross-reference with OUR INVENTORY to mention current pricing and condition (Grades).
-        4. If the user asks about a phone we have in stock, prioritize those details.
-        5. Keep responses concise, professional, and helpful. Do not use markdown styling unless necessary.
-      `;
+      // Bounded however large the catalogue gets: see src/lib/assistantPrompt.ts.
+      const prompt = buildAssistantPrompt({ question: userMessage, products, specs: gsmarenaData });
 
       const res = await fetch('/api/gemini-chat', {
         method: 'POST',
@@ -218,7 +194,7 @@ export default function AIAssistant() {
             <div style={{ padding: 'var(--spacing-20) var(--spacing-24)', borderTop: '1px solid var(--grey-10)', background: 'var(--grey-0)' }}>
               <div style={{ position: 'relative' }}>
                 <input
-                  type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                  type="text" value={input} maxLength={ASSISTANT_QUESTION_MAX} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                   placeholder="Ask about a phone..."
                   style={{
                     width: '100%', padding: '14px 48px 14px 16px', background: 'var(--grey-5)', border: '1px solid var(--grey-10)',
