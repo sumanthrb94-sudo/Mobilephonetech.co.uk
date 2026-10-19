@@ -139,6 +139,11 @@ describe('POST /api/order-refund', () => {
     expect(order().status).toBe('pending');
     expect(stock()).toBe(4);
     expect(incidents()[0]).toMatchObject({ kind: 'admin-refund-failed', orderId: 'ORD-1' });
+    // A row nobody reads is money that sits unseen: staff are emailed as well.
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect((sendEmail.mock.calls[0] as unknown as [{ subject: string; tag: string }])[0]).toMatchObject({
+      tag: 'payment-incident', subject: expect.stringContaining('ACTION NEEDED'),
+    });
   });
 
   it('looks the capture up for an order saved before capture ids were stored', async () => {
@@ -167,5 +172,7 @@ describe('POST /api/order-refund', () => {
       kind: 'refund-restock-failed', orderId: 'ORD-1', refunded: true,
     });
     expect(out.body.error).toContain('do not refund again');
+    expect(sendEmail).toHaveBeenCalledTimes(1);
+    expect((sendEmail.mock.calls[0] as unknown as [{ subject: string }])[0].subject).toContain('stock was not put back');
   });
 });

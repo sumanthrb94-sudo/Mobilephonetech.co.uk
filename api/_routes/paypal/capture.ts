@@ -3,6 +3,7 @@ import { enforceRateLimit } from '../../_rateLimit.js';
 import { previewModeFrom, PREVIEW_MESSAGE } from '../../../src/config/preview.js';
 import { priceAndValidate, commitOrder, finalizeOrder, money, StockConflict } from '../../_orderCore.js';
 import { paypalConfigured, capturePayPalOrder, refundCapture } from '../../_paypal.js';
+import { recordPaymentIncident } from '../../_incidents.js';
 
 /**
  * Step 2 of PayPal checkout: take the money, then — only if everything agrees
@@ -33,20 +34,10 @@ import { paypalConfigured, capturePayPalOrder, refundCapture } from '../../_payp
  * because PayPal may have taken the money even though we never saw the reply.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function recordIncident(db: any, kind: string, detail: Record<string, unknown>): Promise<void> {
-  console.error(`[paypal/capture] ${kind}`, JSON.stringify(detail));
-  try {
-    await db.collection('payment_incidents').add({
-      kind,
-      resolved: false,
-      createdAt: new Date().toISOString(),
-      ...detail,
-    });
-  } catch (err) {
-    // Nothing left to do but shout. Losing the log too is why this is loud.
-    console.error(`[paypal/capture] COULD NOT RECORD ${kind}:`, (err as Error).message);
-  }
-}
+const recordIncident = (db: any, kind: string, detail: Record<string, unknown>): Promise<void> =>
+  // Records the row AND emails staff (api/_incidents.ts): a row nobody reads is
+  // money that sits unseen until the customer complains.
+  recordPaymentIncident(db, 'paypal/capture', kind, detail);
 
 /**
  * Mark that we are about to take money, before we take it.

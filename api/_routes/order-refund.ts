@@ -4,6 +4,7 @@ import { sendEmail } from '../_email.js';
 import { orderRefundedEmail } from '../_templates.js';
 import { restockOrder } from '../_orderCore.js';
 import { paypalConfigured, refundCapture, lookupCaptureId } from '../_paypal.js';
+import { recordPaymentIncident } from '../_incidents.js';
 
 /**
  * Refund an order in full and put its stock back.
@@ -23,16 +24,9 @@ import { paypalConfigured, refundCapture, lookupCaptureId } from '../_paypal.js'
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function recordIncident(db: any, kind: string, detail: Record<string, unknown>): Promise<void> {
-  console.error(`[order-refund] ${kind}`, JSON.stringify(detail));
-  try {
-    await db.collection('payment_incidents').add({
-      kind, resolved: false, createdAt: new Date().toISOString(), ...detail,
-    });
-  } catch (err) {
-    console.error(`[order-refund] COULD NOT RECORD ${kind}:`, (err as Error).message);
-  }
-}
+const recordIncident = (db: any, kind: string, detail: Record<string, unknown>): Promise<void> =>
+  // Records the row AND emails staff (api/_incidents.ts).
+  recordPaymentIncident(db, 'order-refund', kind, detail);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
