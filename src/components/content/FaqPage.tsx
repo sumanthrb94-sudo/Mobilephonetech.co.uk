@@ -29,7 +29,7 @@ const SECTIONS: { title: string; items: QA[] }[] = [
     title: 'Warranty & returns',
     items: [
       { q: 'How long is the warranty?',          a: '12 months on every device, every grade. Covers manufacturing defects, battery health, and any functional issue that isn\'t accidental damage, liquid ingress or unauthorised repairs.' },
-      { q: 'What\'s the returns window?',        a: '30 days from delivery, no questions asked. We email a prepaid Royal Mail return label; refund processed within 3-5 business days of receipt.' },
+      { q: 'What\'s the returns window?',        a: '14 days from delivery to change your mind, no reason needed, or 30 days for a full refund if the device is faulty. We email a prepaid, tracked return label; there is no doorstep collection. The refund is made within 14 days of the device reaching us.' },
       { q: 'Do you repair or replace?',          a: 'Faster route wins. If we can repair in under 48 hours we will; otherwise we replace with an equivalent-or-better device.' },
     ],
   },

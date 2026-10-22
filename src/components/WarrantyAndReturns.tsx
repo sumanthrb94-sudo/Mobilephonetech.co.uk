@@ -72,14 +72,14 @@ export default function WarrantyAndReturns() {
             <div style={{ width: '56px', height: '56px', background: 'var(--green-10)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--green-60)', marginBottom: '24px' }}>
               <Truck size={28} />
             </div>
-            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>30-Day Returns</h3>
+            <h3 style={{ fontFamily: 'var(--font-sans)', fontSize: '24px', fontWeight: 800, color: 'var(--black)', marginBottom: '16px' }}>Free Returns</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
               {[
-                'Full refund within 30 days',
-                'Free return shipping label provided',
-                'Simple, no-questions-asked process',
-                'Refund processed in 3-5 business days',
-                'Secure doorstep collection available'
+                '14 days to change your mind, no reason needed',
+                'Full refund within 30 days if it is faulty',
+                'Free prepaid, tracked return label',
+                'Refund within 14 days of the device reaching us',
+                'Refunded to your original payment method'
               ].map((text, i) => (
                 <div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                   <CheckCircle2 size={18} style={{ color: 'var(--color-trust-text)', flexShrink: 0, marginTop: '2px' }} />
