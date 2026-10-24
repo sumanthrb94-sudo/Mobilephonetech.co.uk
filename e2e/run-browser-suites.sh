@@ -24,6 +24,7 @@ run() {
 }
 run node e2e/admin.mjs
 run node e2e/catalogue-import.mjs
+run node e2e/stock-sync.mjs
 run node -e "import('./e2e/emulator-seed.mjs').then(m => m.seed())"
 run node e2e/checkout.mjs
 run node e2e/csp.mjs

@@ -32,6 +32,7 @@ export default function AdminLayout() {
             <NavLink to="/admin/returns" style={navLinkStyle}>Returns</NavLink>
             <NavLink to="/admin/support" style={navLinkStyle}>Support</NavLink>
             <NavGroup label="Shop setup" links={[
+              ['/admin/stock-sync', 'Stock sync'],
               ['/admin/catalogue-import', 'Catalogue import'],
               ['/admin/banners', 'Banners'],
               ['/admin/home', 'Home layout'],

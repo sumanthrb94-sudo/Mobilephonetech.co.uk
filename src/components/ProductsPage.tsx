@@ -251,6 +251,7 @@ export default function ProductsPage() {
       if (filters.grade.length > 0 && !filters.grade.includes(phone.grade)) return false;
       if (phone.price < filters.priceRange[0] || phone.price > filters.priceRange[1]) return false;
       if (filters.storage.length > 0 && phone.specs.storage && !filters.storage.includes(phone.specs.storage)) return false;
+      if (filters.inStockOnly && !(phone.stock > 0)) return false;
       return true;
     });
   }, [scopedProducts, searchQuery, filters]);
@@ -300,7 +301,7 @@ export default function ProductsPage() {
   const hasActiveFilters =
     filters.brand.length > 0 || filters.grade.length > 0 || (filters.category && filters.category.length > 0) ||
     filters.priceRange[0] !== 0 || filters.priceRange[1] !== priceCap ||
-    filters.storage.length > 0;
+    filters.storage.length > 0 || Boolean(filters.inStockOnly);
 
   const brandTitle = brandParam ? brandParam.charAt(0).toUpperCase() + brandParam.slice(1).toLowerCase() : '';
   // Strip leading brand name from modelParam to avoid "Samsung Samsung Galaxy Z"
@@ -375,6 +376,15 @@ export default function ProductsPage() {
               onChange={() => handleBrandToggle(brand)}
             />
           ))}
+        </FilterGroup>
+
+        {/* Availability */}
+        <FilterGroup title="Availability">
+          <FilterCheckbox
+            label="In stock only"
+            checked={Boolean(filters.inStockOnly)}
+            onChange={() => setFilters({ ...filters, inStockOnly: !filters.inStockOnly })}
+          />
         </FilterGroup>
 
         {/* Condition */}
@@ -605,7 +615,7 @@ export default function ProductsPage() {
                     <span>Filters</span>
                     {hasActiveFilters && (
                       <span
-                        aria-label={`${filters.brand.length + filters.grade.length} active filters`}
+                        aria-label={`${filters.brand.length + filters.grade.length + (filters.category?.length || 0) + (filters.inStockOnly ? 1 : 0)} active filters`}
                         style={{
                           display: 'inline-flex',
                           alignItems: 'center',
@@ -620,7 +630,7 @@ export default function ProductsPage() {
                           fontWeight: 700,
                         }}
                       >
-                        {filters.brand.length + filters.grade.length + (filters.category?.length || 0)}
+                        {filters.brand.length + filters.grade.length + (filters.category?.length || 0) + (filters.inStockOnly ? 1 : 0)}
                       </span>
                     )}
                   </button>
@@ -654,6 +664,9 @@ export default function ProductsPage() {
                   {filters.storage.map((s) => (
                     <FilterChip key={`s-${s}`} label={`Storage: ${s}`} onClear={() => setFilters({ ...filters, storage: filters.storage.filter(x => x !== s) })} />
                   ))}
+                  {filters.inStockOnly && (
+                    <FilterChip label="In stock only" onClear={() => setFilters({ ...filters, inStockOnly: false })} />
+                  )}
                   {(filters.priceRange[0] !== 0 || filters.priceRange[1] !== priceCap) && (
                     <FilterChip
                       label={`£${filters.priceRange[0]} – £${filters.priceRange[1] === priceCap ? `${priceCap}+` : filters.priceRange[1]}`}

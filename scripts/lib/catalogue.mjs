@@ -29,6 +29,11 @@ export function brandOf(model) {
   if (/\b(IPHONE|IPAD|IWATCH|APPLE|MACBOOK)\b/.test(m)) return 'Apple';
   if (/\b(GALAXY|SAMSUNG)\b/.test(m) || /^S\d\d/.test(m)) return 'Samsung';
   if (/\b(PIXEL|GOOGLE)\b/.test(m)) return 'Google';
+  // Written without the brand in the stock app, so recognised by model.
+  if (/\bX\s*COVER\b/.test(m)) return 'Samsung';
+  if (/\bHUAWEI\b/.test(m) || /^P\d{2}\b/.test(m)) return 'Huawei';
+  if (/\b(MOTOROLA|MOTO)\b/.test(m) || /^G\s*(POWER\s*|PLAY\s*|STYLUS\s*)?20\d\d\b/.test(m)) return 'Motorola';
+  if (/\bDORO\b/.test(m)) return 'Doro';
   return 'Other';
 }
 
@@ -54,7 +59,9 @@ export function canonicalModel(raw) {
   if (!m) return '';
 
   // "SAMSUNG GALAXY A32 5G" -> "GALAXY A32 5G"; "APPLE IPHONE 8" -> "IPHONE 8".
-  m = m.replace(/^(SAMSUNG|APPLE|GOOGLE)\s+/i, '');
+  m = m.replace(/^(SAMSUNG|APPLE|GOOGLE|HUAWEI|MOTOROLA|DORO)\s+/i, '');
+  // "G 2024" is a Moto G; the family word is what shoppers search for.
+  if (brandOf(raw) === 'Motorola' && !/^MOTO\b/i.test(m)) m = `Moto ${m}`;
   // "S25 FE" with no family word is a Galaxy; the export drops it sometimes.
   if (/^S\d{2}\b/i.test(m)) m = `Galaxy ${m}`;
   // "X COVER 5" -> "XCover 5".
@@ -204,7 +211,7 @@ export function priceFor(buyPrice, grade, source = PRICE_SOURCE) {
 
 export function colourOf(raw) {
   const c = String(raw ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
-  if (!c) return null;
+  if (!c || c === 'unspecified' || c === 'n/a' || c === 'not applicable') return null;
   const FOLD = { gray: 'grey', 'space gray': 'Space Grey', 'space grey': 'Space Grey' };
   const folded = FOLD[c] ?? c;
   return folded.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -212,8 +219,9 @@ export function colourOf(raw) {
 
 /** "40MM" and "44MM" are watch sizes in the storage column, not capacities. */
 export function storageOf(raw) {
-  const s = String(raw ?? '').trim().toUpperCase().replace(/\s+/g, '');
-  if (!s) return null;
+  // "128GB/4GB" carries the RAM too; the listing is the 128 GB phone.
+  const s = String(raw ?? '').trim().toUpperCase().replace(/\s+/g, '').split('/')[0];
+  if (!s || s === 'NOTAPPLICABLE' || s === 'N/A') return null;
   return /^\d+MM$/.test(s) ? null : s;
 }
 

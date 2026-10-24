@@ -67,6 +67,7 @@ const BannersPage = lazyRoute(() => import('./components/admin/BannersPage'));
 const HomeLayoutPage = lazyRoute(() => import('./components/admin/HomeLayoutPage'));
 const SeriesPage = lazyRoute(() => import('./components/admin/SeriesPage'));
 const CatalogueImportPage = lazyRoute(() => import('./components/admin/CatalogueImportPage'));
+const StockSyncPage = lazyRoute(() => import('./components/admin/StockSyncPage'));
 const ReturnsPage = lazyRoute(() => import('./components/admin/ReturnsPage'));
 const AnalyticsPage = lazyRoute(() => import('./components/admin/AnalyticsPage'));
 const ReportsPage = lazyRoute(() => import('./components/admin/ReportsPage'));
@@ -367,6 +368,7 @@ function AppContent() {
                 <Route path="home" element={<HomeLayoutPage />} />
                 <Route path="series" element={<SeriesPage />} />
                 <Route path="catalogue-import" element={<CatalogueImportPage />} />
+                <Route path="stock-sync" element={<StockSyncPage />} />
                 <Route path="inventory/new" element={<ProductEditor />} />
                 <Route path="inventory/:id" element={<ProductEditor />} />
                 <Route path="analytics" element={<AnalyticsPage />} />

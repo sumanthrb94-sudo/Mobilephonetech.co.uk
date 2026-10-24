@@ -205,6 +205,8 @@ export interface FilterState {
   priceRange: [number, number];
   storage: string[];
   category: string[];
+  /** Hide listings with nothing to sell. Out-of-stock listings stay browsable otherwise. */
+  inStockOnly?: boolean;
 }
 
 // ── Returns / RMA ──────────────────────────────────────────────
